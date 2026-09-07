@@ -962,6 +962,533 @@
     checkSupabase();
 
   </script>
+  <!-- =====================================================
+     ROXTHAL — GALERÍA REAL SUPABASE
+===================================================== -->
+
+<style>
+  .rx-gallery {
+    padding: 80px 0;
+  }
+
+  .rx-gallery-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 25px 0 30px;
+  }
+
+  .rx-gallery-filter {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800;
+    transition: .2s ease;
+  }
+
+  .rx-gallery-filter:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .rx-gallery-filter.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #080808;
+  }
+
+  .rx-gallery-status {
+    padding: 18px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .rx-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .rx-gallery-card {
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+
+  .rx-gallery-card:hover {
+    transform: translateY(-4px);
+    border-color: #444;
+  }
+
+  .rx-gallery-image-wrap {
+    aspect-ratio: 1 / 1;
+    background: #050505;
+    overflow: hidden;
+  }
+
+  .rx-gallery-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .3s ease;
+  }
+
+  .rx-gallery-card:hover .rx-gallery-image {
+    transform: scale(1.04);
+  }
+
+  .rx-gallery-info {
+    padding: 18px;
+  }
+
+  .rx-gallery-category {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .rx-gallery-title {
+    font-size: 20px;
+    margin-bottom: 7px;
+  }
+
+  .rx-gallery-description {
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .rx-gallery-empty {
+    text-align: center;
+    padding: 50px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    color: var(--muted);
+  }
+
+  .rx-gallery-empty-icon {
+    font-size: 42px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .rx-gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .rx-gallery {
+      padding: 60px 0;
+    }
+
+    .rx-gallery-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+
+<section
+  id="galeria-roxthal"
+  class="rx-gallery"
+>
+
+  <div class="container">
+
+    <div class="section-header">
+
+      <div class="section-label">
+        RoXThal
+      </div>
+
+      <h2 class="section-title">
+        Galería
+      </h2>
+
+      <p class="section-description">
+        Obras, diseños y tatuajes de RoXThal Art Design.
+      </p>
+
+    </div>
+
+
+    <div
+      class="rx-gallery-toolbar"
+      aria-label="Filtros de galería"
+    >
+
+      <button
+        type="button"
+        class="rx-gallery-filter active"
+        data-gallery-filter="all"
+      >
+        Todas
+      </button>
+
+      <button
+        type="button"
+        class="rx-gallery-filter"
+        data-gallery-filter="art"
+      >
+        Arte
+      </button>
+
+      <button
+        type="button"
+        class="rx-gallery-filter"
+        data-gallery-filter="tattoo"
+      >
+        Tatuajes
+      </button>
+
+    </div>
+
+
+    <div
+      id="rxGalleryStatus"
+      class="rx-gallery-status"
+    >
+      Cargando galería…
+    </div>
+
+
+    <div
+      id="rxGalleryGrid"
+      class="rx-gallery-grid"
+    ></div>
+
+  </div>
+
+</section>
+
+
+<script>
+(function () {
+
+  "use strict";
+
+  /*
+   * Utilizamos el cliente Supabase que ya existe
+   * en el index.html.
+   *
+   * No creamos otro cliente.
+   */
+
+  const galleryGrid =
+    document.getElementById("rxGalleryGrid");
+
+  const galleryStatus =
+    document.getElementById("rxGalleryStatus");
+
+  const filterButtons =
+    document.querySelectorAll(
+      "[data-gallery-filter]"
+    );
+
+
+  if (!galleryGrid || !galleryStatus) {
+    return;
+  }
+
+
+  let galleryImages = [];
+  let currentFilter = "all";
+
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function categoryLabel(category) {
+
+    if (category === "tattoo") {
+      return "Tatuaje";
+    }
+
+    if (category === "art") {
+      return "Arte";
+    }
+
+    return category || "Otros";
+
+  }
+
+
+  function renderGallery() {
+
+    const filtered =
+      currentFilter === "all"
+        ? galleryImages
+        : galleryImages.filter(
+            image =>
+              image.type === currentFilter ||
+              image.category === currentFilter
+          );
+
+
+    if (!filtered.length) {
+
+      galleryGrid.innerHTML = `
+        <div class="rx-gallery-empty">
+          <div class="rx-gallery-empty-icon">🎨</div>
+          <strong>La galería todavía está vacía</strong>
+          <p style="margin-top:8px;">
+            Las obras aparecerán aquí cuando sean
+            cargadas desde Administración.
+          </p>
+        </div>
+      `;
+
+      galleryGrid.style.gridTemplateColumns =
+        "1fr";
+
+      return;
+
+    }
+
+
+    galleryGrid.style.gridTemplateColumns = "";
+
+
+    galleryGrid.innerHTML =
+      filtered.map(image => {
+
+        const title =
+          escapeHTML(
+            image.title || "Obra RoXThal"
+          );
+
+        const description =
+          escapeHTML(
+            image.description || ""
+          );
+
+        const category =
+          escapeHTML(
+            categoryLabel(
+              image.category
+            )
+          );
+
+        const url =
+          escapeHTML(
+            image.url
+          );
+
+
+        return `
+          <article class="rx-gallery-card">
+
+            <div class="rx-gallery-image-wrap">
+
+              <img
+                class="rx-gallery-image"
+                src="${url}"
+                alt="${title}"
+                loading="lazy"
+                decoding="async"
+                onerror="this.style.display='none'"
+              >
+
+            </div>
+
+            <div class="rx-gallery-info">
+
+              <div class="rx-gallery-category">
+                ${category}
+              </div>
+
+              <h3 class="rx-gallery-title">
+                ${title}
+              </h3>
+
+              ${
+                description
+                  ? `
+                    <p class="rx-gallery-description">
+                      ${description}
+                    </p>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          </article>
+        `;
+
+      }).join("");
+
+  }
+
+
+  async function loadGallery() {
+
+    galleryStatus.textContent =
+      "Cargando galería…";
+
+
+    try {
+
+      /*
+       * La tabla ya existente es:
+       * public.images
+       */
+
+      const {
+        data,
+        error
+      } = await supabase
+        .from("images")
+        .select(`
+          id,
+          title,
+          category,
+          description,
+          url,
+          visible,
+          created_at,
+          type
+        `)
+        .eq("visible", true)
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+      if (error) {
+
+        console.error(
+          "RoXThal Galería:",
+          error
+        );
+
+        galleryStatus.textContent =
+          "No se pudo cargar la galería.";
+
+        return;
+      }
+
+
+      galleryImages =
+        Array.isArray(data)
+          ? data.filter(
+              image =>
+                image &&
+                image.url
+            )
+          : [];
+
+
+      galleryStatus.textContent =
+        galleryImages.length
+          ? `${galleryImages.length} ${
+              galleryImages.length === 1
+                ? "obra disponible"
+                : "obras disponibles"
+            }`
+          : "Galería preparada — todavía no hay obras publicadas.";
+
+
+      renderGallery();
+
+
+    } catch (error) {
+
+      console.error(
+        "RoXThal Galería:",
+        error
+      );
+
+      galleryStatus.textContent =
+        "Error al cargar la galería.";
+
+    }
+
+  }
+
+
+  filterButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          currentFilter =
+            this.dataset.galleryFilter ||
+            "all";
+
+
+          filterButtons.forEach(
+            item =>
+              item.classList.remove(
+                "active"
+              )
+          );
+
+
+          this.classList.add(
+            "active"
+          );
+
+
+          renderGallery();
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * Esperamos a que el cliente Supabase
+   * existente haya sido creado.
+   */
+
+  if (
+    typeof supabase !== "undefined"
+  ) {
+
+    loadGallery();
+
+  } else {
+
+    galleryStatus.textContent =
+      "Supabase todavía no está disponible.";
+
+  }
+
+})();
+</script>
+
+<!-- FIN GALERÍA ROXTHAL -->
 
 </body>
 </html>
