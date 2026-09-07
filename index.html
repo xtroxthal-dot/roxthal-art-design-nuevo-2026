@@ -1,1603 +1,1448 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta name="theme-color" content="#0a0a0a">
-  <meta
-    name="description"
-    content="RoXThal Art Design — Arte, diseño, tatuaje y formación artística."
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
-  >
-
-  <title>RoXThal Art Design</title>
-
-  <style>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="RoXThal Art Design — Arte, diseño, tatuaje y formación artística.">  <link rel="icon" type="image/png"
+    href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">  <link rel="apple-touch-icon"
+    href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">  <title>RoXThal Art Design</title>  <style>
     :root {
-      --bg: #080808;
-      --surface: #111111;
-      --surface-2: #181818;
-      --text: #f5f5f5;
-      --muted: #a5a5a5;
-      --accent: #f2c400;
-      --accent-2: #d71920;
-      --border: #292929;
-      --max: 1180px;
+      --bg:#080808;
+      --surface:#111111;
+      --surface-2:#181818;
+      --text:#f5f5f5;
+      --muted:#a5a5a5;
+      --accent:#f2c400;
+      --accent-2:#d71920;
+      --border:#292929;
+      --max:1180px;
     }
 
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
     }
 
     html {
-      scroll-behavior: smooth;
+      scroll-behavior:smooth;
     }
 
     body {
-      min-height: 100vh;
+      min-height:100vh;
       background:
-        radial-gradient(
-          circle at 85% 10%,
-          rgba(242,196,0,.12),
-          transparent 30%
-        ),
+        radial-gradient(circle at 85% 10%,rgba(242,196,0,.12),transparent 30%),
         var(--bg);
-      color: var(--text);
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     }
 
-    button,
-    a {
-      font: inherit;
+    button,a {
+      font:inherit;
     }
 
     a {
-      color: inherit;
-      text-decoration: none;
+      color:inherit;
+      text-decoration:none;
     }
 
     img {
-      max-width: 100%;
+      max-width:100%;
     }
 
     .container {
-      width: min(92%, var(--max));
-      margin: auto;
+      width:min(92%,var(--max));
+      margin:auto;
     }
 
-    /* =========================
-       HEADER
-    ========================= */
+    /* HEADER */
 
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: rgba(8,8,8,.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:rgba(8,8,8,.92);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
     }
 
     .header-inner {
-      min-height: 78px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+      min-height:78px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
     }
 
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      font-weight: 900;
-      letter-spacing: .4px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      font-weight:900;
+      letter-spacing:.4px;
     }
 
     .brand-logo {
-      width: 56px;
-      height: 56px;
-      display: block;
-      flex: 0 0 56px;
-      object-fit: contain;
-      border-radius: 50%;
-      filter: drop-shadow(
-        0 0 8px rgba(242,196,0,.18)
-      );
+      width:56px;
+      height:56px;
+      display:block;
+      flex:0 0 56px;
+      object-fit:contain;
+      border-radius:50%;
+      filter:drop-shadow(0 0 8px rgba(242,196,0,.18));
     }
 
     .brand-name {
-      font-size: 15px;
-      white-space: nowrap;
+      font-size:15px;
+      white-space:nowrap;
     }
 
     .menu {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      color: var(--muted);
-      font-size: 14px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      color:var(--muted);
+      font-size:14px;
     }
 
     .menu a {
-      transition: color .2s ease;
+      transition:color .2s ease;
+      cursor:pointer;
     }
 
     .menu a:hover {
-      color: var(--text);
+      color:var(--text);
     }
 
-    /* =========================
-       HERO
-    ========================= */
+    /* VISTAS */
+
+    .app-view {
+      display:block;
+    }
+
+    .app-view.hidden {
+      display:none !important;
+    }
+
+    /* HERO */
 
     .hero {
-      min-height: 78vh;
-      display: flex;
-      align-items: center;
-      padding: 80px 0;
+      min-height:78vh;
+      display:flex;
+      align-items:center;
+      padding:80px 0;
     }
 
     .hero-content {
-      max-width: 850px;
+      max-width:850px;
     }
 
     .hero-logo {
-      width: min(260px, 68vw);
-      height: auto;
-      display: block;
-      margin-bottom: 30px;
-      object-fit: contain;
-      filter: drop-shadow(
-        0 0 18px rgba(242,196,0,.12)
-      );
+      width:min(260px,68vw);
+      height:auto;
+      display:block;
+      margin-bottom:30px;
+      object-fit:contain;
+      filter:drop-shadow(0 0 18px rgba(242,196,0,.12));
     }
 
     .eyebrow {
-      display: inline-block;
-      margin-bottom: 20px;
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      text-transform: uppercase;
+      display:inline-block;
+      margin-bottom:20px;
+      color:var(--accent);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:3px;
+      text-transform:uppercase;
     }
 
     .hero h1 {
-      font-size: clamp(48px, 10vw, 100px);
-      line-height: .88;
-      letter-spacing: -4px;
-      margin-bottom: 28px;
+      font-size:clamp(48px,10vw,100px);
+      line-height:.88;
+      letter-spacing:-4px;
+      margin-bottom:28px;
     }
 
     .hero h1 span {
-      color: var(--accent);
+      color:var(--accent);
     }
 
     .hero p {
-      max-width: 700px;
-      color: var(--muted);
-      font-size: clamp(18px, 3vw, 23px);
-      line-height: 1.5;
+      max-width:700px;
+      color:var(--muted);
+      font-size:clamp(18px,3vw,23px);
+      line-height:1.5;
     }
 
     .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:32px;
     }
 
     .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 20px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      font-weight: 800;
-      transition: .2s ease;
-      cursor: pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 20px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      font-weight:800;
+      transition:.2s ease;
+      cursor:pointer;
+      background:transparent;
+      color:var(--text);
     }
 
     .button:hover {
-      transform: translateY(-2px);
+      transform:translateY(-2px);
     }
 
     .button-primary {
-      background: var(--accent);
-      color: #080808;
-      border-color: var(--accent);
+      background:var(--accent);
+      color:#080808;
+      border-color:var(--accent);
     }
 
-    /* =========================
-       SECTIONS
-    ========================= */
+    /* SECCIONES */
 
     section {
-      padding: 80px 0;
+      padding:80px 0;
     }
 
     .section-header {
-      margin-bottom: 30px;
+      margin-bottom:30px;
     }
 
     .section-label {
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
+      color:var(--accent);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin-bottom:8px;
     }
 
     .section-title {
-      font-size: clamp(30px, 5vw, 48px);
-      line-height: 1;
-      margin-bottom: 10px;
+      font-size:clamp(30px,5vw,48px);
+      line-height:1;
+      margin-bottom:10px;
     }
 
     .section-description {
-      max-width: 700px;
-      color: var(--muted);
+      max-width:700px;
+      color:var(--muted);
     }
 
-    /* =========================
-       MODULES
-    ========================= */
+    /* MODULOS */
 
     .modules {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
     }
 
     .module {
-      position: relative;
-      min-height: 190px;
-      padding: 24px;
-      background: linear-gradient(
-        145deg,
-        var(--surface-2),
-        var(--surface)
-      );
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      transition: .2s ease;
+      position:relative;
+      min-height:190px;
+      padding:24px;
+      background:linear-gradient(145deg,var(--surface-2),var(--surface));
+      border:1px solid var(--border);
+      border-radius:20px;
+      overflow:hidden;
+      transition:.2s ease;
     }
 
     .module:hover {
-      transform: translateY(-3px);
-      border-color: #444;
+      transform:translateY(-3px);
+      border-color:#444;
     }
 
     .module-number {
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 2px;
+      color:var(--accent);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:2px;
     }
 
     .module-icon {
-      font-size: 30px;
-      margin: 22px 0 12px;
+      font-size:30px;
+      margin:22px 0 12px;
     }
 
     .module h3 {
-      font-size: 22px;
-      margin-bottom: 7px;
+      font-size:22px;
+      margin-bottom:7px;
     }
 
     .module p {
-      color: var(--muted);
+      color:var(--muted);
     }
 
-    /* =========================
-       STATUS
-    ========================= */
+    /* ESTADO */
 
     .connection {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      margin-top: 25px;
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--muted);
-      font-size: 12px;
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      margin-top:25px;
+      padding:9px 12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      color:var(--muted);
+      font-size:12px;
     }
 
     .connection-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #777;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#777;
     }
 
     .connection.connected .connection-dot {
-      background: #4ade80;
+      background:#4ade80;
     }
 
-    /* =========================
-       GALERÍA
-    ========================= */
+    /* GALERIA */
+
+    .gallery-view {
+      min-height:calc(100vh - 78px);
+      padding:45px 0 80px;
+    }
+
+    .gallery-topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:35px;
+    }
+
+    .gallery-back {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
 
     .rx-gallery-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 25px 0 30px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:25px 0 30px;
     }
 
     .rx-gallery-filter {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      padding: 10px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 800;
-      transition: .2s ease;
+      border:1px solid var(--border);
+      background:var(--surface);
+      color:var(--muted);
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      transition:.2s ease;
     }
 
     .rx-gallery-filter:hover {
-      border-color: var(--accent);
-      color: var(--text);
+      border-color:var(--accent);
+      color:var(--text);
     }
 
     .rx-gallery-filter.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #080808;
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#080808;
     }
 
     .rx-gallery-status {
-      padding: 18px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 14px;
-      color: var(--muted);
-      margin-bottom: 20px;
+      padding:18px;
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:14px;
+      color:var(--muted);
+      margin-bottom:20px;
     }
 
     .rx-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
     }
 
     .rx-gallery-card {
-      overflow: hidden;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      transition:
-        transform .2s ease,
-        border-color .2s ease;
+      overflow:hidden;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:18px;
+      transition:transform .2s ease,border-color .2s ease;
     }
 
     .rx-gallery-card:hover {
-      transform: translateY(-4px);
-      border-color: #444;
+      transform:translateY(-4px);
+      border-color:#444;
     }
 
     .rx-gallery-image-wrap {
-      aspect-ratio: 1 / 1;
-      background: #050505;
-      overflow: hidden;
+      aspect-ratio:1/1;
+      background:#050505;
+      overflow:hidden;
     }
 
     .rx-gallery-image {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      transition: transform .3s ease;
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+      transition:transform .3s ease;
     }
 
     .rx-gallery-card:hover .rx-gallery-image {
-      transform: scale(1.04);
+      transform:scale(1.04);
     }
 
     .rx-gallery-info {
-      padding: 18px;
+      padding:18px;
     }
 
     .rx-gallery-category {
-      display: inline-block;
-      margin-bottom: 8px;
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
+      display:inline-block;
+      margin-bottom:8px;
+      color:var(--accent);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
     }
 
     .rx-gallery-title {
-      font-size: 20px;
-      margin-bottom: 7px;
+      font-size:20px;
+      margin-bottom:7px;
     }
 
     .rx-gallery-description {
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 14px;
+      color:var(--muted);
+      line-height:1.5;
+      font-size:14px;
     }
 
     .rx-gallery-empty {
-      text-align: center;
-      padding: 50px 20px;
-      border: 1px dashed var(--border);
-      border-radius: 18px;
-      color: var(--muted);
+      text-align:center;
+      padding:50px 20px;
+      border:1px dashed var(--border);
+      border-radius:18px;
+      color:var(--muted);
     }
 
     .rx-gallery-empty-icon {
-      font-size: 42px;
-      margin-bottom: 12px;
+      font-size:42px;
+      margin-bottom:12px;
     }
 
-    /* =========================
-       CONTACT
-    ========================= */
+    /* CONTACTO */
 
     .contact-box {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
     }
 
     .contact-card {
-      padding: 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
+      padding:24px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:18px;
     }
 
     .contact-card h3 {
-      margin-bottom: 10px;
+      margin-bottom:10px;
     }
 
     .contact-card p {
-      color: var(--muted);
-      line-height: 1.8;
+      color:var(--muted);
+      line-height:1.8;
     }
 
     .contact-card a {
-      color: var(--accent);
+      color:var(--accent);
     }
 
-    /* =========================
-       FOOTER
-    ========================= */
+    /* FOOTER */
 
     footer {
-      border-top: 1px solid var(--border);
-      padding: 30px 0;
-      color: var(--muted);
-      font-size: 13px;
+      border-top:1px solid var(--border);
+      padding:30px 0;
+      color:var(--muted);
+      font-size:13px;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 900px) {
-
+    @media (max-width:900px) {
       .rx-gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:repeat(2,1fr);
       }
-
     }
 
-    @media (max-width: 760px) {
-
+    @media (max-width:760px) {
       .header-inner {
-        min-height: 70px;
+        min-height:70px;
       }
 
       .brand-logo {
-        width: 50px;
-        height: 50px;
-        flex-basis: 50px;
+        width:50px;
+        height:50px;
+        flex-basis:50px;
       }
 
       .brand-name {
-        font-size: 14px;
+        font-size:14px;
       }
 
       .menu {
-        display: none;
+        display:none;
       }
 
       .hero {
-        min-height: auto;
-        padding: 65px 0;
+        min-height:auto;
+        padding:65px 0;
       }
 
       .hero-logo {
-        width: min(230px, 68vw);
-        margin-bottom: 26px;
+        width:min(230px,68vw);
+        margin-bottom:26px;
       }
 
       .hero h1 {
-        letter-spacing: -2px;
+        letter-spacing:-2px;
       }
 
       section {
-        padding: 60px 0;
+        padding:60px 0;
       }
 
       .modules,
       .contact-box,
       .rx-gallery-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns:1fr;
       }
 
-      .rx-gallery {
-        padding: 60px 0;
+      .gallery-view {
+        padding-top:30px;
       }
 
+      .gallery-topbar {
+        align-items:flex-start;
+        flex-direction:column;
+      }
     }
+  </style></head><body><header class="header">
+  <div class="container header-inner"><a href="#inicio" class="brand" data-view="home">
+  <img
+    class="brand-logo"
+    src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
+    alt="RoXThal Art Design"
+  >
+  <span class="brand-name">RoXThal Art Design</span>
+</a>
 
-  </style>
-</head>
+<nav class="menu">
+  <a href="#inicio" data-view="home">Inicio</a>
+  <a href="#modulos" data-view="home">Módulos</a>
+  <a href="#galeria" data-view="gallery">Galería</a>
+  <a href="#contacto" data-view="home">Contacto</a>
+</nav>
 
-<body>
+  </div>
+</header><main>  <!-- ================================
+       VISTA PRINCIPAL
+  ================================= -->  <div id="homeView" class="app-view"><section id="inicio" class="hero">
 
-  <!-- ==========================================
-       HEADER
-  =========================================== -->
+  <div class="container">
 
-  <header class="header">
+    <div class="hero-content">
 
-    <div class="container header-inner">
+      <img
+        class="hero-logo"
+        src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
+        alt="RoXThal Art Design"
+      >
 
-      <a href="#inicio" class="brand">
+      <div class="eyebrow">
+        Nueva plataforma
+      </div>
 
-        <img
-          class="brand-logo"
-          src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
-          alt="RoXThal Art Design"
+      <h1>
+        RoXThal<br>
+        <span>Art Design</span>
+      </h1>
+
+      <p>
+        Arte, diseño, tatuaje y formación artística
+        reunidos en una nueva plataforma digital.
+      </p>
+
+      <div class="hero-actions">
+
+        <a
+          class="button button-primary"
+          href="#modulos"
+          data-view="home"
         >
+          Explorar aplicación
+        </a>
 
-        <span class="brand-name">
-          RoXThal Art Design
-        </span>
+        <a
+          class="button"
+          href="#contacto"
+          data-view="home"
+        >
+          Contacto
+        </a>
+
+      </div>
+
+      <div id="connectionStatus" class="connection">
+        <span class="connection-dot"></span>
+        <span id="connectionText">Comprobando conexión…</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<section id="modulos">
+
+  <div class="container">
+
+    <div class="section-header">
+
+      <div class="section-label">
+        Plataforma
+      </div>
+
+      <h2 class="section-title">
+        Todo RoXThal
+      </h2>
+
+      <p class="section-description">
+        Una estructura nueva preparada para crecer
+        módulo por módulo.
+      </p>
+
+    </div>
+
+
+    <div class="modules">
+
+      <!-- GALERIA -->
+
+      <a
+        href="#galeria"
+        class="module"
+        data-view="gallery"
+      >
+
+        <div class="module-number">01</div>
+
+        <div class="module-icon">🎨</div>
+
+        <h3>Galería</h3>
+
+        <p>
+          Obras, diseños y trabajos artísticos.
+        </p>
 
       </a>
 
-      <nav class="menu">
 
-        <a href="#inicio">Inicio</a>
-        <a href="#modulos">Módulos</a>
-        <a href="#galeria-roxthal">Galería</a>
-        <a href="#contacto">Contacto</a>
+      <a href="#" class="module">
 
-      </nav>
+        <div class="module-number">02</div>
+
+        <div class="module-icon">📚</div>
+
+        <h3>Escuela</h3>
+
+        <p>
+          Cursos, talleres y formación artística.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">03</div>
+
+        <div class="module-icon">🛠️</div>
+
+        <h3>Herramientas</h3>
+
+        <p>
+          Recursos digitales para artistas.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">04</div>
+
+        <div class="module-icon">🤖</div>
+
+        <h3>RoXThal IA</h3>
+
+        <p>
+          Asistente creativo para proyectos artísticos.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">05</div>
+
+        <div class="module-icon">🔎</div>
+
+        <h3>Buscadores</h3>
+
+        <p>
+          Investigación e inspiración artística.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">06</div>
+
+        <div class="module-icon">📖</div>
+
+        <h3>Biblioteca</h3>
+
+        <p>
+          Recursos y material de consulta.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">07</div>
+
+        <div class="module-icon">🛒</div>
+
+        <h3>Tienda</h3>
+
+        <p>
+          Productos y propuestas artísticas.
+        </p>
+
+      </a>
+
+
+      <a href="#" class="module">
+
+        <div class="module-number">08</div>
+
+        <div class="module-icon">⚙️</div>
+
+        <h3>Administración</h3>
+
+        <p>
+          Gestión privada de la plataforma.
+        </p>
+
+      </a>
 
     </div>
 
-  </header>
+  </div>
+
+</section>
 
 
-  <main>
+<section id="contacto">
 
-    <!-- ==========================================
-         INICIO
-    =========================================== -->
+  <div class="container">
 
-    <section id="inicio" class="hero">
+    <div class="section-header">
 
-      <div class="container">
+      <div class="section-label">
+        RoXThal
+      </div>
 
-        <div class="hero-content">
+      <h2 class="section-title">
+        Contacto
+      </h2>
 
-          <img
-            class="hero-logo"
-            src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
-            alt="RoXThal Art Design"
-          >
+    </div>
 
-          <div class="eyebrow">
-            Nueva plataforma
-          </div>
 
-          <h1>
-            RoXThal<br>
-            <span>Art Design</span>
-          </h1>
+    <div class="contact-box">
 
-          <p>
-            Arte, diseño, tatuaje y formación artística
-            reunidos en una nueva plataforma digital.
-          </p>
+      <div class="contact-card">
 
-          <div class="hero-actions">
+        <h3>
+          RoXThal Art Design
+        </h3>
 
-            <a
-              class="button button-primary"
-              href="#modulos"
-            >
-              Explorar aplicación
-            </a>
+        <p>
+          Arte, diseño, tatuaje y formación artística.
+        </p>
 
-            <a
-              class="button"
-              href="#contacto"
-            >
-              Contacto
-            </a>
-
-          </div>
-
-          <div
-            id="connectionStatus"
-            class="connection"
-          >
-
-            <span class="connection-dot"></span>
-
-            <span id="connectionText">
-              Comprobando conexión…
-            </span>
-
-          </div>
-
-        </div>
+        <p>
+          San Antonio de Padua,
+          Buenos Aires.
+        </p>
 
       </div>
 
-    </section>
 
+      <div class="contact-card">
 
-    <!-- ==========================================
-         MÓDULOS
-    =========================================== -->
+        <h3>
+          Canales
+        </h3>
 
-    <section id="modulos">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div class="section-label">
-            Plataforma
-          </div>
-
-          <h2 class="section-title">
-            Todo RoXThal
-          </h2>
-
-          <p class="section-description">
-            Una estructura nueva preparada para crecer
-            módulo por módulo.
-          </p>
-
-        </div>
-
-
-        <div class="modules">
-
-
+        <p>
+          Instagram:
           <a
-            href="#galeria-roxthal"
-            class="module"
+            href="https://instagram.com/roxthalartdesign"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-
-            <div class="module-number">
-              01
-            </div>
-
-            <div class="module-icon">
-              🎨
-            </div>
-
-            <h3>
-              Galería
-            </h3>
-
-            <p>
-              Obras, diseños y trabajos artísticos.
-            </p>
-
+            @roxthalartdesign
           </a>
+        </p>
 
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              02
-            </div>
-
-            <div class="module-icon">
-              📚
-            </div>
-
-            <h3>
-              Escuela
-            </h3>
-
-            <p>
-              Cursos, talleres y formación artística.
-            </p>
-
+        <p>
+          Email:
+          <a href="mailto:roxthal@hotmail.com">
+            roxthal@hotmail.com
           </a>
+        </p>
 
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              03
-            </div>
-
-            <div class="module-icon">
-              🛠️
-            </div>
-
-            <h3>
-              Herramientas
-            </h3>
-
-            <p>
-              Recursos digitales para artistas.
-            </p>
-
-          </a>
-
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              04
-            </div>
-
-            <div class="module-icon">
-              🤖
-            </div>
-
-            <h3>
-              RoXThal IA
-            </h3>
-
-            <p>
-              Asistente creativo para proyectos artísticos.
-            </p>
-
-          </a>
-
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              05
-            </div>
-
-            <div class="module-icon">
-              🔎
-            </div>
-
-            <h3>
-              Buscadores
-            </h3>
-
-            <p>
-              Investigación e inspiración artística.
-            </p>
-
-          </a>
-
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              06
-            </div>
-
-            <div class="module-icon">
-              📖
-            </div>
-
-            <h3>
-              Biblioteca
-            </h3>
-
-            <p>
-              Recursos y material de consulta.
-            </p>
-
-          </a>
-
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              07
-            </div>
-
-            <div class="module-icon">
-              🛒
-            </div>
-
-            <h3>
-              Tienda
-            </h3>
-
-            <p>
-              Productos y propuestas artísticas.
-            </p>
-
-          </a>
-
-
-          <a href="#" class="module">
-
-            <div class="module-number">
-              08
-            </div>
-
-            <div class="module-icon">
-              ⚙️
-            </div>
-
-            <h3>
-              Administración
-            </h3>
-
-            <p>
-              Gestión privada de la plataforma.
-            </p>
-
-          </a>
-
-
-        </div>
+        <p>
+          Lisandro de la Torre 880
+        </p>
 
       </div>
 
-    </section>
+    </div>
+
+  </div>
+
+</section>
+
+  </div>  <!-- ================================
+       VISTA GALERIA
+       OCULTA AL INICIAR
+  ================================= -->  <div
+    id="galleryView"
+    class="app-view hidden"
+  ><section class="gallery-view">
+
+  <div class="container">
+
+    <div class="gallery-topbar">
+
+      <div>
+        <div class="section-label">
+          RoXThal Art Design
+        </div>
+
+        <h2 class="section-title">
+          Galería
+        </h2>
+      </div>
 
 
-    <!-- ==========================================
-         GALERÍA REAL
-         SUPABASE — public.images
-    =========================================== -->
+      <button
+        type="button"
+        class="button gallery-back"
+        id="galleryBack"
+      >
+        ← Volver
+      </button>
 
-    <section
-      id="galeria-roxthal"
-      class="rx-gallery"
+    </div>
+
+
+    <p class="section-description">
+      Obras, diseños y tatuajes de RoXThal Art Design.
+    </p>
+
+
+    <div
+      class="rx-gallery-toolbar"
+      aria-label="Filtros de galería"
     >
 
-      <div class="container">
+      <button
+        type="button"
+        class="rx-gallery-filter active"
+        data-gallery-filter="all"
+      >
+        Todas
+      </button>
 
-        <div class="section-header">
+      <button
+        type="button"
+        class="rx-gallery-filter"
+        data-gallery-filter="art"
+      >
+        Arte
+      </button>
 
-          <div class="section-label">
-            RoXThal
-          </div>
-
-          <h2 class="section-title">
-            Galería
-          </h2>
-
-          <p class="section-description">
-            Obras, diseños y tatuajes de RoXThal Art Design.
-          </p>
-
-        </div>
-
-
-        <div
-          class="rx-gallery-toolbar"
-          aria-label="Filtros de galería"
-        >
-
-          <button
-            type="button"
-            class="rx-gallery-filter active"
-            data-gallery-filter="all"
-          >
-            Todas
-          </button>
-
-          <button
-            type="button"
-            class="rx-gallery-filter"
-            data-gallery-filter="art"
-          >
-            Arte
-          </button>
-
-          <button
-            type="button"
-            class="rx-gallery-filter"
-            data-gallery-filter="tattoo"
-          >
-            Tatuajes
-          </button>
-
-        </div>
-
-
-        <div
-          id="rxGalleryStatus"
-          class="rx-gallery-status"
-        >
-          Cargando galería…
-        </div>
-
-
-        <div
-          id="rxGalleryGrid"
-          class="rx-gallery-grid"
-        ></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ==========================================
-         CONTACTO
-    =========================================== -->
-
-    <section id="contacto">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div class="section-label">
-            RoXThal
-          </div>
-
-          <h2 class="section-title">
-            Contacto
-          </h2>
-
-        </div>
-
-
-        <div class="contact-box">
-
-
-          <div class="contact-card">
-
-            <h3>
-              RoXThal Art Design
-            </h3>
-
-            <p>
-              Arte, diseño, tatuaje y formación artística.
-            </p>
-
-            <p>
-              San Antonio de Padua,
-              Buenos Aires.
-            </p>
-
-          </div>
-
-
-          <div class="contact-card">
-
-            <h3>
-              Canales
-            </h3>
-
-            <p>
-              Instagram:
-              <a
-                href="https://instagram.com/roxthalartdesign"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                @roxthalartdesign
-              </a>
-            </p>
-
-            <p>
-              Email:
-              <a href="mailto:roxthal@hotmail.com">
-                roxthal@hotmail.com
-              </a>
-            </p>
-
-            <p>
-              Lisandro de la Torre 880
-            </p>
-
-          </div>
-
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <!-- ==========================================
-       FOOTER
-  =========================================== -->
-
-  <footer>
-
-    <div class="container">
-
-      © <span id="year"></span>
-      RoXThal Art Design
+      <button
+        type="button"
+        class="rx-gallery-filter"
+        data-gallery-filter="tattoo"
+      >
+        Tatuajes
+      </button>
 
     </div>
 
-  </footer>
+
+    <div
+      id="rxGalleryStatus"
+      class="rx-gallery-status"
+    >
+      Cargando galería…
+    </div>
 
 
-  <!-- ==========================================
-       SUPABASE
-  =========================================== -->
+    <div
+      id="rxGalleryGrid"
+      class="rx-gallery-grid"
+    ></div>
 
-  <script type="module">
+  </div>
 
-    import {
-      createClient
-    } from
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+</section>
 
+  </div></main><footer>
+  <div class="container">
+    © <span id="year"></span>
+    RoXThal Art Design
+  </div>
+</footer><script type="module">
 
-    /*
-      ==========================================
-      NUEVO PROYECTO SUPABASE
-      ==========================================
-    */
-
-    const SUPABASE_URL =
-      "https://hxtzlrsmjwrpqgjgbzyl.supabase.co";
-
-    const SUPABASE_PUBLISHABLE_KEY =
-      "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+  import {
+    createClient
+  } from
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 
-    /*
-      ==========================================
-      ÚNICO CLIENTE SUPABASE
-      ==========================================
-    */
+  /* ==========================================
+     NUEVO SUPABASE
+  ========================================== */
 
-    const supabase =
-      createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
+  const SUPABASE_URL =
+    "https://hxtzlrsmjwrpqgjgbzyl.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+
+  const supabase =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  window.roxthalSupabase =
+    supabase;
+
+
+  /* ==========================================
+     ELEMENTOS
+  ========================================== */
+
+  const homeView =
+    document.getElementById("homeView");
+
+  const galleryView =
+    document.getElementById("galleryView");
+
+  const galleryBack =
+    document.getElementById("galleryBack");
+
+
+  /* ==========================================
+     NAVEGACIÓN DE VISTAS
+  ========================================== */
+
+  function showHome() {
+
+    homeView.classList.remove("hidden");
+    galleryView.classList.add("hidden");
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+    history.replaceState(
+      null,
+      "",
+      "#inicio"
+    );
+  }
+
+
+  function showGallery() {
+
+    homeView.classList.add("hidden");
+    galleryView.classList.remove("hidden");
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+    history.replaceState(
+      null,
+      "",
+      "#galeria"
+    );
+
+    loadGallery();
+
+  }
+
+
+  document
+    .querySelectorAll("[data-view]")
+    .forEach(
+      element => {
+
+        element.addEventListener(
+          "click",
+          event => {
+
+            const view =
+              element.dataset.view;
+
+
+            if (
+              view === "gallery"
+            ) {
+
+              event.preventDefault();
+              showGallery();
+              return;
+
+            }
+
+
+            if (
+              view === "home"
+            ) {
+
+              event.preventDefault();
+              showHome();
+
+              const target =
+                element.getAttribute("href");
+
+
+              if (
+                target &&
+                target !== "#inicio"
+              ) {
+
+                requestAnimationFrame(
+                  () => {
+
+                    const targetElement =
+                      document.querySelector(
+                        target
+                      );
+
+
+                    if (
+                      targetElement
+                    ) {
+
+                      targetElement.scrollIntoView({
+                        behavior:"smooth"
+                      });
+
+                    }
+
+                  }
+                );
+
+              }
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+  galleryBack.addEventListener(
+    "click",
+    showHome
+  );
+
+
+  /* ==========================================
+     AÑO
+  ========================================== */
+
+  const yearElement =
+    document.getElementById("year");
+
+  if (yearElement) {
+
+    yearElement.textContent =
+      new Date().getFullYear();
+
+  }
+
+
+  /* ==========================================
+     SUPABASE
+  ========================================== */
+
+  async function checkSupabase() {
+
+    const status =
+      document.getElementById(
+        "connectionStatus"
+      );
+
+    const text =
+      document.getElementById(
+        "connectionText"
       );
 
 
-    /*
-      ==========================================
-      CLIENTE DISPONIBLE PARA LOS MÓDULOS
-      ==========================================
-    */
-
-    window.roxthalSupabase =
-      supabase;
-
-
-    /*
-      ==========================================
-      AÑO DEL FOOTER
-      ==========================================
-    */
-
-    const yearElement =
-      document.getElementById("year");
-
-
-    if (yearElement) {
-
-      yearElement.textContent =
-        new Date().getFullYear();
-
+    if (!status || !text) {
+      return;
     }
 
 
-    /*
-      ==========================================
-      ESTADO DE CONEXIÓN
-      ==========================================
-    */
+    try {
 
-    async function checkSupabase() {
-
-      const status =
-        document.getElementById(
-          "connectionStatus"
-        );
-
-      const text =
-        document.getElementById(
-          "connectionText"
+      const {
+        error
+      } =
+      await supabase
+        .from("courses")
+        .select(
+          "id",
+          {
+            count:"exact",
+            head:true
+          }
         );
 
 
-      if (!status || !text) {
-        return;
-      }
-
-
-      try {
-
-        const {
-          error
-        } =
-        await supabase
-          .from("courses")
-          .select(
-            "id",
-            {
-              count: "exact",
-              head: true
-            }
-          );
-
-
-        if (error) {
-
-          console.error(
-            "RoXThal — Supabase:",
-            error
-          );
-
-
-          text.textContent =
-            "Supabase no disponible";
-
-
-          status.classList.remove(
-            "connected"
-          );
-
-
-          return;
-        }
-
-
-        status.classList.add(
-          "connected"
-        );
-
-
-        text.textContent =
-          "Supabase conectado";
-
-
-        console.log(
-          "RoXThal Art Design: Supabase conectado correctamente."
-        );
-
-
-      } catch (error) {
+      if (error) {
 
         console.error(
-          "RoXThal — Error de conexión:",
+          "RoXThal — Supabase:",
           error
         );
 
+        text.textContent =
+          "Supabase no disponible";
 
         status.classList.remove(
           "connected"
         );
 
-
-        text.textContent =
-          "Error de conexión";
-
-      }
-
-    }
-
-
-    /*
-      ==========================================
-      GALERÍA — public.images
-      ==========================================
-    */
-
-    const galleryGrid =
-      document.getElementById(
-        "rxGalleryGrid"
-      );
-
-    const galleryStatus =
-      document.getElementById(
-        "rxGalleryStatus"
-      );
-
-    const filterButtons =
-      document.querySelectorAll(
-        "[data-gallery-filter]"
-      );
-
-
-    let galleryImages = [];
-    let currentFilter = "all";
-
-
-    /*
-      ==========================================
-      ESCAPAR HTML
-      ==========================================
-    */
-
-    function escapeHTML(value) {
-
-      return String(value ?? "")
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
-    }
-
-
-    /*
-      ==========================================
-      NOMBRE DE CATEGORÍA
-      ==========================================
-    */
-
-    function categoryLabel(
-      category
-    ) {
-
-      if (
-        category === "tattoo"
-      ) {
-
-        return "Tatuaje";
-
-      }
-
-
-      if (
-        category === "art"
-      ) {
-
-        return "Arte";
-
-      }
-
-
-      return category || "Otros";
-
-    }
-
-
-    /*
-      ==========================================
-      RENDERIZAR GALERÍA
-      ==========================================
-    */
-
-    function renderGallery() {
-
-      if (!galleryGrid) {
         return;
       }
 
 
-      const filtered =
-        currentFilter === "all"
-          ? galleryImages
-          : galleryImages.filter(
-              image =>
-                image.type === currentFilter ||
-                image.category === currentFilter
+      status.classList.add(
+        "connected"
+      );
+
+      text.textContent =
+        "Supabase conectado";
+
+
+      console.log(
+        "RoXThal Art Design: Supabase conectado correctamente."
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "RoXThal — Error de conexión:",
+        error
+      );
+
+      status.classList.remove(
+        "connected"
+      );
+
+      text.textContent =
+        "Error de conexión";
+
+    }
+
+  }
+
+
+  /* ==========================================
+     GALERIA
+     public.images
+  ========================================== */
+
+  const galleryGrid =
+    document.getElementById(
+      "rxGalleryGrid"
+    );
+
+  const galleryStatus =
+    document.getElementById(
+      "rxGalleryStatus"
+    );
+
+  const filterButtons =
+    document.querySelectorAll(
+      "[data-gallery-filter]"
+    );
+
+
+  let galleryImages = [];
+  let currentFilter = "all";
+
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  function categoryLabel(category) {
+
+    if (category === "tattoo") {
+      return "Tatuaje";
+    }
+
+    if (category === "art") {
+      return "Arte";
+    }
+
+    return category || "Otros";
+
+  }
+
+
+  function renderGallery() {
+
+    if (!galleryGrid) {
+      return;
+    }
+
+
+    const filtered =
+      currentFilter === "all"
+        ? galleryImages
+        : galleryImages.filter(
+            image =>
+              image.type === currentFilter ||
+              image.category === currentFilter
+          );
+
+
+    if (!filtered.length) {
+
+      galleryGrid.innerHTML = `
+        <div class="rx-gallery-empty">
+
+          <div class="rx-gallery-empty-icon">
+            🎨
+          </div>
+
+          <strong>
+            La galería todavía está vacía
+          </strong>
+
+          <p style="margin-top:8px;">
+            Las obras aparecerán aquí cuando sean
+            cargadas desde Administración.
+          </p>
+
+        </div>
+      `;
+
+      galleryGrid.style.gridTemplateColumns =
+        "1fr";
+
+      return;
+
+    }
+
+
+    galleryGrid.style.gridTemplateColumns =
+      "";
+
+
+    galleryGrid.innerHTML =
+      filtered.map(
+        image => {
+
+          const title =
+            escapeHTML(
+              image.title ||
+              "Obra RoXThal"
             );
 
 
-      if (!filtered.length) {
-
-        galleryGrid.innerHTML = `
-          <div class="rx-gallery-empty">
-
-            <div class="rx-gallery-empty-icon">
-              🎨
-            </div>
-
-            <strong>
-              La galería todavía está vacía
-            </strong>
-
-            <p style="margin-top:8px;">
-              Las obras aparecerán aquí cuando sean
-              cargadas desde Administración.
-            </p>
-
-          </div>
-        `;
+          const description =
+            escapeHTML(
+              image.description ||
+              ""
+            );
 
 
-        galleryGrid.style.gridTemplateColumns =
-          "1fr";
+          const category =
+            escapeHTML(
+              categoryLabel(
+                image.category ||
+                image.type
+              )
+            );
 
 
-        return;
-
-      }
-
-
-      galleryGrid.style.gridTemplateColumns =
-        "";
+          const url =
+            escapeHTML(
+              image.url
+            );
 
 
-      galleryGrid.innerHTML =
-        filtered
-          .map(
-            image => {
+          return `
+            <article class="rx-gallery-card">
 
-              const title =
-                escapeHTML(
-                  image.title ||
-                  "Obra RoXThal"
-                );
+              <div class="rx-gallery-image-wrap">
 
-
-              const description =
-                escapeHTML(
-                  image.description ||
-                  ""
-                );
-
-
-              const category =
-                escapeHTML(
-                  categoryLabel(
-                    image.category ||
-                    image.type
-                  )
-                );
-
-
-              const url =
-                escapeHTML(
-                  image.url
-                );
-
-
-              return `
-                <article
-                  class="rx-gallery-card"
+                <img
+                  class="rx-gallery-image"
+                  src="${url}"
+                  alt="${title}"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="
+                    this.style.display='none';
+                    this.parentElement.classList.add('image-error');
+                  "
                 >
 
-                  <div
-                    class="rx-gallery-image-wrap"
-                  >
+              </div>
 
-                    <img
-                      class="rx-gallery-image"
-                      src="${url}"
-                      alt="${title}"
-                      loading="lazy"
-                      decoding="async"
-                      onerror="
-                        this.style.display='none';
-                        this.parentElement.classList.add('image-error');
-                      "
-                    >
+              <div class="rx-gallery-info">
 
-                  </div>
+                <div class="rx-gallery-category">
+                  ${category}
+                </div>
 
-                  <div
-                    class="rx-gallery-info"
-                  >
+                <h3 class="rx-gallery-title">
+                  ${title}
+                </h3>
 
-                    <div
-                      class="rx-gallery-category"
-                    >
-                      ${category}
-                    </div>
+                ${
+                  description
+                    ? `
+                      <p class="rx-gallery-description">
+                        ${description}
+                      </p>
+                    `
+                    : ""
+                }
 
-                    <h3
-                      class="rx-gallery-title"
-                    >
-                      ${title}
-                    </h3>
+              </div>
 
-                    ${
-                      description
-                        ? `
-                          <p
-                            class="rx-gallery-description"
-                          >
-                            ${description}
-                          </p>
-                        `
-                        : ""
-                    }
+            </article>
+          `;
 
-                  </div>
+        }
+      ).join("");
 
-                </article>
-              `;
+  }
 
-            }
-          )
-          .join("");
 
+  async function loadGallery() {
+
+    if (
+      !galleryGrid ||
+      !galleryStatus
+    ) {
+      return;
     }
 
 
-    /*
-      ==========================================
-      CARGAR GALERÍA DESDE SUPABASE
-      ==========================================
-    */
-
-    async function loadGallery() {
-
-      if (
-        !galleryGrid ||
-        !galleryStatus
-      ) {
-
-        return;
-
-      }
+    galleryStatus.textContent =
+      "Cargando galería…";
 
 
-      galleryStatus.textContent =
-        "Cargando galería…";
+    try {
+
+      const {
+        data,
+        error
+      } =
+      await supabase
+        .from("images")
+        .select(`
+          id,
+          title,
+          category,
+          description,
+          url,
+          visible,
+          created_at,
+          type
+        `)
+        .eq(
+          "visible",
+          true
+        )
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        );
 
 
-      try {
-
-        const {
-          data,
-          error
-        } =
-        await supabase
-          .from("images")
-          .select(`
-            id,
-            title,
-            category,
-            description,
-            url,
-            visible,
-            created_at,
-            type
-          `)
-          .eq(
-            "visible",
-            true
-          )
-          .order(
-            "created_at",
-            {
-              ascending: false
-            }
-          );
-
-
-        if (error) {
-
-          console.error(
-            "RoXThal — Galería:",
-            error
-          );
-
-
-          galleryStatus.textContent =
-            "No se pudo cargar la galería.";
-
-
-          galleryGrid.innerHTML = `
-            <div class="rx-gallery-empty">
-
-              <div class="rx-gallery-empty-icon">
-                ⚠️
-              </div>
-
-              <strong>
-                No fue posible cargar la galería
-              </strong>
-
-              <p style="margin-top:8px;">
-                La conexión con la galería de RoXThal
-                necesita ser revisada.
-              </p>
-
-            </div>
-          `;
-
-
-          return;
-
-        }
-
-
-        galleryImages =
-          Array.isArray(data)
-            ? data.filter(
-                image =>
-                  image &&
-                  image.url
-              )
-            : [];
-
-
-        if (
-          galleryImages.length
-        ) {
-
-          galleryStatus.textContent =
-            `${galleryImages.length} ${
-              galleryImages.length === 1
-                ? "obra disponible"
-                : "obras disponibles"
-            }`;
-
-        } else {
-
-          galleryStatus.textContent =
-            "Galería preparada — todavía no hay obras publicadas.";
-
-        }
-
-
-        renderGallery();
-
-
-      } catch (error) {
+      if (error) {
 
         console.error(
-          "RoXThal — Error de galería:",
+          "RoXThal — Galería:",
           error
         );
 
 
         galleryStatus.textContent =
-          "Error al cargar la galería.";
+          "No se pudo cargar la galería.";
 
 
         galleryGrid.innerHTML = `
@@ -1608,88 +1453,164 @@
             </div>
 
             <strong>
-              Error de conexión
+              No fue posible cargar la galería
             </strong>
 
             <p style="margin-top:8px;">
-              No fue posible obtener las obras.
+              La conexión con la galería de RoXThal
+              necesita ser revisada.
             </p>
 
           </div>
         `;
 
+        return;
+
       }
+
+
+      galleryImages =
+        Array.isArray(data)
+          ? data.filter(
+              image =>
+                image &&
+                image.url
+            )
+          : [];
+
+
+      if (
+        galleryImages.length
+      ) {
+
+        galleryStatus.textContent =
+          `${galleryImages.length} ${
+            galleryImages.length === 1
+              ? "obra disponible"
+              : "obras disponibles"
+          }`;
+
+      } else {
+
+        galleryStatus.textContent =
+          "Galería preparada — todavía no hay obras publicadas.";
+
+      }
+
+
+      renderGallery();
+
+
+    } catch (error) {
+
+      console.error(
+        "RoXThal — Error de galería:",
+        error
+      );
+
+
+      galleryStatus.textContent =
+        "Error al cargar la galería.";
+
+
+      galleryGrid.innerHTML = `
+        <div class="rx-gallery-empty">
+
+          <div class="rx-gallery-empty-icon">
+            ⚠️
+          </div>
+
+          <strong>
+            Error de conexión
+          </strong>
+
+          <p style="margin-top:8px;">
+            No fue posible obtener las obras.
+          </p>
+
+        </div>
+      `;
 
     }
 
-
-    /*
-      ==========================================
-      FILTROS DE GALERÍA
-      ==========================================
-    */
-
-    filterButtons.forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          function () {
-
-            currentFilter =
-              this.dataset.galleryFilter ||
-              "all";
+  }
 
 
-            filterButtons.forEach(
-              item => {
+  /* ==========================================
+     FILTROS
+  ========================================== */
 
-                item.classList.remove(
-                  "active"
-                );
+  filterButtons.forEach(
+    button => {
 
-              }
-            );
+      button.addEventListener(
+        "click",
+        function() {
 
-
-            this.classList.add(
-              "active"
-            );
-
-
-            renderGallery();
-
-          }
-        );
-
-      }
-    );
+          currentFilter =
+            this.dataset.galleryFilter ||
+            "all";
 
 
-    /*
-      ==========================================
-      ARRANQUE
-      ==========================================
-    */
+          filterButtons.forEach(
+            item => {
 
-    checkSupabase();
+              item.classList.remove(
+                "active"
+              );
 
-    loadGallery();
+            }
+          );
 
 
-    /*
-      ==========================================
-      EVENTO PARA FUTUROS MÓDULOS
-      ==========================================
-    */
+          this.classList.add(
+            "active"
+          );
 
-    window.dispatchEvent(
-      new CustomEvent(
-        "roxthal:supabase-ready"
-      )
-    );
 
-  </script>
+          renderGallery();
 
+        }
+      );
+
+    }
+  );
+
+
+  /* ==========================================
+     ARRANQUE
+  ========================================== */
+
+  checkSupabase();
+
+
+  /*
+    IMPORTANTE:
+    NO cargamos la galería al iniciar.
+    Se carga solamente cuando el usuario entra.
+  */
+
+
+  if (
+    window.location.hash === "#galeria"
+  ) {
+
+    showGallery();
+
+  } else {
+
+    showHome();
+
+  }
+
+
+  window.dispatchEvent(
+    new CustomEvent(
+      "roxthal:supabase-ready"
+    )
+  );
+
+</script>
+    
 </body>
 </html>
