@@ -5,13 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <meta name="description" content="RoXThal Art Design — Arte, diseño, tatuaje y formación artística.">
-
-<link rel="icon" type="image/png"
-href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">
-
-<link rel="apple-touch-icon"
-href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">
-
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png">
 <title>RoXThal Art Design</title>
 
 <style>
@@ -771,10 +766,6 @@ footer{
 
 <main>
 
-<!-- =========================
-     INICIO
-========================= -->
-
 <section id="home" class="view">
 
   <div class="container hero">
@@ -792,7 +783,8 @@ footer{
       </div>
 
       <h1>
-        RoXThal <span>Art Design</span>
+        RoXThal
+        <span>Art Design</span>
       </h1>
 
       <p>
@@ -800,21 +792,13 @@ footer{
       </p>
 
       <div class="actions">
-
-        <button
-          class="btn btn-primary"
-          data-go="gallery"
-        >
+        <button class="btn btn-primary" data-go="gallery">
           Ver Galería
         </button>
 
-        <button
-          class="btn"
-          data-go="school"
-        >
+        <button class="btn" data-go="school">
           Ver Escuela
         </button>
-
       </div>
 
     </div>
@@ -837,90 +821,39 @@ footer{
 
     <div class="modules">
 
-      <article
-        class="module"
-        data-go="gallery"
-      >
-        <div class="module-num">
-          01
-        </div>
-
-        <div class="module-icon">
-          🖼️
-        </div>
-
-        <h3>
-          Galería
-        </h3>
-
+      <article class="module" data-go="gallery">
+        <div class="module-num">01</div>
+        <div class="module-icon">🖼️</div>
+        <h3>Galería</h3>
         <p>
           Obras, dibujos, pinturas y tatuajes.
         </p>
       </article>
 
-
-      <article
-        class="module"
-        data-go="school"
-      >
-        <div class="module-num">
-          02
-        </div>
-
-        <div class="module-icon">
-          🎨
-        </div>
-
-        <h3>
-          Escuela de Arte
-        </h3>
-
+      <article class="module" data-go="school">
+        <div class="module-num">02</div>
+        <div class="module-icon">🎨</div>
+        <h3>Escuela de Arte</h3>
         <p>
           Cursos y talleres disponibles.
         </p>
       </article>
 
-
-      <article
-        class="module"
-        data-go="admin"
-      >
-        <div class="module-num">
-          03
-        </div>
-
-        <div class="module-icon">
-          🔐
-        </div>
-
-        <h3>
-          Administrador
-        </h3>
-
+      <article class="module" data-go="admin">
+        <div class="module-num">03</div>
+        <div class="module-icon">🔐</div>
+        <h3>Administrador</h3>
         <p>
           Gestión privada de contenidos.
         </p>
       </article>
 
-
-      <article
-        class="module"
-        data-go="contact"
-      >
-        <div class="module-num">
-          04
-        </div>
-
-        <div class="module-icon">
-          📍
-        </div>
-
-        <h3>
-          Contacto
-        </h3>
-
+      <article class="module" data-go="contact">
+        <div class="module-num">04</div>
+        <div class="module-icon">📍</div>
+        <h3>Contacto</h3>
         <p>
-          Ubicación y medios de contacto.
+          Ubicación y formas de contacto.
         </p>
       </article>
 
@@ -931,24 +864,13 @@ footer{
 </section>
 
 
-<!-- =========================
-     GALERÍA
-========================= -->
-
-<section
-  id="gallery"
-  class="view hidden"
->
+<section id="gallery" class="view hidden">
 
   <div class="container internal">
 
     <div class="topbar">
-
-      <button
-        class="back"
-        data-go="home"
-      >
-        ← Inicio
+      <button class="back" data-go="home">
+        ← Volver
       </button>
 
       <button
@@ -957,14 +879,12 @@ footer{
       >
         ↻ Actualizar
       </button>
-
     </div>
-
 
     <div class="section-head">
 
       <div class="label">
-        Módulo 01
+        RoXThal Art Design
       </div>
 
       <h2 class="section-title">
@@ -972,15 +892,21 @@ footer{
       </h2>
 
       <p class="section-desc">
-        Trabajos de RoXThal Art Design.
+        Obras y trabajos publicados por RoXThal Art Design.
       </p>
 
     </div>
 
+    <div
+      id="galleryStatus"
+      class="status"
+    >
+      Cargando galería…
+    </div>
 
     <div
-      class="toolbar"
       id="galleryFilters"
+      class="toolbar"
     >
 
       <button
@@ -994,26 +920,17 @@ footer{
         class="filter"
         data-filter="art"
       >
-        Arte
+        🎨 Arte
       </button>
 
       <button
         class="filter"
         data-filter="tattoo"
       >
-        Tatuajes
+        🖋️ Tatuajes
       </button>
 
     </div>
-
-
-    <div
-      id="galleryStatus"
-      class="status"
-    >
-      Cargando galería…
-    </div>
-
 
     <div
       id="galleryGrid"
@@ -1025,24 +942,14 @@ footer{
 </section>
 
 
-<!-- =========================
-     ESCUELA
-========================= -->
-
-<section
-  id="school"
-  class="view hidden"
->
+<section id="school" class="view hidden">
 
   <div class="container internal">
 
     <div class="topbar">
 
-      <button
-        class="back"
-        data-go="home"
-      >
-        ← Inicio
+      <button class="back" data-go="home">
+        ← Volver
       </button>
 
       <button
@@ -1054,11 +961,10 @@ footer{
 
     </div>
 
-
     <div class="section-head">
 
       <div class="label">
-        Módulo 02
+        Formación
       </div>
 
       <h2 class="section-title">
@@ -1066,11 +972,10 @@ footer{
       </h2>
 
       <p class="section-desc">
-        Cursos y talleres cargados en Supabase.
+        Cursos y talleres publicados desde el sistema de administración.
       </p>
 
     </div>
-
 
     <div
       id="schoolStatus"
@@ -1078,7 +983,6 @@ footer{
     >
       Cargando cursos…
     </div>
-
 
     <div
       id="schoolGrid"
@@ -1090,40 +994,29 @@ footer{
 </section>
 
 
-<!-- =========================
-     ADMINISTRADOR
-========================= -->
-
-<section
-  id="admin"
-  class="view hidden"
->
+<section id="admin" class="view hidden">
 
   <div class="container internal">
 
     <div class="topbar">
 
-      <button
-        class="back"
-        data-go="home"
-      >
-        ← Inicio
+      <button class="back" data-go="home">
+        ← Volver
       </button>
 
       <button
-        class="btn btn-small hidden"
         id="adminLogout"
+        class="btn btn-small hidden"
       >
         Cerrar sesión
       </button>
 
     </div>
 
-
     <div class="section-head">
 
       <div class="label">
-        Módulo 03 · Privado
+        Acceso privado
       </div>
 
       <h2 class="section-title">
@@ -1131,15 +1024,18 @@ footer{
       </h2>
 
       <p class="section-desc">
-        Solo una sesión autenticada con rol
-        <strong>admin</strong>
-        puede cargar, modificar o eliminar fotografías.
+        Un único administrador controla las acciones privadas de los módulos.
       </p>
 
     </div>
 
+    <div
+      id="adminStatus"
+      class="status"
+    >
+      Comprobando sesión…
+    </div>
 
-    <!-- LOGIN -->
 
     <div
       id="adminAuth"
@@ -1150,39 +1046,48 @@ footer{
         Acceso de administrador
       </h3>
 
-      <p class="small">
-        Solicita un enlace de acceso.
-        Supabase enviará el enlace al correo autorizado.
-        El backend seguirá verificando el rol admin mediante RLS.
+      <p class="small" style="margin-bottom:20px">
+        Acceso exclusivo mediante correo electrónico y contraseña.
+        La cuenta debe tener el rol administrativo configurado en Supabase.
       </p>
 
-
-      <div
-        class="field"
-        style="margin-top:18px"
-      >
+      <div class="field">
 
         <label for="adminEmail">
-          Correo del administrador
+          Correo electrónico
         </label>
 
         <input
           id="adminEmail"
           type="email"
-          autocomplete="email"
-          placeholder="tu correo de administrador"
+          autocomplete="username"
+          placeholder="Correo del administrador"
         >
 
       </div>
 
+      <div class="field">
+
+        <label for="adminPassword">
+          Contraseña
+        </label>
+
+        <input
+          id="adminPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Contraseña"
+        >
+
+      </div>
 
       <button
-        class="btn btn-primary"
         id="adminLogin"
+        class="btn btn-primary"
+        style="width:100%"
       >
-        Enviar enlace de acceso
+        Iniciar sesión
       </button>
-
 
       <div
         id="authStatus"
@@ -1193,182 +1098,153 @@ footer{
     </div>
 
 
-    <!-- PANEL ADMIN -->
-
     <div
       id="adminPanel"
       class="hidden"
     >
 
-      <div
-        id="adminStatus"
-        class="status"
-      ></div>
-
-
       <div class="admin-grid">
 
+        <div class="card">
 
-        <!-- CARGA -->
-
-        <form
-          id="uploadForm"
-          class="card"
-        >
-
-          <h3
-            style="font-size:23px;margin-bottom:15px"
-          >
-            📸 Cargar fotografías
+          <h3 style="margin-bottom:18px">
+            Subir fotografías
           </h3>
 
+          <form id="uploadForm">
 
-          <div class="field">
+            <div class="field">
 
-            <label for="uploadTitle">
-              Título
-            </label>
-
-            <input
-              id="uploadTitle"
-              maxlength="120"
-              required
-              placeholder="Ej. Retrato en tinta"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="uploadType">
-              Tipo
-            </label>
-
-            <select id="uploadType">
-
-              <option value="art">
-                Arte
-              </option>
-
-              <option value="tattoo">
-                Tatuaje
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="uploadCategory">
-              Categoría
-            </label>
-
-            <input
-              id="uploadCategory"
-              maxlength="80"
-              placeholder="Ej. Dibujo, pintura, retrato…"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="uploadDescription">
-              Descripción
-            </label>
-
-            <textarea
-              id="uploadDescription"
-              maxlength="500"
-              placeholder="Descripción opcional"
-            ></textarea>
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="uploadFiles">
-              Fotografías
-            </label>
-
-            <div class="drop">
+              <label for="uploadTitle">
+                Título
+              </label>
 
               <input
-                id="uploadFiles"
-                type="file"
-                accept="image/*"
-                multiple
+                id="uploadTitle"
+                type="text"
+                placeholder="Nombre de la obra"
                 required
               >
 
-              <div
-                class="small"
-                style="margin-top:8px"
+            </div>
+
+            <div class="field">
+
+              <label for="uploadType">
+                Tipo
+              </label>
+
+              <select id="uploadType">
+
+                <option value="art">
+                  🎨 Arte
+                </option>
+
+                <option value="tattoo">
+                  🖋️ Tatuaje
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="field">
+
+              <label for="uploadCategory">
+                Categoría
+              </label>
+
+              <input
+                id="uploadCategory"
+                type="text"
+                placeholder="Ej. Dibujo, pintura, retrato..."
               >
-                Desde Android/iPhone puedes elegir una
-                o varias fotos.
-                Las imágenes grandes se optimizan antes
-                de guardarlas.
+
+            </div>
+
+            <div class="field">
+
+              <label for="uploadDescription">
+                Descripción
+              </label>
+
+              <textarea
+                id="uploadDescription"
+                placeholder="Descripción opcional"
+              ></textarea>
+
+            </div>
+
+            <div class="field">
+
+              <label for="uploadFiles">
+                Fotografías
+              </label>
+
+              <div class="drop">
+
+                <input
+                  id="uploadFiles"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  required
+                >
+
+                <p class="small" style="margin-top:8px">
+                  Puedes seleccionar varias fotografías desde el móvil.
+                  Se optimizan antes de subirlas.
+                </p>
+
               </div>
 
             </div>
 
-          </div>
+            <div
+              id="uploadProgress"
+              class="progress hidden"
+            >
+              <i></i>
+            </div>
 
+            <button
+              id="uploadBtn"
+              type="submit"
+              class="btn btn-primary"
+              style="width:100%;margin-top:15px"
+            >
+              Subir fotografías
+            </button>
 
-          <button
-            class="btn btn-primary"
-            type="submit"
-            id="uploadBtn"
-          >
-            Subir fotografías
-          </button>
+          </form>
 
+        </div>
 
-          <div
-            id="uploadProgress"
-            class="progress hidden"
-          >
-            <i></i>
-          </div>
-
-        </form>
-
-
-        <!-- LISTA -->
 
         <div class="card">
 
           <div
             style="
               display:flex;
+              align-items:center;
               justify-content:space-between;
               gap:10px;
-              align-items:center;
-              margin-bottom:15px
+              margin-bottom:18px
             "
           >
 
-            <h3
-              style="font-size:23px"
-            >
-              🗂️ Fotografías
+            <h3>
+              Fotografías cargadas
             </h3>
 
             <button
-              class="btn btn-small"
               id="adminRefresh"
+              class="btn btn-small"
             >
               ↻
             </button>
 
           </div>
-
 
           <div
             id="adminList"
@@ -1386,49 +1262,40 @@ footer{
 </section>
 
 
-<!-- =========================
-     CONTACTO
-========================= -->
-
-<section
-  id="contact"
-  class="view hidden"
->
+<section id="contact" class="view hidden">
 
   <div class="container internal">
 
     <div class="topbar">
 
-      <button
-        class="back"
-        data-go="home"
-      >
-        ← Inicio
+      <button class="back" data-go="home">
+        ← Volver
       </button>
 
     </div>
 
-
     <div class="section-head">
 
       <div class="label">
-        Contacto
+        RoXThal Art Design
       </div>
 
       <h2 class="section-title">
-        RoXThal Art Design
+        Contacto
       </h2>
 
     </div>
 
-
     <div class="contact-grid">
 
+      <article class="card contact-card">
 
-      <div class="contact-card">
+        <div style="font-size:34px">
+          📍
+        </div>
 
         <h3>
-          📍 Ubicación
+          Ubicación
         </h3>
 
         <p>
@@ -1437,60 +1304,78 @@ footer{
           Buenos Aires, Argentina
         </p>
 
-      </div>
+        <div class="actions">
+
+          <a
+            class="btn btn-primary"
+            href="https://www.google.com/maps/search/?api=1&query=Lisandro%20de%20la%20Torre%20880%20San%20Antonio%20de%20Padua%20Buenos%20Aires"
+            target="_blank"
+            rel="noopener"
+          >
+            Abrir ubicación
+          </a>
+
+        </div>
+
+      </article>
 
 
-      <div class="contact-card">
+      <article class="card contact-card">
+
+        <div style="font-size:34px">
+          📱
+        </div>
 
         <h3>
-          📸 Instagram
+          Instagram
         </h3>
 
         <p>
+          @roxthalartdesign
+        </p>
+
+        <div class="actions">
 
           <a
+            class="btn"
             href="https://instagram.com/roxthalartdesign"
             target="_blank"
             rel="noopener"
           >
-            @roxthalartdesign
+            Instagram
           </a>
 
-        </p>
+        </div>
 
-      </div>
+      </article>
 
 
-      <div class="contact-card">
+      <article class="card contact-card">
+
+        <div style="font-size:34px">
+          ✉️
+        </div>
 
         <h3>
-          ✉️ Email
+          Email
         </h3>
 
         <p>
+          roxthal@hotmail.com
+        </p>
 
-          <a href="mailto:roxthal@hotmail.com">
-            roxthal@hotmail.com
+        <div class="actions">
+
+          <a
+            class="btn"
+            href="mailto:roxthal@hotmail.com"
+          >
+            Enviar email
           </a>
 
-        </p>
+        </div>
 
-      </div>
-
-
-      <div class="contact-card">
-
-        <h3>
-          🎨 Servicios
-        </h3>
-
-        <p>
-          Arte, dibujo, pintura, tatuaje,
-          cursos y talleres.
-        </p>
-
-      </div>
-
+      </article>
 
     </div>
 
@@ -1502,30 +1387,29 @@ footer{
 
 
 <footer>
-
   <div class="container">
-    © <span id="year"></span> RoXThal Art Design
+    © RoXThal Art Design — Arte · Diseño · Tatuaje
   </div>
-
 </footer>
 
-
-<!-- LIGHTBOX -->
 
 <div
   id="lightbox"
   class="lightbox"
+  aria-hidden="true"
 >
-
-  <button id="lightboxClose">
-    ✕ Cerrar
+  <button
+    id="lightboxClose"
+    aria-label="Cerrar"
+  >
+    ✕
   </button>
 
   <img
     id="lightboxImg"
-    alt="Obra"
+    src=""
+    alt=""
   >
-
 </div>
 
 
@@ -1537,17 +1421,10 @@ footer{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
 <script>
-
 (() => {
 
   'use strict';
-
-
-  /* =========================
-     SUPABASE
-  ========================= */
 
   const SUPABASE_URL =
     'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
@@ -1555,25 +1432,16 @@ footer{
   const SUPABASE_KEY =
     'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
 
-  const BUCKET =
-    'images';
+  const BUCKET = 'images';
 
-
-  /* =========================
-     IMAGEN
-  ========================= */
-
-  const MAX_OUTPUT_PX =
-    2400;
+  const MAX_OUTPUT_PX = 2400;
 
   const MAX_UPLOAD_BYTES =
     6 * 1024 * 1024;
 
 
-  const {
-    createClient
-  } = window.supabase;
-
+  const { createClient } =
+    window.supabase;
 
   const db =
     createClient(
@@ -1589,147 +1457,107 @@ footer{
     );
 
 
-  const $ =
-    id => document.getElementById(id);
+  let adminUser = null;
+
+  let galleryItems = [];
+
+  let galleryFilter = 'all';
 
 
-  /* =========================
-     ESCAPE HTML
-  ========================= */
-
-  const esc =
-    value =>
-      String(value ?? '')
-        .replace(
-          /[&<>'"]/g,
-          c =>
-            ({
-              '&':'&amp;',
-              '<':'&lt;',
-              '>':'&gt;',
-              "'":'&#39;',
-              '"':'&quot;'
-            }[c])
-        );
-
-
-  let galleryItems =
-    [];
-
-  let galleryFilter =
-    'all';
-
-  let adminUser =
-    null;
-
-
-  /* =========================
-     UTILIDADES
-  ========================= */
-
-  function toast(message){
-
-    $('toast').textContent =
-      message;
-
-    $('toast')
-      .classList
-      .remove('hidden');
-
-    setTimeout(
-      () =>
-        $('toast')
-          .classList
-          .add('hidden'),
-      3200
-    );
+  function $(id){
+    return document.getElementById(id);
   }
 
 
-  function status(
-    id,
-    message,
-    type=''
-  ){
+  function esc(value){
+    return String(value ?? '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
 
-    const el =
-      $(id);
 
-    if(!el)
-      return;
+  function toast(message){
 
-    el.textContent =
-      message;
+    const el = $('toast');
 
-    el.className =
-      'status' +
-      (
-        type
-          ? ' ' + type
-          : ''
+    el.textContent = message;
+
+    el.classList.remove('hidden');
+
+    clearTimeout(el._timer);
+
+    el._timer =
+      setTimeout(
+        () => el.classList.add('hidden'),
+        3500
       );
   }
 
 
-  /* =========================
-     NAVEGACIÓN
-  ========================= */
+  function status(id,message,type=''){
 
-  function go(view){
+    const el = $(id);
+
+    if(!el) return;
+
+    el.textContent = message;
+
+    el.className =
+      'status' +
+      (type ? ' '+type : '');
+  }
+
+
+  function go(id){
 
     document
       .querySelectorAll('.view')
       .forEach(
-        v =>
-          v.classList.add('hidden')
+        el => el.classList.add('hidden')
       );
 
-    const target =
-      $(view);
+    const target = $(id);
 
-    if(target)
+    if(target){
       target.classList.remove('hidden');
+      window.scrollTo({
+        top:0,
+        behavior:'smooth'
+      });
+    }
 
-    window.scrollTo({
-      top:0,
-      behavior:'smooth'
-    });
-
-
-    if(view === 'gallery')
+    if(id === 'gallery'){
       loadGallery();
+    }
 
-    if(view === 'school')
+    if(id === 'school'){
       loadSchool();
+    }
 
-    if(view === 'admin')
+    if(id === 'admin'){
       initAdmin();
+    }
   }
 
 
-  document.addEventListener(
-    'click',
-    e => {
+  document
+    .addEventListener(
+      'click',
+      e => {
 
-      const el =
-        e.target.closest(
-          '[data-go]'
-        );
+        const button =
+          e.target.closest('[data-go]');
 
-      if(el)
-        go(el.dataset.go);
+        if(!button) return;
 
-    }
-  );
+        go(button.dataset.go);
 
+      }
+    );
 
-  $('year').textContent =
-    new Date().getFullYear();
-
-
-  /* =========================
-     GALERÍA PÚBLICA
-  ========================= */
 
   async function loadGallery(){
 
@@ -1737,7 +1565,6 @@ footer{
       'galleryStatus',
       'Cargando galería…'
     );
-
 
     const {
       data,
@@ -1748,19 +1575,15 @@ footer{
         .select(
           'id,title,category,description,url,storage_path,visible,type,created_at'
         )
-        .eq(
-          'visible',
-          true
-        )
+        .eq('visible',true)
         .order(
           'created_at',
-          {
-            ascending:false
-          }
+          {ascending:false}
         );
 
-
     if(error){
+
+      galleryItems = [];
 
       status(
         'galleryStatus',
@@ -1769,31 +1592,22 @@ footer{
         'err'
       );
 
-      $('galleryGrid')
-        .innerHTML = '';
+      renderGallery();
 
       return;
     }
 
-
     galleryItems =
       data || [];
-
-
-    renderGallery();
-
 
     status(
       'galleryStatus',
       galleryItems.length
-        ? `${galleryItems.length} ${
-            galleryItems.length === 1
-              ? 'obra disponible'
-              : 'obras disponibles'
-          }.`
-        : 'La galería todavía no tiene fotografías.'
+        ? `${galleryItems.length} publicación${galleryItems.length===1?'':'es'} disponible${galleryItems.length===1?'':'s'}.`
+        : 'Todavía no hay fotografías publicadas.'
     );
 
+    renderGallery();
   }
 
 
@@ -1803,14 +1617,11 @@ footer{
       galleryFilter === 'all'
         ? galleryItems
         : galleryItems.filter(
-            x =>
-              x.type === galleryFilter
+            x => x.type === galleryFilter
           );
-
 
     const grid =
       $('galleryGrid');
-
 
     if(!items.length){
 
@@ -1820,16 +1631,12 @@ footer{
           style="grid-column:1/-1"
         >
           <div
-            style="
-              font-size:40px;
-              margin-bottom:10px
-            "
+            style="font-size:40px;margin-bottom:10px"
           >
             🖼️
           </div>
 
-          No hay fotografías
-          en este filtro.
+          No hay fotografías en este filtro.
         </div>
       `;
 
@@ -1841,93 +1648,63 @@ footer{
       items
         .map(
           x => `
+            <article class="gallery-card">
 
-          <article
-            class="gallery-card"
-          >
-
-            <button
-              style="
-                display:block;
-                width:100%;
-                border:0;
-                background:none;
-                color:inherit;
-                text-align:left;
-                padding:0
-              "
-              data-photo="${esc(x.url)}"
-              data-title="${esc(x.title || 'Obra')}"
-            >
-
-              <div
-                class="gallery-photo"
+              <button
+                style="
+                  display:block;
+                  width:100%;
+                  border:0;
+                  background:none;
+                  color:inherit;
+                  text-align:left;
+                  padding:0
+                "
+                data-photo="${esc(x.url)}"
+                data-title="${esc(x.title || 'Obra')}"
               >
 
-                <img
-                  loading="lazy"
-                  src="${esc(x.url)}"
-                  alt="${esc(
-                    x.title ||
-                    'Obra de RoXThal'
-                  )}"
-                  onerror="
-                    this.style.opacity='.35'
-                  "
-                >
+                <div class="gallery-photo">
 
-              </div>
+                  <img
+                    loading="lazy"
+                    src="${esc(x.url)}"
+                    alt="${esc(x.title || 'Obra de RoXThal')}"
+                    onerror="this.style.opacity='.35'"
+                  >
 
+                </div>
 
-              <div
-                class="gallery-info"
-              >
+                <div class="gallery-info">
 
-                <span
-                  class="tag"
-                >
-                  ${esc(
-                    x.type === 'tattoo'
-                      ? 'Tatuaje'
-                      : 'Arte'
-                  )}
-                  ·
-                  ${esc(
-                    x.category ||
-                    'General'
-                  )}
-                </span>
+                  <span class="tag">
+                    ${esc(
+                      x.type === 'tattoo'
+                        ? 'Tatuaje'
+                        : 'Arte'
+                    )}
+                    ·
+                    ${esc(x.category || 'General')}
+                  </span>
 
+                  <h3>
+                    ${esc(x.title || 'Obra')}
+                  </h3>
 
-                <h3>
-                  ${esc(
-                    x.title ||
-                    'Obra'
-                  )}
-                </h3>
+                  ${
+                    x.description
+                      ? `<p>${esc(x.description)}</p>`
+                      : ''
+                  }
 
+                </div>
 
-                ${
-                  x.description
-                    ? `
-                      <p>
-                        ${esc(
-                          x.description
-                        )}
-                      </p>
-                    `
-                    : ''
-                }
+              </button>
 
-              </div>
-
-            </button>
-
-          </article>
-        `
+            </article>
+          `
         )
         .join('');
-
   }
 
 
@@ -1941,18 +1718,13 @@ footer{
             '[data-filter]'
           );
 
-        if(!b)
-          return;
-
+        if(!b) return;
 
         galleryFilter =
           b.dataset.filter;
 
-
         document
-          .querySelectorAll(
-            '.filter'
-          )
+          .querySelectorAll('.filter')
           .forEach(
             x =>
               x.classList.toggle(
@@ -1961,9 +1733,7 @@ footer{
               )
           );
 
-
         renderGallery();
-
       }
     );
 
@@ -1985,16 +1755,13 @@ footer{
             '[data-photo]'
           );
 
-        if(!b)
-          return;
-
+        if(!b) return;
 
         $('lightboxImg').src =
           b.dataset.photo;
 
         $('lightboxImg').alt =
           b.dataset.title;
-
 
         $('lightbox')
           .classList
@@ -2034,17 +1801,12 @@ footer{
     );
 
 
-  /* =========================
-     ESCUELA
-  ========================= */
-
   async function loadSchool(){
 
     status(
       'schoolStatus',
       'Cargando cursos…'
     );
-
 
     const {
       data,
@@ -2055,17 +1817,11 @@ footer{
         .select(
           'id,name,description,price,duration,schedule,modality,materials_included'
         )
-        .eq(
-          'active',
-          true
-        )
+        .eq('active',true)
         .order(
           'created_at',
-          {
-            ascending:false
-          }
+          {ascending:false}
         );
-
 
     if(error){
 
@@ -2076,8 +1832,7 @@ footer{
         'err'
       );
 
-      $('schoolGrid')
-        .innerHTML = '';
+      $('schoolGrid').innerHTML = '';
 
       return;
     }
@@ -2089,7 +1844,6 @@ footer{
         'schoolStatus',
         'Todavía no hay cursos publicados.'
       );
-
 
       $('schoolGrid').innerHTML = `
         <div
@@ -2106,7 +1860,8 @@ footer{
 
     status(
       'schoolStatus',
-      `${data.length} cursos disponibles.`
+      `${data.length} curso${data.length===1?'':'s'} disponible${data.length===1?'':'s'}.`,
+      'ok'
     );
 
 
@@ -2114,121 +1869,96 @@ footer{
       data
         .map(
           c => `
+            <article class="card school-card">
 
-          <article
-            class="card school-card"
-          >
+              <div style="font-size:32px">
+                🎨
+              </div>
 
-            <div
-              style="font-size:32px"
-            >
-              🎨
-            </div>
+              <h3>
+                ${esc(c.name)}
+              </h3>
 
-            <h3>
-              ${esc(c.name)}
-            </h3>
+              <p
+                class="muted"
+                style="line-height:1.6"
+              >
+                ${esc(c.description || '')}
+              </p>
 
-            <p
-              class="muted"
-              style="line-height:1.6"
-            >
-              ${esc(
-                c.description || ''
-              )}
-            </p>
+              <div class="school-data">
 
+                ${
+                  c.price != null
+                    ? `
+                      <div class="row">
+                        <span>Precio</span>
+                        <strong>
+                          $${Number(c.price).toLocaleString('es-AR')}
+                        </strong>
+                      </div>
+                    `
+                    : ''
+                }
 
-            <div
-              class="school-data"
-            >
+                ${
+                  c.duration
+                    ? `
+                      <div class="row">
+                        <span>Duración</span>
+                        <strong>
+                          ${esc(c.duration)}
+                        </strong>
+                      </div>
+                    `
+                    : ''
+                }
 
-              ${
-                c.price != null
-                  ? `
-                    <div class="row">
-                      <span>Precio</span>
-                      <strong>
-                        $${Number(
-                          c.price
-                        ).toLocaleString(
-                          'es-AR'
-                        )}
-                      </strong>
-                    </div>
-                  `
-                  : ''
-              }
+                ${
+                  c.schedule
+                    ? `
+                      <div class="row">
+                        <span>Horario</span>
+                        <strong>
+                          ${esc(c.schedule)}
+                        </strong>
+                      </div>
+                    `
+                    : ''
+                }
 
+                ${
+                  c.modality
+                    ? `
+                      <div class="row">
+                        <span>Modalidad</span>
+                        <strong>
+                          ${esc(c.modality)}
+                        </strong>
+                      </div>
+                    `
+                    : ''
+                }
 
-              ${
-                c.duration
-                  ? `
-                    <div class="row">
-                      <span>Duración</span>
-                      <strong>
-                        ${esc(
-                          c.duration
-                        )}
-                      </strong>
-                    </div>
-                  `
-                  : ''
-              }
+                ${
+                  c.materials_included
+                    ? `
+                      <div class="row">
+                        <span>Materiales</span>
+                        <strong>
+                          Incluidos
+                        </strong>
+                      </div>
+                    `
+                    : ''
+                }
 
+              </div>
 
-              ${
-                c.schedule
-                  ? `
-                    <div class="row">
-                      <span>Horario</span>
-                      <strong>
-                        ${esc(
-                          c.schedule
-                        )}
-                      </strong>
-                    </div>
-                  `
-                  : ''
-              }
-
-
-              ${
-                c.modality
-                  ? `
-                    <div class="row">
-                      <span>Modalidad</span>
-                      <strong>
-                        ${esc(
-                          c.modality
-                        )}
-                      </strong>
-                    </div>
-                  `
-                  : ''
-              }
-
-
-              ${
-                c.materials_included
-                  ? `
-                    <div class="row">
-                      <span>Materiales</span>
-                      <strong>
-                        Incluidos
-                      </strong>
-                    </div>
-                  `
-                  : ''
-              }
-
-            </div>
-
-          </article>
-        `
+            </article>
+          `
         )
         .join('');
-
   }
 
 
@@ -2239,9 +1969,64 @@ footer{
     );
 
 
-  /* =========================
-     ADMIN AUTH
-  ========================= */
+  /*
+   * ADMINISTRADOR CENTRAL
+   *
+   * Todas las operaciones privadas
+   * deben pasar por requireAdmin().
+   */
+
+  async function getAdmin(){
+
+    const {
+      data
+    } =
+      await db.auth.getUser();
+
+    const user =
+      data?.user || null;
+
+    return
+      user?.app_metadata?.role === 'admin'
+        ? user
+        : null;
+  }
+
+
+  async function requireAdmin(){
+
+    const user =
+      await getAdmin();
+
+    if(!user){
+
+      toast(
+        'Acceso denegado: solo el administrador puede realizar esta acción.'
+      );
+
+      return null;
+    }
+
+    adminUser =
+      user;
+
+    return user;
+  }
+
+
+  window.RoXThalAdmin = {
+
+    getUser:
+      getAdmin,
+
+    require:
+      requireAdmin,
+
+    isAdmin:
+      () => !!adminUser
+
+  };
+
 
   function showAdminPanel(user){
 
@@ -2260,22 +2045,17 @@ footer{
       .classList
       .remove('hidden');
 
-
     status(
       'adminStatus',
       'Sesión de administrador activa.',
       'ok'
     );
 
-
     loadAdminImages();
-
   }
 
 
-  function showAdminLogin(
-    message=''
-  ){
+  function showAdminLogin(message=''){
 
     adminUser =
       null;
@@ -2292,15 +2072,12 @@ footer{
       .classList
       .add('hidden');
 
-
     if(message){
 
-      $('authStatus')
-        .textContent =
+      $('authStatus').textContent =
         message;
 
-      $('authStatus')
-        .className =
+      $('authStatus').className =
         'status';
 
       $('authStatus')
@@ -2308,7 +2085,6 @@ footer{
         .remove('hidden');
 
     }
-
   }
 
 
@@ -2319,10 +2095,8 @@ footer{
     } =
       await db.auth.getUser();
 
-
     const user =
       data?.user || null;
-
 
     if(
       user &&
@@ -2340,7 +2114,6 @@ footer{
       );
 
     }
-
   }
 
 
@@ -2354,62 +2127,101 @@ footer{
             .value
             .trim();
 
+        const password =
+          $('adminPassword')
+            .value;
 
-        if(!email){
+        if(
+          !email ||
+          !password
+        ){
 
           toast(
-            'Introduce el correo del administrador.'
+            'Introduce correo y contraseña.'
           );
 
           return;
         }
 
 
-        const {
-          error
-        } =
-          await db.auth.signInWithOtp({
+        const btn =
+          $('adminLogin');
 
-            email,
+        btn.disabled =
+          true;
 
-            options:{
-              emailRedirectTo:
-                window.location.href
-            }
-
-          });
+        btn.textContent =
+          'Comprobando…';
 
 
-        if(error){
+        try{
+
+          const {
+            data,
+            error
+          } =
+            await db.auth
+              .signInWithPassword({
+                email,
+                password
+              });
+
+
+          if(error)
+            throw error;
+
+
+          const user =
+            data?.user;
+
+
+          if(
+            user?.app_metadata?.role !== 'admin'
+          ){
+
+            await db.auth.signOut();
+
+            throw new Error(
+              'Esta cuenta no tiene permisos de administrador.'
+            );
+
+          }
+
+
+          showAdminPanel(user);
 
           $('authStatus')
-            .textContent =
-            'No se pudo enviar el acceso: ' +
-            error.message;
+            .classList
+            .add('hidden');
 
-          $('authStatus')
-            .className =
+          toast(
+            'Administrador autenticado.'
+          );
+
+
+        }catch(err){
+
+          $('authStatus').textContent =
+            'No se pudo iniciar sesión: ' +
+            err.message;
+
+          $('authStatus').className =
             'status err';
 
           $('authStatus')
             .classList
             .remove('hidden');
 
-          return;
+
+        }finally{
+
+          btn.disabled =
+            false;
+
+          btn.textContent =
+            'Iniciar sesión';
+
         }
-
-
-        $('authStatus')
-          .textContent =
-          'Enlace enviado. Abre el correo y vuelve a esta aplicación.';
-
-        $('authStatus')
-          .className =
-          'status ok';
-
-        $('authStatus')
-          .classList
-          .remove('hidden');
 
       }
     );
@@ -2440,10 +2252,8 @@ footer{
       const user =
         session?.user;
 
-
       if(
-        user?.app_metadata?.role ===
-        'admin'
+        user?.app_metadata?.role === 'admin'
       ){
 
         adminUser =
@@ -2454,17 +2264,24 @@ footer{
         adminUser =
           null;
 
+      }else{
+
+        adminUser =
+          null;
+
       }
 
     }
   );
 
 
-  /* =========================
-     ADMIN — LISTA
-  ========================= */
-
   async function loadAdminImages(){
+
+    if(
+      !await requireAdmin()
+    )
+      return;
+
 
     const {
       data,
@@ -2477,9 +2294,7 @@ footer{
         )
         .order(
           'created_at',
-          {
-            ascending:false
-          }
+          {ascending:false}
         );
 
 
@@ -2503,11 +2318,7 @@ footer{
     if(!data?.length){
 
       list.innerHTML =
-        `
-          <div class="empty">
-            No hay fotografías cargadas.
-          </div>
-        `;
+        '<div class="empty">No hay fotografías cargadas.</div>';
 
       return;
     }
@@ -2517,66 +2328,47 @@ footer{
       data
         .map(
           x => `
+            <article class="admin-item">
 
-          <article
-            class="admin-item"
-          >
+              <img
+                src="${esc(x.url)}"
+                alt="${esc(x.title || 'Obra')}"
+              >
 
-            <img
-              src="${esc(x.url)}"
-              alt="${esc(
-                x.title || 'Obra'
-              )}"
-            >
+              <div>
 
+                <h4>
+                  ${esc(x.title || 'Obra')}
+                </h4>
 
-            <div>
+                <p>
+                  ${
+                    esc(
+                      x.type === 'tattoo'
+                        ? 'Tatuaje'
+                        : 'Arte'
+                    )
+                  }
+                  ·
+                  ${esc(x.category || 'General')}
+                  ·
+                  ${x.visible ? 'Visible' : 'Oculta'}
+                </p>
 
-              <h4>
-                ${esc(
-                  x.title ||
-                  'Obra'
-                )}
-              </h4>
+              </div>
 
-              <p>
-                ${esc(
-                  x.type === 'tattoo'
-                    ? 'Tatuaje'
-                    : 'Arte'
-                )}
-                ·
-                ${esc(
-                  x.category ||
-                  'General'
-                )}
-                ·
-                ${
-                  x.visible
-                    ? 'Visible'
-                    : 'Oculta'
-                }
-              </p>
+              <button
+                class="btn btn-danger btn-small"
+                data-delete-id="${esc(x.id)}"
+                data-storage="${esc(x.storage_path || '')}"
+              >
+                🗑️ Borrar
+              </button>
 
-            </div>
-
-
-            <button
-              class="btn btn-danger btn-small"
-              data-delete-id="${esc(x.id)}"
-              data-storage="${esc(
-                x.storage_path || ''
-              )}"
-            >
-              🗑️ Borrar
-            </button>
-
-          </article>
-
-        `
+            </article>
+          `
         )
         .join('');
-
   }
 
 
@@ -2587,20 +2379,21 @@ footer{
     );
 
 
-  /* =========================
-     ADMIN — BORRAR
-  ========================= */
-
   $('adminList')
     .addEventListener(
       'click',
       async e => {
 
+        if(
+          !await requireAdmin()
+        )
+          return;
+
+
         const b =
           e.target.closest(
             '[data-delete-id]'
           );
-
 
         if(!b)
           return;
@@ -2630,19 +2423,12 @@ footer{
 
         try{
 
-          /*
-            PRIMERO:
-            eliminamos el archivo físico
-            de Supabase Storage.
-          */
-
           if(path){
 
             const {
               error:storageError
             } =
-              await db
-                .storage
+              await db.storage
                 .from(BUCKET)
                 .remove([path]);
 
@@ -2659,22 +2445,13 @@ footer{
           }
 
 
-          /*
-            SEGUNDO:
-            eliminamos el registro
-            de public.images.
-          */
-
           const {
             error:dbError
           } =
             await db
               .from('images')
               .delete()
-              .eq(
-                'id',
-                id
-              );
+              .eq('id',id);
 
 
           if(dbError){
@@ -2696,6 +2473,7 @@ footer{
 
           await loadGallery();
 
+
         }catch(err){
 
           toast(
@@ -2714,35 +2492,22 @@ footer{
     );
 
 
-  /* =========================
-     OPTIMIZACIÓN DE FOTOS
-  ========================= */
-
-  function fileToOptimizedBlob(
-    file
-  ){
+  function fileToOptimizedBlob(file){
 
     return new Promise(
-      (
-        resolve,
-        reject
-      ) => {
+      (resolve,reject) => {
 
         const img =
           new Image();
 
         const url =
-          URL.createObjectURL(
-            file
-          );
+          URL.createObjectURL(file);
 
 
         img.onload =
           () => {
 
-            URL.revokeObjectURL(
-              url
-            );
+            URL.revokeObjectURL(url);
 
 
             let w =
@@ -2756,28 +2521,20 @@ footer{
               Math.min(
                 1,
                 MAX_OUTPUT_PX /
-                  Math.max(
-                    w,
-                    h
-                  )
+                Math.max(w,h)
               );
 
 
             w =
               Math.max(
                 1,
-                Math.round(
-                  w * scale
-                )
+                Math.round(w * scale)
               );
-
 
             h =
               Math.max(
                 1,
-                Math.round(
-                  h * scale
-                )
+                Math.round(h * scale)
               );
 
 
@@ -2785,7 +2542,6 @@ footer{
               document.createElement(
                 'canvas'
               );
-
 
             canvas.width =
               w;
@@ -2797,9 +2553,7 @@ footer{
             const ctx =
               canvas.getContext(
                 '2d',
-                {
-                  alpha:false
-                }
+                {alpha:false}
               );
 
 
@@ -2826,7 +2580,6 @@ footer{
                   return;
                 }
 
-
                 resolve(blob);
 
               },
@@ -2840,9 +2593,7 @@ footer{
         img.onerror =
           () => {
 
-            URL.revokeObjectURL(
-              url
-            );
+            URL.revokeObjectURL(url);
 
             reject(
               new Error(
@@ -2858,13 +2609,8 @@ footer{
 
       }
     );
-
   }
 
-
-  /* =========================
-     ADMIN — SUBIR
-  ========================= */
 
   $('uploadForm')
     .addEventListener(
@@ -2886,8 +2632,7 @@ footer{
 
         const files =
           [
-            ...$('uploadFiles')
-              .files
+            ...$('uploadFiles').files
           ];
 
 
@@ -2909,7 +2654,8 @@ footer{
         const category =
           $('uploadCategory')
             .value
-            .trim() ||
+            .trim()
+            ||
           'General';
 
 
@@ -2922,10 +2668,8 @@ footer{
         const btn =
           $('uploadBtn');
 
-
         const bar =
           $('uploadProgress');
-
 
         const fill =
           bar.querySelector('i');
@@ -2933,7 +2677,6 @@ footer{
 
         btn.disabled =
           true;
-
 
         bar.classList
           .remove('hidden');
@@ -2946,13 +2689,9 @@ footer{
         try{
 
           for(
-            const file of files
+            const file
+            of files
           ){
-
-            /*
-              Convertimos la fotografía
-              a JPEG optimizado.
-            */
 
             const blob =
               await fileToOptimizedBlob(
@@ -2972,23 +2711,14 @@ footer{
             }
 
 
-            /*
-              Nombre único.
-            */
-
             const path =
               `${type}/${crypto.randomUUID()}.jpg`;
 
 
-            /*
-              Storage.
-            */
-
             const {
               error:upError
             } =
-              await db
-                .storage
+              await db.storage
                 .from(BUCKET)
                 .upload(
                   path,
@@ -2996,11 +2726,10 @@ footer{
                   {
                     contentType:
                       'image/jpeg',
-
                     cacheControl:
                       '31536000',
-
-                    upsert:false
+                    upsert:
+                      false
                   }
                 );
 
@@ -3017,24 +2746,15 @@ footer{
             }
 
 
-            /*
-              URL pública.
-            */
-
             const {
               data:urlData
             } =
-              db
-                .storage
+              db.storage
                 .from(BUCKET)
                 .getPublicUrl(
                   path
                 );
 
-
-            /*
-              Registro en public.images.
-            */
 
             const {
               error:insertError
@@ -3063,17 +2783,9 @@ footer{
                 });
 
 
-            /*
-              Si falla la BD,
-              limpiamos inmediatamente
-              el archivo que acabamos
-              de subir.
-            */
-
             if(insertError){
 
-              await db
-                .storage
+              await db.storage
                 .from(BUCKET)
                 .remove([
                   path
@@ -3096,21 +2808,14 @@ footer{
                 done /
                 files.length *
                 100
-              ) + '%';
+              ) +
+              '%';
 
           }
 
 
           toast(
-            `${done} fotografía${
-              done === 1
-                ? ''
-                : 's'
-            } cargada${
-              done === 1
-                ? ''
-                : 's'
-            }.`
+            `${done} fotografía${done===1?'':'s'} cargada${done===1?'':'s'}.`
           );
 
 
@@ -3135,7 +2840,6 @@ footer{
           btn.disabled =
             false;
 
-
           setTimeout(
             () => {
 
@@ -3155,18 +2859,12 @@ footer{
     );
 
 
-  /* =========================
-     INICIO
-  ========================= */
-
   window.addEventListener(
     'load',
-    () =>
-      go('home')
+    () => go('home')
   );
 
 })();
-
 </script>
 
 </body>
