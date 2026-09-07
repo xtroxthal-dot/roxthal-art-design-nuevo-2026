@@ -2257,6 +2257,1390 @@
     }
 
   </script>
+<style>
+/* =========================================================
+   ROXTHAL — MOTOR DE MÓDULOS V1
+   ========================================================= */
 
+.rx-view{
+  display:none;
+  min-height:70vh;
+  padding:50px 0 80px;
+}
+
+.rx-view.active{
+  display:block;
+}
+
+.rx-view-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.rx-view-head h2{
+  font-size:clamp(34px,6vw,58px);
+  line-height:1;
+  margin-bottom:10px;
+}
+
+.rx-view-head p{
+  color:var(--muted);
+  max-width:700px;
+}
+
+.rx-back{
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  padding:12px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.rx-back:hover{
+  border-color:var(--accent);
+}
+
+.rx-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.rx-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+}
+
+.rx-card h3{
+  margin-bottom:10px;
+  font-size:21px;
+}
+
+.rx-card p{
+  color:var(--muted);
+  line-height:1.55;
+}
+
+.rx-field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+
+.rx-field label{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.rx-field input,
+.rx-field select,
+.rx-field textarea{
+  width:100%;
+  padding:11px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#090909;
+  color:var(--text);
+}
+
+.rx-btn{
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text);
+  padding:11px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.rx-btn.primary{
+  background:var(--accent);
+  color:#080808;
+  border-color:var(--accent);
+}
+
+.rx-result{
+  margin-top:14px;
+  padding:14px;
+  border-radius:12px;
+  border:1px dashed #444;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.rx-gallery{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.rx-gallery img{
+  width:100%;
+  aspect-ratio:1;
+  object-fit:cover;
+  border-radius:13px;
+  margin-bottom:12px;
+  background:#000;
+}
+
+.rx-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:12px;
+}
+
+.rx-tag{
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:5px 8px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.rx-swatches{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+
+.rx-swatch{
+  width:55px;
+  height:55px;
+  border-radius:10px;
+  border:1px solid #555;
+  cursor:pointer;
+}
+
+.rx-search-grid,
+.rx-library-grid,
+.rx-shop-grid,
+.rx-admin-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.rx-notice{
+  padding:16px;
+  border:1px solid #4a3c00;
+  background:rgba(242,196,0,.07);
+  border-radius:12px;
+  color:#d8c46c;
+  margin-bottom:20px;
+}
+
+.rx-chat{
+  min-height:180px;
+  max-height:350px;
+  overflow:auto;
+  padding:16px;
+  border:1px solid var(--border);
+  background:#090909;
+  border-radius:14px;
+  margin-bottom:12px;
+}
+
+.rx-msg{
+  padding:10px 12px;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+
+.rx-msg.ai{
+  background:#151515;
+  color:var(--muted);
+}
+
+.rx-msg.user{
+  background:var(--accent);
+  color:#080808;
+  margin-left:auto;
+  max-width:90%;
+}
+
+@media(max-width:900px){
+  .rx-grid,
+  .rx-gallery,
+  .rx-search-grid,
+  .rx-library-grid,
+  .rx-shop-grid,
+  .rx-admin-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:760px){
+  .rx-view-head{
+    flex-direction:column;
+  }
+
+  .rx-grid,
+  .rx-gallery,
+  .rx-search-grid,
+  .rx-library-grid,
+  .rx-shop-grid,
+  .rx-admin-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+<script>
+/* =========================================================
+   ROXTHAL — MOTOR CENTRAL DE LOS 8 MÓDULOS
+   ========================================================= */
+
+(function(){
+
+"use strict";
+
+const SUPABASE = window.roxthalSupabase;
+
+/* ---------------------------------------------------------
+   UTILIDADES
+--------------------------------------------------------- */
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g,function(c){
+    return {
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c];
+  });
+}
+
+function money(value){
+  return Number(value || 0).toLocaleString("es-AR");
+}
+
+/* ---------------------------------------------------------
+   CREAR VISTAS
+--------------------------------------------------------- */
+
+const views = {
+
+gallery: `
+<section id="rx-gallery" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Galería</h2>
+<p>Obras y tatuajes publicados desde Supabase.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div id="rx-gallery-status" class="rx-notice">
+Cargando galería…
+</div>
+
+<div id="rx-gallery-grid" class="rx-gallery"></div>
+</div>
+</section>`,
+
+school: `
+<section id="rx-school" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Escuela</h2>
+<p>Cursos y talleres publicados en Supabase.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div id="rx-school-status" class="rx-notice">
+Cargando cursos…
+</div>
+
+<div id="rx-school-grid" class="rx-grid"></div>
+</div>
+</section>`,
+
+tools: `
+<section id="rx-tools" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Herramientas</h2>
+<p>Utilidades creadas específicamente para artistas.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-grid">
+
+<div class="rx-card">
+<h3>🎨 Paleta de colores</h3>
+<p>Guarda colores localmente.</p>
+
+<div class="rx-field">
+<label>Color</label>
+<input id="rx-color" type="color" value="#F2C400">
+</div>
+
+<div class="rx-field">
+<label>HEX</label>
+<input id="rx-hex" value="#F2C400">
+</div>
+
+<button class="rx-btn primary" id="rx-add-color">
+Añadir color
+</button>
+
+<div id="rx-swatches" class="rx-swatches"></div>
+</div>
+
+<div class="rx-card">
+<h3>📐 Proporciones</h3>
+<p>Calcula relaciones y diagonales.</p>
+
+<div class="rx-field">
+<label>Ancho</label>
+<input id="rx-width" type="number" value="30">
+</div>
+
+<div class="rx-field">
+<label>Alto</label>
+<input id="rx-height" type="number" value="40">
+</div>
+
+<button class="rx-btn primary" id="rx-calc">
+Calcular
+</button>
+
+<div id="rx-measure-result" class="rx-result"></div>
+</div>
+
+<div class="rx-card">
+<h3>✏️ Generador de referencias</h3>
+<p>Construye una referencia artística.</p>
+
+<div class="rx-field">
+<label>Tema</label>
+<input id="rx-theme" placeholder="Ej. serpiente">
+</div>
+
+<div class="rx-field">
+<label>Estilo</label>
+<select id="rx-style">
+<option>realista</option>
+<option>blackwork</option>
+<option>old school</option>
+<option>chicano</option>
+<option>surrealista</option>
+<option>minimalista</option>
+</select>
+</div>
+
+<div class="rx-field">
+<label>Medio</label>
+<select id="rx-medium">
+<option>tatuaje</option>
+<option>dibujo</option>
+<option>pintura</option>
+<option>ilustración digital</option>
+</select>
+</div>
+
+<button class="rx-btn primary" id="rx-reference">
+Generar
+</button>
+
+<div id="rx-reference-result" class="rx-result"></div>
+</div>
+
+<div class="rx-card">
+<h3>🖼️ Conversor de imagen</h3>
+<p>Convierte imágenes directamente en el navegador.</p>
+
+<div class="rx-field">
+<label>Imagen</label>
+<input id="rx-image" type="file" accept="image/*">
+</div>
+
+<div class="rx-field">
+<label>Formato</label>
+<select id="rx-format">
+<option value="image/png">PNG</option>
+<option value="image/jpeg">JPEG</option>
+<option value="image/webp">WebP</option>
+</select>
+</div>
+
+<button class="rx-btn primary" id="rx-convert">
+Convertir
+</button>
+
+<div id="rx-convert-result" class="rx-result"></div>
+
+<a id="rx-download"
+class="button button-primary"
+style="display:none;margin-top:12px"
+download>
+Descargar
+</a>
+</div>
+
+<div class="rx-card">
+<h3>💡 Ideas</h3>
+<p>Generador de ideas para proyectos.</p>
+
+<button class="rx-btn primary" id="rx-idea">
+Nueva idea
+</button>
+
+<div id="rx-idea-result" class="rx-result">
+Pulsa el botón.
+</div>
+</div>
+
+<div class="rx-card">
+<h3>🔢 Calculadora artística</h3>
+<p>Calcula un precio orientativo.</p>
+
+<div class="rx-field">
+<label>Materiales</label>
+<input id="rx-materials" type="number" value="0">
+</div>
+
+<div class="rx-field">
+<label>Horas</label>
+<input id="rx-hours" type="number" value="1">
+</div>
+
+<div class="rx-field">
+<label>Valor/hora</label>
+<input id="rx-rate" type="number" value="5000">
+</div>
+
+<div class="rx-field">
+<label>Extras</label>
+<input id="rx-extra" type="number" value="0">
+</div>
+
+<div class="rx-field">
+<label>Margen %</label>
+<input id="rx-margin" type="number" value="20">
+</div>
+
+<button class="rx-btn primary" id="rx-price">
+Calcular precio
+</button>
+
+<div id="rx-price-result" class="rx-result"></div>
+</div>
+
+</div>
+</div>
+</section>`,
+
+ai: `
+<section id="rx-ai" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>RoXThal IA</h2>
+<p>Asistente creativo preparado para integración segura de IA.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-notice">
+🔒 La versión pública no contiene claves secretas. La conexión real a una IA deberá pasar por backend/Edge Function.
+</div>
+
+<div id="rx-chat" class="rx-chat">
+<div class="rx-msg ai">
+Soy RoXThal IA. Escribe una idea y la convertiré en una estructura de proyecto artístico.
+</div>
+</div>
+
+<div class="rx-field">
+<label>Idea</label>
+<textarea id="rx-ai-input" rows="4"
+placeholder="Ej. Quiero diseñar un tatuaje de un cuervo..."></textarea>
+</div>
+
+<button class="rx-btn primary" id="rx-ai-send">
+Analizar idea
+</button>
+</div>
+</section>`,
+
+search: `
+<section id="rx-search" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Buscadores</h2>
+<p>Investigación e inspiración artística.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-field">
+<label>Qué quieres buscar</label>
+<input id="rx-search-term"
+placeholder="Ej. tatuaje serpiente blackwork">
+</div>
+
+<div class="rx-search-grid">
+
+<div class="rx-card">
+<h3>🔎 Tatuajes</h3>
+<p>Referencias visuales.</p>
+<button class="rx-btn primary rx-search"
+data-url="https://www.google.com/search?tbm=isch&q=">
+Buscar
+</button>
+</div>
+
+<div class="rx-card">
+<h3>🖼️ Cuadros</h3>
+<p>Pintura y arte.</p>
+<button class="rx-btn primary rx-search"
+data-url="https://www.google.com/search?tbm=isch&q=">
+Buscar
+</button>
+</div>
+
+<div class="rx-card">
+<h3>👤 Artistas</h3>
+<p>Artistas y estilos.</p>
+<button class="rx-btn primary rx-search"
+data-url="https://www.google.com/search?q=">
+Buscar
+</button>
+</div>
+
+<div class="rx-card">
+<h3>📌 Pinterest</h3>
+<p>Referencias visuales.</p>
+<button class="rx-btn primary rx-search"
+data-url="https://www.pinterest.com/search/pins/?q=">
+Buscar
+</button>
+</div>
+
+<div class="rx-card">
+<h3>🎨 Behance</h3>
+<p>Proyectos de diseño.</p>
+<button class="rx-btn primary rx-search"
+data-url="https://www.behance.net/search/projects?search=">
+Buscar
+</button>
+</div>
+
+</div>
+</div>
+</section>`,
+
+library: `
+<section id="rx-library" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Biblioteca</h2>
+<p>Recursos organizados para formación artística.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-library-grid">
+
+<div class="rx-card">
+<h3>🦴 Anatomía</h3>
+<p>Figura humana, manos, rostro y poses.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=anatomia+artistica">
+Recursos
+</a>
+</div>
+
+<div class="rx-card">
+<h3>🎨 Color</h3>
+<p>Teoría y armonías de color.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=teoria+del+color+arte">
+Recursos
+</a>
+</div>
+
+<div class="rx-card">
+<h3>📐 Composición</h3>
+<p>Equilibrio, ritmo y jerarquía visual.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=composicion+artistica">
+Recursos
+</a>
+</div>
+
+<div class="rx-card">
+<h3>✏️ Dibujo</h3>
+<p>Perspectiva, volumen y valores.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=dibujo+artistico">
+Recursos
+</a>
+</div>
+
+<div class="rx-card">
+<h3>🧑‍🎨 Historia del arte</h3>
+<p>Movimientos y artistas.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=historia+del+arte">
+Recursos
+</a>
+</div>
+
+<div class="rx-card">
+<h3>🖊️ Diseño de tatuaje</h3>
+<p>Composición y teoría del diseño.</p>
+<a class="button button-primary"
+target="_blank"
+href="https://www.google.com/search?q=dise%C3%B1o+de+tatuaje">
+Recursos
+</a>
+</div>
+
+</div>
+</div>
+</section>`,
+
+shop: `
+<section id="rx-shop" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Tienda</h2>
+<p>Obras, encargos y propuestas artísticas.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-shop-grid">
+
+<div class="rx-card">
+<h3>🎨 Obra original</h3>
+<p>Consulta disponibilidad.</p>
+<a class="button button-primary"
+href="mailto:roxthal@hotmail.com?subject=Consulta%20obra">
+Consultar
+</a>
+</div>
+
+<div class="rx-card">
+<h3>🖼️ Retrato</h3>
+<p>Encargos personalizados.</p>
+<a class="button button-primary"
+href="mailto:roxthal@hotmail.com?subject=Encargo%20retrato">
+Encargar
+</a>
+</div>
+
+<div class="rx-card">
+<h3>🖊️ Diseño de tatuaje</h3>
+<p>Diseños personalizados.</p>
+<a class="button button-primary"
+href="mailto:roxthal@hotmail.com?subject=Diseño%20tatuaje">
+Consultar
+</a>
+</div>
+
+</div>
+</div>
+</section>`,
+
+admin: `
+<section id="rx-admin" class="rx-view">
+<div class="container">
+<div class="rx-view-head">
+<div>
+<h2>Administración</h2>
+<p>Diagnóstico de la nueva plataforma.</p>
+</div>
+<button class="rx-back" data-rx-home>← Volver</button>
+</div>
+
+<div class="rx-notice">
+🔐 Este primer panel solo consulta estadísticas. No realiza escrituras públicas.
+</div>
+
+<div id="rx-admin-grid" class="rx-admin-grid"></div>
+</div>
+</section>`
+
+};
+
+const app=document.querySelector("main");
+
+Object.values(views).forEach(html=>{
+  app.insertAdjacentHTML("beforeend",html);
+});
+
+/* ---------------------------------------------------------
+   NAVEGACIÓN
+--------------------------------------------------------- */
+
+const moduleMap={
+  "Galería":"gallery",
+  "Escuela":"school",
+  "Herramientas":"tools",
+  "RoXThal IA":"ai",
+  "Buscadores":"search",
+  "Biblioteca":"library",
+  "Tienda":"shop",
+  "Administración":"admin"
+};
+
+const moduleCards=document.querySelectorAll(".module");
+
+moduleCards.forEach(card=>{
+  const title=card.querySelector("h3")?.textContent.trim();
+  const view=moduleMap[title];
+
+  if(!view)return;
+
+  card.href="#"+view;
+
+  card.addEventListener("click",function(e){
+    e.preventDefault();
+    openModule(view);
+  });
+});
+
+function closeModules(){
+  document.querySelectorAll(".rx-view").forEach(v=>{
+    v.classList.remove("active");
+  });
+
+  document.querySelector("main").style.display="";
+}
+
+function openModule(name){
+
+  closeModules();
+
+  const view=document.getElementById("rx-"+name);
+
+  if(!view)return;
+
+  document.querySelector("main").style.display="none";
+
+  view.classList.add("active");
+
+  history.pushState({}, "", "#"+name);
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+  if(name==="gallery")loadGallery();
+  if(name==="school")loadSchool();
+  if(name==="admin")loadAdmin();
+}
+
+document.querySelectorAll("[data-rx-home]").forEach(button=>{
+  button.addEventListener("click",function(){
+    closeModules();
+    history.pushState({}, "", "#modulos");
+    document.getElementById("modulos")?.scrollIntoView({
+      behavior:"smooth"
+    });
+  });
+});
+
+/* ---------------------------------------------------------
+   GALERÍA
+--------------------------------------------------------- */
+
+async function loadGallery(){
+
+  const status=document.getElementById("rx-gallery-status");
+  const grid=document.getElementById("rx-gallery-grid");
+
+  if(!SUPABASE){
+    status.textContent="Supabase todavía no está disponible.";
+    return;
+  }
+
+  status.textContent="Consultando imágenes…";
+  grid.innerHTML="";
+
+  const {data,error}=await SUPABASE
+    .from("images")
+    .select("id,title,category,description,url,type,visible,created_at")
+    .eq("visible",true)
+    .order("created_at",{ascending:false});
+
+  if(error){
+    console.error("Galería:",error);
+    status.textContent="No se pudo cargar la galería.";
+    return;
+  }
+
+  if(!data?.length){
+    status.textContent="Galería preparada.";
+    grid.innerHTML=
+      `<div class="rx-card">
+       <h3>No hay obras publicadas todavía</h3>
+       <p>Cuando se añadan imágenes visibles en Supabase aparecerán aquí.</p>
+       </div>`;
+    return;
+  }
+
+  status.textContent=data.length+" publicaciones";
+
+  grid.innerHTML=data.map(item=>`
+
+    <article class="rx-card">
+
+      <img
+        src="${escapeHTML(item.url)}"
+        alt="${escapeHTML(item.title || "Obra")}"
+        loading="lazy"
+        onerror="this.style.display='none'"
+      >
+
+      <small>
+        ${escapeHTML(item.type || item.category || "arte")}
+      </small>
+
+      <h3>
+        ${escapeHTML(item.title || "Obra")}
+      </h3>
+
+      <p>
+        ${escapeHTML(item.description || "")}
+      </p>
+
+    </article>
+
+  `).join("");
+}
+
+/* ---------------------------------------------------------
+   ESCUELA
+--------------------------------------------------------- */
+
+async function loadSchool(){
+
+  const status=document.getElementById("rx-school-status");
+  const grid=document.getElementById("rx-school-grid");
+
+  if(!SUPABASE){
+    status.textContent="Supabase todavía no está disponible.";
+    return;
+  }
+
+  status.textContent="Consultando cursos…";
+  grid.innerHTML="";
+
+  const {data,error}=await SUPABASE
+    .from("courses")
+    .select(
+      "id,name,description,price,duration,schedule,modality,materials_included,active"
+    )
+    .eq("active",true)
+    .order("created_at",{ascending:false});
+
+  if(error){
+    console.error("Escuela:",error);
+    status.textContent="No se pudieron cargar los cursos.";
+    return;
+  }
+
+  if(!data?.length){
+
+    status.textContent="Escuela preparada.";
+
+    grid.innerHTML=
+      `<div class="rx-card">
+       <h3>Próximamente</h3>
+       <p>No hay cursos publicados todavía.</p>
+       </div>`;
+
+    return;
+  }
+
+  status.textContent=data.length+" cursos";
+
+  grid.innerHTML=data.map(course=>`
+
+    <article class="rx-card">
+
+      <small>ESCUELA</small>
+
+      <h3>
+        ${escapeHTML(course.name)}
+      </h3>
+
+      <p>
+        ${escapeHTML(course.description || "")}
+      </p>
+
+      <div class="rx-tags">
+
+        ${course.duration?
+          `<span class="rx-tag">⏱ ${escapeHTML(course.duration)}</span>`:""}
+
+        ${course.schedule?
+          `<span class="rx-tag">🗓 ${escapeHTML(course.schedule)}</span>`:""}
+
+        ${course.modality?
+          `<span class="rx-tag">📍 ${escapeHTML(course.modality)}</span>`:""}
+
+        ${course.materials_included?
+          `<span class="rx-tag">✓ Materiales</span>`:""}
+
+      </div>
+
+      ${course.price!=null?
+        `<div style="margin-top:14px;color:var(--accent);font-size:22px;font-weight:900">
+        $${money(course.price)}
+        </div>`:""}
+
+    </article>
+
+  `).join("");
+}
+
+/* ---------------------------------------------------------
+   HERRAMIENTAS — PALETA
+--------------------------------------------------------- */
+
+const colorInput=document.getElementById("rx-color");
+const hexInput=document.getElementById("rx-hex");
+const swatches=document.getElementById("rx-swatches");
+
+function renderColors(){
+
+  const colors=JSON.parse(
+    localStorage.getItem("roxthal_colors") || "[]"
+  );
+
+  swatches.innerHTML=colors.map(color=>`
+
+    <button
+      class="rx-swatch"
+      style="background:${escapeHTML(color)}"
+      title="${escapeHTML(color)}"
+      data-color="${escapeHTML(color)}">
+    </button>
+
+  `).join("");
+
+  swatches.querySelectorAll("[data-color]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      try{
+        await navigator.clipboard.writeText(btn.dataset.color);
+      }catch{}
+    });
+  });
+}
+
+colorInput.addEventListener("input",()=>{
+  hexInput.value=colorInput.value.toUpperCase();
+});
+
+document.getElementById("rx-add-color").addEventListener("click",()=>{
+
+  const color=hexInput.value.toUpperCase();
+
+  if(!/^#[0-9A-F]{6}$/.test(color)){
+    alert("HEX no válido.");
+    return;
+  }
+
+  const colors=JSON.parse(
+    localStorage.getItem("roxthal_colors") || "[]"
+  );
+
+  if(!colors.includes(color))colors.push(color);
+
+  localStorage.setItem(
+    "roxthal_colors",
+    JSON.stringify(colors)
+  );
+
+  renderColors();
+});
+
+renderColors();
+
+/* ---------------------------------------------------------
+   MEDIDAS
+--------------------------------------------------------- */
+
+document.getElementById("rx-calc").addEventListener("click",()=>{
+
+  const w=Number(document.getElementById("rx-width").value);
+  const h=Number(document.getElementById("rx-height").value);
+
+  if(!(w>0&&h>0)){
+    document.getElementById("rx-measure-result").textContent=
+      "Introduce medidas válidas.";
+    return;
+  }
+
+  document.getElementById("rx-measure-result").innerHTML=`
+
+    Relación:
+    <strong>${(w/h).toFixed(4)}</strong><br>
+
+    Diagonal:
+    <strong>${Math.hypot(w,h).toFixed(2)}</strong><br>
+
+    Proporción:
+    <strong>${w}:${h}</strong>
+
+  `;
+});
+
+/* ---------------------------------------------------------
+   REFERENCIAS
+--------------------------------------------------------- */
+
+document.getElementById("rx-reference").addEventListener("click",()=>{
+
+  const theme=
+    document.getElementById("rx-theme").value.trim() ||
+    "tema artístico";
+
+  const style=
+    document.getElementById("rx-style").value;
+
+  const medium=
+    document.getElementById("rx-medium").value;
+
+  document.getElementById("rx-reference-result").textContent=
+    `Crear una referencia de ${theme}, estilo ${style}, `
+    +`pensada para ${medium}, con composición clara, `
+    +`jerarquía visual, contraste controlado y detalles `
+    +`adaptados al medio.`;
+
+});
+
+/* ---------------------------------------------------------
+   CONVERSOR
+--------------------------------------------------------- */
+
+document.getElementById("rx-convert").addEventListener("click",()=>{
+
+  const file=
+    document.getElementById("rx-image").files?.[0];
+
+  if(!file){
+    alert("Selecciona una imagen.");
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=function(){
+
+    const img=new Image();
+
+    img.onload=function(){
+
+      const canvas=document.createElement("canvas");
+
+      canvas.width=img.naturalWidth;
+      canvas.height=img.naturalHeight;
+
+      const ctx=canvas.getContext("2d");
+
+      ctx.drawImage(img,0,0);
+
+      const format=
+        document.getElementById("rx-format").value;
+
+      canvas.toBlob(blob=>{
+
+        if(!blob)return;
+
+        const url=URL.createObjectURL(blob);
+
+        const download=
+          document.getElementById("rx-download");
+
+        download.href=url;
+
+        download.download=
+          "roxthal-convertida."+
+          (format==="image/jpeg"?"jpg":
+           format==="image/webp"?"webp":"png");
+
+        download.style.display="inline-flex";
+
+        document.getElementById("rx-convert-result")
+          .textContent=
+          `Conversión lista: ${canvas.width} × ${canvas.height}`;
+
+      },format,.9);
+
+    };
+
+    img.src=reader.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+});
+
+/* ---------------------------------------------------------
+   IDEAS
+--------------------------------------------------------- */
+
+const ideas=[
+"Crear una composición de tatuaje inspirada en símbolos del barrio.",
+"Combinar un animal con elementos botánicos y geometría.",
+"Crear un retrato utilizando solamente tres valores.",
+"Diseñar una lámina old school con tres elementos conectados.",
+"Crear una pintura urbana basada en texturas de paredes.",
+"Desarrollar una composición chicana con lettering.",
+"Crear una serie de tres dibujos sobre movimiento, silencio y memoria.",
+"Convertir una fotografía cotidiana en una composición surrealista."
+];
+
+document.getElementById("rx-idea").addEventListener("click",()=>{
+
+  const idea=
+    ideas[Math.floor(Math.random()*ideas.length)];
+
+  document.getElementById("rx-idea-result")
+    .textContent=idea;
+
+});
+
+/* ---------------------------------------------------------
+   CALCULADORA
+--------------------------------------------------------- */
+
+document.getElementById("rx-price").addEventListener("click",()=>{
+
+  const materials=
+    Number(document.getElementById("rx-materials").value)||0;
+
+  const hours=
+    Number(document.getElementById("rx-hours").value)||0;
+
+  const rate=
+    Number(document.getElementById("rx-rate").value)||0;
+
+  const extra=
+    Number(document.getElementById("rx-extra").value)||0;
+
+  const margin=
+    Number(document.getElementById("rx-margin").value)||0;
+
+  const base=
+    materials+
+    hours*rate+
+    extra;
+
+  const total=
+    base*(1+margin/100);
+
+  document.getElementById("rx-price-result").innerHTML=`
+
+    Coste base:
+    <strong>$${money(base)}</strong><br>
+
+    Margen:
+    <strong>${margin}%</strong><br>
+
+    Precio orientativo:
+    <strong>$${money(total)}</strong>
+
+  `;
+
+});
+
+/* ---------------------------------------------------------
+   BUSCADORES
+--------------------------------------------------------- */
+
+document.querySelectorAll(".rx-search").forEach(button=>{
+
+  button.addEventListener("click",()=>{
+
+    const term=
+      document.getElementById("rx-search-term")
+      .value.trim();
+
+    if(!term){
+      alert("Escribe qué quieres buscar.");
+      return;
+    }
+
+    window.open(
+      button.dataset.url+
+      encodeURIComponent(term),
+      "_blank"
+    );
+
+  });
+
+});
+
+/* ---------------------------------------------------------
+   ROXTHAL IA — PREPARACIÓN LOCAL
+--------------------------------------------------------- */
+
+document.getElementById("rx-ai-send")
+.addEventListener("click",()=>{
+
+  const input=
+    document.getElementById("rx-ai-input");
+
+  const text=input.value.trim();
+
+  if(!text)return;
+
+  const chat=
+    document.getElementById("rx-chat");
+
+  chat.insertAdjacentHTML(
+    "beforeend",
+    `<div class="rx-msg user">
+    ${escapeHTML(text)}
+    </div>`
+  );
+
+  const response=
+    `Estructura recomendada:<br>
+    <strong>1.</strong> Tema principal<br>
+    <strong>2.</strong> Estilo visual<br>
+    <strong>3.</strong> Composición<br>
+    <strong>4.</strong> Paleta<br>
+    <strong>5.</strong> Formato y tamaño<br>
+    <strong>6.</strong> Próximo paso práctico`;
+
+  chat.insertAdjacentHTML(
+    "beforeend",
+    `<div class="rx-msg ai">${response}</div>`
+  );
+
+  input.value="";
+  chat.scrollTop=chat.scrollHeight;
+
+});
+
+/* ---------------------------------------------------------
+   ADMINISTRACIÓN — SOLO LECTURA
+--------------------------------------------------------- */
+
+async function adminCount(table){
+
+  if(!SUPABASE)return null;
+
+  const {count,error}=
+    await SUPABASE
+    .from(table)
+    .select("*",{count:"exact",head:true});
+
+  return error?null:count;
+}
+
+async function loadAdmin(){
+
+  const grid=
+    document.getElementById("rx-admin-grid");
+
+  grid.innerHTML=
+    `<div class="rx-card">
+    <p>Consultando Supabase…</p>
+    </div>`;
+
+  const tables=[
+    "images",
+    "courses",
+    "reviews",
+    "bookings",
+    "payments",
+    "students",
+    "site_visits"
+  ];
+
+  const results=
+    await Promise.all(
+      tables.map(adminCount)
+    );
+
+  grid.innerHTML=tables.map((table,index)=>`
+
+    <div class="rx-card">
+
+      <small>${table.toUpperCase()}</small>
+
+      <h3 style="font-size:32px;margin-top:8px">
+        ${results[index]===null?"—":results[index]}
+      </h3>
+
+      <p>
+        ${results[index]===null
+          ?"Sin acceso público o tabla no disponible."
+          :"Registros accesibles."}
+      </p>
+
+    </div>
+
+  `).join("");
+
+}
+
+/* ---------------------------------------------------------
+   HASH DIRECTO
+--------------------------------------------------------- */
+
+function route(){
+
+  const hash=
+    location.hash.replace("#","");
+
+  if([
+    "gallery",
+    "school",
+    "tools",
+    "ai",
+    "search",
+    "library",
+    "shop",
+    "admin"
+  ].includes(hash)){
+
+    openModule(hash);
+
+  }
+
+}
+
+window.addEventListener("hashchange",route);
+
+})();
+</script>
 </body>
 </html>
