@@ -1083,11 +1083,6 @@ async function countVisit(){try{await db.rpc('increment_site_visit')}catch(e){/*
    ========================================================= */
 function webSearch(id,type){const q=$(id).value.trim();if(!q)return toast('Escribe algo para buscar.');window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(q+' '+type),'_blank','noopener')}
 
-/* =========================================================
-   MÓDULO 14 — ROXTHAL IA
-   ========================================================= */
-function aiReply(text){const t=text.toLowerCase();if(t.includes('curso'))return'Puedo ayudarte con la Escuela y los cursos publicados en RoXThal.';if(t.includes('tatu'))return'Puedo orientarte sobre estilos e información del curso de iniciación al tatuaje.';if(t.includes('direc')||t.includes('ubic'))return'RoXThal Art Design está en Lisandro de la Torre 880, San Antonio de Padua.';if(t.includes('precio'))return'Los precios publicados se consultan en los módulos de Servicios y Escuela.';return'Puedo orientarte sobre arte, tatuaje, cursos, talleres y los servicios de RoXThal.'}
-$('aiSend').onclick=()=>{const v=$('aiInput').value.trim();if(!v)return;const box=$('aiMessages');box.insertAdjacentHTML('beforeend',`<div class="status"><b>Tú:</b> ${esc(v)}</div><div class="status ok"><b>RoXThal IA:</b> ${esc(aiReply(v))}</div>`);$('aiInput').value='';box.scrollTop=box.scrollHeight};$('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('aiSend').click()});
 
 /* =========================================================
    ADMIN — SEGURIDAD CENTRAL Y CONTROL TOTAL
