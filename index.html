@@ -5110,5 +5110,280 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 <!-- =========================================================
      FIN — MÓDULO HERRAMIENTAS ROXTHAL
      ========================================================= -->
+   <script>
+/* ============================================================
+   RoXThal — SINCRONIZACIÓN MULTIDISPOSITIVO DEL SORTEO
+   Pegar justo antes de </body>
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const REQUIRED = 10;
+  const KEY_LOCAL = 'roxthal_raffle_share_count';
+  const KEY_ID = 'roxthal_raffle_participant_key';
+
+  function normalizeKey(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '');
+  }
+
+  function getParticipantKey() {
+    const phone = document.getElementById('rafflePhone');
+    const email = document.getElementById('raffleEmail');
+
+    const phoneValue = normalizeKey(phone ? phone.value : '');
+    const emailValue = normalizeKey(email ? email.value : '');
+
+    /* Preferimos WhatsApp/teléfono porque es obligatorio */
+    const key = phoneValue
+      ? 'phone:' + phoneValue
+      : (emailValue ? 'email:' + emailValue : '');
+
+    if (key) {
+      localStorage.setItem(KEY_ID, key);
+      return key;
+    }
+
+    return localStorage.getItem(KEY_ID) || '';
+  }
+
+  function getLocalCount() {
+    const n = Number(localStorage.getItem(KEY_LOCAL) || 0);
+    return Math.max(0, Math.min(REQUIRED, n));
+  }
+
+  function saveLocalCount(value) {
+    const n = Math.max(0, Math.min(REQUIRED, Number(value) || 0));
+    localStorage.setItem(KEY_LOCAL, String(n));
+    return n;
+  }
+
+  function refreshUI(count) {
+    const safe = Math.max(0, Math.min(REQUIRED, Number(count) || 0));
+    saveLocalCount(safe);
+
+    if (typeof window.updateRaffleShareUI === 'function') {
+      try {
+        window.updateRaffleShareUI();
+      } catch (_) {}
+    }
+
+    document.querySelectorAll('[data-raffle-share-count]').forEach(function (el) {
+      el.textContent = safe + '/' + REQUIRED;
+    });
+  }
+
+  async function getServerProgress() {
+    if (typeof db === 'undefined') return null;
+
+    const key = getParticipantKey();
+    if (!key) return null;
+
+    try {
+      const { data, error } = await db.rpc(
+        'get_raffle_share_progress',
+        { p_participant_key: key }
+      );
+
+      if (error || !data) return null;
+
+      const serverCount = Number(data.share_count || 0);
+      const localCount = getLocalCount();
+
+      /* Nunca reducimos un progreso local ya alcanzado */
+      const finalCount = Math.max(localCount, serverCount);
+
+      if (finalCount > serverCount) {
+        await syncServerProgress(finalCount);
+      }
+
+      refreshUI(finalCount);
+      return finalCount;
+    } catch (err) {
+      console.warn('RoXThal raffle sync:', err);
+      return null;
+    }
+  }
+
+  async function syncServerProgress(count) {
+    if (typeof db === 'undefined') return null;
+
+    const key = getParticipantKey();
+    if (!key) return null;
+
+    const safeCount = Math.max(0, Math.min(REQUIRED, Number(count) || 0));
+
+    try {
+      const { data, error } = await db.rpc(
+        'sync_raffle_share_progress',
+        {
+          p_participant_key: key,
+          p_share_count: safeCount
+        }
+      );
+
+      if (error) {
+        console.warn('No se pudo sincronizar el sorteo:', error);
+        return null;
+      }
+
+      const serverCount = Number(
+        data && data.share_count != null
+          ? data.share_count
+          : safeCount
+      );
+
+      refreshUI(serverCount);
+      return serverCount;
+    } catch (err) {
+      console.warn('RoXThal raffle sync error:', err);
+      return null;
+    }
+  }
+
+  /*
+   * Interceptamos el botón/función existente de compartir.
+   * No sustituimos el sistema original: solamente sincronizamos
+   * el contador después de cada acción.
+   */
+  function installShareHook() {
+    if (typeof window.shareRaffleApp !== 'function') return false;
+    if (window.__roxthalShareHookInstalled) return true;
+
+    const originalShare = window.shareRaffleApp;
+
+    window.shareRaffleApp = async function () {
+      const before = getLocalCount();
+
+      let result;
+
+      try {
+        result = await originalShare.apply(this, arguments);
+      } catch (err) {
+        throw err;
+      }
+
+      /*
+       * La función original ya incrementa localStorage.
+       * Esperamos un instante y tomamos el valor real.
+       */
+      setTimeout(async function () {
+        const after = getLocalCount();
+
+        if (after > before) {
+          await syncServerProgress(after);
+        } else {
+          await getServerProgress();
+        }
+      }, 150);
+
+      return result;
+    };
+
+    window.__roxthalShareHookInstalled = true;
+    return true;
+  }
+
+  /*
+   * Sincronización cuando el usuario introduce teléfono/email.
+   */
+  function installIdentityListeners() {
+    ['rafflePhone', 'raffleEmail'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el || el.__roxthalIdentityListener) return;
+
+      let timer = null;
+
+      el.addEventListener('input', function () {
+        clearTimeout(timer);
+
+        timer = setTimeout(function () {
+          const key = getParticipantKey();
+
+          if (key) {
+            getServerProgress();
+          }
+        }, 500);
+      });
+
+      el.__roxthalIdentityListener = true;
+    });
+  }
+
+  /*
+   * También sincronizamos justo antes de enviar la inscripción.
+   */
+  function installSubmitHook() {
+    const form = document.getElementById('raffleForm');
+    if (!form || form.__roxthalSubmitHook) return;
+
+    form.addEventListener('submit', async function () {
+      const key = getParticipantKey();
+
+      if (!key) return;
+
+      const count = getLocalCount();
+
+      if (count > 0) {
+        await syncServerProgress(count);
+      }
+    }, true);
+
+    form.__roxthalSubmitHook = true;
+  }
+
+  function boot() {
+    installShareHook();
+    installIdentityListeners();
+    installSubmitHook();
+
+    /*
+     * Si ya existe una identidad guardada, recuperamos
+     * inmediatamente el progreso del servidor.
+     */
+    const key = getParticipantKey();
+
+    if (key) {
+      getServerProgress();
+    }
+  }
+
+  /*
+   * El index actual puede declarar shareRaffleApp después
+   * de cargar este bloque. Por eso intentamos varias veces.
+   */
+  let attempts = 0;
+
+  const timer = setInterval(function () {
+    attempts++;
+
+    installShareHook();
+    installIdentityListeners();
+    installSubmitHook();
+
+    if (
+      window.__roxthalShareHookInstalled &&
+      document.getElementById('rafflePhone')
+    ) {
+      clearInterval(timer);
+      boot();
+    }
+
+    if (attempts >= 40) {
+      clearInterval(timer);
+      boot();
+    }
+  }, 250);
+
+  window.RoXThalRaffleSync = {
+    getServerProgress: getServerProgress,
+    syncServerProgress: syncServerProgress,
+    getParticipantKey: getParticipantKey
+  };
+
+})();
+</script>
 </body>
 </html>
