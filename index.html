@@ -1087,7 +1087,6 @@ $('submitReview').onclick=async()=>{const name=$('reviewName').value.trim(),comm
 
 /* =========================================================
    MÓDULO 8 — SORTEO
-   100 NÚMEROS · 10 COMPARTIDOS · SORTEO AUTOMÁTICO
    ========================================================= */
 
 const RAFFLE_TOTAL_NUMBERS = 100;
@@ -1105,537 +1104,515 @@ function setRaffleShareCount(value){
     Math.min(RAFFLE_REQUIRED_SHARES, Number(value) || 0)
   );
 
-  localStorage.setItem(
-    RAFFLE_SHARE_STORAGE,
-    String(count)
-  );
-
+  localStorage.setItem(RAFFLE_SHARE_STORAGE, String(count));
   return count;
+}
+
+function updateRaffleShareUI(){
+  const count = getRaffleShareCount();
+
+  const counter = $('raffleShareCount');
+  const button = $('raffleShareButton');
+  const register = $('raffleRegisterButton');
+
+  if(counter){
+    counter.textContent = `${count}/${RAFFLE_REQUIRED_SHARES}`;
+  }
+
+  if(button){
+    button.textContent =
+      count >= RAFFLE_REQUIRED_SHARES
+        ? '✅ Requisito completado'
+        : `📲 Compartir (${count}/${RAFFLE_REQUIRED_SHARES})`;
+
+    button.disabled = count >= RAFFLE_REQUIRED_SHARES;
+  }
+
+  if(register){
+    register.disabled = count < RAFFLE_REQUIRED_SHARES;
+    register.style.opacity =
+      count < RAFFLE_REQUIRED_SHARES ? '0.5' : '1';
+  }
 }
 
 async function shareRaffleApp(){
 
-  const appUrl = window.location.href;
-  let shared = false;
+  if(getRaffleShareCount() >= RAFFLE_REQUIRED_SHARES){
+    updateRaffleShareUI();
+    return;
+  }
+
+  const shareData = {
+    title: 'RoXThal Art Design',
+    text: 'Participá del sorteo de RoXThal Art Design: ganá un tatuaje o un retrato.',
+    url: window.location.href
+  };
 
   try{
 
     if(navigator.share){
 
-      await navigator.share({
-        title: 'RoXThal Art Design',
-        text: 'Participá del sorteo de RoXThal Art Design.',
-        url: appUrl
-      });
+      await navigator.share(shareData);
 
-      shared = true;
-
-    }else if(navigator.clipboard){
-
-      await navigator.clipboard.writeText(appUrl);
-
-      shared = true;
-
-      toast('Link de RoXThal copiado. Compartilo en tus redes.');
+      setRaffleShareCount(getRaffleShareCount() + 1);
 
     }else{
 
-      toast('Copiá y compartí el enlace de la aplicación.');
+      await navigator.clipboard.writeText(window.location.href);
+
+      setRaffleShareCount(getRaffleShareCount() + 1);
+
+      toast('Enlace copiado. Compartilo para continuar.');
 
     }
 
-  }catch(e){
+  }catch(error){
 
-    /*
-      Cancelar el diálogo de compartir NO cuenta como compartido.
-    */
+    if(error && error.name === 'AbortError'){
+      return;
+    }
 
-    console.log('Compartir cancelado:', e);
+    console.error('RoXThal — error compartiendo:', error);
+    toast('No se pudo completar el compartir.');
 
   }
 
-  if(shared){
-
-    const count = setRaffleShareCount(
-      getRaffleShareCount() + 1
-    );
-
-    renderRaffleShareProgress(count);
-  }
-}
-
-function renderRaffleShareProgress(count){
-
-  const el = $('raffleShareProgress');
-
-  if(!el) return;
-
-  const safeCount = Math.max(
-    0,
-    Math.min(RAFFLE_REQUIRED_SHARES, Number(count) || 0)
-  );
-
-  el.textContent =
-    `${safeCount}/${RAFFLE_REQUIRED_SHARES}`;
-
-  const bar = $('raffleShareBar');
-
-  if(bar){
-
-    bar.style.width =
-      `${(safeCount / RAFFLE_REQUIRED_SHARES) * 100}%`;
-  }
-
-  const button = $('raffleJoinButton');
-
-  if(button){
-
-    button.disabled =
-      safeCount < RAFFLE_REQUIRED_SHARES;
-
-    button.textContent =
-      safeCount >= RAFFLE_REQUIRED_SHARES
-        ? '🎟️ Elegir mi número'
-        : `📲 Compartir (${safeCount}/${RAFFLE_REQUIRED_SHARES})`;
-  }
+  updateRaffleShareUI();
 }
 
 async function loadRaffles(){
 
-  const list = $('raffleList');
+  const container = $('raffleList');
 
-  if(!list) return;
-
-  list.innerHTML = `
-    <div class="card">
-      <div class="status">Cargando sorteo...</div>
-    </div>
-  `;
+  if(!container) return;
 
   try{
 
-    const {data:raffle,error:raffleError} = await db
+    const {data: raffle, error: raffleError} = await db
       .from('raffles')
-      .select(`
-        id,
-        title,
-        description,
-        prize,
-        active,
-        status,
-        draw_date,
-        drawn_at,
-        winner_entry_id
-      `)
-      .eq('active',true)
-      .eq('status','active')
-      .order('created_at',{ascending:false})
-      .limit(1)
+      .select('*')
+      .eq('active', true)
       .maybeSingle();
 
     if(raffleError) throw raffleError;
 
     if(!raffle){
 
-      list.innerHTML = `
+      container.innerHTML = `
         <div class="card">
-          <div class="empty">
-            No hay un sorteo activo en este momento.
-          </div>
+          <div class="status">No hay un sorteo activo en este momento.</div>
         </div>
       `;
 
       return;
     }
 
-    const {data:entries,error:entriesError} = await db
+    const {data: entries, error: entriesError} = await db
       .from('raffle_entries')
       .select('number')
-      .eq('raffle_id',raffle.id)
-      .not('number','is',null)
-      .order('number',{ascending:true});
+      .eq('raffle_id', raffle.id)
+      .not('number','is',null);
 
     if(entriesError) throw entriesError;
 
     const occupied = new Set(
-      (entries || [])
-        .map(row => Number(row.number))
-        .filter(n =>
-          Number.isInteger(n) &&
-          n >= 1 &&
-          n <= RAFFLE_TOTAL_NUMBERS
-        )
+      (entries || []).map(entry => Number(entry.number))
     );
 
     const occupiedCount = occupied.size;
     const remaining = RAFFLE_TOTAL_NUMBERS - occupiedCount;
     const shareCount = getRaffleShareCount();
+    const canRegister = shareCount >= RAFFLE_REQUIRED_SHARES;
 
-    let numbersHtml = '';
+    let numbersHTML = '';
 
-    for(let n = 1; n <= RAFFLE_TOTAL_NUMBERS; n++){
+    for(let number = 1; number <= RAFFLE_TOTAL_NUMBERS; number++){
 
-      const taken = occupied.has(n);
+      const used = occupied.has(number);
 
-      numbersHtml += `
+      numbersHTML += `
         <button
           type="button"
-          class="btn btn-small"
-          ${taken ? 'disabled' : ''}
+          class="raffle-number ${used ? 'occupied' : 'available'}"
+          data-raffle-number="${number}"
+          ${used ? 'disabled' : ''}
           style="
-            min-width:42px;
-            padding:7px 5px;
-            opacity:${taken ? '.38' : '1'};
-            border-color:${taken ? 'var(--border)' : 'var(--yellow)'};
-            color:${taken ? 'var(--muted)' : 'var(--text)'};
+            min-height:42px;
+            border-radius:8px;
+            border:1px solid ${used ? '#555' : 'var(--yellow)'};
+            background:${used ? '#222' : 'transparent'};
+            color:${used ? '#777' : 'var(--yellow)'};
+            font-weight:800;
+            cursor:${used ? 'not-allowed' : 'pointer'};
           "
-          title="${taken ? 'Número ocupado' : 'Número disponible'}"
         >
-          ${String(n).padStart(2,'0')}
+          ${String(number).padStart(2,'0')}
         </button>
       `;
     }
 
-    list.innerHTML = `
+    container.innerHTML = `
 
       <div class="card">
 
         <div class="label">SORTEO ACTIVO</div>
 
-        <h3 style="font-size:28px;margin:8px 0 10px">
-          ${esc(raffle.title || 'Sorteo RoXThal')}
+        <h3 style="margin-top:8px">
+          ${esc(raffle.title || 'Gana un tatuaje o un retrato')}
         </h3>
 
-        <p class="muted" style="line-height:1.6">
+        <p class="muted">
           ${esc(
             raffle.description ||
             'Participá del sorteo oficial de RoXThal Art Design.'
           )}
         </p>
 
-        <div class="status ok" style="margin-top:18px">
+        <div style="
+          text-align:center;
+          margin:20px 0;
+          padding:18px;
+          border:1px solid rgba(255,255,255,.12);
+          border-radius:14px;
+        ">
 
-          <b>🎟️ ${occupiedCount}/100 números ocupados</b>
+          <div class="label">NÚMEROS OCUPADOS</div>
 
-          <br>
+          <div style="
+            font-size:42px;
+            font-weight:900;
+            color:var(--yellow);
+          ">
+            ${occupiedCount}/${RAFFLE_TOTAL_NUMBERS}
+          </div>
 
-          <span class="small">
-            ${
-              remaining > 0
-                ? `Faltan ${remaining} números para realizar el sorteo.`
-                : '¡Los 100 números están completos!'
-            }
-          </span>
+          <div class="muted">
+            Faltan ${remaining} números para realizar el sorteo.
+          </div>
 
         </div>
+
+        <div class="label">NÚMEROS</div>
 
         <div style="
           display:grid;
           grid-template-columns:repeat(10,1fr);
           gap:6px;
-          margin:18px 0;
+          margin-top:12px;
         ">
-
-          ${numbersHtml}
-
+          ${numbersHTML}
         </div>
 
         <div style="
-          border-top:1px solid var(--border);
-          padding-top:20px;
-          margin-top:20px;
+          margin-top:25px;
+          padding:18px;
+          border-radius:14px;
+          border:1px solid rgba(255,255,255,.12);
         ">
 
-          <div class="label">
-            REQUISITO PARA PARTICIPAR
-          </div>
+          <div class="label">REQUISITO PARA PARTICIPAR</div>
 
-          <h4 style="font-size:20px;margin:7px 0">
-            Compartí la aplicación 10 veces
-          </h4>
+          <h3>Compartí la aplicación 10 veces</h3>
 
-          <p class="small">
+          <p class="muted">
             Cada vez que utilices el botón oficial de compartir,
-            el contador registra una acción. Al llegar a 10/10
-            podrás solicitar tu número.
+            el contador registra una acción.
+            Al llegar a 10/10 podrás solicitar tu número.
           </p>
 
-          <div style="
-            height:10px;
-            background:#080808;
-            border:1px solid var(--border);
-            border-radius:20px;
-            overflow:hidden;
-            margin:15px 0 8px;
-          ">
-
-            <div
-              id="raffleShareBar"
-              style="
-                width:0%;
-                height:100%;
-                background:var(--yellow);
-                transition:.25s ease;
-              "
-            ></div>
-
-          </div>
-
           <div
-            id="raffleShareProgress"
-            class="label"
-            style="text-align:right"
+            id="raffleShareCount"
+            style="
+              font-size:36px;
+              font-weight:900;
+              color:var(--yellow);
+              text-align:center;
+              margin:12px 0;
+            "
           >
             ${shareCount}/10
           </div>
 
-          <div class="actions">
+          <button
+            id="raffleShareButton"
+            type="button"
+            class="btn"
+            onclick="shareRaffleApp()"
+            style="width:100%;"
+          >
+            ${canRegister
+              ? '✅ Requisito completado'
+              : `📲 Compartir (${shareCount}/10)`
+            }
+          </button>
 
-            <button
-              id="raffleJoinButton"
-              type="button"
-              class="btn btn-primary"
-              onclick="
-                ${
-                  shareCount >= RAFFLE_REQUIRED_SHARES
-                    ? 'openRaffleRegistration()'
-                    : 'shareRaffleApp()'
-                }
-              "
-            >
-              ${
-                shareCount >= RAFFLE_REQUIRED_SHARES
-                  ? '🎟️ Elegir mi número'
-                  : `📲 Compartir (${shareCount}/10)`
-              }
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="card">
-
-        <div class="label">
-          PREMIO
-        </div>
-
-        <h3 style="font-size:25px;margin:8px 0 12px">
-          🎁 ${esc(
-            raffle.prize ||
-            'Un tatuaje o un retrato artístico'
-          )}
-        </h3>
-
-        <p class="small" style="margin-bottom:20px">
-          El ganador se selecciona aleatoriamente cuando
-          los 100 números estén ocupados.
-        </p>
-
-        <div class="status">
-
-          <b>¿Cómo funciona?</b>
-
-          <div style="margin-top:12px;display:grid;gap:9px">
-
-            <div>1️⃣ Compartí la aplicación 10 veces.</div>
-
-            <div>2️⃣ Elegí tus datos y solicitá un número.</div>
-
-            <div>3️⃣ Se asigna un número disponible del 01 al 100.</div>
-
-            <div>4️⃣ Cuando se ocupen los 100 números, se realiza el sorteo.</div>
-
-            <div>5️⃣ El sistema selecciona un ganador al azar.</div>
-
-            <div>6️⃣ Se registra el ganador y se genera automáticamente el próximo sorteo.</div>
-
-          </div>
+          <button
+            id="raffleRegisterButton"
+            type="button"
+            class="btn"
+            onclick="openRaffleRegistration()"
+            ${canRegister ? '' : 'disabled'}
+            style="
+              width:100%;
+              margin-top:10px;
+              opacity:${canRegister ? '1' : '.5'};
+            "
+          >
+            🎟️ Elegir mi número
+          </button>
 
         </div>
 
-        <div class="small" style="margin-top:15px">
-          No hay fecha límite. El sorteo depende exclusivamente
-          de completar los 100 números.
+        <div style="margin-top:20px">
+
+          <div class="label">PREMIO</div>
+
+          <h3>
+            🎁 Un tatuaje o un retrato artístico
+          </h3>
+
+          <p class="muted">
+            A elección del ganador, sujeto a coordinación previa
+            con RoXThal Art Design.
+          </p>
+
+        </div>
+
+        <div style="margin-top:20px">
+
+          <div class="label">¿CÓMO FUNCIONA?</div>
+
+          <ol>
+            <li>Compartí la aplicación 10 veces.</li>
+            <li>Elegí tus datos y solicitá un número.</li>
+            <li>Se asigna un número disponible del 01 al 100.</li>
+            <li>Cuando se ocupen los 100 números, se realiza el sorteo.</li>
+            <li>El sistema selecciona un ganador al azar.</li>
+            <li>Se genera automáticamente el próximo sorteo.</li>
+          </ol>
+
+          <p class="muted">
+            No hay fecha límite. El sorteo depende exclusivamente
+            de completar los 100 números.
+          </p>
+
         </div>
 
       </div>
     `;
 
-    renderRaffleShareProgress(shareCount);
+    updateRaffleShareUI();
 
-  }catch(e){
+  }catch(error){
 
-    console.error(
-      'RoXThal — error cargando sorteo:',
-      e
-    );
+    console.error('RoXThal — error cargando sorteo:', error);
 
-    list.innerHTML = `
+    container.innerHTML = `
       <div class="card">
-        <div class="status err">
+        <div class="status">
           No se pudo cargar el sorteo.
         </div>
+        <p class="muted">
+          ${esc(error.message || 'Error desconocido')}
+        </p>
       </div>
     `;
+
   }
 }
 
-function openRaffleRegistration(){
 
-  const existing = $('raffleRegistration');
+async function openRaffleRegistration(){
 
-  if(existing) existing.remove();
+  if(getRaffleShareCount() < RAFFLE_REQUIRED_SHARES){
+
+    toast('Primero completá las 10 acciones de compartir.');
+    return;
+  }
+
+  const {data: raffle, error} = await db
+    .from('raffles')
+    .select('id,title')
+    .eq('active',true)
+    .maybeSingle();
+
+  if(error){
+
+    console.error(error);
+    toast('No se pudo consultar el sorteo.');
+    return;
+  }
+
+  if(!raffle){
+
+    toast('No hay un sorteo activo.');
+    return;
+  }
+
+  const {data: entries, error: entriesError} = await db
+    .from('raffle_entries')
+    .select('number')
+    .eq('raffle_id',raffle.id)
+    .not('number','is',null);
+
+  if(entriesError){
+
+    console.error(entriesError);
+    toast('No se pudieron consultar los números.');
+    return;
+  }
+
+  const occupied = new Set(
+    (entries || []).map(e => Number(e.number))
+  );
+
+  const available = [];
+
+  for(let i=1;i<=100;i++){
+
+    if(!occupied.has(i)){
+      available.push(i);
+    }
+
+  }
+
+  if(!available.length){
+
+    await loadRaffles();
+    toast('Los 100 números ya están ocupados.');
+    return;
+  }
+
+  const options = available.map(number => `
+    <option value="${number}">
+      ${String(number).padStart(2,'0')}
+    </option>
+  `).join('');
 
   const modal = document.createElement('div');
 
-  modal.id = 'raffleRegistration';
+  modal.id = 'raffleRegistrationModal';
 
   modal.style.cssText = `
     position:fixed;
     inset:0;
-    z-index:5000;
-    background:rgba(0,0,0,.88);
+    z-index:99999;
+    background:rgba(0,0,0,.82);
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:18px;
-    overflow:auto;
+    padding:20px;
   `;
 
   modal.innerHTML = `
 
     <div class="card" style="
-      width:min(100%,520px);
+      width:min(500px,100%);
       max-height:90vh;
       overflow:auto;
     ">
 
-      <div class="label">
-        PARTICIPACIÓN
-      </div>
+      <div class="label">REGISTRO DEL SORTEO</div>
 
-      <h3 style="font-size:27px;margin:8px 0 16px">
-        Elegí tu número
-      </h3>
+      <h3>Elegí tu número</h3>
 
-      <p class="small" style="margin-bottom:18px">
-        Ya completaste las 10 acciones de compartir.
-        Ahora ingresá tus datos y elegí un número disponible.
-      </p>
+      <form id="raffleRegistrationForm">
 
-      <div class="field">
-        <label>Nombre *</label>
+        <label>Nombre</label>
+
         <input
           id="raffleName"
-          type="text"
-          maxlength="100"
+          required
           autocomplete="name"
           placeholder="Tu nombre"
+          style="width:100%;margin:8px 0 14px;"
         >
-      </div>
 
-      <div class="field">
-        <label>Teléfono / WhatsApp *</label>
+        <label>WhatsApp</label>
+
         <input
           id="rafflePhone"
-          type="tel"
-          maxlength="30"
+          required
           autocomplete="tel"
-          placeholder="11 6963 3376"
+          placeholder="11 6963-3376"
+          style="width:100%;margin:8px 0 14px;"
         >
-      </div>
 
-      <div class="field">
-        <label>Email</label>
+        <label>Email (opcional)</label>
+
         <input
           id="raffleEmail"
           type="email"
-          maxlength="150"
           autocomplete="email"
           placeholder="tu@email.com"
+          style="width:100%;margin:8px 0 14px;"
         >
-      </div>
 
-      <div class="field">
+        <label>Número disponible</label>
 
-        <label>Número</label>
-
-        <select id="raffleNumber">
-
-          <option value="">
-            Número aleatorio disponible
-          </option>
-
-          ${
-            Array.from(
-              {length:RAFFLE_TOTAL_NUMBERS},
-              (_,i) => i + 1
-            )
-            .map(n => `
-              <option value="${n}">
-                ${String(n).padStart(2,'0')}
-              </option>
-            `)
-            .join('')
-          }
-
+        <select
+          id="raffleNumber"
+          required
+          style="width:100%;margin:8px 0 18px;"
+        >
+          ${options}
         </select>
 
-      </div>
-
-      <div
-        id="raffleRegistrationStatus"
-        class="status hidden"
-      ></div>
-
-      <div class="actions">
-
         <button
-          type="button"
-          class="btn btn-primary"
-          onclick="submitRaffleRegistration()"
+          type="submit"
+          class="btn"
+          style="width:100%;"
         >
-          🎟️ Participar
+          🎟️ Confirmar participación
         </button>
 
         <button
           type="button"
           class="btn"
-          onclick="document.getElementById('raffleRegistration').remove()"
+          onclick="document.getElementById('raffleRegistrationModal')?.remove()"
+          style="width:100%;margin-top:8px;"
         >
           Cancelar
         </button>
 
-      </div>
+      </form>
 
     </div>
   `;
 
   document.body.appendChild(modal);
+
+  $('raffleRegistrationForm').addEventListener(
+    'submit',
+    submitRaffleRegistration
+  );
 }
 
-async function submitRaffleRegistration(){
+
+async function submitRaffleRegistration(event){
+
+  event.preventDefault();
 
   const name = $('raffleName')?.value.trim();
   const phone = $('rafflePhone')?.value.trim();
-  const email = $('raffleEmail')?.value.trim();
-  const numberValue = $('raffleNumber')?.value;
+  const email = $('raffleEmail')?.value.trim() || null;
+  const number = Number($('raffleNumber')?.value);
 
-  const status = $('raffleRegistrationStatus');
+  if(!name){
 
-  if(!name || !phone){
+    toast('Ingresá tu nombre.');
+    return;
+  }
 
-    if(status){
+  if(!phone){
 
-      status.className = 'status err';
+    toast('Ingresá tu WhatsApp.');
+    return;
+  }
 
-      status.textContent =
-        'Nombre y teléfono son obligatorios.';
-    }
+  if(!Number.isInteger(number) || number < 1 || number > 100){
 
+    toast('Elegí un número válido.');
     return;
   }
 
@@ -1643,125 +1620,75 @@ async function submitRaffleRegistration(){
 
   if(shareCount < RAFFLE_REQUIRED_SHARES){
 
-    if(status){
-
-      status.className = 'status err';
-
-      status.textContent =
-        'Debes completar las 10 acciones de compartir antes de participar.';
-    }
-
+    toast('Necesitás completar las 10 acciones de compartir.');
     return;
-  }
-
-  if(status){
-
-    status.className = 'status';
-
-    status.textContent =
-      'Registrando tu participación...';
   }
 
   try{
 
-    const selectedNumber =
-      numberValue
-        ? Number(numberValue)
-        : null;
-
-    const {data,error} = await db.rpc(
+    const {data, error} = await db.rpc(
       'join_active_raffle',
       {
-        p_name:name,
-        p_phone:phone,
-        p_email:email || null,
-        p_number:selectedNumber,
-        p_share_count:shareCount
+        p_name: name,
+        p_phone: phone,
+        p_email: email,
+        p_number: number,
+        p_share_count: shareCount
       }
     );
 
     if(error) throw error;
 
-    if(data?.raffle_completed && data?.draw){
+    console.log(
+      'RoXThal — resultado participación:',
+      data
+    );
 
-      if(status){
-
-        status.className = 'status ok';
-
-        status.innerHTML = `
-          <b>🎉 ¡SORTEO COMPLETADO!</b><br>
-          Ganador: <b>${esc(data.draw.winner_name || '')}</b><br>
-          Número ganador:
-          <b>${String(data.draw.winner_number || '').padStart(2,'0')}</b>
-        `;
-      }
-
-      setRaffleShareCount(0);
-
-      setTimeout(() => {
-
-        const modal = $('raffleRegistration');
-
-        if(modal) modal.remove();
-
-        loadRaffles();
-
-        toast('🎉 ¡Sorteo realizado y nuevo sorteo creado!');
-
-      },4500);
-
-      return;
-    }
-
-    if(status){
-
-      status.className = 'status ok';
-
-      status.innerHTML = `
-        <b>🎟️ ¡Participación registrada!</b><br>
-        Tu número es:
-        <strong style="font-size:24px">
-          ${String(data?.number || '').padStart(2,'0')}
-        </strong>
-        <br>
-        <span class="small">
-          Quedan ${
-            Number(data?.numbers_remaining ?? 0)
-          } números disponibles.
-        </span>
-      `;
-    }
+    document
+      .getElementById('raffleRegistrationModal')
+      ?.remove();
 
     setRaffleShareCount(0);
 
-    setTimeout(() => {
+    await loadRaffles();
 
-      const modal = $('raffleRegistration');
+    if(
+      data &&
+      typeof data === 'object' &&
+      (
+        data.drawn === true ||
+        data.status === 'drawn' ||
+        data.winner
+      )
+    ){
 
-      if(modal) modal.remove();
+      toast('🎉 ¡Se completaron los 100 números y se realizó el sorteo!');
 
-      loadRaffles();
+    }else{
 
-    },3500);
+      toast(
+        `🎟️ Participación registrada. Número ${String(number).padStart(2,'0')}.`
+      );
 
-  }catch(e){
+    }
+
+  }catch(error){
 
     console.error(
-      'RoXThal — error participando en sorteo:',
-      e
+      'RoXThal — error registrando participación:',
+      error
     );
 
-    if(status){
+    toast(
+      error.message ||
+      'No se pudo registrar la participación.'
+    );
 
-      status.className = 'status err';
+    await loadRaffles();
 
-      status.textContent =
-        e?.message ||
-        'No se pudo registrar la participación.';
-    }
   }
-}
 
+}
 /* =========================================================
    MÓDULO 12 — VISITAS
    ========================================================= */
