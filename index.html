@@ -1075,8 +1075,47 @@ async function loadRaffles(){const box=$('raffleList');const {data,error}=await 
 /* =========================================================
    MÓDULO 12 — VISITAS
    ========================================================= */
-async function loadVisits(){const {data,error}=await db.from('site_visits').select('total').eq('id',1).maybeSingle();$('visitCount').textContent=error?'—':Number(data?.total||0).toLocaleString('es-AR')}
-async function countVisit(){try{await db.rpc('increment_site_visit')}catch(e){/* La función puede no estar creada todavía. */}}
+async function loadVisits(){
+  const el = $('visitCount');
+  if(!el) return;
+
+  try{
+    const {data,error} = await db
+      .from('site_visits')
+      .select('total')
+      .eq('id',1)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    el.textContent = Number(data?.total ?? 0).toLocaleString('es-AR');
+  }catch(e){
+    console.error('RoXThal — error cargando visitas:',e);
+    el.textContent = '—';
+  }
+}
+
+async function countVisit(){
+  const el = $('visitCount');
+  if(!el) return;
+
+  try{
+    const {data,error} = await db.rpc('increment_site_visit');
+
+    if(error) throw error;
+
+    const total = Number(data);
+
+    if(Number.isFinite(total)){
+      el.textContent = total.toLocaleString('es-AR');
+    }else{
+      await loadVisits();
+    }
+  }catch(e){
+    console.error('RoXThal — error incrementando visita:',e);
+    await loadVisits();
+  }
+}
 
 /* =========================================================
    MÓDULO 10 — BUSCADORES
