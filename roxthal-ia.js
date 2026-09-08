@@ -71,8 +71,9 @@ const SUPABASE_PUBLISHABLE_KEY =
       const response = await fetch(FUNCTION_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
-        },
+  "Content-Type": "application/json",
+  "apikey": SUPABASE_PUBLISHABLE_KEY
+},
         body: JSON.stringify({
           question
         })
