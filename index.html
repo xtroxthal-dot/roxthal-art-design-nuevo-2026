@@ -223,8 +223,112 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
 <!-- ==================== MÓDULO 13 — SOBRE ROXTHAL ==================== -->
 <section id="about" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 13</div><h2 class="section-title">Sobre RoXThal</h2></div><div class="card"><p class="muted" style="line-height:1.8">RoXThal Art Design es un Atelier y Escuela de arte dedicado al dibujo, pintura, tatuaje, diseño y formación artística. La identidad combina creatividad, diversidad, inclusión y compromiso con el reciclaje, creando un espacio abierto para aprender, crear y desarrollar una identidad artística propia.</p></div></div></section>
 
-<!-- ==================== MÓDULO 14 — ROXTHAL IA ==================== -->
-<section id="ai" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 14</div><h2 class="section-title">RoXThal IA</h2><p class="section-desc">Asistente de información y orientación artística.</p></div><div class="card"><div id="aiMessages" style="min-height:220px;max-height:420px;overflow:auto;margin-bottom:14px"><div class="status">Soy RoXThal IA. Puedo orientarte sobre servicios, cursos, tatuajes y arte.</div></div><div class="searchbox"><input id="aiInput" placeholder="Escribe tu consulta…"><button id="aiSend" class="btn btn-primary">Enviar</button></div><p class="small" style="margin-top:10px">La conexión con un proveedor de IA se configurará después. Nunca pondremos una clave secreta de IA dentro del navegador.</p></div></div></section>
+<script>
+(function () {
+
+  const input = document.getElementById("aiInput");
+  const send = document.getElementById("aiSend");
+  const messages = document.getElementById("aiMessages");
+
+  if (!input || !send || !messages) return;
+
+  function addMessage(text, type) {
+    const div = document.createElement("div");
+
+    div.className = type === "user" ? "status" : "status";
+
+    div.style.marginBottom = "10px";
+    div.style.padding = "10px";
+    div.style.borderRadius = "10px";
+    div.style.whiteSpace = "pre-wrap";
+
+    if (type === "user") {
+      div.innerHTML = "<strong>Tú:</strong><br>" + text;
+    } else {
+      div.innerHTML = "<strong>RoXThal IA:</strong><br>" + text;
+    }
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function askRoXThalIA() {
+
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    addMessage(question, "user");
+
+    input.value = "";
+    input.disabled = true;
+    send.disabled = true;
+    send.textContent = "Consultando…";
+
+    const loading = document.createElement("div");
+    loading.className = "status";
+    loading.id = "aiLoading";
+    loading.style.marginBottom = "10px";
+    loading.innerHTML = "<strong>RoXThal IA:</strong><br>Estoy pensando…";
+
+    messages.appendChild(loading);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+
+      const { data, error } = await db.functions.invoke("roxthal-ia", {
+        body: {
+          question: question
+        }
+      });
+
+      const loadingElement = document.getElementById("aiLoading");
+      if (loadingElement) loadingElement.remove();
+
+      if (error) {
+        console.error("RoXThal IA:", error);
+        throw new Error("No se pudo conectar con RoXThal IA.");
+      }
+
+      if (!data || !data.answer) {
+        throw new Error("RoXThal IA no devolvió una respuesta.");
+      }
+
+      addMessage(data.answer, "ai");
+
+    } catch (error) {
+
+      const loadingElement = document.getElementById("aiLoading");
+      if (loadingElement) loadingElement.remove();
+
+      console.error(error);
+
+      addMessage(
+        "No pude procesar la consulta en este momento. Inténtalo nuevamente.",
+        "ai"
+      );
+
+    } finally {
+
+      input.disabled = false;
+      send.disabled = false;
+      send.textContent = "Enviar";
+      input.focus();
+
+    }
+  }
+
+  send.addEventListener("click", askRoXThalIA);
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      askRoXThalIA();
+    }
+  });
+
+})();
+</script>
 
 <!-- ==================== MÓDULO 15 — ADMINISTRADOR ÚNICO ==================== -->
 <section id="admin" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 15</div><h2 class="section-title">Administrador único</h2><p class="section-desc">Un solo panel para gestionar todos los módulos. Acceso exclusivo por correo y contraseña y autorización real mediante Supabase RLS.</p></div>
