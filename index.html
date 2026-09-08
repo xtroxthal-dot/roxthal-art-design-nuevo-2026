@@ -224,7 +224,58 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
 <section id="about" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 13</div><h2 class="section-title">Sobre RoXThal</h2></div><div class="card"><p class="muted" style="line-height:1.8">RoXThal Art Design es un Atelier y Escuela de arte dedicado al dibujo, pintura, tatuaje, diseño y formación artística. La identidad combina creatividad, diversidad, inclusión y compromiso con el reciclaje, creando un espacio abierto para aprender, crear y desarrollar una identidad artística propia.</p></div></div></section>
 
 <!-- ==================== MÓDULO 14 — ROXTHAL IA ==================== -->
-<section id="ai" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 14</div><h2 class="section-title">RoXThal IA</h2><p class="section-desc">Asistente de información y orientación artística.</p></div><div class="card"><div id="aiMessages" style="min-height:220px;max-height:420px;overflow:auto;margin-bottom:14px"><div class="status">Soy RoXThal IA. Puedo orientarte sobre servicios, cursos, tatuajes y arte.</div></div><div class="searchbox"><input id="aiInput" placeholder="Escribe tu consulta…"><button id="aiSend" class="btn btn-primary">Enviar</button></div><p class="small" style="margin-top:10px">La conexión con un proveedor de IA se configurará después. Nunca pondremos una clave secreta de IA dentro del navegador.</p></div></div></section>
+<section id="ai" class="view hidden">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="label">Módulo 14</div>
+      <h2 class="section-title">RoXThal IA</h2>
+      <p class="section-desc">
+        Inteligencia artificial de RoXThal Art Design.
+        Arte, dibujo, pintura, historia del arte, tatuaje,
+        historia del tatuaje, técnicas, cursos, talleres y Atelier.
+      </p>
+    </div>
+
+    <div class="card">
+
+      <div
+        id="aiMessages"
+        style="min-height:220px;max-height:420px;overflow:auto;margin-bottom:14px"
+      >
+        <div class="status">
+          <b>RoXThal IA</b><br>
+          Hola. Soy RoXThal IA. Puedo ayudarte con arte,
+          dibujo, pintura, historia del arte, tatuaje,
+          historia del tatuaje, técnicas, cursos, talleres
+          y todo lo relacionado con RoXThal Art Design.
+        </div>
+      </div>
+
+      <div class="searchbox">
+        <input
+          id="aiInput"
+          type="text"
+          placeholder="Escribe tu pregunta..."
+          autocomplete="off"
+        >
+
+        <button
+          id="aiSend"
+          class="btn btn-primary"
+        >
+          Preguntar
+        </button>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        RoXThal IA está conectada de forma segura al servidor.
+        La clave privada de IA nunca se almacena en la aplicación.
+      </p>
+
+    </div>
+  </div>
+</section>
 
 <!-- ==================== MÓDULO 15 — ADMINISTRADOR ÚNICO ==================== -->
 <section id="admin" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 15</div><h2 class="section-title">Administrador único</h2><p class="section-desc">Un solo panel para gestionar todos los módulos. Acceso exclusivo por correo y contraseña y autorización real mediante Supabase RLS.</p></div>
