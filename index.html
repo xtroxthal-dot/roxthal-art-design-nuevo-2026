@@ -2238,6 +2238,795 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 </script>
    <script src="./radio.js"></script>
    <script src="./roxthal-ia.js"></script>
-   
+   <script>
+/* =========================================================
+   RoXThal — MÓDULO 6 MULTIMEDIA DIRECTO
+   Fotos + vídeos + categorías + subida desde celular
+   ========================================================= */
+
+(function(){
+
+  const MEDIA_CATEGORIES = {
+    talleres: '🎨 Talleres y actividades',
+    obras: '🖼️ Obras',
+    tatuajes: '🖋️ Tatuajes',
+    'dibujo-pintura': '🖌️ Dibujo y pintura',
+    eventos: '🎉 Eventos',
+    alumnos: '👥 Alumnos',
+    otros: '📁 Otros'
+  };
+
+  function mediaSafe(value){
+    return typeof esc === 'function'
+      ? esc(value == null ? '' : String(value))
+      : String(value == null ? '' : value)
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;')
+          .replace(/'/g,'&#039;');
+  }
+
+  /* =========================================================
+     PARTE PÚBLICA
+     ========================================================= */
+
+  window.loadMedia = async function(){
+
+    const categories = $('mediaCategories');
+    const content = $('mediaContent');
+    const list = $('mediaList');
+    const title = $('mediaCategoryTitle');
+    const back = $('mediaBackCategories');
+
+    if(!categories || !content || !list)return;
+
+    categories.classList.remove('hidden');
+    content.classList.add('hidden');
+
+    if(categories.dataset.roxthalMediaReady === '1')return;
+
+    categories.querySelectorAll('[data-media-category]').forEach(button=>{
+
+      button.addEventListener('click', async ()=>{
+
+        const category = button.dataset.mediaCategory;
+
+        categories.classList.add('hidden');
+        content.classList.remove('hidden');
+
+        if(title){
+          title.textContent =
+            MEDIA_CATEGORIES[category] || 'Fotos y Vídeos';
+        }
+
+        list.innerHTML =
+          '<div class="empty">Cargando fotos y vídeos...</div>';
+
+        const {data,error} = await db
+          .from('media_items')
+          .select('*')
+          .eq('visible',true)
+          .eq('category',category)
+          .order('created_at',{ascending:false});
+
+        if(error){
+          list.innerHTML =
+            '<div class="empty">'+mediaSafe(error.message)+'</div>';
+          return;
+        }
+
+        if(!(data || []).length){
+          list.innerHTML =
+            '<div class="empty">Aún no hay fotos o vídeos en este apartado.</div>';
+          return;
+        }
+
+        list.innerHTML = data.map(item=>{
+
+          let mediaHTML = '';
+
+          if(item.kind === 'video'){
+
+            mediaHTML = `
+              <video
+                class="media-img"
+                controls
+                playsinline
+                preload="metadata"
+                src="${mediaSafe(item.url)}">
+              </video>
+            `;
+
+          }else{
+
+            mediaHTML = `
+              <img
+                class="media-img"
+                loading="lazy"
+                src="${mediaSafe(item.url)}"
+                alt="${mediaSafe(item.title)}">
+            `;
+          }
+
+          return `
+            <article class="card">
+              ${mediaHTML}
+              <h3 style="margin-top:12px">
+                ${mediaSafe(item.title)}
+              </h3>
+
+              ${
+                item.description
+                  ? `<p class="muted">${mediaSafe(item.description)}</p>`
+                  : ''
+              }
+            </article>
+          `;
+
+        }).join('');
+
+      });
+
+    });
+
+    if(back){
+
+      back.addEventListener('click',()=>{
+
+        content.classList.add('hidden');
+        categories.classList.remove('hidden');
+
+        list.innerHTML = '';
+
+      });
+
+    }
+
+    categories.dataset.roxthalMediaReady = '1';
+  };
+
+
+  /* =========================================================
+     SUBIDA DIRECTA DESDE CELULAR
+     ========================================================= */
+
+  async function uploadMediaFiles(){
+
+    if(typeof requireAdmin === 'function'){
+      if(!await requireAdmin())return;
+    }
+
+    const files = [
+      ...(($('mediaFiles') && $('mediaFiles').files) || [])
+    ];
+
+    if(!files.length){
+      return toast('Seleccioná al menos una foto o vídeo.');
+    }
+
+    const title =
+      $('mediaTitle')?.value.trim() || 'Contenido RoXThal';
+
+    const description =
+      $('mediaDescription')?.value.trim() || null;
+
+    const category =
+      $('mediaCategory')?.value || 'otros';
+
+    const kindSelected =
+      $('mediaKind')?.value || 'image';
+
+    const visible =
+      $('mediaVisible')?.checked !== false;
+
+    let uploaded = 0;
+    let failed = 0;
+
+    const button = $('saveMedia');
+
+    if(button){
+      button.disabled = true;
+      button.textContent = '⏳ Subiendo...';
+    }
+
+    try{
+
+      for(const file of files){
+
+        try{
+
+          let uploadFile = file;
+          let extension = '';
+
+          /*
+             IMÁGENES:
+             utilizamos exactamente el mismo optimizador
+             que ya funciona en la Galería.
+          */
+
+          if(file.type.startsWith('image/')){
+
+            if(typeof optimizeImage === 'function'){
+              uploadFile = await optimizeImage(file);
+            }
+
+            if(uploadFile.size > 6 * 1024 * 1024){
+              throw new Error(
+                'La imagen supera 6 MB después de optimizar.'
+              );
+            }
+
+            extension = 'jpg';
+
+          }else if(file.type.startsWith('video/')){
+
+            /*
+               VÍDEOS:
+               se conserva el archivo original.
+            */
+
+            if(file.size > 100 * 1024 * 1024){
+              throw new Error(
+                'El vídeo supera el límite de 100 MB.'
+              );
+            }
+
+            extension =
+              (file.name.split('.').pop() || 'mp4')
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g,'');
+
+            if(!extension)extension='mp4';
+
+          }else{
+
+            throw new Error(
+              'Formato no compatible.'
+            );
+          }
+
+          /*
+             El tipo real del archivo manda.
+             Esto evita guardar un vídeo como imagen.
+          */
+
+          const realKind =
+            file.type.startsWith('video/')
+              ? 'video'
+              : 'image';
+
+          const path =
+            'media/' +
+            category +
+            '/' +
+            crypto.randomUUID() +
+            '.' +
+            extension;
+
+          const uploadResult =
+            await db.storage
+              .from('images')
+              .upload(
+                path,
+                uploadFile,
+                {
+                  contentType:
+                    realKind === 'image'
+                      ? 'image/jpeg'
+                      : file.type,
+                  upsert:false
+                }
+              );
+
+          if(uploadResult.error){
+            throw uploadResult.error;
+          }
+
+          const publicURL =
+            db.storage
+              .from('images')
+              .getPublicUrl(path)
+              .data
+              .publicUrl;
+
+          const insertResult =
+            await db
+              .from('media_items')
+              .insert({
+                title,
+                description,
+                category,
+                kind:realKind,
+                url:publicURL,
+                storage_path:path,
+                visible
+              });
+
+          if(insertResult.error){
+
+            await db.storage
+              .from('images')
+              .remove([path]);
+
+            throw insertResult.error;
+          }
+
+          uploaded++;
+
+        }catch(error){
+
+          failed++;
+
+          console.error(
+            'Error multimedia:',
+            error
+          );
+
+          toast(
+            'Error al subir: ' +
+            (error.message || error)
+          );
+        }
+      }
+
+    }finally{
+
+      if(button){
+        button.disabled = false;
+        button.textContent = '📤 Subir contenido';
+      }
+    }
+
+    if($('mediaFiles')){
+      $('mediaFiles').value = '';
+    }
+
+    await window.loadAdminMedia();
+    await window.loadMedia();
+
+    if(uploaded && !failed){
+
+      toast(
+        uploaded +
+        (uploaded === 1
+          ? ' archivo subido correctamente.'
+          : ' archivos subidos correctamente.')
+      );
+
+    }else if(uploaded){
+
+      toast(
+        uploaded +
+        ' archivo(s) subido(s). ' +
+        failed +
+        ' con error.'
+      );
+    }
+  }
+
+
+  /* =========================================================
+     LIMPIAR FORMULARIO
+     ========================================================= */
+
+  function clearMediaForm(){
+
+    if($('mediaId'))$('mediaId').value = '';
+    if($('mediaTitle'))$('mediaTitle').value = '';
+    if($('mediaDescription'))$('mediaDescription').value = '';
+    if($('mediaFiles'))$('mediaFiles').value = '';
+
+    if($('mediaCategory')){
+      $('mediaCategory').value = 'talleres';
+    }
+
+    if($('mediaKind')){
+      $('mediaKind').value = 'image';
+    }
+
+    if($('mediaVisible')){
+      $('mediaVisible').checked = true;
+    }
+
+    if($('saveMedia')){
+      $('saveMedia').textContent = '📤 Subir contenido';
+    }
+  }
+
+
+  /* =========================================================
+     ADMIN — LISTADO
+     ========================================================= */
+
+  window.loadAdminMedia = async function(){
+
+    if(typeof requireAdmin === 'function'){
+      if(!await requireAdmin())return;
+    }
+
+    const box = $('adminMediaList');
+
+    if(!box)return;
+
+    box.innerHTML =
+      '<div class="empty">Cargando contenido multimedia...</div>';
+
+    const {data,error} =
+      await db
+        .from('media_items')
+        .select('*')
+        .order('created_at',{ascending:false});
+
+    if(error){
+
+      box.innerHTML =
+        '<div class="empty">' +
+        mediaSafe(error.message) +
+        '</div>';
+
+      return;
+    }
+
+    if(!(data || []).length){
+
+      box.innerHTML =
+        '<div class="empty">No hay contenido multimedia.</div>';
+
+      return;
+    }
+
+    box.innerHTML = data.map(item=>{
+
+      const category =
+        MEDIA_CATEGORIES[item.category] ||
+        item.category ||
+        '📁 Otros';
+
+      const preview =
+        item.kind === 'video'
+          ? `
+            <video
+              src="${mediaSafe(item.url)}"
+              style="
+                width:80px;
+                height:60px;
+                object-fit:cover;
+                border-radius:10px;
+              "
+              muted
+              playsinline
+              preload="metadata">
+            </video>
+          `
+          : `
+            <img
+              src="${mediaSafe(item.url)}"
+              alt="${mediaSafe(item.title)}"
+              style="
+                width:80px;
+                height:60px;
+                object-fit:cover;
+                border-radius:10px;
+              ">
+          `;
+
+      return `
+        <div
+          class="admin-item"
+          data-roxthal-media-row="${item.id}">
+
+          <div>
+            ${preview}
+          </div>
+
+          <div style="min-width:0">
+
+            <h4>${mediaSafe(item.title)}</h4>
+
+            <p>
+              ${category}
+              ·
+              ${item.kind === 'video' ? '🎬 Vídeo' : '📷 Foto'}
+              ·
+              ${item.visible ? 'Visible' : 'Oculto'}
+            </p>
+
+          </div>
+
+          <div>
+
+            <button
+              class="btn btn-small btn-primary"
+              type="button"
+              data-edit-media="${item.id}">
+              Editar
+            </button>
+
+            <button
+              class="btn btn-small btn-danger"
+              type="button"
+              data-delete-media="${item.id}"
+              style="margin-top:6px">
+              Eliminar
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+    }).join('');
+  };
+
+
+  /* =========================================================
+     BOTÓN GUARDAR / SUBIR
+     ========================================================= */
+
+  function installMediaButtons(){
+
+    const save = $('saveMedia');
+    const cancel = $('cancelMedia');
+
+    if(save){
+
+      /*
+         IMPORTANTE:
+         reemplazamos el onclick antiguo.
+         Así evitamos que el código viejo intente utilizar
+         mediaUrl y haga una segunda operación.
+      */
+
+      save.onclick = async function(){
+
+        const id =
+          $('mediaId')?.value || '';
+
+        /*
+           Si hay ID, estamos editando.
+           La edición de metadatos se realiza aparte.
+        */
+
+        if(id){
+
+          if(typeof requireAdmin === 'function'){
+            if(!await requireAdmin())return;
+          }
+
+          const payload = {
+            title:
+              $('mediaTitle')?.value.trim() ||
+              'Contenido RoXThal',
+
+            description:
+              $('mediaDescription')?.value.trim() ||
+              null,
+
+            category:
+              $('mediaCategory')?.value ||
+              'otros',
+
+            visible:
+              $('mediaVisible')?.checked !== false,
+
+            updated_at:
+              new Date().toISOString()
+          };
+
+          const result =
+            await db
+              .from('media_items')
+              .update(payload)
+              .eq('id',id);
+
+          if(result.error){
+            return toast(result.error.message);
+          }
+
+          clearMediaForm();
+
+          await window.loadAdminMedia();
+          await window.loadMedia();
+
+          return toast(
+            'Contenido actualizado correctamente.'
+          );
+        }
+
+        await uploadMediaFiles();
+      };
+    }
+
+    if(cancel){
+
+      cancel.onclick = function(){
+        clearMediaForm();
+      };
+    }
+  }
+
+
+  /* =========================================================
+     EDITAR / ELIMINAR
+     CAPTURE PHASE PARA BLOQUEAR EL HANDLER ANTIGUO
+     ========================================================= */
+
+  document.addEventListener(
+    'click',
+    async function(event){
+
+      const editButton =
+        event.target.closest('[data-edit-media]');
+
+      const deleteButton =
+        event.target.closest('[data-delete-media]');
+
+      if(!editButton && !deleteButton)return;
+
+      /*
+         Detenemos aquí el listener antiguo de index.html.
+      */
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if(typeof requireAdmin === 'function'){
+        if(!await requireAdmin())return;
+      }
+
+      /* ================= EDITAR ================= */
+
+      if(editButton){
+
+        const id =
+          editButton.dataset.editMedia;
+
+        const {data,error} =
+          await db
+            .from('media_items')
+            .select('*')
+            .eq('id',id)
+            .single();
+
+        if(error){
+          return toast(error.message);
+        }
+
+        if(!data)return;
+
+        $('mediaId').value =
+          data.id || '';
+
+        $('mediaTitle').value =
+          data.title || '';
+
+        $('mediaDescription').value =
+          data.description || '';
+
+        $('mediaCategory').value =
+          data.category || 'otros';
+
+        $('mediaKind').value =
+          data.kind || 'image';
+
+        $('mediaVisible').checked =
+          data.visible !== false;
+
+        if($('mediaFiles')){
+          $('mediaFiles').value = '';
+        }
+
+        $('saveMedia').textContent =
+          '💾 Guardar cambios';
+
+        /*
+           Dejamos claro que el archivo actual
+           permanece si no se selecciona uno nuevo.
+        */
+
+        toast(
+          'Contenido cargado para editar.'
+        );
+
+        return;
+      }
+
+      /* ================= ELIMINAR ================= */
+
+      if(deleteButton){
+
+        const id =
+          deleteButton.dataset.deleteMedia;
+
+        const confirmed =
+          confirm(
+            '¿Eliminar este contenido multimedia?'
+          );
+
+        if(!confirmed)return;
+
+        const {data,error:readError} =
+          await db
+            .from('media_items')
+            .select('id,storage_path')
+            .eq('id',id)
+            .single();
+
+        if(readError){
+          return toast(readError.message);
+        }
+
+        /*
+           Primero eliminamos la fila de la base.
+           Solo si funciona eliminamos el archivo físico.
+        */
+
+        const {error:deleteError} =
+          await db
+            .from('media_items')
+            .delete()
+            .eq('id',id);
+
+        if(deleteError){
+          return toast(deleteError.message);
+        }
+
+        if(data?.storage_path){
+
+          const {error:storageError} =
+            await db.storage
+              .from('images')
+              .remove([
+                data.storage_path
+              ]);
+
+          if(storageError){
+            console.warn(
+              'La fila fue eliminada pero no se pudo borrar el archivo:',
+              storageError
+            );
+          }
+        }
+
+        await window.loadAdminMedia();
+        await window.loadMedia();
+
+        return toast(
+          'Contenido eliminado.'
+        );
+      }
+
+    },
+    true
+  );
+
+
+  /* =========================================================
+     INICIALIZACIÓN
+     ========================================================= */
+
+  installMediaButtons();
+
+  /*
+     Si el formulario se crea antes de este script,
+     queda instalado inmediatamente.
+  */
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      installMediaButtons,
+      {once:true}
+    );
+
+  }else{
+
+    installMediaButtons();
+  }
+
+})();
+</script>
 </body>
 </html>
