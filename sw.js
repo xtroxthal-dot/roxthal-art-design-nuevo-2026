@@ -1,9 +1,8 @@
-const CACHE_NAME = "roxthal-art-design-v1";
+const CACHE_NAME = "roxthal-art-design-v2";
 
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./logo-roxthal-art-design.png",
   "./manifest.json"
 ];
 
