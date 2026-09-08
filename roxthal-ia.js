@@ -8,7 +8,8 @@
 
   const FUNCTION_URL =
     "https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-ia";
-
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
   const input = document.getElementById("aiInput");
   const send = document.getElementById("aiSend");
   const messages = document.getElementById("aiMessages");
