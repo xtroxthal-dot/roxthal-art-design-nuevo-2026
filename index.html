@@ -125,9 +125,88 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
   </div>
 </section>
 
-<!-- ==================== MÓDULO 6 — FOTOS Y VÍDEOS ==================== -->
-<section id="media" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 6</div><h2 class="section-title">Fotos y Vídeos</h2><p class="section-desc">Actividades, talleres, procesos y trabajos.</p></div><div id="mediaList" class="grid3"></div></div></section>
 
+<!-- ==================== MÓDULO 6 — FOTOS Y VÍDEOS ==================== -->
+<section id="media" class="view hidden">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="label">Módulo 6</div>
+      <h2 class="section-title">Fotos y Vídeos</h2>
+      <p class="section-desc">
+        Explorá las actividades, trabajos, talleres y momentos de RoXThal.
+      </p>
+    </div>
+
+    <!-- APARTADOS -->
+    <div id="mediaCategories" class="grid2">
+
+      <button class="card media-category" data-media-category="talleres" type="button">
+        <div style="font-size:42px">🎨</div>
+        <h3>Talleres y actividades</h3>
+        <p class="muted">Fotos y vídeos de nuestros talleres y actividades.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="obras" type="button">
+        <div style="font-size:42px">🖼️</div>
+        <h3>Obras</h3>
+        <p class="muted">Trabajos y producciones artísticas.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="tatuajes" type="button">
+        <div style="font-size:42px">🖋️</div>
+        <h3>Tatuajes</h3>
+        <p class="muted">Trabajos y procesos de tatuaje.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="dibujo-pintura" type="button">
+        <div style="font-size:42px">🖌️</div>
+        <h3>Dibujo y pintura</h3>
+        <p class="muted">Trabajos realizados en dibujo y pintura.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="eventos" type="button">
+        <div style="font-size:42px">🎉</div>
+        <h3>Eventos</h3>
+        <p class="muted">Eventos y momentos especiales de RoXThal.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="alumnos" type="button">
+        <div style="font-size:42px">👥</div>
+        <h3>Alumnos</h3>
+        <p class="muted">Trabajos y actividades de nuestros alumnos.</p>
+      </button>
+
+      <button class="card media-category" data-media-category="otros" type="button">
+        <div style="font-size:42px">📁</div>
+        <h3>Otros</h3>
+        <p class="muted">Contenido que no pertenece a otro apartado.</p>
+      </button>
+
+    </div>
+
+    <!-- CONTENIDO DEL APARTADO -->
+    <div id="mediaContent" class="hidden">
+
+      <div class="actions" style="margin-bottom:18px">
+        <button class="btn" type="button" id="mediaBackCategories">
+          ← Volver a apartados
+        </button>
+      </div>
+
+      <div class="section-head">
+        <div class="label">Fotos y Vídeos</div>
+        <h3 id="mediaCategoryTitle" class="section-title" style="font-size:32px">
+          Contenido
+        </h3>
+      </div>
+
+      <div id="mediaList" class="grid3"></div>
+
+    </div>
+
+  </div>
+</section>
 <!-- ==================== MÓDULO 7 — RESEÑAS ==================== -->
 <section id="reviews" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 7</div><h2 class="section-title">Reseñas</h2><p class="section-desc">Experiencias de alumnos y clientes.</p></div><div id="reviewsList" class="grid2"></div><div class="card" style="margin-top:16px"><h3>Deja tu reseña</h3><div class="grid2" style="margin-top:14px"><div class="field"><label>Nombre</label><input id="reviewName"></div><div class="field"><label>Valoración</label><select id="reviewRating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div></div><div class="field"><label>Comentario</label><textarea id="reviewComment"></textarea></div><button id="submitReview" class="btn btn-primary">Enviar reseña</button></div></div></section>
 
