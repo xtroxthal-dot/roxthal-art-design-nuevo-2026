@@ -103,8 +103,705 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
 
 <!-- ==================== MÓDULO 16 — CONTROL TOTAL DE ALUMNOS ==================== -->
 <section id="students" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 16</div><h2 class="section-title">Control de Alumnos</h2><p class="section-desc">Este módulo es privado y se gestiona desde el Administrador.</p></div><div class="card"><p class="muted">Acceso restringido. Entra desde Administrador para gestionar fichas, cursos, pagos y asistencia.</p><button class="btn btn-primary" style="margin-top:15px" data-go="admin">Ir al Administrador</button></div></div></section>
-   Administrador</button></div></div></section>
-</main>
+   <!-- =========================================================
+     ROXTHAL — MÓDULO INDEPENDIENTE DE INSTALACIÓN Y COMPARTIR
+     PEGAR JUSTO DESPUÉS DEL MÓDULO 16 Y ANTES DE </main>
+     ========================================================= -->
+
+<section id="roxthalAppModule">
+  <div class="container">
+    <div class="rox-app-card">
+
+      <div class="rox-app-logo">
+        <img
+          src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
+          alt="RoXThal Art Design">
+      </div>
+
+      <div class="label">ROXTHAL EN TU TELÉFONO</div>
+
+      <h2 class="section-title">Lleva RoXThal contigo.</h2>
+
+      <p class="section-desc rox-app-description">
+        Instala RoXThal Art Design en tu teléfono y tendrás acceso directo
+        a nuestro Atelier, Escuela, tatuajes, cursos, galería y todos
+        nuestros contenidos.
+      </p>
+
+      <div class="rox-app-actions">
+
+        <button
+          type="button"
+          id="roxInstallBtn"
+          class="btn btn-primary rox-app-btn">
+          📲 Descargar app
+        </button>
+
+        <button
+          type="button"
+          id="roxShareBtn"
+          class="btn rox-app-btn">
+          🔗 Compartir RoXThal
+        </button>
+
+        <button
+          type="button"
+          id="roxCopyBtn"
+          class="btn rox-app-btn">
+          📋 Copiar enlace
+        </button>
+
+        <button
+          type="button"
+          id="roxHomeBtn"
+          class="btn rox-app-btn">
+          📱 Añadir a pantalla de inicio
+        </button>
+
+      </div>
+
+      <div
+        id="roxInstallStatus"
+        class="rox-install-status">
+        Comprobando las opciones de instalación...
+      </div>
+
+      <div class="rox-app-features">
+
+        <div class="rox-app-feature">
+          <span>⚡</span>
+          <strong>Acceso rápido</strong>
+          <small>Abre RoXThal directamente desde tu teléfono.</small>
+        </div>
+
+        <div class="rox-app-feature">
+          <span>📲</span>
+          <strong>Como una app</strong>
+          <small>Instala RoXThal sin ocupar una página del navegador.</small>
+        </div>
+
+        <div class="rox-app-feature">
+          <span>🔗</span>
+          <strong>Comparte RoXThal</strong>
+          <small>Envía el enlace fácilmente a otras personas.</small>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<style>
+/* =========================================================
+   ROXTHAL — ESTILOS DEL MÓDULO INDEPENDIENTE
+   ========================================================= */
+
+#roxthalAppModule{
+  padding:70px 0 85px;
+}
+
+#roxthalAppModule .rox-app-card{
+  position:relative;
+  overflow:hidden;
+  padding:42px 28px;
+  border:1px solid var(--border);
+  border-radius:24px;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(242,196,0,.14),
+      transparent 42%
+    ),
+    linear-gradient(145deg,#181818,#0d0d0d);
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+
+#roxthalAppModule .rox-app-logo{
+  width:105px;
+  height:105px;
+  margin:0 auto 22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  border-radius:26px;
+  background:#050505;
+  box-shadow:0 0 38px rgba(242,196,0,.13);
+}
+
+#roxthalAppModule .rox-app-logo img{
+  width:86px;
+  height:86px;
+  object-fit:contain;
+}
+
+#roxthalAppModule .rox-app-description{
+  margin:0 auto;
+  max-width:720px;
+}
+
+#roxthalAppModule .rox-app-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  max-width:720px;
+  margin:30px auto 16px;
+}
+
+#roxthalAppModule .rox-app-btn{
+  width:100%;
+  min-height:52px;
+}
+
+#roxthalAppModule .rox-install-status{
+  max-width:720px;
+  margin:14px auto 0;
+  padding:14px 17px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:#0a0a0a;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+#roxthalAppModule .rox-install-status.ready{
+  border-color:var(--yellow);
+  color:var(--yellow);
+}
+
+#roxthalAppModule .rox-install-status.success{
+  border-color:#215f3c;
+  color:#8de2ae;
+}
+
+#roxthalAppModule .rox-install-status.warning{
+  border-color:#6d1b1f;
+  color:#ff8b8f;
+}
+
+#roxthalAppModule .rox-app-features{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  max-width:900px;
+  margin:27px auto 0;
+}
+
+#roxthalAppModule .rox-app-feature{
+  padding:17px 15px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:#101010;
+  text-align:left;
+}
+
+#roxthalAppModule .rox-app-feature span{
+  display:block;
+  margin-bottom:8px;
+  font-size:21px;
+}
+
+#roxthalAppModule .rox-app-feature strong{
+  display:block;
+  margin-bottom:5px;
+  color:var(--text);
+  font-size:14px;
+}
+
+#roxthalAppModule .rox-app-feature small{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+@media(max-width:700px){
+
+  #roxthalAppModule{
+    padding:50px 0 65px;
+  }
+
+  #roxthalAppModule .rox-app-card{
+    padding:32px 17px;
+    border-radius:20px;
+  }
+
+  #roxthalAppModule .rox-app-actions{
+    grid-template-columns:1fr;
+  }
+
+  #roxthalAppModule .rox-app-features{
+    grid-template-columns:1fr;
+  }
+
+}
+</style>
+
+
+<script>
+/* =========================================================
+   ROXTHAL — LÓGICA INDEPENDIENTE DE INSTALACIÓN
+   ========================================================= */
+
+(function(){
+
+  'use strict';
+
+  let roxDeferredInstallPrompt = null;
+
+  const roxAppUrl = window.location.href.split('#')[0];
+
+  const roxInstallBtn =
+    document.getElementById('roxInstallBtn');
+
+  const roxShareBtn =
+    document.getElementById('roxShareBtn');
+
+  const roxCopyBtn =
+    document.getElementById('roxCopyBtn');
+
+  const roxHomeBtn =
+    document.getElementById('roxHomeBtn');
+
+  const roxStatus =
+    document.getElementById('roxInstallStatus');
+
+
+  function roxSetStatus(message,type){
+
+    if(!roxStatus) return;
+
+    roxStatus.textContent = message;
+
+    roxStatus.className =
+      'rox-install-status' +
+      (type ? ' ' + type : '');
+
+  }
+
+
+  function roxIsInstalled(){
+
+    return (
+      window.matchMedia &&
+      window.matchMedia(
+        '(display-mode: standalone)'
+      ).matches
+    ) ||
+    window.navigator.standalone === true;
+
+  }
+
+
+  /* =======================================================
+     DETECTAR INSTALADOR PWA
+     ======================================================= */
+
+  window.addEventListener(
+    'beforeinstallprompt',
+    function(event){
+
+      event.preventDefault();
+
+      roxDeferredInstallPrompt = event;
+
+      if(roxInstallBtn){
+
+        roxInstallBtn.textContent =
+          '📲 Descargar app';
+
+        roxInstallBtn.disabled = false;
+
+      }
+
+      roxSetStatus(
+        'RoXThal está preparada para instalarse en tu teléfono.',
+        'ready'
+      );
+
+    }
+  );
+
+
+  /* =======================================================
+     BOTÓN DESCARGAR / INSTALAR
+     ======================================================= */
+
+  if(roxInstallBtn){
+
+    roxInstallBtn.addEventListener(
+      'click',
+      async function(){
+
+        if(roxIsInstalled()){
+
+          roxSetStatus(
+            'RoXThal ya está instalada en este dispositivo.',
+            'success'
+          );
+
+          if(typeof toast === 'function'){
+            toast('RoXThal ya está instalada.');
+          }
+
+          return;
+
+        }
+
+
+        if(!roxDeferredInstallPrompt){
+
+          roxSetStatus(
+            'La instalación directa no está disponible ahora. Abre el menú de tu navegador y selecciona “Instalar aplicación” o “Añadir a pantalla de inicio”.',
+            'warning'
+          );
+
+          if(typeof toast === 'function'){
+            toast('Usa “Añadir a pantalla de inicio”.');
+          }
+
+          return;
+
+        }
+
+
+        try{
+
+          roxDeferredInstallPrompt.prompt();
+
+          const result =
+            await roxDeferredInstallPrompt.userChoice;
+
+          if(result &&
+             result.outcome === 'accepted'){
+
+            roxSetStatus(
+              '¡RoXThal se está instalando en tu teléfono!',
+              'success'
+            );
+
+          }else{
+
+            roxSetStatus(
+              'La instalación fue cancelada. Puedes intentarlo nuevamente.',
+              'warning'
+            );
+
+          }
+
+        }catch(error){
+
+          console.warn(
+            'RoXThal: error de instalación',
+            error
+          );
+
+          roxSetStatus(
+            'No fue posible iniciar la instalación. Puedes usar “Añadir a pantalla de inicio”.',
+            'warning'
+          );
+
+        }
+
+        roxDeferredInstallPrompt = null;
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     COMPARTIR
+     ======================================================= */
+
+  if(roxShareBtn){
+
+    roxShareBtn.addEventListener(
+      'click',
+      async function(){
+
+        const shareData = {
+
+          title:'RoXThal Art Design',
+
+          text:
+            'Conoce RoXThal Art Design — Arte, diseño, tatuaje y formación artística.',
+
+          url:roxAppUrl
+
+        };
+
+
+        try{
+
+          if(
+            navigator.share &&
+            navigator.canShare ?
+            navigator.canShare(shareData) :
+            !!navigator.share
+          ){
+
+            await navigator.share(shareData);
+
+            roxSetStatus(
+              'RoXThal fue compartida correctamente.',
+              'success'
+            );
+
+          }else{
+
+            await navigator.clipboard.writeText(
+              roxAppUrl
+            );
+
+            roxSetStatus(
+              'El enlace fue copiado porque este navegador no permite compartir directamente.',
+              'success'
+            );
+
+            if(typeof toast === 'function'){
+              toast('Enlace copiado.');
+            }
+
+          }
+
+        }catch(error){
+
+          if(error && error.name === 'AbortError'){
+            return;
+          }
+
+          console.warn(
+            'RoXThal: error al compartir',
+            error
+          );
+
+          roxSetStatus(
+            'No se pudo compartir el enlace.',
+            'warning'
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     COPIAR ENLACE
+     ======================================================= */
+
+  if(roxCopyBtn){
+
+    roxCopyBtn.addEventListener(
+      'click',
+      async function(){
+
+        try{
+
+          if(
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+          ){
+
+            await navigator.clipboard.writeText(
+              roxAppUrl
+            );
+
+          }else{
+
+            const textarea =
+              document.createElement('textarea');
+
+            textarea.value = roxAppUrl;
+
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+
+            document.body.appendChild(textarea);
+
+            textarea.focus();
+            textarea.select();
+
+            document.execCommand('copy');
+
+            textarea.remove();
+
+          }
+
+          roxSetStatus(
+            'Enlace de RoXThal copiado. Ya puedes enviarlo por WhatsApp, Instagram u otra aplicación.',
+            'success'
+          );
+
+          if(typeof toast === 'function'){
+            toast('Enlace copiado.');
+          }
+
+        }catch(error){
+
+          console.warn(
+            'RoXThal: error al copiar',
+            error
+          );
+
+          roxSetStatus(
+            'No fue posible copiar automáticamente el enlace.',
+            'warning'
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     AÑADIR A PANTALLA DE INICIO
+     ======================================================= */
+
+  if(roxHomeBtn){
+
+    roxHomeBtn.addEventListener(
+      'click',
+      function(){
+
+        if(roxIsInstalled()){
+
+          roxSetStatus(
+            'RoXThal ya está instalada en este dispositivo.',
+            'success'
+          );
+
+          if(typeof toast === 'function'){
+            toast('La app ya está instalada.');
+          }
+
+          return;
+
+        }
+
+
+        if(roxDeferredInstallPrompt){
+
+          roxSetStatus(
+            'Pulsa “Descargar app” para instalar RoXThal directamente.',
+            'ready'
+          );
+
+          if(typeof toast === 'function'){
+            toast('Pulsa “Descargar app”.');
+          }
+
+          return;
+
+        }
+
+
+        roxSetStatus(
+          'Abre el menú de tu navegador y selecciona “Añadir a pantalla de inicio” o “Instalar aplicación”.',
+          'ready'
+        );
+
+        if(typeof toast === 'function'){
+          toast('Busca “Añadir a pantalla de inicio”.');
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     INSTALACIÓN COMPLETADA
+     ======================================================= */
+
+  window.addEventListener(
+    'appinstalled',
+    function(){
+
+      roxDeferredInstallPrompt = null;
+
+      roxSetStatus(
+        '¡RoXThal está instalada! Ahora puedes abrirla desde el icono de tu teléfono.',
+        'success'
+      );
+
+      if(typeof toast === 'function'){
+        toast('RoXThal instalada correctamente.');
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     ESTADO INICIAL
+     ======================================================= */
+
+  if(roxIsInstalled()){
+
+    roxSetStatus(
+      'RoXThal ya está instalada en este dispositivo.',
+      'success'
+    );
+
+  }else{
+
+    roxSetStatus(
+      'Puedes instalar RoXThal o añadirla a la pantalla de inicio.'
+    );
+
+  }
+
+
+  /* =======================================================
+     SERVICE WORKER
+     ======================================================= */
+
+  if('serviceWorker' in navigator){
+
+    window.addEventListener(
+      'load',
+      function(){
+
+        navigator.serviceWorker
+          .register('./sw.js')
+          .then(function(){
+
+            console.log(
+              'RoXThal: Service Worker registrado correctamente.'
+            );
+
+          })
+          .catch(function(error){
+
+            console.warn(
+              'RoXThal: no se pudo registrar el Service Worker.',
+              error
+            );
+
+          });
+
+      }
+    );
+
+  }
+
+})();
+</script>
+
+<!-- ==================== FIN MÓDULO ROXTHAL ==================== -->
 </main>
 
 <footer><div class="container">© RoXThal Art Design · Arte · Diseño · Tatuaje · Formación</div></footer>
