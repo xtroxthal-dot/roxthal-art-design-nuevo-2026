@@ -554,7 +554,165 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
 <div id="adminCourses" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Curso / taller</h3><input id="courseId" type="hidden"><div class="field"><label>Nombre</label><input id="courseName"></div><div class="field"><label>Descripción</label><textarea id="courseDescription"></textarea></div><div class="field"><label>Precio</label><input id="coursePrice" type="number" min="0" step="0.01"></div><div class="field"><label>Duración</label><input id="courseDuration" placeholder="8 meses"></div><div class="field"><label>Horario</label><input id="courseSchedule"></div><div class="field"><label>Modalidad</label><input id="courseModality" placeholder="Presencial"></div><label style="display:block;margin:12px 0"><input id="courseMaterials" type="checkbox"> Materiales incluidos</label><label style="display:block;margin:12px 0"><input id="courseActive" type="checkbox" checked> Activo</label><button id="saveCourse" class="btn btn-primary">Guardar curso</button><button id="cancelCourse" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Cursos publicados</h3><div id="adminCourseList" class="admin-list"></div></div></div></div>
 <div id="adminServices" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Servicio</h3><input id="serviceId" type="hidden"><div class="field"><label>Nombre</label><input id="serviceName"></div><div class="field"><label>Descripción</label><textarea id="serviceDescription"></textarea></div><label style="display:block;margin:12px 0"><input id="serviceActive" type="checkbox" checked> Activo</label><button id="saveService" class="btn btn-primary">Guardar servicio</button><button id="cancelService" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Servicios</h3><div id="adminServiceList" class="admin-list"></div></div></div></div>
 <div id="adminRadioAdmin" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Emisora</h3><input id="radioId" type="hidden"><div class="field"><label>Nombre</label><input id="radioName"></div><div class="field"><label>Género</label><input id="radioGenre"></div><div class="field"><label>URL del stream</label><input id="radioStream" type="url"></div><label style="display:block;margin:12px 0"><input id="radioActive" type="checkbox" checked> Activa</label><button id="saveRadio" class="btn btn-primary">Guardar emisora</button><button id="cancelRadio" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Emisoras</h3><div id="adminRadioList" class="admin-list"></div></div></div></div>
-<div id="adminMediaAdmin" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Foto / vídeo</h3><input id="mediaId" type="hidden"><div class="field"><label>Título</label><input id="mediaTitle"></div><div class="field"><label>Descripción</label><textarea id="mediaDescription"></textarea></div><div class="field"><label>Tipo</label><select id="mediaKind"><option value="image">Foto</option><option value="video">Vídeo</option></select></div><div class="field"><label>URL pública</label><input id="mediaUrl" type="url"></div><label style="display:block;margin:12px 0"><input id="mediaVisible" type="checkbox" checked> Visible</label><button id="saveMedia" class="btn btn-primary">Guardar contenido</button><button id="cancelMedia" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Contenido multimedia</h3><div id="adminMediaList" class="admin-list"></div></div></div></div>
+<div id="adminMediaAdmin" class="admin-tab-panel hidden">
+
+  <div class="grid2">
+
+    <!-- FORMULARIO MULTIMEDIA -->
+    <div class="card">
+
+      <h3>📸 Subir fotos y vídeos</h3>
+
+      <p class="small" style="margin:6px 0 16px">
+        Seleccioná directamente las fotos o vídeos desde tu celular.
+        No necesitás copiar ninguna URL.
+      </p>
+
+      <input id="mediaId" type="hidden">
+
+      <div class="field">
+        <label>Título</label>
+        <input id="mediaTitle" placeholder="Ej.: Taller de arte">
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="mediaDescription" placeholder="Descripción del contenido"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Apartado</label>
+
+        <select id="mediaCategory">
+
+          <option value="talleres">
+            🎨 Talleres y actividades
+          </option>
+
+          <option value="obras">
+            🖼️ Obras
+          </option>
+
+          <option value="tatuajes">
+            🖋️ Tatuajes
+          </option>
+
+          <option value="dibujo-pintura">
+            🖌️ Dibujo y pintura
+          </option>
+
+          <option value="eventos">
+            🎉 Eventos
+          </option>
+
+          <option value="alumnos">
+            👥 Alumnos
+          </option>
+
+          <option value="otros">
+            📁 Otros
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label>Tipo de contenido</label>
+
+        <select id="mediaKind">
+
+          <option value="image">
+            📷 Foto
+          </option>
+
+          <option value="video">
+            🎬 Vídeo
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label>Seleccionar archivos</label>
+
+        <input
+          id="mediaFiles"
+          type="file"
+          accept="image/*,video/*"
+          multiple
+        >
+
+      </div>
+
+      <div class="status" style="margin-top:10px">
+
+        <b>📱 Carga directa desde el celular</b>
+
+        <div class="small" style="margin-top:5px">
+          Los archivos se subirán automáticamente a Supabase
+          y la aplicación generará sus URLs públicas.
+        </div>
+
+      </div>
+
+      <label style="display:block;margin:12px 0">
+
+        <input
+          id="mediaVisible"
+          type="checkbox"
+          checked
+        >
+
+        Visible públicamente
+
+      </label>
+
+      <div class="actions">
+
+        <button
+          id="saveMedia"
+          class="btn btn-primary"
+          type="button"
+        >
+          📤 Subir contenido
+        </button>
+
+        <button
+          id="cancelMedia"
+          class="btn"
+          type="button"
+        >
+          Limpiar
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- CONTENIDO EXISTENTE -->
+    <div class="card">
+
+      <h3>🎞️ Contenido multimedia</h3>
+
+      <p class="small" style="margin:6px 0 16px">
+        Desde aquí podrás revisar, editar y eliminar
+        el contenido publicado.
+      </p>
+
+      <div
+        id="adminMediaList"
+        class="admin-list"
+      ></div>
+
+    </div>
+
+  </div>
+
+</div>
 <div id="adminReviewsAdmin" class="admin-tab-panel hidden"><div class="card"><h3>Moderación de reseñas</h3><div id="adminReviewList" class="admin-list"></div></div></div>
 <div id="adminRafflesAdmin" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Sorteo</h3><input id="raffleId" type="hidden"><div class="field"><label>Título</label><input id="raffleTitle"></div><div class="field"><label>Descripción</label><textarea id="raffleDescription"></textarea></div><div class="field"><label>Premio</label><input id="rafflePrize"></div><div class="field"><label>Fecha del sorteo</label><input id="raffleDate" type="date"></div><label style="display:block;margin:12px 0"><input id="raffleActive" type="checkbox" checked> Activo</label><button id="saveRaffle" class="btn btn-primary">Guardar sorteo</button><button id="cancelRaffle" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Sorteos</h3><div id="adminRaffleList" class="admin-list"></div></div></div><div class="card" style="margin-top:16px"><h3>Participantes</h3><div id="adminEntryList" class="admin-list"></div></div></div>
 <div id="adminPaymentsAdmin" class="admin-tab-panel hidden"><div class="grid2"><div class="card"><h3>Registrar pago</h3><input id="paymentId" type="hidden"><div class="field"><label>Alumno</label><select id="paymentStudent"></select></div><div class="field"><label>Nombre</label><input id="paymentName"></div><div class="field"><label>Importe</label><input id="paymentAmount" type="number" min="0" step="0.01"></div><div class="field"><label>Fecha</label><input id="paymentDate" type="date"></div><div class="field"><label>Método</label><input id="paymentMethod" placeholder="Mercado Pago / efectivo / transferencia"></div><div class="field"><label>Concepto</label><input id="paymentConcept"></div><div class="field"><label>Estado</label><select id="paymentStatus"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option><option value="anulado">Anulado</option></select></div><div class="field"><label>Notas</label><textarea id="paymentNotes"></textarea></div><button id="savePayment" class="btn btn-primary">Guardar pago</button><button id="cancelPayment" class="btn" style="margin-left:8px">Limpiar</button></div><div class="card"><h3>Historial de pagos</h3><div id="adminPaymentList" class="admin-list"></div></div></div></div>
