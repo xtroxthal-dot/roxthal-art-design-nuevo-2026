@@ -53,7 +53,77 @@ section{padding:65px 0}.hero{min-height:78vh;display:flex;align-items:center;pad
 <section id="school" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 4</div><h2 class="section-title">Escuela · Cursos y Talleres</h2><p class="section-desc">Formación artística de RoXThal Art Design.</p></div><div id="coursesList" class="grid2"></div></div></section>
 
 <!-- ==================== MÓDULO 5 — RADIO ==================== -->
-<section id="radio" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 5</div><h2 class="section-title">Radio</h2><p class="section-desc">Escucha la emisora configurada por RoXThal.</p></div><div id="radioList" class="grid2"></div></div></section>
+<section id="radio" class="view hidden">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="label">Módulo 5</div>
+      <h2 class="section-title">🎧 RoXThal Radio</h2>
+      <p class="section-desc">
+        Elige un estilo, descubre emisoras y escucha directamente desde RoXThal.
+      </p>
+    </div>
+
+    <div id="roxRadioApp">
+
+      <div class="rox-radio-hero">
+        <div>
+          <div class="rox-radio-kicker">ROXTHAL RADIO</div>
+          <h3>Tu música. Tu estilo.</h3>
+          <p>Selecciona un género para descubrir emisoras de todo el mundo.</p>
+        </div>
+        <div class="rox-radio-wave">♫ ♪ ♫</div>
+      </div>
+
+      <div class="rox-radio-search">
+        <input
+          id="roxRadioSearch"
+          type="search"
+          placeholder="🔎 Buscar emisora..."
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="rox-radio-section-title">
+        <span>🎼</span>
+        <h3>Elegir estilo</h3>
+      </div>
+
+      <div id="roxRadioGenres" class="rox-radio-genres"></div>
+
+      <div class="rox-radio-section-title">
+        <span>📻</span>
+        <h3 id="roxRadioStationsTitle">Emisoras</h3>
+      </div>
+
+      <div id="roxRadioStatus" class="rox-radio-status">
+        Elige un estilo para comenzar.
+      </div>
+
+      <div id="roxRadioStations" class="rox-radio-stations"></div>
+
+      <div id="roxRadioPlayer" class="rox-radio-player">
+        <div class="rox-radio-player-info">
+          <div class="rox-radio-playing">● EN REPRODUCCIÓN</div>
+          <strong id="roxRadioNowPlaying">Ninguna emisora seleccionada</strong>
+          <span id="roxRadioNowGenre">Selecciona una emisora</span>
+        </div>
+
+        <div class="rox-radio-controls">
+          <button id="roxRadioPlayPause" class="rox-radio-control">
+            ▶
+          </button>
+          <button id="roxRadioStop" class="rox-radio-control">
+            ■
+          </button>
+        </div>
+
+        <audio id="roxRadioAudio" preload="none"></audio>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- ==================== MÓDULO 6 — FOTOS Y VÍDEOS ==================== -->
 <section id="media" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 6</div><h2 class="section-title">Fotos y Vídeos</h2><p class="section-desc">Actividades, talleres, procesos y trabajos.</p></div><div id="mediaList" class="grid3"></div></div></section>
