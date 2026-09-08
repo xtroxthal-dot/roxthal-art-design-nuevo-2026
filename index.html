@@ -1088,34 +1088,42 @@ async function loadVisits(){
 
     if(error) throw error;
 
-    el.textContent = Number(data?.total ?? 0).toLocaleString('es-AR');
+    const total = Number(data?.total);
+
+    if(!Number.isFinite(total)){
+      throw new Error('Total de visitas no válido');
+    }
+
+    el.textContent = total.toLocaleString('es-AR');
+
   }catch(e){
     console.error('RoXThal — error cargando visitas:',e);
-    el.textContent = '—';
+    /* No reemplazar un valor válido por "—". */
   }
 }
 
 async function countVisit(){
-  const el = $('visitCount');
-  if(!el) return;
-
   try{
     const {data,error} = await db.rpc('increment_site_visit');
 
     if(error) throw error;
 
     const total = Number(data);
+    const el = $('visitCount');
 
-    if(Number.isFinite(total)){
+    if(el && Number.isFinite(total)){
       el.textContent = total.toLocaleString('es-AR');
     }else{
       await loadVisits();
     }
+
   }catch(e){
     console.error('RoXThal — error incrementando visita:',e);
     await loadVisits();
   }
 }
+
+/*
 
 /* =========================================================
    MÓDULO 10 — BUSCADORES
