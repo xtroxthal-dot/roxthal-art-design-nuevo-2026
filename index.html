@@ -6269,5 +6269,598 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 <!-- ============================================================
      FIN DEL BOTÓN FLOTANTE DE MÓDULOS
      ============================================================ -->
+   <!-- =========================================================
+     ROXTHAL — REPARACIÓN DEL SISTEMA DE RESERVAS
+     ========================================================= -->
+<script>
+(() => {
+  'use strict';
+
+  /* Evita que el reparador se ejecute dos veces */
+  if (window.__ROXTHAL_BOOKING_REPAIR__) return;
+  window.__ROXTHAL_BOOKING_REPAIR__ = true;
+
+  function iniciarReservasRoXThal() {
+
+    /* ---------------------------------------------------------
+       1. Localizar el módulo Ubicación y Contacto
+       --------------------------------------------------------- */
+    const contact = document.getElementById('contact');
+
+    if (!contact) {
+      console.warn('RoXThal Reservas: no existe #contact.');
+      return;
+    }
+
+    const container = contact.querySelector('.container');
+
+    if (!container) {
+      console.warn('RoXThal Reservas: no existe .container dentro de #contact.');
+      return;
+    }
+
+    /* ---------------------------------------------------------
+       2. Comprobar que ya existe el cliente Supabase
+       --------------------------------------------------------- */
+    let supabaseDB = null;
+
+    try {
+      if (typeof db !== 'undefined' && db) {
+        supabaseDB = db;
+      } else if (window.db) {
+        supabaseDB = window.db;
+      }
+    } catch (e) {
+      if (window.db) supabaseDB = window.db;
+    }
+
+    if (!supabaseDB) {
+      console.error(
+        'RoXThal Reservas: no se encontró el cliente Supabase existente.'
+      );
+      return;
+    }
+
+    /* ---------------------------------------------------------
+       3. Evitar duplicar el formulario
+       --------------------------------------------------------- */
+    if (document.getElementById('roxthalBookingRepair')) return;
+
+    /* ---------------------------------------------------------
+       4. Estilos propios mínimos
+       --------------------------------------------------------- */
+    if (!document.getElementById('roxthalBookingRepairStyles')) {
+
+      const style = document.createElement('style');
+
+      style.id = 'roxthalBookingRepairStyles';
+
+      style.textContent = `
+        #roxthalBookingRepair{
+          margin-top:18px;
+        }
+
+        #roxthalBookingRepair .rox-booking-grid{
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:13px;
+        }
+
+        #roxthalBookingRepair .rox-booking-actions{
+          display:flex;
+          flex-wrap:wrap;
+          align-items:center;
+          gap:10px;
+          margin-top:4px;
+        }
+
+        #roxthalBookingRepair .rox-booking-status{
+          display:none;
+          padding:13px;
+          border-radius:11px;
+          border:1px solid var(--border);
+          line-height:1.5;
+          margin-top:4px;
+        }
+
+        #roxthalBookingRepair .rox-booking-status.show{
+          display:block;
+        }
+
+        #roxthalBookingRepair .rox-booking-status.ok{
+          border-color:#215f3c;
+          color:#8de2ae;
+          background:rgba(33,95,60,.08);
+        }
+
+        #roxthalBookingRepair .rox-booking-status.err{
+          border-color:#6d1b1f;
+          color:#ff8b8f;
+          background:rgba(109,27,31,.08);
+        }
+
+        #roxthalBookingRepair .rox-required{
+          color:var(--yellow);
+        }
+
+        @media(max-width:700px){
+          #roxthalBookingRepair .rox-booking-grid{
+            grid-template-columns:1fr;
+          }
+
+          #roxthalBookingRepair .rox-booking-actions{
+            align-items:stretch;
+            flex-direction:column;
+          }
+
+          #roxthalBookingRepair .rox-booking-actions .btn{
+            width:100%;
+          }
+        }
+      `;
+
+      document.head.appendChild(style);
+    }
+
+    /* ---------------------------------------------------------
+       5. Crear formulario
+       --------------------------------------------------------- */
+    const card = document.createElement('div');
+
+    card.id = 'roxthalBookingRepair';
+    card.className = 'card';
+
+    card.innerHTML = `
+      <div class="label">RESERVAS</div>
+
+      <h3 style="font-size:26px;margin:7px 0 8px">
+        📅 Solicitar una reserva
+      </h3>
+
+      <p class="muted" style="margin-bottom:18px">
+        Envía tu solicitud directamente a RoXThal.
+        La solicitud quedará pendiente hasta ser revisada y confirmada
+        por el Atelier.
+      </p>
+
+      <form id="roxthalBookingForm" novalidate>
+
+        <div class="rox-booking-grid">
+
+          <div class="field">
+            <label for="roxBookingName">
+              Nombre <span class="rox-required">*</span>
+            </label>
+
+            <input
+              id="roxBookingName"
+              type="text"
+              maxlength="120"
+              autocomplete="name"
+              required
+              placeholder="Tu nombre"
+            >
+          </div>
+
+          <div class="field">
+            <label for="roxBookingPhone">
+              Teléfono / WhatsApp <span class="rox-required">*</span>
+            </label>
+
+            <input
+              id="roxBookingPhone"
+              type="tel"
+              maxlength="40"
+              autocomplete="tel"
+              required
+              placeholder="11 6963 3376"
+            >
+          </div>
+
+        </div>
+
+        <div class="rox-booking-grid">
+
+          <div class="field">
+            <label for="roxBookingEmail">
+              Email
+            </label>
+
+            <input
+              id="roxBookingEmail"
+              type="email"
+              maxlength="160"
+              autocomplete="email"
+              placeholder="tu@email.com"
+            >
+          </div>
+
+          <div class="field">
+            <label for="roxBookingService">
+              Servicio / Curso <span class="rox-required">*</span>
+            </label>
+
+            <select id="roxBookingService" required>
+
+              <option value="">
+                Selecciona una opción
+              </option>
+
+              <option value="Tatuaje">
+                Tatuaje
+              </option>
+
+              <option value="Curso de iniciación al tatuaje">
+                Curso de iniciación al tatuaje
+              </option>
+
+              <option value="Dibujo y pintura">
+                Dibujo y pintura
+              </option>
+
+              <option value="Taller de arte">
+                Taller de arte
+              </option>
+
+              <option value="Otro servicio">
+                Otro servicio
+              </option>
+
+            </select>
+          </div>
+
+        </div>
+
+        <div class="rox-booking-grid">
+
+          <div class="field">
+            <label for="roxBookingDate">
+              Fecha solicitada <span class="rox-required">*</span>
+            </label>
+
+            <input
+              id="roxBookingDate"
+              type="date"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label for="roxBookingTime">
+              Hora solicitada <span class="rox-required">*</span>
+            </label>
+
+            <input
+              id="roxBookingTime"
+              type="time"
+              required
+            >
+          </div>
+
+        </div>
+
+        <div class="field">
+
+          <label for="roxBookingNotes">
+            Mensaje / detalles
+          </label>
+
+          <textarea
+            id="roxBookingNotes"
+            maxlength="1000"
+            placeholder="Cuéntanos qué necesitas o cualquier detalle importante."
+          ></textarea>
+
+        </div>
+
+        <div
+          id="roxBookingStatus"
+          class="rox-booking-status"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+        <div class="rox-booking-actions">
+
+          <button
+            id="roxBookingSubmit"
+            class="btn btn-primary"
+            type="submit"
+          >
+            📅 Enviar solicitud
+          </button>
+
+          <span class="small">
+            La solicitud no implica confirmación automática.
+          </span>
+
+        </div>
+
+      </form>
+    `;
+
+    /* ---------------------------------------------------------
+       6. Insertar el formulario al final del módulo Contacto
+       --------------------------------------------------------- */
+    container.appendChild(card);
+
+    /* ---------------------------------------------------------
+       7. Referencias
+       --------------------------------------------------------- */
+    const form =
+      document.getElementById('roxthalBookingForm');
+
+    const nameInput =
+      document.getElementById('roxBookingName');
+
+    const phoneInput =
+      document.getElementById('roxBookingPhone');
+
+    const emailInput =
+      document.getElementById('roxBookingEmail');
+
+    const serviceInput =
+      document.getElementById('roxBookingService');
+
+    const dateInput =
+      document.getElementById('roxBookingDate');
+
+    const timeInput =
+      document.getElementById('roxBookingTime');
+
+    const notesInput =
+      document.getElementById('roxBookingNotes');
+
+    const status =
+      document.getElementById('roxBookingStatus');
+
+    const submit =
+      document.getElementById('roxBookingSubmit');
+
+    /* ---------------------------------------------------------
+       8. Fecha mínima = hoy
+       --------------------------------------------------------- */
+    function establecerFechaMinima() {
+
+      const ahora = new Date();
+
+      const year =
+        ahora.getFullYear();
+
+      const month =
+        String(ahora.getMonth() + 1).padStart(2, '0');
+
+      const day =
+        String(ahora.getDate()).padStart(2, '0');
+
+      dateInput.min =
+        `${year}-${month}-${day}`;
+    }
+
+    establecerFechaMinima();
+
+    /* ---------------------------------------------------------
+       9. Mostrar mensajes
+       --------------------------------------------------------- */
+    function mostrarEstado(mensaje, correcto) {
+
+      status.textContent = mensaje;
+
+      status.className =
+        'rox-booking-status show ' +
+        (correcto ? 'ok' : 'err');
+    }
+
+    /* ---------------------------------------------------------
+       10. Envío a Supabase
+       --------------------------------------------------------- */
+    form.addEventListener('submit', async function(event) {
+
+      event.preventDefault();
+
+      /* Validación */
+      const name =
+        nameInput.value.trim();
+
+      const phone =
+        phoneInput.value.trim();
+
+      const email =
+        emailInput.value.trim();
+
+      const service =
+        serviceInput.value.trim();
+
+      const bookingDate =
+        dateInput.value;
+
+      const bookingTime =
+        timeInput.value;
+
+      const notes =
+        notesInput.value.trim();
+
+      if (
+        !name ||
+        !phone ||
+        !service ||
+        !bookingDate ||
+        !bookingTime
+      ) {
+
+        mostrarEstado(
+          'Completa todos los campos obligatorios marcados con *.',
+          false
+        );
+
+        return;
+      }
+
+      /* Evitar fechas anteriores */
+      if (
+        dateInput.min &&
+        bookingDate < dateInput.min
+      ) {
+
+        mostrarEstado(
+          'La fecha seleccionada no puede ser anterior a hoy.',
+          false
+        );
+
+        return;
+      }
+
+      /* Desactivar botón durante el envío */
+      submit.disabled = true;
+      submit.textContent = 'Enviando…';
+
+      status.className =
+        'rox-booking-status';
+
+      try {
+
+        /* -----------------------------------------------------
+           PAYLOAD EXACTO PARA public.bookings
+           ----------------------------------------------------- */
+        const payload = {
+
+          name: name,
+
+          phone: phone,
+
+          email:
+            email || null,
+
+          service: service,
+
+          booking_date:
+            bookingDate,
+
+          booking_time:
+            bookingTime,
+
+          deposit: 0,
+
+          status: 'pending',
+
+          notes:
+            notes || null
+
+        };
+
+        console.log(
+          'RoXThal Reservas → enviando:',
+          payload
+        );
+
+        /* -----------------------------------------------------
+           INSERT DIRECTO EN SUPABASE
+           ----------------------------------------------------- */
+        const result =
+          await supabaseDB
+            .from('bookings')
+            .insert(payload);
+
+        if (result.error) {
+          throw result.error;
+        }
+
+        /* -----------------------------------------------------
+           ÉXITO
+           ----------------------------------------------------- */
+        form.reset();
+
+        establecerFechaMinima();
+
+        mostrarEstado(
+          '✅ Solicitud enviada correctamente. RoXThal la revisará y se pondrá en contacto contigo para confirmar la reserva.',
+          true
+        );
+
+        if (
+          typeof window.toast === 'function'
+        ) {
+
+          window.toast(
+            'Solicitud de reserva enviada.'
+          );
+
+        }
+
+        console.log(
+          'RoXThal Reservas → INSERT correcto.'
+        );
+
+      } catch (error) {
+
+        console.error(
+          'RoXThal Reservas → error:',
+          error
+        );
+
+        let mensaje =
+          'No se pudo enviar la solicitud. Inténtalo nuevamente.';
+
+        if (error && error.message) {
+
+          console.error(
+            'Supabase:',
+            error.message
+          );
+
+          /* No mostramos información técnica al cliente */
+          if (
+            /permission|policy|row-level|rls/i.test(
+              error.message
+            )
+          ) {
+
+            mensaje =
+              'La reserva no pudo ser registrada por un problema de permisos.';
+
+          }
+
+        }
+
+        mostrarEstado(
+          mensaje,
+          false
+        );
+
+      } finally {
+
+        submit.disabled = false;
+
+        submit.textContent =
+          '📅 Enviar solicitud';
+
+      }
+
+    });
+
+    console.log(
+      '✅ RoXThal Reservas: reparación cargada correctamente.'
+    );
+  }
+
+  /* -----------------------------------------------------------
+     Ejecutar cuando el DOM esté disponible
+     ----------------------------------------------------------- */
+  if (document.readyState === 'loading') {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciarReservasRoXThal,
+      { once: true }
+    );
+
+  } else {
+
+    iniciarReservasRoXThal();
+
+  }
+
+})();
+</script>
 </body>
 </html>
