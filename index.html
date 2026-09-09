@@ -12434,5 +12434,1067 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+   <!-- ============================================================
+     RoXThal Art Design
+     COMPLEMENTO INDEPENDIENTE — INSTRUCCIONES HERRAMIENTAS
+     
+     NO BORRA NI REEMPLAZA NADA.
+     SE AÑADE AL FINAL DEL #rxToolsRoot EXISTENTE.
+     
+     PEGAR UNA SOLA VEZ ANTES DE </body>
+     ============================================================ -->
+
+<style id="rxToolsInstructionsOnlyCSS">
+
+/* ===== CONTENEDOR ===== */
+
+#rxToolsInstructionsBox{
+  width:100%;
+  margin:28px 0 8px;
+  border-radius:20px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.065),
+      rgba(255,255,255,.025)
+    );
+  box-shadow:0 12px 35px rgba(0,0,0,.22);
+}
+
+/* ===== CABECERA ===== */
+
+#rxToolsInstructionsToggle{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:17px 18px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.rx-ti-title-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.rx-ti-icon{
+  width:43px;
+  height:43px;
+  min-width:43px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:rgba(255,193,7,.12);
+  border:1px solid rgba(255,193,7,.16);
+  font-size:21px;
+}
+
+.rx-ti-title{
+  font-size:16px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.rx-ti-subtitle{
+  margin-top:3px;
+  font-size:11px;
+  opacity:.62;
+  font-weight:400;
+}
+
+.rx-ti-arrow{
+  font-size:18px;
+  opacity:.75;
+  transition:transform .2s ease;
+}
+
+#rxToolsInstructionsBox.open .rx-ti-arrow{
+  transform:rotate(180deg);
+}
+
+/* ===== CONTENIDO ===== */
+
+#rxToolsInstructionsContent{
+  display:none;
+  padding:0 16px 18px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+#rxToolsInstructionsBox.open #rxToolsInstructionsContent{
+  display:block;
+}
+
+/* ===== PRESENTACIÓN ===== */
+
+.rx-ti-intro{
+  margin:16px 0;
+  padding:15px;
+  border-radius:15px;
+  background:rgba(255,193,7,.055);
+  border:1px solid rgba(255,193,7,.10);
+  font-size:12.5px;
+  line-height:1.6;
+}
+
+.rx-ti-intro strong{
+  display:block;
+  margin-bottom:5px;
+  font-size:14px;
+}
+
+/* ===== CATEGORÍAS ===== */
+
+.rx-ti-category{
+  margin-top:18px;
+}
+
+.rx-ti-category-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+  padding-bottom:9px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.rx-ti-category-icon{
+  font-size:20px;
+}
+
+.rx-ti-category-title{
+  font-size:17px;
+  font-weight:800;
+}
+
+.rx-ti-category-desc{
+  margin:2px 0 0;
+  font-size:11px;
+  opacity:.62;
+}
+
+/* ===== HERRAMIENTAS ===== */
+
+.rx-ti-tools{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.rx-ti-tool{
+  padding:14px;
+  border-radius:15px;
+  background:rgba(0,0,0,.13);
+  border:1px solid rgba(255,255,255,.075);
+}
+
+.rx-ti-tool h4{
+  margin:0 0 8px;
+  font-size:14px;
+  line-height:1.3;
+}
+
+.rx-ti-purpose{
+  margin:0 0 10px;
+  font-size:12px;
+  line-height:1.55;
+  opacity:.76;
+}
+
+.rx-ti-label{
+  display:block;
+  margin:8px 0 4px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  opacity:.9;
+}
+
+.rx-ti-steps{
+  margin:0;
+  padding-left:19px;
+  font-size:11.5px;
+  line-height:1.6;
+}
+
+.rx-ti-steps li{
+  margin-bottom:2px;
+}
+
+.rx-ti-tip{
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.045);
+  font-size:11px;
+  line-height:1.5;
+  opacity:.78;
+}
+
+/* ===== CIERRE ===== */
+
+.rx-ti-footer{
+  margin-top:18px;
+  padding:13px 14px;
+  border-radius:13px;
+  background:rgba(255,255,255,.035);
+  font-size:11.5px;
+  line-height:1.55;
+  opacity:.7;
+}
+
+/* ===== MÓVIL ===== */
+
+@media(max-width:700px){
+
+  #rxToolsInstructionsBox{
+    margin-top:22px;
+  }
+
+  .rx-ti-tools{
+    grid-template-columns:1fr;
+  }
+
+  #rxToolsInstructionsContent{
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  #rxToolsInstructionsToggle{
+    padding:15px;
+  }
+
+}
+
+</style>
+
+
+<script id="rxToolsInstructionsOnlyJS">
+
+(function(){
+
+  "use strict";
+
+  /*
+   * ==========================================================
+   * PROTECCIÓN
+   * ==========================================================
+   */
+
+  if(window.__ROXTHAL_TOOLS_INSTRUCTIONS_ONLY_V1__) return;
+  window.__ROXTHAL_TOOLS_INSTRUCTIONS_ONLY_V1__ = true;
+
+
+  /*
+   * ==========================================================
+   * ESPERAR AL DOM
+   * ==========================================================
+   */
+
+  function init(){
+
+    /*
+     * BUSCAMOS EL MÓDULO ORIGINAL.
+     * NO LO CREAMOS.
+     */
+
+    const toolsRoot =
+      document.getElementById("rxToolsRoot");
+
+    if(!toolsRoot){
+
+      console.warn(
+        "RoXThal: no se encontró el módulo Herramientas (#rxToolsRoot)."
+      );
+
+      return;
+    }
+
+
+    /*
+     * SI YA EXISTE, NO DUPLICAMOS.
+     */
+
+    if(
+      toolsRoot.querySelector("#rxToolsInstructionsBox")
+    ){
+      return;
+    }
+
+
+    /*
+     * ========================================================
+     * CREAR ÚNICAMENTE EL APARTADO DE INSTRUCCIONES
+     * ========================================================
+     */
+
+    const box =
+      document.createElement("section");
+
+    box.id =
+      "rxToolsInstructionsBox";
+
+
+    box.innerHTML = `
+
+      <button
+        id="rxToolsInstructionsToggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="rxToolsInstructionsContent">
+
+        <span class="rx-ti-title-wrap">
+
+          <span class="rx-ti-icon">
+            📖
+          </span>
+
+          <span>
+
+            <span class="rx-ti-title">
+              Instrucciones
+            </span>
+
+            <span class="rx-ti-subtitle">
+              Aprende cómo utilizar las herramientas
+            </span>
+
+          </span>
+
+        </span>
+
+        <span class="rx-ti-arrow">
+          ▼
+        </span>
+
+      </button>
+
+
+      <div
+        id="rxToolsInstructionsContent"
+        aria-hidden="true">
+
+        <div class="rx-ti-intro">
+
+          <strong>💡 ¿Cómo funciona este apartado?</strong>
+
+          Aquí encontrarás una guía sencilla de las herramientas
+          disponibles en RoXThal. Busca tu área, elige la herramienta
+          que quieras utilizar y sigue los pasos indicados.
+
+          No necesitas memorizar las instrucciones:
+          puedes volver aquí cuando quieras.
+
+        </div>
+
+
+        <!-- ==================================================
+             TATUADORES
+             ================================================== -->
+
+        <section class="rx-ti-category">
+
+          <div class="rx-ti-category-header">
+
+            <span class="rx-ti-category-icon">
+              🖋️
+            </span>
+
+            <div>
+
+              <div class="rx-ti-category-title">
+                Tatuadores
+              </div>
+
+              <div class="rx-ti-category-desc">
+                Proporción, escala, referencia, color y planificación
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="rx-ti-tools">
+
+
+            <!-- ESCALA -->
+
+            <article class="rx-ti-tool">
+
+              <h4>📐 Escala del diseño</h4>
+
+              <p class="rx-ti-purpose">
+                Calcula cómo cambiar el tamaño de un diseño
+                manteniendo su proporción.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Introduce la medida original.</li>
+                <li>Introduce la nueva medida.</li>
+                <li>Pulsa calcular.</li>
+                <li>Consulta el porcentaje y factor obtenidos.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 Úsala para planificar cambios de tamaño
+                sin deformar el diseño.
+              </div>
+
+            </article>
+
+
+            <!-- ESPEJO -->
+
+            <article class="rx-ti-tool">
+
+              <h4>🪞 Espejo</h4>
+
+              <p class="rx-ti-purpose">
+                Invierte visualmente un diseño para comprobar
+                su composición desde otra perspectiva.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Prueba el espejo horizontal.</li>
+                <li>Prueba el espejo vertical.</li>
+                <li>Observa posibles errores o desequilibrios.</li>
+                <li>Utiliza restablecer para volver al original.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 Mirar un diseño invertido puede ayudarte
+                a detectar problemas que normalmente pasan desapercibidos.
+              </div>
+
+            </article>
+
+
+            <!-- REGLA -->
+
+            <article class="rx-ti-tool">
+
+              <h4>📏 Regla proporcional</h4>
+
+              <p class="rx-ti-purpose">
+                Genera una referencia graduada para estudiar
+                proporciones y medidas.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Introduce la longitud.</li>
+                <li>Genera la regla.</li>
+                <li>Observa sus divisiones.</li>
+                <li>Cambia la medida si necesitas otra referencia.</li>
+              </ol>
+
+            </article>
+
+
+            <!-- CUADRÍCULA -->
+
+            <article class="rx-ti-tool">
+
+              <h4>🔲 Cuadrícula</h4>
+
+              <p class="rx-ti-purpose">
+                Divide visualmente una referencia para estudiar
+                proporciones por zonas.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona el tamaño de cuadrícula.</li>
+                <li>Pulsa aplicar.</li>
+                <li>Compara cada zona con la referencia.</li>
+                <li>Trabaja progresivamente de zona en zona.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 Es especialmente útil para estudiar proporciones
+                complejas.
+              </div>
+
+            </article>
+
+
+            <!-- COLOR -->
+
+            <article class="rx-ti-tool">
+
+              <h4>🎨 Color y HEX</h4>
+
+              <p class="rx-ti-purpose">
+                Permite seleccionar un color y consultar
+                su código digital.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona un color.</li>
+                <li>Observa su representación.</li>
+                <li>Consulta el código HEX.</li>
+                <li>Compara diferentes colores.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 El código HEX sirve para identificar exactamente
+                un color dentro del entorno digital.
+              </div>
+
+            </article>
+
+
+            <!-- MEZCLA -->
+
+            <article class="rx-ti-tool">
+
+              <h4>🧪 Mezclador de colores</h4>
+
+              <p class="rx-ti-purpose">
+                Permite experimentar digitalmente con la combinación
+                de dos colores.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona el primer color.</li>
+                <li>Selecciona el segundo.</li>
+                <li>Ajusta la proporción.</li>
+                <li>Observa el resultado.</li>
+              </ol>
+
+            </article>
+
+
+            <!-- TEMPORIZADOR -->
+
+            <article class="rx-ti-tool">
+
+              <h4>⏱️ Temporizador</h4>
+
+              <p class="rx-ti-purpose">
+                Organiza ejercicios y sesiones de práctica
+                con un tiempo determinado.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona los minutos.</li>
+                <li>Pulsa iniciar.</li>
+                <li>Pausa cuando sea necesario.</li>
+                <li>Reinicia para comenzar otro ejercicio.</li>
+              </ol>
+
+            </article>
+
+
+            <!-- NOTAS -->
+
+            <article class="rx-ti-tool">
+
+              <h4>📝 Notas</h4>
+
+              <p class="rx-ti-purpose">
+                Guarda observaciones y apuntes relacionados
+                con tus ejercicios o proyectos.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Escribe tus observaciones.</li>
+                <li>Pulsa guardar.</li>
+                <li>Continúa trabajando.</li>
+                <li>Limpia cuando quieras comenzar otra nota.</li>
+              </ol>
+
+            </article>
+
+
+          </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             ARTISTAS
+             ================================================== -->
+
+        <section class="rx-ti-category">
+
+          <div class="rx-ti-category-header">
+
+            <span class="rx-ti-category-icon">
+              🎨
+            </span>
+
+            <div>
+
+              <div class="rx-ti-category-title">
+                Artistas
+              </div>
+
+              <div class="rx-ti-category-desc">
+                Color, valores, composición, referencias e ideas
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="rx-ti-tools">
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🎨 Generador de paleta</h4>
+
+              <p class="rx-ti-purpose">
+                Crea una selección de colores a partir
+                de un color base.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona un color base.</li>
+                <li>Pulsa generar.</li>
+                <li>Observa las variaciones.</li>
+                <li>Elige las que mejor funcionen para tu estudio.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🌈 Analizador de color</h4>
+
+              <p class="rx-ti-purpose">
+                Permite estudiar un color mediante diferentes
+                sistemas digitales.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona un color.</li>
+                <li>Observa HEX.</li>
+                <li>Consulta RGB.</li>
+                <li>Consulta HSL.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>⚫ Escala de grises</h4>
+
+              <p class="rx-ti-purpose">
+                Ayuda a estudiar valores de luz, medios tonos
+                y sombras sin depender del color.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona un tono.</li>
+                <li>Compara diferentes valores.</li>
+                <li>Observa la diferencia entre luces y sombras.</li>
+                <li>Utiliza el resultado como referencia de estudio.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 Antes de preocuparte por el detalle,
+                identifica las grandes masas de luz y sombra.
+              </div>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>◐ Contraste</h4>
+
+              <p class="rx-ti-purpose">
+                Permite estudiar visualmente la diferencia
+                entre valores claros y oscuros.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Observa la referencia.</li>
+                <li>Prueba diferentes niveles.</li>
+                <li>Identifica el punto focal.</li>
+                <li>Comprueba dónde existe mayor contraste.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🔲 Cuadrícula para dibujo</h4>
+
+              <p class="rx-ti-purpose">
+                Facilita el estudio de proporciones dividiendo
+                una referencia en partes.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarla
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona el tamaño.</li>
+                <li>Activa la cuadrícula.</li>
+                <li>Estudia cada sección.</li>
+                <li>Compara proporciones antes de avanzar.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>💡 Generador de ideas</h4>
+
+              <p class="rx-ti-purpose">
+                Genera propuestas para practicar cuando necesites
+                una idea nueva.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Pulsa generar.</li>
+                <li>Lee la propuesta.</li>
+                <li>Interprétala con tu propio estilo.</li>
+                <li>Intenta resolverla dentro de un tiempo limitado.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 La propuesta es un punto de partida,
+                no un dibujo que tengas que copiar.
+              </div>
+
+            </article>
+
+
+          </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             PINTA Y CREA
+             ================================================== -->
+
+        <section class="rx-ti-category">
+
+          <div class="rx-ti-category-header">
+
+            <span class="rx-ti-category-icon">
+              🧒
+            </span>
+
+            <div>
+
+              <div class="rx-ti-category-title">
+                Pinta y Crea
+              </div>
+
+              <div class="rx-ti-category-desc">
+                Juegos, retos, dibujo libre y creatividad
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="rx-ti-tools">
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🌟 Retos creativos</h4>
+
+              <p class="rx-ti-purpose">
+                Propone pequeñas misiones para desarrollar
+                imaginación y creatividad.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Genera un reto.</li>
+                <li>Lee la misión.</li>
+                <li>Dibuja utilizando tu imaginación.</li>
+                <li>Explica qué has creado.</li>
+              </ol>
+
+              <div class="rx-ti-tip">
+                💡 No existe una única respuesta correcta.
+                Lo importante es experimentar y crear.
+              </div>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🔺 Juego de formas</h4>
+
+              <p class="rx-ti-purpose">
+                Convierte formas simples en personajes,
+                animales, objetos o escenarios.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Elige una forma.</li>
+                <li>Piensa qué podría representar.</li>
+                <li>Añade otras formas.</li>
+                <li>Transforma el resultado en un dibujo.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>⏱️ Reto rápido</h4>
+
+              <p class="rx-ti-purpose">
+                Permite practicar dibujo sin preocuparse
+                demasiado por conseguir un resultado perfecto.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona el tiempo.</li>
+                <li>Comienza.</li>
+                <li>Dibuja hasta que termine.</li>
+                <li>Observa el resultado al finalizar.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🎨 Experimenta con colores</h4>
+
+              <p class="rx-ti-purpose">
+                Ayuda a descubrir nuevas combinaciones
+                y relaciones entre colores.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Elige un color.</li>
+                <li>Añade otro.</li>
+                <li>Prueba diferentes combinaciones.</li>
+                <li>Utiliza la combinación en un dibujo.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>🖌️ Lienzo de dibujo</h4>
+
+              <p class="rx-ti-purpose">
+                Permite dibujar directamente utilizando
+                las herramientas del módulo.
+              </p>
+
+              <span class="rx-ti-label">
+                Cómo usarlo
+              </span>
+
+              <ol class="rx-ti-steps">
+                <li>Selecciona una herramienta.</li>
+                <li>Elige el color.</li>
+                <li>Ajusta el tamaño.</li>
+                <li>Dibuja libremente.</li>
+                <li>Usa deshacer o rehacer si lo necesitas.</li>
+                <li>Guarda tu creación al terminar.</li>
+              </ol>
+
+            </article>
+
+
+            <article class="rx-ti-tool">
+
+              <h4>💭 Reflexión artística</h4>
+
+              <p class="rx-ti-purpose">
+                Ayuda a pensar sobre el proceso y explicar
+                lo que has creado.
+              </p>
+
+              <span class="rx-ti-label">
+                Después de dibujar</span>
+
+              <ol class="rx-ti-steps">
+                <li>¿Qué has creado?</li>
+                <li>¿Qué colores has elegido?</li>
+                <li>¿Qué parte te gusta más?</li>
+                <li>¿Qué cambiarías?</li>
+              </ol>
+
+            </article>
+
+
+          </div>
+
+        </section>
+
+
+        <div class="rx-ti-footer">
+
+          💡 <strong>Consejo RoXThal:</strong>
+          no tengas miedo de probar una herramienta varias veces.
+          Estas herramientas están pensadas para estudiar, experimentar
+          y mejorar progresivamente tu trabajo artístico.
+
+        </div>
+
+      </div>
+    `;
+
+
+    /*
+     * ========================================================
+     * AÑADIR AL FINAL DEL MÓDULO EXISTENTE
+     * ========================================================
+     */
+
+    toolsRoot.appendChild(box);
+
+
+    /*
+     * ========================================================
+     * ABRIR / CERRAR
+     * ========================================================
+     */
+
+    const toggle =
+      box.querySelector("#rxToolsInstructionsToggle");
+
+    const content =
+      box.querySelector("#rxToolsInstructionsContent");
+
+
+    toggle.addEventListener("click",function(){
+
+      const abierto =
+        box.classList.toggle("open");
+
+      toggle.setAttribute(
+        "aria-expanded",
+        abierto ? "true" : "false"
+      );
+
+      content.setAttribute(
+        "aria-hidden",
+        abierto ? "false" : "true"
+      );
+
+    });
+
+
+    console.log(
+      "RoXThal: apartado independiente de instrucciones añadido dentro de Herramientas."
+    );
+
+  }
+
+
+  /*
+   * ==========================================================
+   * ARRANQUE SEGURO
+   * ==========================================================
+   */
+
+  if(document.readyState === "loading"){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+</script>
 </body>
 </html>
