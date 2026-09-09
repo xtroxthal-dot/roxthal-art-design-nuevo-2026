@@ -13496,5 +13496,1247 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+  <!-- =========================================================
+     ROXTHAL HERRAMIENTAS — REPARADOR QUIRÚRGICO PRO
+     NO ELIMINA EL MÓDULO EXISTENTE.
+     MEJORA TATUADORES + ARTISTAS + PINTA Y CREA.
+     ========================================================= -->
+<style>
+#rxSurgicalTools{
+  margin-top:22px;
+  display:grid;
+  gap:16px;
+}
+
+#rxSurgicalTools .rxs-card{
+  background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  padding:16px;
+}
+
+#rxSurgicalTools h3{
+  margin:0 0 7px;
+}
+
+#rxSurgicalTools p{
+  color:#aaa;
+  line-height:1.5;
+  font-size:.9rem;
+}
+
+#rxSurgicalTools .rxs-tools{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:12px;
+}
+
+#rxSurgicalTools button{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  padding:9px 12px;
+  background:rgba(255,255,255,.06);
+  color:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#rxSurgicalTools button:hover{
+  background:rgba(255,255,255,.12);
+}
+
+#rxSurgicalTools button.active,
+#rxSurgicalTools button.primary{
+  background:#ffca28;
+  color:#111;
+  border-color:#ffca28;
+}
+
+#rxSurgicalTools .rxs-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+#rxSurgicalTools .rxs-control{
+  display:grid;
+  gap:6px;
+}
+
+#rxSurgicalTools label{
+  font-size:.8rem;
+  font-weight:700;
+  color:#ccc;
+}
+
+#rxSurgicalTools input,
+#rxSurgicalTools select{
+  width:100%;
+  padding:9px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#0b0b0b;
+  color:#fff;
+}
+
+#rxSurgicalTools .rxs-workspace{
+  position:relative;
+  width:100%;
+  min-height:300px;
+  border-radius:15px;
+  overflow:hidden;
+  background:
+    repeating-conic-gradient(
+      #151515 0 25%,
+      #101010 0 50%
+    ) 50%/24px 24px;
+  border:1px solid rgba(255,255,255,.12);
+  touch-action:none;
+}
+
+#rxSurgicalTools canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+#rxSurgicalTools .rxs-empty{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#888;
+  pointer-events:none;
+  text-align:center;
+  padding:20px;
+}
+
+#rxSurgicalTools .rxs-status{
+  margin-top:9px;
+  min-height:20px;
+  color:#aaa;
+  font-size:.8rem;
+}
+
+#rxSurgicalTools .rxs-color{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+#rxSurgicalTools .rxs-color input{
+  width:58px;
+  height:42px;
+  padding:3px;
+}
+
+#rxSurgicalTools .rxs-result{
+  margin-top:10px;
+  padding:11px;
+  border-radius:10px;
+  background:rgba(0,0,0,.3);
+  border:1px solid rgba(255,255,255,.08);
+  line-height:1.6;
+}
+
+@media(max-width:760px){
+  #rxSurgicalTools .rxs-grid{
+    grid-template-columns:1fr;
+  }
+
+  #rxSurgicalTools .rxs-tools button{
+    flex:1 1 auto;
+  }
+
+  #rxSurgicalTools .rxs-workspace{
+    min-height:270px;
+  }
+}
+</style>
+
+<script>
+(function(){
+
+"use strict";
+
+if(window.__ROXTHAL_SURGICAL_TOOLS__) return;
+window.__ROXTHAL_SURGICAL_TOOLS__=true;
+
+const root=document.getElementById("rxToolsRoot");
+if(!root) return;
+
+function $(s,p=document){
+  return p.querySelector(s);
+}
+
+function toast(msg){
+  let t=document.getElementById("rxSurgicalToast");
+
+  if(!t){
+    t=document.createElement("div");
+    t.id="rxSurgicalToast";
+
+    Object.assign(t.style,{
+      position:"fixed",
+      left:"50%",
+      bottom:"20px",
+      transform:"translateX(-50%)",
+      zIndex:"999999",
+      background:"#111",
+      color:"#fff",
+      border:"1px solid #ffca28",
+      borderRadius:"12px",
+      padding:"11px 15px",
+      maxWidth:"90vw",
+      textAlign:"center",
+      boxShadow:"0 10px 30px #0008"
+    });
+
+    document.body.appendChild(t);
+  }
+
+  t.textContent=msg;
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.remove(),2300);
+}
+
+
+/* =========================================================
+   GENERADOR DE MESA DE TRABAJO
+   ========================================================= */
+
+function createWorkspace(page,id,title,description){
+
+  if(!page || document.getElementById(id)) return;
+
+  const card=document.createElement("div");
+  card.id=id;
+  card.className="rxs-card";
+
+  card.innerHTML=`
+
+    <h3>🛠️ ${title}</h3>
+
+    <p>${description}</p>
+
+    <div class="rxs-tools">
+
+      <input
+        id="${id}File"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        style="max-width:100%"
+      >
+
+      <button data-action="zoomOut">− Zoom</button>
+      <button data-action="zoomIn">+ Zoom</button>
+
+      <button data-action="rotateLeft">↶ 90°</button>
+      <button data-action="rotateRight">↷ 90°</button>
+
+      <button data-action="mirrorH">↔ Espejo H</button>
+      <button data-action="mirrorV">↕ Espejo V</button>
+
+      <button data-action="gray">◐ Grises</button>
+      <button data-action="invert">◉ Invertir</button>
+
+      <button data-action="grid">▦ Cuadrícula</button>
+      <button data-action="center">◎ Centro</button>
+
+      <button data-action="reset">↺ Restablecer</button>
+
+      <button data-action="eyedropper">💧 Cuentagotas</button>
+
+      <button data-action="draw">✏️ Dibujar</button>
+      <button data-action="erase">⌫ Borrar</button>
+
+      <button data-action="undo">↶ Deshacer</button>
+      <button data-action="redo">↷ Rehacer</button>
+
+      <button data-action="clearDraw">🗑️ Borrar anotaciones</button>
+
+      <button class="primary" data-action="export">
+        💾 Exportar trabajo
+      </button>
+
+    </div>
+
+    <div class="rxs-grid">
+
+      <div class="rxs-control">
+        <label>Brillo</label>
+        <input
+          data-control="brightness"
+          type="range"
+          min="40"
+          max="160"
+          value="100">
+      </div>
+
+      <div class="rxs-control">
+        <label>Contraste</label>
+        <input
+          data-control="contrast"
+          type="range"
+          min="40"
+          max="180"
+          value="100">
+      </div>
+
+      <div class="rxs-control">
+        <label>Grosor de anotación</label>
+        <input
+          data-control="brush"
+          type="range"
+          min="1"
+          max="40"
+          value="5">
+      </div>
+
+      <div class="rxs-control">
+        <label>Color de anotación</label>
+
+        <div class="rxs-color">
+          <input
+            data-control="color"
+            type="color"
+            value="#ffca28">
+
+          <span data-color-value>#FFCA28</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rxs-workspace">
+
+      <canvas data-layer="image"></canvas>
+      <canvas data-layer="draw"></canvas>
+
+      <div class="rxs-empty">
+        📷 Cargá una referencia para comenzar
+      </div>
+
+    </div>
+
+    <div class="rxs-result" data-result>
+      Sin referencia cargada.
+    </div>
+
+    <div class="rxs-status" data-status></div>
+
+  `;
+
+  page.appendChild(card);
+
+  initWorkspace(card);
+}
+
+
+/* =========================================================
+   MOTOR REAL DE CANVAS
+   ========================================================= */
+
+function initWorkspace(card){
+
+  const imageCanvas=$('[data-layer="image"]',card);
+  const drawCanvas=$('[data-layer="draw"]',card);
+
+  const ictx=imageCanvas.getContext("2d");
+  const dctx=drawCanvas.getContext("2d");
+
+  const file=$("input[type=file]",card);
+  const empty=$(".rxs-empty",card);
+  const result=$("[data-result]",card);
+  const status=$("[data-status]",card);
+
+  let image=null;
+
+  let state={
+    zoom:1,
+    x:0,
+    y:0,
+    rotation:0,
+    flipX:1,
+    flipY:1,
+    gray:false,
+    invert:false,
+    brightness:100,
+    contrast:100,
+    grid:false,
+    center:false
+  };
+
+  let drawing=false;
+  let panning=false;
+  let lastX=0;
+  let lastY=0;
+
+  let tool="draw";
+
+  let undo=[];
+  let redo=[];
+
+
+  function resize(){
+
+    const rect=card.querySelector(".rxs-workspace").getBoundingClientRect();
+
+    const old=imageCanvas.width;
+
+    imageCanvas.width=Math.max(1,Math.floor(rect.width*devicePixelRatio));
+    imageCanvas.height=Math.max(1,Math.floor(rect.height*devicePixelRatio));
+
+    drawCanvas.width=imageCanvas.width;
+    drawCanvas.height=imageCanvas.height;
+
+    drawCanvas.style.width="100%";
+    drawCanvas.style.height="100%";
+
+    if(old){
+      redraw();
+    }
+  }
+
+
+  function clearCanvas(){
+
+    ictx.setTransform(1,0,0,1,0,0);
+    ictx.clearRect(0,0,imageCanvas.width,imageCanvas.height);
+
+    dctx.setTransform(1,0,0,1,0,0);
+    dctx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  }
+
+
+  function redraw(){
+
+    clearCanvas();
+
+    if(!image){
+      empty.style.display="flex";
+      return;
+    }
+
+    empty.style.display="none";
+
+    const w=imageCanvas.width;
+    const h=imageCanvas.height;
+
+    ictx.save();
+
+    ictx.translate(
+      w/2 + state.x,
+      h/2 + state.y
+    );
+
+    ictx.rotate(
+      state.rotation*Math.PI/180
+    );
+
+    ictx.scale(
+      state.flipX*state.zoom,
+      state.flipY*state.zoom
+    );
+
+    ictx.filter=
+      "grayscale("+(
+        state.gray?100:0
+      )+"%) "+
+      "brightness("+state.brightness+"%) "+
+      "contrast("+state.contrast+"%) "+
+      "invert("+(
+        state.invert?100:0
+      )+"%)";
+
+    const ratio=Math.min(
+      (w*.86)/image.naturalWidth,
+      (h*.86)/image.naturalHeight
+    );
+
+    const dw=image.naturalWidth*ratio;
+    const dh=image.naturalHeight*ratio;
+
+    ictx.drawImage(
+      image,
+      -dw/2,
+      -dh/2,
+      dw,
+      dh
+    );
+
+    ictx.restore();
+
+
+    /* CUADRÍCULA */
+
+    if(state.grid){
+
+      ictx.save();
+
+      ictx.strokeStyle="rgba(255,202,40,.4)";
+      ictx.lineWidth=devicePixelRatio;
+
+      const step=50*devicePixelRatio;
+
+      for(let x=0;x<w;x+=step){
+        ictx.beginPath();
+        ictx.moveTo(x,0);
+        ictx.lineTo(x,h);
+        ictx.stroke();
+      }
+
+      for(let y=0;y<h;y+=step){
+        ictx.beginPath();
+        ictx.moveTo(0,y);
+        ictx.lineTo(w,y);
+        ictx.stroke();
+      }
+
+      ictx.restore();
+    }
+
+
+    /* CENTRO */
+
+    if(state.center){
+
+      ictx.save();
+
+      ictx.strokeStyle="#ffca28";
+      ictx.lineWidth=2*devicePixelRatio;
+
+      ictx.beginPath();
+      ictx.moveTo(w/2-12*devicePixelRatio,h/2);
+      ictx.lineTo(w/2+12*devicePixelRatio,h/2);
+      ictx.moveTo(w/2,h/2-12*devicePixelRatio);
+      ictx.lineTo(w/2,h/2+12*devicePixelRatio);
+      ictx.stroke();
+
+      ictx.restore();
+    }
+
+    status.textContent=
+      "Zoom "+Math.round(state.zoom*100)+"% · "+
+      "Rotación "+state.rotation+"°";
+  }
+
+
+  function pushUndo(){
+
+    try{
+      undo.push(
+        dctx.getImageData(
+          0,
+          0,
+          drawCanvas.width,
+          drawCanvas.height
+        )
+      );
+
+      if(undo.length>20) undo.shift();
+
+      redo=[];
+    }catch(e){}
+  }
+
+
+  function restore(data){
+
+    if(!data) return;
+
+    dctx.clearRect(
+      0,
+      0,
+      drawCanvas.width,
+      drawCanvas.height
+    );
+
+    dctx.putImageData(data,0,0);
+  }
+
+
+  function pointerPosition(e){
+
+    const r=drawCanvas.getBoundingClientRect();
+
+    return {
+      x:(e.clientX-r.left)*
+        drawCanvas.width/r.width,
+
+      y:(e.clientY-r.top)*
+        drawCanvas.height/r.height
+    };
+  }
+
+
+  /* =========================================================
+     CARGA DE IMAGEN
+     ========================================================= */
+
+  file.addEventListener("change",function(){
+
+    const f=this.files && this.files[0];
+
+    if(!f) return;
+
+    if(!f.type.startsWith("image/")){
+      toast("El archivo no es una imagen.");
+      return;
+    }
+
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+
+      const img=new Image();
+
+      img.onload=function(){
+
+        image=img;
+
+        state={
+          zoom:1,
+          x:0,
+          y:0,
+          rotation:0,
+          flipX:1,
+          flipY:1,
+          gray:false,
+          invert:false,
+          brightness:100,
+          contrast:100,
+          grid:false,
+          center:false
+        };
+
+        undo=[];
+        redo=[];
+
+        redraw();
+
+        result.innerHTML=
+          "<b>Referencia:</b> "+
+          f.name+
+          "<br>"+
+          "<b>Resolución:</b> "+
+          img.naturalWidth+
+          " × "+
+          img.naturalHeight+
+          " px"+
+          "<br>"+
+          "<b>Relación:</b> "+
+          (img.naturalWidth/img.naturalHeight).toFixed(3);
+
+        toast("Referencia cargada correctamente.");
+      };
+
+      img.src=e.target.result;
+    };
+
+    reader.readAsDataURL(f);
+  });
+
+
+  /* =========================================================
+     CONTROLES
+     ========================================================= */
+
+  card.querySelectorAll("[data-action]").forEach(btn=>{
+
+    btn.addEventListener("click",function(){
+
+      const action=this.dataset.action;
+
+      if(action==="zoomIn"){
+        state.zoom=Math.min(5,state.zoom*1.15);
+        redraw();
+      }
+
+      if(action==="zoomOut"){
+        state.zoom=Math.max(.15,state.zoom/1.15);
+        redraw();
+      }
+
+      if(action==="rotateLeft"){
+        state.rotation=(state.rotation-90+360)%360;
+        redraw();
+      }
+
+      if(action==="rotateRight"){
+        state.rotation=(state.rotation+90)%360;
+        redraw();
+      }
+
+      if(action==="mirrorH"){
+        state.flipX*=-1;
+        redraw();
+      }
+
+      if(action==="mirrorV"){
+        state.flipY*=-1;
+        redraw();
+      }
+
+      if(action==="gray"){
+        state.gray=!state.gray;
+        redraw();
+      }
+
+      if(action==="invert"){
+        state.invert=!state.invert;
+        redraw();
+      }
+
+      if(action==="grid"){
+        state.grid=!state.grid;
+        redraw();
+      }
+
+      if(action==="center"){
+        state.center=!state.center;
+        redraw();
+      }
+
+      if(action==="draw"){
+        tool="draw";
+        toast("Modo dibujo activo.");
+      }
+
+      if(action==="erase"){
+        tool="erase";
+        toast("Modo borrador activo.");
+      }
+
+      if(action==="clearDraw"){
+
+        pushUndo();
+
+        dctx.clearRect(
+          0,
+          0,
+          drawCanvas.width,
+          drawCanvas.height
+        );
+
+        toast("Anotaciones eliminadas.");
+      }
+
+      if(action==="undo"){
+
+        if(!undo.length){
+          toast("No hay nada que deshacer.");
+          return;
+        }
+
+        redo.push(
+          dctx.getImageData(
+            0,0,
+            drawCanvas.width,
+            drawCanvas.height
+          )
+        );
+
+        restore(undo.pop());
+      }
+
+      if(action==="redo"){
+
+        if(!redo.length){
+          toast("No hay nada que rehacer.");
+          return;
+        }
+
+        undo.push(
+          dctx.getImageData(
+            0,0,
+            drawCanvas.width,
+            drawCanvas.height
+          )
+        );
+
+        restore(redo.pop());
+      }
+
+      if(action==="reset"){
+
+        state={
+          zoom:1,
+          x:0,
+          y:0,
+          rotation:0,
+          flipX:1,
+          flipY:1,
+          gray:false,
+          invert:false,
+          brightness:100,
+          contrast:100,
+          grid:false,
+          center:false
+        };
+
+        const b=card.querySelector('[data-control="brightness"]');
+        const c=card.querySelector('[data-control="contrast"]');
+
+        if(b) b.value=100;
+        if(c) c.value=100;
+
+        redraw();
+
+        toast("Mesa de trabajo restablecida.");
+      }
+
+      if(action==="eyedropper"){
+
+        tool="eyedropper";
+
+        toast(
+          "Tocá la imagen para capturar el color."
+        );
+      }
+
+      if(action==="export"){
+
+        if(!image){
+          toast("Primero cargá una referencia.");
+          return;
+        }
+
+        const out=document.createElement("canvas");
+
+        out.width=image.naturalWidth;
+        out.height=image.naturalHeight;
+
+        const o=out.getContext("2d");
+
+        o.drawImage(
+          image,
+          0,
+          0,
+          out.width,
+          out.height
+        );
+
+        /* Anotaciones se escalan al tamaño final */
+
+        o.drawImage(
+          drawCanvas,
+          0,
+          0,
+          out.width,
+          out.height
+        );
+
+        const a=document.createElement("a");
+
+        a.download=
+          "roxthal-herramienta-"+Date.now()+".png";
+
+        a.href=out.toDataURL("image/png");
+
+        a.click();
+
+        toast("Trabajo exportado.");
+      }
+
+    });
+
+  });
+
+
+  /* =========================================================
+     FILTROS
+     ========================================================= */
+
+  card.querySelectorAll("[data-control]").forEach(control=>{
+
+    control.addEventListener("input",function(){
+
+      if(this.dataset.control==="brightness"){
+        state.brightness=Number(this.value);
+        redraw();
+      }
+
+      if(this.dataset.control==="contrast"){
+        state.contrast=Number(this.value);
+        redraw();
+      }
+
+      if(this.dataset.control==="color"){
+
+        const span=
+          card.querySelector("[data-color-value]");
+
+        if(span){
+          span.textContent=
+            this.value.toUpperCase();
+        }
+      }
+
+    });
+
+  });
+
+
+  /* =========================================================
+     DIBUJO / BORRADOR / CUENTAGOTAS
+     ========================================================= */
+
+  drawCanvas.addEventListener("pointerdown",function(e){
+
+    if(!image) return;
+
+    const p=pointerPosition(e);
+
+    if(tool==="eyedropper"){
+
+      try{
+
+        const pixel=
+          ictx.getImageData(
+            Math.floor(p.x),
+            Math.floor(p.y),
+            1,
+            1
+          ).data;
+
+        const hex="#"+
+          [pixel[0],pixel[1],pixel[2]]
+          .map(v=>v.toString(16).padStart(2,"0"))
+          .join("")
+          .toUpperCase();
+
+        const color=
+          card.querySelector('[data-control="color"]');
+
+        if(color){
+          color.value=hex;
+        }
+
+        const value=
+          card.querySelector("[data-color-value]");
+
+        if(value){
+          value.textContent=hex;
+        }
+
+        result.innerHTML=
+          "<b>Color capturado:</b> "+
+          hex+
+          "<br>RGB("+
+          pixel[0]+", "+
+          pixel[1]+", "+
+          pixel[2]+")";
+
+        toast("Color capturado: "+hex);
+
+      }catch(err){
+        toast("No se pudo leer el píxel.");
+      }
+
+      tool="draw";
+      return;
+    }
+
+    if(tool!=="draw" && tool!=="erase") return;
+
+    drawing=true;
+
+    pushUndo();
+
+    drawCanvas.setPointerCapture?.(e.pointerId);
+
+    lastX=p.x;
+    lastY=p.y;
+
+    dctx.beginPath();
+    dctx.moveTo(p.x,p.y);
+
+  });
+
+
+  drawCanvas.addEventListener("pointermove",function(e){
+
+    if(!drawing) return;
+
+    const p=pointerPosition(e);
+
+    const brush=
+      Number(
+        card.querySelector('[data-control="brush"]').value
+      )*devicePixelRatio;
+
+    const color=
+      card.querySelector('[data-control="color"]').value;
+
+    dctx.lineWidth=brush;
+    dctx.lineCap="round";
+    dctx.lineJoin="round";
+
+    if(tool==="erase"){
+      dctx.globalCompositeOperation="destination-out";
+    }else{
+      dctx.globalCompositeOperation="source-over";
+      dctx.strokeStyle=color;
+    }
+
+    dctx.beginPath();
+    dctx.moveTo(lastX,lastY);
+    dctx.lineTo(p.x,p.y);
+    dctx.stroke();
+
+    lastX=p.x;
+    lastY=p.y;
+
+  });
+
+
+  drawCanvas.addEventListener("pointerup",function(){
+
+    drawing=false;
+
+    dctx.globalCompositeOperation="source-over";
+
+  });
+
+
+  drawCanvas.addEventListener("pointercancel",function(){
+
+    drawing=false;
+
+    dctx.globalCompositeOperation="source-over";
+
+  });
+
+
+  /* =========================================================
+     ZOOM CON RUEDA / DESPLAZAMIENTO
+     ========================================================= */
+
+  const workspace=card.querySelector(".rxs-workspace");
+
+  workspace.addEventListener("wheel",function(e){
+
+    if(!image) return;
+
+    e.preventDefault();
+
+    if(e.deltaY<0){
+      state.zoom=Math.min(5,state.zoom*1.08);
+    }else{
+      state.zoom=Math.max(.15,state.zoom/1.08);
+    }
+
+    redraw();
+
+  },{passive:false});
+
+
+  let drag=false;
+  let dragX=0;
+  let dragY=0;
+
+  workspace.addEventListener("pointerdown",function(e){
+
+    if(tool==="draw" ||
+       tool==="erase" ||
+       tool==="eyedropper") return;
+
+    drag=true;
+    dragX=e.clientX;
+    dragY=e.clientY;
+
+    workspace.setPointerCapture?.(e.pointerId);
+
+  });
+
+
+  workspace.addEventListener("pointermove",function(e){
+
+    if(!drag) return;
+
+    state.x+=
+      e.clientX-dragX;
+
+    state.y+=
+      e.clientY-dragY;
+
+    dragX=e.clientX;
+    dragY=e.clientY;
+
+    redraw();
+
+  });
+
+
+  workspace.addEventListener("pointerup",function(){
+    drag=false;
+  });
+
+
+  workspace.addEventListener("pointercancel",function(){
+    drag=false;
+  });
+
+
+  window.addEventListener("resize",resize);
+
+  resize();
+
+}
+
+
+/* =========================================================
+   INSERTAR EN TATUADORES
+   ========================================================= */
+
+createWorkspace(
+  document.getElementById("rxPageTattoo"),
+  "rxSurgicalTools",
+  "Mesa de trabajo real para tatuadores",
+  "Esta es la zona de trabajo: cargá una referencia, ampliá, movela, espejala, analizá valores y dibujá directamente encima sin destruir la imagen original."
+);
+
+
+/* =========================================================
+   INSERTAR SEGUNDA MESA PARA ARTISTAS
+   ========================================================= */
+
+const artistPage=document.getElementById("rxPageArtist");
+
+if(artistPage){
+
+  createWorkspace(
+    artistPage,
+    "rxSurgicalArtistTools",
+    "Mesa de trabajo real para artistas",
+    "Prepará referencias para dibujo y pintura con zoom, espejo, valores, contraste, cuentagotas, cuadrícula y anotaciones."
+  );
+
+}
+
+
+/* =========================================================
+   MEJORA REAL DEL CANVAS INFANTIL EXISTENTE
+   ========================================================= */
+
+const kids=document.getElementById("rxPageKids");
+
+if(kids){
+
+  const existingCanvas=
+    kids.querySelector("#rxPaintCanvas");
+
+  if(existingCanvas &&
+     !kids.querySelector("#rxKidsExtraTools")){
+
+    const box=document.createElement("div");
+
+    box.id="rxKidsExtraTools";
+    box.className="rx-pro-card";
+
+    box.innerHTML=`
+
+      <div class="rx-pro-badge">
+        🧒 HERRAMIENTAS CREATIVAS
+      </div>
+
+      <h3>Ejercicios rápidos</h3>
+
+      <p>
+        Actividades para practicar observación,
+        simetría, color y creatividad.
+      </p>
+
+      <div class="rx-pro-buttons">
+
+        <button class="rx-pro-btn primary"
+                data-kid-exercise="symmetry">
+          🪞 Simetría
+        </button>
+
+        <button class="rx-pro-btn"
+                data-kid-exercise="color">
+          🎨 Color
+        </button>
+
+        <button class="rx-pro-btn"
+                data-kid-exercise="observation">
+          👁️ Observación
+        </button>
+
+        <button class="rx-pro-btn"
+                data-kid-exercise="free">
+          🚀 Creatividad libre
+        </button>
+
+      </div>
+
+      <div id="rxKidsExerciseOutput"
+           class="rx-pro-challenge"
+           style="margin-top:12px">
+        Elegí un desafío.
+      </div>
+
+    `;
+
+    kids.appendChild(box);
+
+    const exercises={
+      symmetry:[
+        "Dibujá media mariposa y completá la otra mitad.",
+        "Creá una cara y repetí el lado contrario.",
+        "Dibujá una figura geométrica perfectamente simétrica."
+      ],
+      color:[
+        "Usá solamente tres colores y mezclalos.",
+        "Creá un dibujo donde predomine un color cálido.",
+        "Creá una composición utilizando colores complementarios."
+      ],
+      observation:[
+        "Dibujá un objeto que tengas cerca sin mirar el papel durante 10 segundos.",
+        "Observá cinco formas y convertílas en un dibujo.",
+        "Dibujá una textura que encuentres alrededor."
+      ],
+      free:[
+        "Inventá un animal que no exista.",
+        "Diseñá un planeta nuevo.",
+        "Creá un personaje con tres características imposibles."
+      ]
+    };
+
+    box.querySelectorAll("[data-kid-exercise]")
+      .forEach(btn=>{
+
+        btn.addEventListener("click",function(){
+
+          const list=
+            exercises[this.dataset.kidExercise];
+
+          const text=
+            list[
+              Math.floor(Math.random()*list.length)
+            ];
+
+          document.getElementById(
+            "rxKidsExerciseOutput"
+          ).textContent=text;
+
+        });
+
+      });
+
+  }
+
+}
+
+toast("Herramientas RoXThal reparadas y ampliadas ✓");
+
+})();
+</script>                                                                                                                                                                                                                                                                                     
 </body>
 </html>
