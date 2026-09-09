@@ -10196,5 +10196,2243 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+   <!-- =========================================================
+     RoXThal Art Design
+     HERRAMIENTAS PROFESIONALES — REPARADOR / EXTENSIÓN V4
+     No Supabase · No Admin · No segundo módulo · No segundo botón
+     ========================================================= -->
+
+<style>
+/* =========================================================
+   ROXTHAL TOOLS PRO V4
+   ========================================================= */
+
+#rxToolsRoot .rx-pro-zone{
+  margin-top:22px;
+  display:grid;
+  gap:16px;
+}
+
+#rxToolsRoot .rx-pro-card{
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 12px 35px rgba(0,0,0,.22);
+}
+
+#rxToolsRoot .rx-pro-card h3{
+  margin:0 0 7px;
+  font-size:1.05rem;
+}
+
+#rxToolsRoot .rx-pro-card p{
+  margin:5px 0 12px;
+  opacity:.78;
+  line-height:1.5;
+}
+
+#rxToolsRoot .rx-pro-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+#rxToolsRoot .rx-pro-grid.three{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+#rxToolsRoot .rx-pro-control{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+#rxToolsRoot .rx-pro-control label{
+  font-size:.82rem;
+  font-weight:700;
+  opacity:.85;
+}
+
+#rxToolsRoot .rx-pro-control input,
+#rxToolsRoot .rx-pro-control select,
+#rxToolsRoot .rx-pro-control textarea{
+  width:100%;
+  box-sizing:border-box;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(0,0,0,.28);
+  color:inherit;
+  padding:10px 11px;
+  outline:none;
+}
+
+#rxToolsRoot .rx-pro-control input:focus,
+#rxToolsRoot .rx-pro-control select:focus,
+#rxToolsRoot .rx-pro-control textarea:focus{
+  border-color:rgba(255,190,0,.65);
+  box-shadow:0 0 0 3px rgba(255,190,0,.08);
+}
+
+#rxToolsRoot .rx-pro-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+#rxToolsRoot .rx-pro-btn{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:11px;
+  padding:9px 12px;
+  background:rgba(255,255,255,.07);
+  color:inherit;
+  cursor:pointer;
+  font-weight:700;
+  transition:.18s ease;
+}
+
+#rxToolsRoot .rx-pro-btn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.12);
+}
+
+#rxToolsRoot .rx-pro-btn.primary{
+  background:linear-gradient(135deg,#ffca28,#ff8f00);
+  color:#111;
+  border-color:transparent;
+}
+
+#rxToolsRoot .rx-pro-btn.danger{
+  background:rgba(220,50,50,.14);
+}
+
+#rxToolsRoot .rx-pro-output{
+  margin-top:11px;
+  padding:11px 12px;
+  border-radius:11px;
+  background:rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:.88rem;
+  line-height:1.5;
+  word-break:break-word;
+}
+
+#rxToolsRoot .rx-pro-help{
+  border-left:3px solid #ffca28;
+  padding:10px 13px;
+  margin-bottom:14px;
+  background:rgba(255,202,40,.055);
+  border-radius:0 11px 11px 0;
+  font-size:.86rem;
+  line-height:1.55;
+}
+
+#rxToolsRoot .rx-pro-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,202,40,.12);
+  font-size:.72rem;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+#rxToolsRoot .rx-pro-checklist{
+  display:grid;
+  gap:7px;
+}
+
+#rxToolsRoot .rx-pro-check{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding:9px;
+  border-radius:10px;
+  background:rgba(255,255,255,.035);
+}
+
+#rxToolsRoot .rx-pro-check input{
+  margin-top:3px;
+  accent-color:#ffca28;
+}
+
+#rxToolsRoot .rx-pro-ref{
+  position:relative;
+  overflow:hidden;
+  min-height:260px;
+  border-radius:15px;
+  background:
+    repeating-conic-gradient(
+      rgba(255,255,255,.035) 0 25%,
+      transparent 0 50%
+    ) 50%/24px 24px;
+  border:1px solid rgba(255,255,255,.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#rxToolsRoot .rx-pro-ref img{
+  max-width:100%;
+  max-height:420px;
+  display:block;
+  transition:.2s ease;
+  transform-origin:center;
+}
+
+#rxToolsRoot .rx-pro-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+#rxToolsRoot .rx-pro-grid-lines{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(255,255,255,.38) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,.38) 1px,
+      transparent 1px
+    );
+  background-size:25% 25%;
+  opacity:.45;
+  display:none;
+}
+
+#rxToolsRoot .rx-pro-thirds{
+  position:absolute;
+  inset:0;
+  display:none;
+  background:
+    linear-gradient(
+      to right,
+      transparent 33.1%,
+      rgba(255,202,40,.65) 33.2%,
+      transparent 33.4%,
+      transparent 66.4%,
+      rgba(255,202,40,.65) 66.5%,
+      transparent 66.7%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 33.1%,
+      rgba(255,202,40,.65) 33.2%,
+      transparent 33.4%,
+      transparent 66.4%,
+      rgba(255,202,40,.65) 66.5%,
+      transparent 66.7%
+    );
+}
+
+#rxToolsRoot .rx-pro-center{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border:2px solid #ffca28;
+  border-radius:50%;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:none;
+}
+
+#rxToolsRoot .rx-pro-value-strip{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  overflow:hidden;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.1);
+}
+
+#rxToolsRoot .rx-pro-value-strip span{
+  height:35px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  font-size:.6rem;
+  padding-bottom:3px;
+}
+
+#rxToolsRoot .rx-pro-palette{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+  margin-top:10px;
+}
+
+#rxToolsRoot .rx-pro-swatch{
+  min-height:54px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:5px;
+  box-sizing:border-box;
+  font-size:.68rem;
+  text-shadow:0 1px 3px #000;
+}
+
+#rxToolsRoot .rx-pro-big-number{
+  font-size:2rem;
+  font-weight:900;
+  letter-spacing:-1px;
+}
+
+#rxToolsRoot .rx-pro-status{
+  min-height:22px;
+  font-size:.8rem;
+  opacity:.75;
+  margin-top:6px;
+}
+
+#rxToolsRoot .rx-pro-challenge{
+  font-size:1.25rem;
+  line-height:1.45;
+  font-weight:800;
+  padding:18px;
+  border-radius:15px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,202,40,.12),
+      rgba(255,255,255,.04)
+    );
+  border:1px solid rgba(255,202,40,.18);
+}
+
+#rxToolsRoot .rx-pro-flow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:10px 0 0;
+}
+
+#rxToolsRoot .rx-pro-step{
+  flex:1 1 110px;
+  padding:9px;
+  border-radius:10px;
+  background:rgba(255,255,255,.045);
+  text-align:center;
+  font-size:.78rem;
+  font-weight:700;
+}
+
+#rxToolsRoot .rx-pro-step b{
+  display:block;
+  font-size:1.1rem;
+  margin-bottom:3px;
+}
+
+#rxToolsRoot .rx-pro-note{
+  width:100%;
+  min-height:130px;
+  resize:vertical;
+}
+
+#rxToolsRoot .rx-pro-hidden{
+  display:none!important;
+}
+
+@media(max-width:760px){
+  #rxToolsRoot .rx-pro-grid,
+  #rxToolsRoot .rx-pro-grid.three{
+    grid-template-columns:1fr;
+  }
+
+  #rxToolsRoot .rx-pro-palette{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  #rxToolsRoot .rx-pro-ref{
+    min-height:210px;
+  }
+
+  #rxToolsRoot .rx-pro-btn{
+    flex:1 1 auto;
+  }
+}
+</style>
+
+<script>
+(function(){
+
+  "use strict";
+
+  /* =========================================================
+     SEGURIDAD: NO DUPLICAR EL SISTEMA
+     ========================================================= */
+
+  if(window.__ROXTHAL_TOOLS_REPAIR_V4__) return;
+  window.__ROXTHAL_TOOLS_REPAIR_V4__ = true;
+
+  const root = document.getElementById("rxToolsRoot");
+
+  /*
+     IMPORTANTE:
+     Si el módulo original no existe, no creamos otro.
+  */
+  if(!root) return;
+
+  const $ = (selector, parent=root) =>
+    parent.querySelector(selector);
+
+  const $$ = (selector, parent=root) =>
+    Array.from(parent.querySelectorAll(selector));
+
+  const esc = value =>
+    String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  function toast(message){
+
+    let box = document.getElementById("rxProToast");
+
+    if(!box){
+      box=document.createElement("div");
+      box.id="rxProToast";
+
+      Object.assign(box.style,{
+        position:"fixed",
+        left:"50%",
+        bottom:"22px",
+        transform:"translateX(-50%) translateY(15px)",
+        zIndex:"999999",
+        background:"rgba(10,10,10,.94)",
+        color:"#fff",
+        border:"1px solid rgba(255,202,40,.4)",
+        borderRadius:"12px",
+        padding:"11px 15px",
+        maxWidth:"90vw",
+        textAlign:"center",
+        opacity:"0",
+        pointerEvents:"none",
+        transition:".2s ease",
+        boxShadow:"0 10px 35px rgba(0,0,0,.4)"
+      });
+
+      document.body.appendChild(box);
+    }
+
+    box.textContent=message;
+    box.style.opacity="1";
+    box.style.transform="translateX(-50%) translateY(0)";
+
+    clearTimeout(box._timer);
+
+    box._timer=setTimeout(()=>{
+      box.style.opacity="0";
+      box.style.transform="translateX(-50%) translateY(15px)";
+    },2200);
+  }
+
+  function copyText(text){
+
+    if(!text) return;
+
+    if(navigator.clipboard){
+
+      navigator.clipboard.writeText(text)
+        .then(()=>toast("Copiado ✓"))
+        .catch(()=>fallbackCopy(text));
+
+    }else{
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text){
+
+    const area=document.createElement("textarea");
+
+    area.value=text;
+    area.style.position="fixed";
+    area.style.opacity="0";
+
+    document.body.appendChild(area);
+
+    area.select();
+
+    try{
+      document.execCommand("copy");
+      toast("Copiado ✓");
+    }catch(e){
+      toast("No se pudo copiar");
+    }
+
+    area.remove();
+  }
+
+  function hexToRgb(hex){
+
+    hex=String(hex||"").replace("#","").trim();
+
+    if(hex.length===3){
+      hex=hex.split("").map(x=>x+x).join("");
+    }
+
+    if(!/^[0-9a-f]{6}$/i.test(hex)) return null;
+
+    return {
+      r:parseInt(hex.slice(0,2),16),
+      g:parseInt(hex.slice(2,4),16),
+      b:parseInt(hex.slice(4,6),16)
+    };
+  }
+
+  function rgbToHex(r,g,b){
+
+    return "#"+
+      [r,g,b]
+      .map(v=>{
+        v=Math.max(0,Math.min(255,Math.round(v)));
+        return v.toString(16).padStart(2,"0");
+      })
+      .join("")
+      .toUpperCase();
+  }
+
+  function rgbToHsl(r,g,b){
+
+    r/=255;
+    g/=255;
+    b/=255;
+
+    const max=Math.max(r,g,b);
+    const min=Math.min(r,g,b);
+
+    let h=0;
+    let s=0;
+    const l=(max+min)/2;
+
+    if(max!==min){
+
+      const d=max-min;
+
+      s=l>0.5
+        ?d/(2-max-min)
+        :d/(max+min);
+
+      switch(max){
+
+        case r:
+          h=(g-b)/d+(g<b?6:0);
+          break;
+
+        case g:
+          h=(b-r)/d+2;
+          break;
+
+        case b:
+          h=(r-g)/d+4;
+          break;
+      }
+
+      h/=6;
+    }
+
+    return {
+      h:Math.round(h*360),
+      s:Math.round(s*100),
+      l:Math.round(l*100)
+    };
+  }
+
+  function hslToRgb(h,s,l){
+
+    h=((h%360)+360)%360/360;
+    s=Math.max(0,Math.min(100,s))/100;
+    l=Math.max(0,Math.min(100,l))/100;
+
+    if(s===0){
+      const v=Math.round(l*255);
+      return {r:v,g:v,b:v};
+    }
+
+    const hue2rgb=(p,q,t)=>{
+
+      if(t<0)t+=1;
+      if(t>1)t-=1;
+
+      if(t<1/6)return p+(q-p)*6*t;
+      if(t<1/2)return q;
+      if(t<2/3)return p+(q-p)*(2/3-t)*6;
+
+      return p;
+    };
+
+    const q=l<.5
+      ?l*(1+s)
+      :l+s-l*s;
+
+    const p=2*l-q;
+
+    return {
+      r:Math.round(hue2rgb(p,q,h+1/3)*255),
+      g:Math.round(hue2rgb(p,q,h)*255),
+      b:Math.round(hue2rgb(p,q,h-1/3)*255)
+    };
+  }
+
+  /* =========================================================
+     INSTRUCCIONES PROFESIONALES
+     ========================================================= */
+
+  function addInstruction(pageId, title, text, flow){
+
+    const page=document.getElementById(pageId);
+
+    if(!page || page.querySelector(".rx-pro-instructions")) return;
+
+    const box=document.createElement("div");
+
+    box.className="rx-pro-card rx-pro-instructions";
+
+    box.innerHTML=`
+      <div class="rx-pro-badge">⚡ FLUJO PROFESIONAL</div>
+      <h3>${esc(title)}</h3>
+      <div class="rx-pro-help">${esc(text)}</div>
+
+      <div class="rx-pro-flow">
+        ${flow.map((item,i)=>`
+          <div class="rx-pro-step">
+            <b>${i+1}</b>
+            ${esc(item)}
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+    page.insertBefore(box,page.firstElementChild);
+  }
+
+  addInstruction(
+    "rxPageTattoo",
+    "De la referencia al diseño",
+    "Usá estas herramientas para comprobar proporción, composición y lectura del diseño antes de llevarlo a impresión o stencil. Son herramientas de preparación artística y no sustituyen los procedimientos profesionales del estudio.",
+    [
+      "Referencia",
+      "Proporción",
+      "Composición",
+      "Contraste",
+      "Revisión"
+    ]
+  );
+
+  addInstruction(
+    "rxPageArtist",
+    "Flujo de estudio",
+    "Un flujo profesional empieza resolviendo composición y valores antes de depender del color. Probá primero una versión pequeña y en escala de grises y después desarrollá la paleta.",
+    [
+      "Idea",
+      "Boceto",
+      "Valores",
+      "Color",
+      "Detalle"
+    ]
+  );
+
+  addInstruction(
+    "rxPageKids",
+    "Crear también es experimentar",
+    "Elegí un desafío, probá materiales y dejá espacio para que cada niño encuentre su propia solución. No hace falta que el resultado sea igual al ejemplo.",
+    [
+      "Elegir",
+      "Explorar",
+      "Crear",
+      "Compartir"
+    ]
+  );
+
+  /* =========================================================
+     TATUADORES — REFERENCIA PROFESIONAL
+     ========================================================= */
+
+  const tattooPage=document.getElementById("rxPageTattoo");
+
+  if(tattooPage && !document.getElementById("rxTattooPro")){
+
+    const zone=document.createElement("div");
+
+    zone.id="rxTattooPro";
+    zone.className="rx-pro-zone";
+
+    zone.innerHTML=`
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🖋️ REFERENCE LAB</div>
+
+        <h3>Preparador profesional de referencia</h3>
+
+        <p>
+          Cargá una referencia desde el teléfono y analizala con
+          simetría, cuadrícula, contraste, escala de grises y composición.
+        </p>
+
+        <div class="rx-pro-control">
+          <label>Imagen de referencia</label>
+          <input id="rxTattooRefFile"
+                 type="file"
+                 accept="image/png,image/jpeg,image/webp">
+        </div>
+
+        <div class="rx-pro-ref" id="rxTattooRef">
+
+          <div class="rx-pro-overlay">
+            <div class="rx-pro-grid-lines" id="rxTattooGridOverlay"></div>
+            <div class="rx-pro-thirds" id="rxTattooThirdsOverlay"></div>
+            <div class="rx-pro-center" id="rxTattooCenterOverlay"></div>
+          </div>
+
+          <img id="rxTattooRefImg"
+               alt="Referencia de tatuaje"
+               class="rx-pro-hidden">
+
+          <span id="rxTattooRefEmpty">
+            Cargá una imagen para comenzar
+          </span>
+
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn"
+                  id="rxTattooMirrorH">
+            ↔ Espejo H
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooMirrorV">
+            ↕ Espejo V
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooGray">
+            ◐ Grises
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooGridToggle">
+            ▦ Cuadrícula
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooThirdsToggle">
+            ⊞ Tercios
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooCenterToggle">
+            ◎ Centro
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooReset">
+            ↺ Restablecer
+          </button>
+
+        </div>
+
+        <div class="rx-pro-grid">
+
+          <div class="rx-pro-control">
+            <label>Opacidad</label>
+            <input id="rxTattooOpacity"
+                   type="range"
+                   min="10"
+                   max="100"
+                   value="100">
+          </div>
+
+          <div class="rx-pro-control">
+            <label>Contraste</label>
+            <input id="rxTattooContrast"
+                   type="range"
+                   min="50"
+                   max="180"
+                   value="100">
+          </div>
+
+        </div>
+
+        <div class="rx-pro-status"
+             id="rxTattooRefStatus">
+          Sin referencia cargada.
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">📐 ESCALA REAL</div>
+
+        <h3>Calculadora de tamaño y proporción</h3>
+
+        <div class="rx-pro-grid three">
+
+          <div class="rx-pro-control">
+            <label>Ancho del diseño</label>
+            <input id="rxTattooWidth"
+                   type="number"
+                   min="0"
+                   step="0.1"
+                   value="10">
+          </div>
+
+          <div class="rx-pro-control">
+            <label>Alto del diseño</label>
+            <input id="rxTattooHeight"
+                   type="number"
+                   min="0"
+                   step="0.1"
+                   value="10">
+          </div>
+
+          <div class="rx-pro-control">
+            <label>Unidad</label>
+            <select id="rxTattooUnit">
+              <option value="cm">cm</option>
+              <option value="mm">mm</option>
+              <option value="in">pulgadas</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxTattooRatio">
+            Calcular proporción
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooConvert">
+            Convertir unidades
+          </button>
+
+        </div>
+
+        <div class="rx-pro-output"
+             id="rxTattooRatioOutput">
+          Introducí las medidas.
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🧭 PREPARACIÓN</div>
+
+        <h3>Checklist antes de preparar el stencil</h3>
+
+        <div class="rx-pro-checklist">
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>La referencia tiene buena resolución.</span>
+          </label>
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>La composición funciona sin depender del color.</span>
+          </label>
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>La escala final está definida.</span>
+          </label>
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>La lectura de líneas principales es clara.</span>
+          </label>
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>Se revisaron simetría y proporciones.</span>
+          </label>
+
+          <label class="rx-pro-check">
+            <input type="checkbox">
+            <span>La composición fue revisada a tamaño final.</span>
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🎯 COMPOSICIÓN</div>
+
+        <h3>Generador de ejercicios para tatuadores</h3>
+
+        <div class="rx-pro-challenge"
+             id="rxTattooChallenge">
+          Presioná generar para recibir un ejercicio.
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxTattooChallengeBtn">
+            🎲 Nuevo ejercicio
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">📝 PROYECTO</div>
+
+        <h3>Ficha rápida de diseño</h3>
+
+        <textarea
+          id="rxTattooProjectNotes"
+          class="rx-pro-note"
+          placeholder="Idea, estilo, tamaño, zona, referencias, observaciones, cambios solicitados..."></textarea>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxTattooSaveNotes">
+            💾 Guardar ficha
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxTattooCopyNotes">
+            📋 Copiar
+          </button>
+
+          <button class="rx-pro-btn danger"
+                  id="rxTattooClearNotes">
+            🗑️ Limpiar
+          </button>
+
+        </div>
+
+        <div class="rx-pro-status"
+             id="rxTattooNotesStatus"></div>
+
+      </div>
+    `;
+
+    tattooPage.appendChild(zone);
+
+    /* ---------------- REFERENCE IMAGE ---------------- */
+
+    const file=$("#rxTattooRefFile");
+    const img=$("#rxTattooRefImg");
+    const empty=$("#rxTattooRefEmpty");
+    const status=$("#rxTattooRefStatus");
+
+    let mirrorX=1;
+    let mirrorY=1;
+    let grayscale=false;
+
+    function updateRef(){
+
+      img.style.transform=
+        "scaleX("+mirrorX+") scaleY("+mirrorY+")";
+
+      img.style.filter=
+        "grayscale("+(grayscale?100:0)+"%) "+
+        "contrast("+$("#rxTattooContrast").value+"%)";
+
+      img.style.opacity=
+        Number($("#rxTattooOpacity").value)/100;
+    }
+
+    file.addEventListener("change",function(){
+
+      const selected=this.files && this.files[0];
+
+      if(!selected) return;
+
+      if(!selected.type.startsWith("image/")){
+        toast("Seleccioná una imagen.");
+        return;
+      }
+
+      const reader=new FileReader();
+
+      reader.onload=function(e){
+
+        img.src=e.target.result;
+        img.classList.remove("rx-pro-hidden");
+        empty.classList.add("rx-pro-hidden");
+
+        status.textContent=
+          "Referencia cargada: "+
+          selected.name;
+
+        mirrorX=1;
+        mirrorY=1;
+        grayscale=false;
+
+        updateRef();
+      };
+
+      reader.readAsDataURL(selected);
+    });
+
+    $("#rxTattooMirrorH").addEventListener("click",()=>{
+      mirrorX*=-1;
+      updateRef();
+    });
+
+    $("#rxTattooMirrorV").addEventListener("click",()=>{
+      mirrorY*=-1;
+      updateRef();
+    });
+
+    $("#rxTattooGray").addEventListener("click",()=>{
+      grayscale=!grayscale;
+      updateRef();
+    });
+
+    $("#rxTattooOpacity").addEventListener("input",updateRef);
+    $("#rxTattooContrast").addEventListener("input",updateRef);
+
+    $("#rxTattooGridToggle").addEventListener("click",()=>{
+
+      const el=$("#rxTattooGridOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxTattooThirdsToggle").addEventListener("click",()=>{
+
+      const el=$("#rxTattooThirdsOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxTattooCenterToggle").addEventListener("click",()=>{
+
+      const el=$("#rxTattooCenterOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxTattooReset").addEventListener("click",()=>{
+
+      mirrorX=1;
+      mirrorY=1;
+      grayscale=false;
+
+      $("#rxTattooOpacity").value=100;
+      $("#rxTattooContrast").value=100;
+
+      $("#rxTattooGridOverlay").style.display="none";
+      $("#rxTattooThirdsOverlay").style.display="none";
+      $("#rxTattooCenterOverlay").style.display="none";
+
+      updateRef();
+
+      toast("Referencia restablecida.");
+    });
+
+    /* ---------------- SCALE ---------------- */
+
+    $("#rxTattooRatio").addEventListener("click",()=>{
+
+      const w=parseFloat($("#rxTattooWidth").value);
+      const h=parseFloat($("#rxTattooHeight").value);
+
+      if(!(w>0) || !(h>0)){
+        $("#rxTattooRatioOutput").textContent=
+          "Introducí valores mayores que cero.";
+        return;
+      }
+
+      const ratio=w/h;
+
+      $("#rxTattooRatioOutput").innerHTML=
+        "<b>Relación:</b> "+
+        ratio.toFixed(3)+
+        "<br><b>Formato:</b> "+
+        w.toFixed(2)+" × "+
+        h.toFixed(2)+" "+
+        esc($("#rxTattooUnit").value);
+    });
+
+    $("#rxTattooConvert").addEventListener("click",()=>{
+
+      const w=parseFloat($("#rxTattooWidth").value);
+      const h=parseFloat($("#rxTattooHeight").value);
+      const unit=$("#rxTattooUnit").value;
+
+      if(!(w>0) || !(h>0)) return;
+
+      let factor=1;
+
+      if(unit==="cm") factor=1;
+      if(unit==="mm") factor=.1;
+      if(unit==="in") factor=2.54;
+
+      const cmW=w*factor;
+      const cmH=h*factor;
+
+      $("#rxTattooRatioOutput").innerHTML=
+        "<b>Centímetros:</b> "+
+        cmW.toFixed(2)+" × "+cmH.toFixed(2)+" cm"+
+        "<br><b>Milímetros:</b> "+
+        (cmW*10).toFixed(1)+" × "+(cmH*10).toFixed(1)+" mm"+
+        "<br><b>Pulgadas:</b> "+
+        (cmW/2.54).toFixed(2)+" × "+(cmH/2.54).toFixed(2)+" in";
+    });
+
+    /* ---------------- CHALLENGES ---------------- */
+
+    const tattooExercises=[
+      "Convertí una referencia compleja en una composición de 5 masas principales.",
+      "Diseñá un motivo simétrico y comprobá la simetría con espejo horizontal.",
+      "Reducí una referencia a únicamente líneas esenciales.",
+      "Tomá una referencia fotográfica y estudiá primero sus valores en blanco y negro.",
+      "Diseñá un pequeño flash utilizando solamente tres pesos de línea.",
+      "Construí una composición vertical usando la regla de tercios.",
+      "Diseñá un motivo donde el espacio negativo tenga tanta importancia como el positivo.",
+      "Simplificá una imagen hasta que siga siendo reconocible en tamaño pequeño.",
+      "Creá tres variaciones de la misma idea cambiando únicamente la composición.",
+      "Diseñá un motivo pensado para funcionar correctamente a distancia."
+    ];
+
+    $("#rxTattooChallengeBtn").addEventListener("click",()=>{
+
+      const item=
+        tattooExercises[
+          Math.floor(Math.random()*tattooExercises.length)
+        ];
+
+      $("#rxTattooChallenge").textContent=item;
+    });
+
+    /* ---------------- NOTES ---------------- */
+
+    const notesKey="roxthal_tattoo_project_notes";
+
+    const notes=$("#rxTattooProjectNotes");
+
+    notes.value=
+      localStorage.getItem(notesKey)||"";
+
+    $("#rxTattooSaveNotes").addEventListener("click",()=>{
+
+      localStorage.setItem(notesKey,notes.value);
+
+      $("#rxTattooNotesStatus").textContent=
+        "Ficha guardada en este dispositivo ✓";
+
+      toast("Ficha guardada.");
+    });
+
+    $("#rxTattooCopyNotes").addEventListener("click",()=>{
+      copyText(notes.value);
+    });
+
+    $("#rxTattooClearNotes").addEventListener("click",()=>{
+
+      notes.value="";
+
+      localStorage.removeItem(notesKey);
+
+      $("#rxTattooNotesStatus").textContent=
+        "Ficha eliminada.";
+
+      toast("Ficha eliminada.");
+    });
+
+  }
+
+
+  /* =========================================================
+     ARTISTAS — LABORATORIO PROFESIONAL
+     ========================================================= */
+
+  const artistPage=document.getElementById("rxPageArtist");
+
+  if(artistPage && !document.getElementById("rxArtistPro")){
+
+    const zone=document.createElement("div");
+
+    zone.id="rxArtistPro";
+    zone.className="rx-pro-zone";
+
+    zone.innerHTML=`
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🎨 REFERENCE LAB</div>
+
+        <h3>Laboratorio de referencia para dibujo y pintura</h3>
+
+        <div class="rx-pro-control">
+
+          <label>Cargar referencia</label>
+
+          <input id="rxArtistRefFile"
+                 type="file"
+                 accept="image/png,image/jpeg,image/webp">
+
+        </div>
+
+        <div class="rx-pro-ref">
+
+          <div class="rx-pro-overlay">
+
+            <div class="rx-pro-grid-lines"
+                 id="rxArtistGridOverlay"></div>
+
+            <div class="rx-pro-thirds"
+                 id="rxArtistThirdsOverlay"></div>
+
+            <div class="rx-pro-center"
+                 id="rxArtistCenterOverlay"></div>
+
+          </div>
+
+          <img id="rxArtistRefImg"
+               class="rx-pro-hidden"
+               alt="Referencia artística">
+
+          <span id="rxArtistRefEmpty">
+            Cargá una imagen para analizarla.
+          </span>
+
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn"
+                  id="rxArtistGray">
+            ◐ Escala de grises
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistGridToggle">
+            ▦ Cuadrícula
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistThirdsToggle">
+            ⊞ Tercios
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistCenterToggle">
+            ◎ Centro
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistMirror">
+            ↔ Espejo
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistReset">
+            ↺ Restablecer
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🌓 VALORES</div>
+
+        <h3>Escala profesional de valores</h3>
+
+        <p>
+          Usala para entrenar la lectura de luces, medios tonos y sombras.
+        </p>
+
+        <div class="rx-pro-value-strip">
+
+          <span style="background:#111;color:#fff">1</span>
+          <span style="background:#282828;color:#fff">2</span>
+          <span style="background:#404040;color:#fff">3</span>
+          <span style="background:#585858;color:#fff">4</span>
+          <span style="background:#707070;color:#fff">5</span>
+          <span style="background:#888;color:#fff">6</span>
+          <span style="background:#aaa;color:#111">7</span>
+          <span style="background:#c5c5c5;color:#111">8</span>
+          <span style="background:#e0e0e0;color:#111">9</span>
+          <span style="background:#fff;color:#111">10</span>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🌈 COLOR</div>
+
+        <h3>Generador de armonías</h3>
+
+        <div class="rx-pro-grid">
+
+          <div class="rx-pro-control">
+
+            <label>Color base</label>
+
+            <input id="rxArtistProColor"
+                   type="color"
+                   value="#D62828">
+
+          </div>
+
+          <div class="rx-pro-control">
+
+            <label>Armonía</label>
+
+            <select id="rxArtistHarmony">
+
+              <option value="analogous">
+                Análoga
+              </option>
+
+              <option value="complementary">
+                Complementaria
+              </option>
+
+              <option value="triadic">
+                Triádica
+              </option>
+
+              <option value="split">
+                Complementaria dividida
+              </option>
+
+              <option value="tetradic">
+                Tetrádica
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <div class="rx-pro-palette"
+             id="rxArtistProPalette"></div>
+
+        <div class="rx-pro-status">
+          Tocá cualquier color para copiar su HEX.
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🔬 COLOR LAB</div>
+
+        <h3>Conversor HEX / RGB / HSL</h3>
+
+        <div class="rx-pro-control">
+
+          <label>HEX</label>
+
+          <input id="rxArtistHexPro"
+                 value="#D62828"
+                 maxlength="7">
+
+        </div>
+
+        <div class="rx-pro-output"
+             id="rxArtistColorInfo">
+          —
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxArtistAnalyzeColor">
+            Analizar color
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistCopyHex">
+            Copiar HEX
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🧭 COMPOSICIÓN</div>
+
+        <h3>Guía de composición</h3>
+
+        <div class="rx-pro-grid">
+
+          <div class="rx-pro-control">
+
+            <label>Guía</label>
+
+            <select id="rxArtistComposition">
+
+              <option value="thirds">
+                Regla de tercios
+              </option>
+
+              <option value="golden">
+                Proporción áurea
+              </option>
+
+              <option value="center">
+                Composición central
+              </option>
+
+              <option value="symmetry">
+                Simetría
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="rx-pro-control">
+
+            <label>Pregunta de revisión</label>
+
+            <select id="rxArtistCompositionQuestion">
+
+              <option>
+                ¿Dónde quiero que mire primero?
+              </option>
+
+              <option>
+                ¿Hay suficiente espacio negativo?
+              </option>
+
+              <option>
+                ¿Los valores separan los planos?
+              </option>
+
+              <option>
+                ¿La silueta funciona sin detalles?
+              </option>
+
+              <option>
+                ¿El recorrido visual tiene dirección?
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <div class="rx-pro-output"
+             id="rxArtistCompositionOutput">
+          Elegí una guía y una pregunta para comenzar.
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">💡 IDEAS</div>
+
+        <h3>Generador de ejercicios artísticos</h3>
+
+        <div class="rx-pro-challenge"
+             id="rxArtistChallenge">
+          Generá un ejercicio para entrenar una habilidad concreta.
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxArtistChallengeBtn">
+            🎲 Generar ejercicio
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">📝 CUADERNO</div>
+
+        <h3>Bitácora del artista</h3>
+
+        <textarea
+          id="rxArtistNotes"
+          class="rx-pro-note"
+          placeholder="Qué estoy estudiando, qué funcionó, qué quiero mejorar, referencias, paletas, ideas..."></textarea>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxArtistSaveNotes">
+            💾 Guardar
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxArtistCopyNotes">
+            📋 Copiar
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    artistPage.appendChild(zone);
+
+    /* ---------------- ARTIST REFERENCE ---------------- */
+
+    const afile=$("#rxArtistRefFile");
+    const aimg=$("#rxArtistRefImg");
+    const aempty=$("#rxArtistRefEmpty");
+
+    let agray=false;
+    let amirror=1;
+
+    function updateArtistImage(){
+
+      aimg.style.filter=
+        "grayscale("+(agray?100:0)+"%)";
+
+      aimg.style.transform=
+        "scaleX("+amirror+")";
+    }
+
+    afile.addEventListener("change",function(){
+
+      const selected=this.files && this.files[0];
+
+      if(!selected) return;
+
+      const reader=new FileReader();
+
+      reader.onload=e=>{
+
+        aimg.src=e.target.result;
+        aimg.classList.remove("rx-pro-hidden");
+        aempty.classList.add("rx-pro-hidden");
+
+        updateArtistImage();
+      };
+
+      reader.readAsDataURL(selected);
+    });
+
+    $("#rxArtistGray").addEventListener("click",()=>{
+      agray=!agray;
+      updateArtistImage();
+    });
+
+    $("#rxArtistMirror").addEventListener("click",()=>{
+      amirror*=-1;
+      updateArtistImage();
+    });
+
+    $("#rxArtistGridToggle").addEventListener("click",()=>{
+
+      const el=$("#rxArtistGridOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxArtistThirdsToggle").addEventListener("click",()=>{
+
+      const el=$("#rxArtistThirdsOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxArtistCenterToggle").addEventListener("click",()=>{
+
+      const el=$("#rxArtistCenterOverlay");
+
+      el.style.display=
+        el.style.display==="block"
+          ?"none"
+          :"block";
+    });
+
+    $("#rxArtistReset").addEventListener("click",()=>{
+
+      agray=false;
+      amirror=1;
+
+      $("#rxArtistGridOverlay").style.display="none";
+      $("#rxArtistThirdsOverlay").style.display="none";
+      $("#rxArtistCenterOverlay").style.display="none";
+
+      updateArtistImage();
+    });
+
+    /* ---------------- HARMONIES ---------------- */
+
+    function makeHarmony(hex,type){
+
+      const rgb=hexToRgb(hex);
+
+      if(!rgb) return [];
+
+      const hsl=rgbToHsl(rgb.r,rgb.g,rgb.b);
+
+      let offsets=[];
+
+      switch(type){
+
+        case "analogous":
+          offsets=[-30,-15,0,15,30];
+          break;
+
+        case "complementary":
+          offsets=[0,180];
+          break;
+
+        case "triadic":
+          offsets=[0,120,240];
+          break;
+
+        case "split":
+          offsets=[0,150,210];
+          break;
+
+        case "tetradic":
+          offsets=[0,90,180,270];
+          break;
+      }
+
+      return offsets.map(offset=>{
+
+        const c=hslToRgb(
+          hsl.h+offset,
+          hsl.s,
+          hsl.l
+        );
+
+        return rgbToHex(c.r,c.g,c.b);
+      });
+    }
+
+    function renderPalette(){
+
+      const colors=makeHarmony(
+        $("#rxArtistProColor").value,
+        $("#rxArtistHarmony").value
+      );
+
+      $("#rxArtistProPalette").innerHTML=
+        colors.map(color=>`
+          <div
+            class="rx-pro-swatch"
+            data-rx-copy-color="${color}"
+            style="background:${color}">
+            ${color}
+          </div>
+        `).join("");
+    }
+
+    $("#rxArtistProColor").addEventListener("input",renderPalette);
+    $("#rxArtistHarmony").addEventListener("change",renderPalette);
+
+    $("#rxArtistProPalette").addEventListener("click",function(e){
+
+      const swatch=e.target.closest("[data-rx-copy-color]");
+
+      if(!swatch) return;
+
+      copyText(swatch.dataset.rxCopyColor);
+    });
+
+    renderPalette();
+
+    /* ---------------- COLOR CONVERTER ---------------- */
+
+    function analyzeColor(){
+
+      const hex=$("#rxArtistHexPro").value.trim();
+
+      const rgb=hexToRgb(hex);
+
+      if(!rgb){
+
+        $("#rxArtistColorInfo").textContent=
+          "HEX no válido.";
+
+        return;
+      }
+
+      const hsl=rgbToHsl(
+        rgb.r,
+        rgb.g,
+        rgb.b
+      );
+
+      $("#rxArtistColorInfo").innerHTML=`
+        <b>HEX:</b> ${rgbToHex(rgb.r,rgb.g,rgb.b)}
+        <br>
+        <b>RGB:</b> ${rgb.r}, ${rgb.g}, ${rgb.b}
+        <br>
+        <b>HSL:</b> ${hsl.h}°, ${hsl.s}%, ${hsl.l}%
+      `;
+    }
+
+    $("#rxArtistAnalyzeColor").addEventListener(
+      "click",
+      analyzeColor
+    );
+
+    $("#rxArtistCopyHex").addEventListener("click",()=>{
+
+      const rgb=hexToRgb($("#rxArtistHexPro").value);
+
+      if(rgb){
+        copyText(rgbToHex(rgb.r,rgb.g,rgb.b));
+      }
+    });
+
+    analyzeColor();
+
+    /* ---------------- COMPOSITION ---------------- */
+
+    $("#rxArtistComposition").addEventListener("change",updateComposition);
+    $("#rxArtistCompositionQuestion").addEventListener("change",updateComposition);
+
+    function updateComposition(){
+
+      const guide=$("#rxArtistComposition").value;
+      const question=$("#rxArtistCompositionQuestion").value;
+
+      const guideText={
+        thirds:"Dividí mentalmente la obra en una cuadrícula 3×3.",
+        golden:"Buscá una distribución progresiva del espacio y un punto focal dominante.",
+        center:"Trabajá el centro como protagonista y controlá cuidadosamente el espacio alrededor.",
+        symmetry:"Comprobá los ejes principales y después introducí pequeñas variaciones si buscás naturalidad."
+      };
+
+      $("#rxArtistCompositionOutput").innerHTML=
+        "<b>Guía:</b> "+
+        guideText[guide]+
+        "<br><br><b>Pregunta:</b> "+
+        question;
+    }
+
+    updateComposition();
+
+    /* ---------------- EXERCISES ---------------- */
+
+    const artistExercises=[
+      "Hacé 6 thumbnails de 3 minutos antes de elegir una composición.",
+      "Copiá una referencia únicamente con cinco valores.",
+      "Pintá un objeto utilizando una paleta limitada de tres colores.",
+      "Convertí una fotografía en una composición abstracta de masas.",
+      "Dibujá el mismo objeto desde tres ángulos.",
+      "Creá una pintura donde el espacio negativo sea protagonista.",
+      "Estudiá una obra que admires y describí su recorrido visual.",
+      "Realizá un estudio de color sin utilizar negro.",
+      "Dibujá una figura únicamente mediante siluetas.",
+      "Hacé un estudio rápido de luces y sombras durante 15 minutos.",
+      "Creá tres paletas diferentes para la misma composición.",
+      "Trabajá durante 20 minutos sin borrar: resolvé mediante correcciones."
+    ];
+
+    $("#rxArtistChallengeBtn").addEventListener("click",()=>{
+
+      const item=
+        artistExercises[
+          Math.floor(Math.random()*artistExercises.length)
+        ];
+
+      $("#rxArtistChallenge").textContent=item;
+    });
+
+    /* ---------------- NOTES ---------------- */
+
+    const artistNotes=$("#rxArtistNotes");
+    const artistKey="roxthal_artist_notes";
+
+    artistNotes.value=
+      localStorage.getItem(artistKey)||"";
+
+    $("#rxArtistSaveNotes").addEventListener("click",()=>{
+
+      localStorage.setItem(
+        artistKey,
+        artistNotes.value
+      );
+
+      toast("Bitácora guardada.");
+    });
+
+    $("#rxArtistCopyNotes").addEventListener("click",()=>{
+      copyText(artistNotes.value);
+    });
+
+  }
+
+
+  /* =========================================================
+     NIÑOS — CREATIVIDAD Y DESAFÍOS
+     ========================================================= */
+
+  const kidsPage=document.getElementById("rxPageKids");
+
+  if(kidsPage && !document.getElementById("rxKidsPro")){
+
+    const zone=document.createElement("div");
+
+    zone.id="rxKidsPro";
+    zone.className="rx-pro-zone";
+
+    zone.innerHTML=`
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🧒 CREATIVIDAD</div>
+
+        <h3>Generador de desafíos artísticos</h3>
+
+        <div class="rx-pro-grid">
+
+          <div class="rx-pro-control">
+
+            <label>Nivel</label>
+
+            <select id="rxKidsLevel">
+
+              <option value="easy">🟢 Fácil</option>
+              <option value="medium">🟡 Medio</option>
+              <option value="hard">🔴 Desafío</option>
+
+            </select>
+
+          </div>
+
+          <div class="rx-pro-control">
+
+            <label>Tipo</label>
+
+            <select id="rxKidsCategory">
+
+              <option value="drawing">✏️ Dibujo</option>
+              <option value="color">🌈 Color</option>
+              <option value="imagination">🚀 Imaginación</option>
+              <option value="observation">👀 Observación</option>
+              <option value="shapes">🔺 Formas</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <div class="rx-pro-challenge"
+             id="rxKidsChallenge">
+          Elegí nivel y tipo y generá un desafío.
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxKidsChallengeBtn">
+            🎲 ¡Dame un desafío!
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">🎨 JUEGO DE FORMAS</div>
+
+        <h3>¿Qué podés crear con estas formas?</h3>
+
+        <div class="rx-pro-challenge"
+             id="rxKidsShapes">
+          🔵 + 🔺 + 🟨
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxKidsShapesBtn">
+            🔄 Nuevas formas
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">⏱️ MINI RETO</div>
+
+        <h3>Desafío de tiempo</h3>
+
+        <div class="rx-pro-big-number"
+             id="rxKidsTimer">
+          05:00
+        </div>
+
+        <div class="rx-pro-buttons">
+
+          <button class="rx-pro-btn primary"
+                  id="rxKidsTimerStart">
+            ▶ Empezar
+          </button>
+
+          <button class="rx-pro-btn"
+                  id="rxKidsTimerReset">
+            ↺ Reiniciar
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-pro-card">
+
+        <div class="rx-pro-badge">⭐ DESPUÉS DE CREAR</div>
+
+        <h3>Preguntas para mirar tu obra</h3>
+
+        <div class="rx-pro-checklist">
+
+          <div class="rx-pro-check">
+            👀 <span>¿Qué parte te gusta más?</span>
+          </div>
+
+          <div class="rx-pro-check">
+            💡 <span>¿Qué idea querías mostrar?</span>
+          </div>
+
+          <div class="rx-pro-check">
+            🎨 <span>¿Qué color elegiste primero?</span>
+          </div>
+
+          <div class="rx-pro-check">
+            🔄 <span>¿Qué cambiarías si hicieras otra versión?</span>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    kidsPage.appendChild(zone);
+
+    const challenges={
+
+      easy:{
+        drawing:[
+          "Dibujá tu animal favorito usando solamente círculos.",
+          "Dibujá una casa que tenga algo imposible.",
+          "Inventá un personaje con tres formas simples."
+        ],
+        color:[
+          "Elegí tres colores y hacé un dibujo usando solamente esos colores.",
+          "Pintá algo usando colores cálidos.",
+          "Pintá algo usando colores fríos."
+        ],
+        imagination:[
+          "Inventá un planeta donde todo sea gigante.",
+          "Dibujá cómo sería tu habitación en el espacio.",
+          "Creá un animal que nadie haya visto antes."
+        ],
+        observation:[
+          "Mirá un objeto cercano y dibujalo sin apurarte.",
+          "Buscá cinco formas diferentes a tu alrededor.",
+          "Elegí un objeto y dibujá primero su silueta."
+        ],
+        shapes:[
+          "Convertí un círculo en un animal.",
+          "Convertí un cuadrado en una casa.",
+          "Convertí un triángulo en un personaje."
+        ]
+      },
+
+      medium:{
+        drawing:[
+          "Dibujá un personaje mostrando una emoción sin escribir palabras.",
+          "Creá una escena con primer plano y fondo.",
+          "Dibujá un objeto desde arriba."
+        ],
+        color:[
+          "Creá una imagen con un color protagonista y dos colores secundarios.",
+          "Mezclá dos colores para inventar un tercero.",
+          "Creá un arcoíris imaginario con colores que no existen."
+        ],
+        imagination:[
+          "Inventá una ciudad construida por animales.",
+          "Diseñá una máquina que pueda solucionar un problema.",
+          "Inventá un museo del futuro."
+        ],
+        observation:[
+          "Dibujá un objeto usando solamente líneas rectas.",
+          "Observá un objeto y encontrá sus formas básicas.",
+          "Dibujá primero las sombras y después el objeto."
+        ],
+        shapes:[
+          "Creá una criatura utilizando cinco formas diferentes.",
+          "Construí un robot con formas geométricas.",
+          "Diseñá una máscara usando solamente formas."
+        ]
+      },
+
+      hard:{
+        drawing:[
+          "Contá una historia completa en una sola imagen.",
+          "Creá un personaje visto desde una perspectiva poco habitual.",
+          "Diseñá una escena con tres planos de profundidad."
+        ],
+        color:[
+          "Usá una paleta limitada para representar una emoción.",
+          "Creá una imagen donde el contraste de color sea el protagonista.",
+          "Usá un solo color y sus variaciones para pintar una escena."
+        ],
+        imagination:[
+          "Inventá un mundo donde las reglas de la gravedad sean diferentes.",
+          "Diseñá una criatura y su hábitat completo.",
+          "Inventá una civilización que viva dentro de una pintura."
+        ],
+        observation:[
+          "Dibujá un objeto complejo simplificándolo en formas básicas.",
+          "Intentá representar textura usando solamente líneas.",
+          "Dibujá una escena observando primero las luces y sombras."
+        ],
+        shapes:[
+          "Creá una composición completa usando solamente círculos, triángulos y cuadrados.",
+          "Diseñá un personaje simétrico y después agregale una diferencia.",
+          "Construí una escena utilizando únicamente geometría."
+        ]
+      }
+
+    };
+
+    $("#rxKidsChallengeBtn").addEventListener("click",()=>{
+
+      const level=$("#rxKidsLevel").value;
+      const category=$("#rxKidsCategory").value;
+
+      const list=challenges[level][category];
+
+      const item=list[
+        Math.floor(Math.random()*list.length)
+      ];
+
+      $("#rxKidsChallenge").textContent=item;
+    });
+
+    const shapePool=[
+      "🔵 + 🔺 + 🟨",
+      "🟢 + 🔴 + 🔷",
+      "⭐ + 🔵 + 🟧",
+      "❤️ + 🟨 + 🔺",
+      "🟣 + ⚫ + 🔵",
+      "🟩 + ⭐ + 🔴"
+    ];
+
+    $("#rxKidsShapesBtn").addEventListener("click",()=>{
+
+      $("#rxKidsShapes").textContent=
+        shapePool[
+          Math.floor(Math.random()*shapePool.length)
+        ];
+    });
+
+    /* ---------------- KIDS TIMER ---------------- */
+
+    let kidsSeconds=300;
+    let kidsInterval=null;
+
+    function updateKidsTimer(){
+
+      const min=
+        String(Math.floor(kidsSeconds/60)).padStart(2,"0");
+
+      const sec=
+        String(kidsSeconds%60).padStart(2,"0");
+
+      $("#rxKidsTimer").textContent=
+        min+":"+sec;
+    }
+
+    $("#rxKidsTimerStart").addEventListener("click",()=>{
+
+      if(kidsInterval) return;
+
+      kidsInterval=setInterval(()=>{
+
+        if(kidsSeconds<=0){
+
+          clearInterval(kidsInterval);
+          kidsInterval=null;
+
+          toast("¡Tiempo! 🎨");
+
+          return;
+        }
+
+        kidsSeconds--;
+        updateKidsTimer();
+
+      },1000);
+    });
+
+    $("#rxKidsTimerReset").addEventListener("click",()=>{
+
+      clearInterval(kidsInterval);
+
+      kidsInterval=null;
+      kidsSeconds=300;
+
+      updateKidsTimer();
+    });
+
+  }
+
+
+  /* =========================================================
+     MEJORAS SEGURAS AL CANVAS EXISTENTE
+     ========================================================= */
+
+  const paintCanvas=document.getElementById("rxPaintCanvas");
+
+  if(paintCanvas){
+
+    paintCanvas.style.touchAction="none";
+
+    /*
+      Correcto:
+      usamos el evento recibido, no una variable global.
+    */
+    paintCanvas.addEventListener(
+      "pointerdown",
+      function(e){
+
+        try{
+          if(this.setPointerCapture){
+            this.setPointerCapture(e.pointerId);
+          }
+        }catch(err){}
+
+      },
+      {passive:true}
+    );
+
+    paintCanvas.addEventListener(
+      "contextmenu",
+      function(e){
+        e.preventDefault();
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ATAJOS DE TECLADO — SOLO CUANDO EL USUARIO ESTÁ EN TOOLS
+     ========================================================= */
+
+  document.addEventListener("keydown",function(e){
+
+    if(!root) return;
+
+    const active=
+      root.offsetParent!==null &&
+      !root.classList.contains("rx-hidden");
+
+    if(!active) return;
+
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="s"){
+
+      /*
+        No interferimos con formularios.
+      */
+      if(
+        document.activeElement &&
+        ["INPUT","TEXTAREA","SELECT"].includes(
+          document.activeElement.tagName
+        )
+      ){
+        return;
+      }
+
+      e.preventDefault();
+    }
+
+  });
+
+
+  /* =========================================================
+     LIMPIEZA / INICIALIZACIÓN
+     ========================================================= */
+
+  /*
+    Evitamos que una actualización del módulo
+    cree accidentalmente duplicados.
+  */
+
+  root.dataset.rxProVersion="4";
+
+})();
+</script>
 </body>
 </html>
