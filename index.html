@@ -18426,6 +18426,3656 @@ try{
   renderHome();
 
 })();
-</script>                                  
+</script>    
+   <!-- =========================================================
+     RoXThal Atelier ADMIN PRO
+     ---------------------------------------------------------
+     Capa administrativa independiente.
+     NO crea tablas.
+     NO modifica tablas existentes.
+     Usa:
+       artists
+       flash_designs
+       project_requests
+       project_request_images
+       aftercare_articles
+
+     Fotos:
+       Supabase Storage
+       Bucket preferido: images
+       Carpeta: atelier/
+
+     Instalación:
+       Pegar COMPLETO antes de </body>
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  /* Evita duplicados si el bloque se pega accidentalmente dos veces */
+  if (window.RoXThalAtelierPRO) return;
+
+  const RX = {
+    name: 'RoXThal Atelier PRO',
+    bucket: 'images',
+    folder: 'atelier',
+    db: null,
+    currentTab: 'dashboard',
+    initialized: false,
+    busy: false,
+    modalOpen: false,
+    services: [],
+    artists: [],
+    flash: [],
+    projects: [],
+    aftercare: []
+  };
+
+  /* =========================================================
+     UTILIDADES
+     ========================================================= */
+
+  function getDB() {
+    if (RX.db) return RX.db;
+
+    if (window.db && typeof window.db.from === 'function') {
+      RX.db = window.db;
+      return RX.db;
+    }
+
+    if (window.supabaseClient &&
+        typeof window.supabaseClient.from === 'function') {
+      RX.db = window.supabaseClient;
+      return RX.db;
+    }
+
+    return null;
+  }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function text(value) {
+    return String(value == null ? '' : value).trim();
+  }
+
+  function slugify(value) {
+    return text(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80) || ('item-' + Date.now());
+  }
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return 'rx-' + Date.now() + '-' +
+      Math.random().toString(36).slice(2, 10);
+  }
+
+  function toast(message, type) {
+    let box = document.getElementById('rx-atp-toast');
+
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'rx-atp-toast';
+      box.className = 'rx-atp-toast';
+      document.body.appendChild(box);
+    }
+
+    box.textContent = message;
+    box.dataset.type = type || 'info';
+    box.classList.add('show');
+
+    clearTimeout(box._timer);
+    box._timer = setTimeout(function () {
+      box.classList.remove('show');
+    }, 4200);
+  }
+
+  function setBusy(value) {
+    RX.busy = !!value;
+
+    document.querySelectorAll(
+      '.rx-atp-action, .rx-atp-submit, .rx-atp-upload'
+    ).forEach(function (el) {
+      el.disabled = RX.busy;
+    });
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+
+    try {
+      return new Date(value).toLocaleDateString(
+        'es-AR',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }
+      );
+    } catch (_) {
+      return value;
+    }
+  }
+
+  function safeTel(value) {
+    return text(value).replace(/[^\d+()\-\s]/g, '');
+  }
+
+  function safeMail(value) {
+    return text(value).replace(/[^a-zA-Z0-9@._%+\-]/g, '');
+  }
+
+  function isImage(file) {
+    return file &&
+      typeof file.type === 'string' &&
+      file.type.indexOf('image/') === 0;
+  }
+
+  /* =========================================================
+     AUTENTICACIÓN ADMIN
+     ========================================================= */
+
+  async function getAdmin() {
+    const db = getDB();
+
+    if (!db || !db.auth) {
+      return {
+        ok: false,
+        reason: 'Supabase Auth no está disponible.'
+      };
+    }
+
+    try {
+      const result = await db.auth.getUser();
+
+      if (result.error || !result.data || !result.data.user) {
+        return {
+          ok: false,
+          reason: 'No hay una sesión iniciada.'
+        };
+      }
+
+      const user = result.data.user;
+      const role =
+        user.app_metadata &&
+        user.app_metadata.role;
+
+      if (role !== 'admin') {
+        return {
+          ok: false,
+          reason: 'El usuario actual no tiene rol de administrador.'
+        };
+      }
+
+      return {
+        ok: true,
+        user: user
+      };
+
+    } catch (error) {
+      return {
+        ok: false,
+        reason: error && error.message
+          ? error.message
+          : 'No se pudo verificar el administrador.'
+      };
+    }
+  }
+
+  async function requireAdmin() {
+    const admin = await getAdmin();
+
+    if (!admin.ok) {
+      toast(admin.reason, 'error');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function updateLauncherVisibility() {
+    const launcher =
+      document.getElementById('rx-atp-launcher');
+
+    if (!launcher) return;
+
+    const admin = await getAdmin();
+
+    launcher.style.display =
+      admin.ok ? 'flex' : 'none';
+  }
+
+  /* =========================================================
+     STORAGE
+     ========================================================= */
+
+  async function storageReady() {
+    const db = getDB();
+
+    if (!db || !db.storage) {
+      return {
+        ok: false,
+        reason: 'Supabase Storage no está disponible.'
+      };
+    }
+
+    try {
+      const result = await db.storage.listBuckets();
+
+      if (result.error) {
+        /*
+         * No bloqueamos automáticamente:
+         * algunos proyectos restringen listBuckets().
+         * Intentaremos utilizar "images".
+         */
+        return {
+          ok: true,
+          uncertain: true
+        };
+      }
+
+      const buckets = result.data || [];
+
+      const bucket = buckets.find(function (item) {
+        return item && item.name === RX.bucket;
+      });
+
+      if (!bucket) {
+        return {
+          ok: false,
+          reason:
+            'No existe el bucket de Storage "' +
+            RX.bucket +
+            '". Crea ese bucket en Supabase Storage.'
+        };
+      }
+
+      return {
+        ok: true,
+        bucket: bucket
+      };
+
+    } catch (error) {
+      return {
+        ok: true,
+        uncertain: true
+      };
+    }
+  }
+
+  async function compressImage(file) {
+    if (!isImage(file)) {
+      throw new Error('El archivo seleccionado no es una imagen.');
+    }
+
+    /*
+     * Límite preventivo antes de procesar.
+     * El usuario puede seleccionar fotos grandes del celular.
+     */
+    if (file.size > 20 * 1024 * 1024) {
+      throw new Error(
+        'La fotografía supera los 20 MB.'
+      );
+    }
+
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+
+      reader.onerror = function () {
+        reject(new Error('No se pudo leer la fotografía.'));
+      };
+
+      reader.onload = function () {
+        const img = new Image();
+
+        img.onerror = function () {
+          reject(new Error('No se pudo procesar la fotografía.'));
+        };
+
+        img.onload = function () {
+          const MAX = 1800;
+
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
+
+          if (!width || !height) {
+            reject(new Error('Dimensiones de imagen inválidas.'));
+            return;
+          }
+
+          const ratio =
+            Math.min(1, MAX / Math.max(width, height));
+
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+
+          if (!ctx) {
+            reject(new Error('El navegador no permite procesar la imagen.'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            function (blob) {
+              if (!blob) {
+                reject(new Error('No se pudo comprimir la imagen.'));
+                return;
+              }
+
+              resolve(
+                new File(
+                  [blob],
+                  'roxthal-' + Date.now() + '.jpg',
+                  {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                  }
+                )
+              );
+            },
+            'image/jpeg',
+            0.84
+          );
+        };
+
+        img.src = reader.result;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadImage(file, section) {
+    const db = getDB();
+
+    if (!db || !db.storage) {
+      throw new Error(
+        'Supabase Storage no está disponible.'
+      );
+    }
+
+    const storage = await storageReady();
+
+    if (!storage.ok) {
+      throw new Error(storage.reason);
+    }
+
+    const compressed = await compressImage(file);
+
+    const path =
+      RX.folder + '/' +
+      section + '/' +
+      uid() + '.jpg';
+
+    const result = await db.storage
+      .from(RX.bucket)
+      .upload(
+        path,
+        compressed,
+        {
+          cacheControl: '31536000',
+          contentType: 'image/jpeg',
+          upsert: false
+        }
+      );
+
+    if (result.error) {
+      throw new Error(
+        result.error.message ||
+        'No se pudo subir la fotografía.'
+      );
+    }
+
+    const publicResult = db.storage
+      .from(RX.bucket)
+      .getPublicUrl(path);
+
+    if (!publicResult ||
+        !publicResult.data ||
+        !publicResult.data.publicUrl) {
+      /*
+       * Si no hay URL pública, intentamos limpiar.
+       */
+      try {
+        await db.storage
+          .from(RX.bucket)
+          .remove([path]);
+      } catch (_) {}
+
+      throw new Error(
+        'La imagen se subió, pero no se pudo obtener su URL pública. Revisa que el bucket sea público.'
+      );
+    }
+
+    return {
+      url: publicResult.data.publicUrl,
+      path: path
+    };
+  }
+
+  function storagePathFromUrl(url) {
+    const value = text(url);
+
+    if (!value) return null;
+
+    const marker =
+      '/storage/v1/object/public/' +
+      RX.bucket +
+      '/';
+
+    const index = value.indexOf(marker);
+
+    if (index === -1) return null;
+
+    return decodeURIComponent(
+      value.slice(index + marker.length)
+    );
+  }
+
+  async function deleteImageByUrl(url) {
+    const db = getDB();
+    const path = storagePathFromUrl(url);
+
+    if (!db || !db.storage || !path) {
+      return;
+    }
+
+    try {
+      await db.storage
+        .from(RX.bucket)
+        .remove([path]);
+    } catch (_) {
+      /*
+       * La limpieza de Storage nunca debe romper
+       * una operación de base de datos que ya terminó.
+       */
+    }
+  }
+
+  /* =========================================================
+     BASE DE DATOS
+     ========================================================= */
+
+  async function fetchAll() {
+    const db = getDB();
+
+    if (!db) {
+      throw new Error(
+        'No se encontró el cliente Supabase "db".'
+      );
+    }
+
+    const [
+      artistsResult,
+      flashResult,
+      projectsResult,
+      aftercareResult,
+      servicesResult
+    ] = await Promise.all([
+      db.from('artists')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false }),
+
+      db.from('flash_designs')
+        .select('*')
+        .order('created_at', { ascending: false }),
+
+      db.from('project_requests')
+        .select('*')
+        .order('created_at', { ascending: false }),
+
+      db.from('aftercare_articles')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false }),
+
+      db.from('services')
+        .select('id,name')
+        .order('name', { ascending: true })
+    ]);
+
+    const errors = [
+      artistsResult.error,
+      flashResult.error,
+      projectsResult.error,
+      aftercareResult.error,
+      servicesResult.error
+    ].filter(Boolean);
+
+    if (errors.length) {
+      throw new Error(
+        errors[0].message ||
+        'No se pudieron cargar los datos.'
+      );
+    }
+
+    RX.artists = artistsResult.data || [];
+    RX.flash = flashResult.data || [];
+    RX.projects = projectsResult.data || [];
+    RX.aftercare = aftercareResult.data || [];
+    RX.services = servicesResult.data || [];
+
+    renderCurrent();
+  }
+
+  function artistById(id) {
+    return RX.artists.find(function (artist) {
+      return String(artist.id) === String(id);
+    }) || null;
+  }
+
+  function serviceById(id) {
+    return RX.services.find(function (service) {
+      return String(service.id) === String(id);
+    }) || null;
+  }
+
+  /* =========================================================
+     ESTILOS
+     ========================================================= */
+
+  function injectStyles() {
+    if (document.getElementById('rx-atp-style')) return;
+
+    const style = document.createElement('style');
+    style.id = 'rx-atp-style';
+
+    style.textContent = `
+      #rx-atp-launcher{
+        position:fixed;
+        right:16px;
+        bottom:18px;
+        z-index:99990;
+        display:none;
+        align-items:center;
+        gap:8px;
+        border:1px solid rgba(255,193,7,.45);
+        border-radius:999px;
+        padding:11px 15px;
+        background:linear-gradient(135deg,#171717,#2a1d00);
+        color:#ffd54f;
+        box-shadow:0 12px 35px rgba(0,0,0,.45);
+        cursor:pointer;
+        font-weight:800;
+        font-size:13px;
+      }
+
+      #rx-atp-launcher:hover{
+        transform:translateY(-1px);
+      }
+
+      #rx-atp-overlay{
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        display:none;
+        background:rgba(0,0,0,.76);
+        backdrop-filter:blur(8px);
+        overflow:auto;
+        padding:18px;
+      }
+
+      #rx-atp-overlay.show{
+        display:block;
+      }
+
+      .rx-atp-panel{
+        width:min(1180px,100%);
+        margin:20px auto;
+        border:1px solid rgba(255,193,7,.25);
+        border-radius:22px;
+        overflow:hidden;
+        background:#101010;
+        color:#f5f5f5;
+        box-shadow:0 25px 80px rgba(0,0,0,.55);
+      }
+
+      .rx-atp-head{
+        padding:18px;
+        background:linear-gradient(135deg,#191919,#281d00);
+        border-bottom:1px solid rgba(255,193,7,.2);
+      }
+
+      .rx-atp-title{
+        font-size:21px;
+        font-weight:900;
+        color:#ffd54f;
+      }
+
+      .rx-atp-sub{
+        margin-top:4px;
+        color:#aaa;
+        font-size:12px;
+      }
+
+      .rx-atp-nav{
+        display:flex;
+        gap:7px;
+        overflow:auto;
+        padding:10px;
+        background:#151515;
+        border-bottom:1px solid #292929;
+      }
+
+      .rx-atp-nav button{
+        flex:0 0 auto;
+        border:1px solid #333;
+        background:#202020;
+        color:#ddd;
+        border-radius:12px;
+        padding:9px 12px;
+        cursor:pointer;
+        font-weight:700;
+      }
+
+      .rx-atp-nav button.active{
+        border-color:#ffc107;
+        color:#111;
+        background:#ffc107;
+      }
+
+      .rx-atp-content{
+        padding:16px;
+      }
+
+      .rx-atp-grid{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:12px;
+      }
+
+      .rx-atp-card{
+        border:1px solid #303030;
+        background:#181818;
+        border-radius:17px;
+        padding:14px;
+      }
+
+      .rx-atp-card h3{
+        margin:0 0 7px;
+        color:#ffd54f;
+        font-size:14px;
+      }
+
+      .rx-atp-number{
+        font-size:29px;
+        font-weight:900;
+      }
+
+      .rx-atp-toolbar{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+        margin-bottom:14px;
+      }
+
+      .rx-atp-action,
+      .rx-atp-submit{
+        border:1px solid #444;
+        border-radius:11px;
+        background:#222;
+        color:#fff;
+        padding:9px 12px;
+        cursor:pointer;
+        font-weight:700;
+      }
+
+      .rx-atp-submit{
+        background:#ffc107;
+        border-color:#ffc107;
+        color:#111;
+      }
+
+      .rx-atp-danger{
+        border-color:#7b2222!important;
+        color:#ff8a80!important;
+      }
+
+      .rx-atp-list{
+        display:grid;
+        gap:10px;
+      }
+
+      .rx-atp-item{
+        display:grid;
+        grid-template-columns:86px minmax(0,1fr) auto;
+        gap:12px;
+        align-items:center;
+        border:1px solid #2e2e2e;
+        background:#181818;
+        border-radius:16px;
+        padding:10px;
+      }
+
+      .rx-atp-item img{
+        width:86px;
+        height:86px;
+        object-fit:cover;
+        border-radius:12px;
+        background:#252525;
+      }
+
+      .rx-atp-item-title{
+        font-weight:900;
+        color:#fff;
+      }
+
+      .rx-atp-muted{
+        color:#999;
+        font-size:12px;
+        margin-top:3px;
+      }
+
+      .rx-atp-actions{
+        display:flex;
+        gap:6px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+      }
+
+      .rx-atp-form{
+        display:grid;
+        gap:12px;
+      }
+
+      .rx-atp-form-grid{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+      }
+
+      .rx-atp-field{
+        display:grid;
+        gap:5px;
+      }
+
+      .rx-atp-field.full{
+        grid-column:1/-1;
+      }
+
+      .rx-atp-field label{
+        font-size:12px;
+        font-weight:800;
+        color:#ccc;
+      }
+
+      .rx-atp-field input,
+      .rx-atp-field textarea,
+      .rx-atp-field select{
+        width:100%;
+        box-sizing:border-box;
+        border:1px solid #3b3b3b;
+        border-radius:10px;
+        padding:10px;
+        background:#101010;
+        color:#fff;
+        outline:none;
+      }
+
+      .rx-atp-field textarea{
+        min-height:120px;
+        resize:vertical;
+      }
+
+      .rx-atp-field input:focus,
+      .rx-atp-field textarea:focus,
+      .rx-atp-field select:focus{
+        border-color:#ffc107;
+      }
+
+      .rx-atp-photo{
+        border:1px dashed #555;
+        border-radius:14px;
+        padding:12px;
+        background:#141414;
+      }
+
+      .rx-atp-photo-preview{
+        width:100%;
+        max-height:230px;
+        object-fit:cover;
+        border-radius:12px;
+        margin-top:9px;
+      }
+
+      .rx-atp-modal{
+        position:fixed;
+        inset:0;
+        z-index:100001;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        background:rgba(0,0,0,.82);
+      }
+
+      .rx-atp-modal.show{
+        display:flex;
+      }
+
+      .rx-atp-modal-box{
+        width:min(720px,100%);
+        max-height:92vh;
+        overflow:auto;
+        border:1px solid rgba(255,193,7,.3);
+        border-radius:20px;
+        background:#151515;
+        box-shadow:0 25px 80px rgba(0,0,0,.7);
+      }
+
+      .rx-atp-modal-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        padding:15px;
+        border-bottom:1px solid #303030;
+      }
+
+      .rx-atp-modal-head strong{
+        color:#ffd54f;
+      }
+
+      .rx-atp-close{
+        border:0;
+        background:#292929;
+        color:#fff;
+        border-radius:10px;
+        width:38px;
+        height:38px;
+        cursor:pointer;
+      }
+
+      .rx-atp-modal-body{
+        padding:15px;
+      }
+
+      .rx-atp-status{
+        display:inline-flex;
+        align-items:center;
+        border-radius:999px;
+        padding:5px 8px;
+        font-size:10px;
+        font-weight:900;
+        background:#292929;
+        color:#ddd;
+      }
+
+      .rx-atp-status[data-status="new"]{
+        color:#ffe082;
+      }
+
+      .rx-atp-status[data-status="contacted"]{
+        color:#81d4fa;
+      }
+
+      .rx-atp-status[data-status="budget"]{
+        color:#ce93d8;
+      }
+
+      .rx-atp-status[data-status="confirmed"]{
+        color:#80cbc4;
+      }
+
+      .rx-atp-status[data-status="finished"]{
+        color:#a5d6a7;
+      }
+
+      .rx-atp-status[data-status="cancelled"]{
+        color:#ef9a9a;
+      }
+
+      .rx-atp-empty{
+        border:1px dashed #333;
+        border-radius:15px;
+        padding:25px;
+        text-align:center;
+        color:#888;
+      }
+
+      .rx-atp-project{
+        border:1px solid #303030;
+        border-radius:16px;
+        padding:14px;
+        background:#181818;
+      }
+
+      .rx-atp-project-top{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+
+      .rx-atp-project-actions{
+        display:flex;
+        gap:7px;
+        flex-wrap:wrap;
+        margin-top:12px;
+      }
+
+      .rx-atp-project-info{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+        margin-top:10px;
+        color:#bbb;
+        font-size:12px;
+      }
+
+      .rx-atp-ref-grid{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:7px;
+        margin-top:10px;
+      }
+
+      .rx-atp-ref-grid img{
+        width:100%;
+        aspect-ratio:1;
+        object-fit:cover;
+        border-radius:9px;
+      }
+
+      .rx-atp-toast{
+        position:fixed;
+        left:50%;
+        bottom:20px;
+        transform:translate(-50%,20px);
+        z-index:100010;
+        max-width:calc(100vw - 30px);
+        padding:12px 15px;
+        border-radius:12px;
+        background:#222;
+        border:1px solid #444;
+        color:#fff;
+        font-weight:700;
+        opacity:0;
+        pointer-events:none;
+        transition:.2s;
+      }
+
+      .rx-atp-toast.show{
+        opacity:1;
+        transform:translate(-50%,0);
+      }
+
+      .rx-atp-toast[data-type="error"]{
+        border-color:#9b3333;
+      }
+
+      .rx-atp-toast[data-type="success"]{
+        border-color:#b28b00;
+      }
+
+      .rx-atp-upload{
+        display:inline-block;
+        border:1px solid #555;
+        border-radius:10px;
+        padding:9px 12px;
+        background:#222;
+        color:#fff;
+        cursor:pointer;
+        font-weight:700;
+      }
+
+      .rx-atp-upload input{
+        display:none;
+      }
+
+      @media(max-width:800px){
+        #rx-atp-overlay{
+          padding:7px;
+        }
+
+        .rx-atp-panel{
+          margin:7px auto;
+          border-radius:17px;
+        }
+
+        .rx-atp-grid{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+
+        .rx-atp-form-grid,
+        .rx-atp-project-info{
+          grid-template-columns:1fr;
+        }
+
+        .rx-atp-item{
+          grid-template-columns:65px minmax(0,1fr);
+        }
+
+        .rx-atp-item img{
+          width:65px;
+          height:65px;
+        }
+
+        .rx-atp-actions{
+          grid-column:1/-1;
+          justify-content:flex-start;
+        }
+
+        .rx-atp-ref-grid{
+          grid-template-columns:repeat(3,minmax(0,1fr));
+        }
+      }
+
+      @media(max-width:450px){
+        .rx-atp-grid{
+          grid-template-columns:1fr 1fr;
+        }
+
+        .rx-atp-number{
+          font-size:24px;
+        }
+
+        .rx-atp-content{
+          padding:11px;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /* =========================================================
+     HTML BASE
+     ========================================================= */
+
+  function injectBase() {
+    if (!document.getElementById('rx-atp-launcher')) {
+      const launcher = document.createElement('button');
+
+      launcher.id = 'rx-atp-launcher';
+      launcher.type = 'button';
+      launcher.innerHTML =
+        '⚙️ Atelier Admin';
+
+      launcher.addEventListener(
+        'click',
+        open
+      );
+
+      document.body.appendChild(launcher);
+    }
+
+    if (!document.getElementById('rx-atp-overlay')) {
+      const overlay = document.createElement('div');
+
+      overlay.id = 'rx-atp-overlay';
+
+      overlay.innerHTML = `
+        <div class="rx-atp-panel">
+
+          <div class="rx-atp-head">
+            <div class="rx-atp-title">
+              RoXThal Atelier PRO
+            </div>
+            <div class="rx-atp-sub">
+              Administración de artistas, Flash,
+              proyectos, fotografías y Aftercare.
+            </div>
+          </div>
+
+          <div class="rx-atp-nav">
+            <button type="button"
+              data-atp-tab="dashboard">
+              📊 Panel
+            </button>
+
+            <button type="button"
+              data-atp-tab="artists">
+              🎨 Artistas
+            </button>
+
+            <button type="button"
+              data-atp-tab="flash">
+              ⚡ Flash
+            </button>
+
+            <button type="button"
+              data-atp-tab="projects">
+              📋 Proyectos
+            </button>
+
+            <button type="button"
+              data-atp-tab="aftercare">
+              🩹 Aftercare
+            </button>
+
+            <button type="button"
+              data-atp-close>
+              ✕ Cerrar
+            </button>
+          </div>
+
+          <div
+            id="rx-atp-content"
+            class="rx-atp-content">
+          </div>
+
+        </div>
+      `;
+
+      overlay.addEventListener(
+        'click',
+        function (event) {
+          if (event.target === overlay) {
+            close();
+          }
+        }
+      );
+
+      document.body.appendChild(overlay);
+    }
+
+    if (!document.getElementById('rx-atp-modal')) {
+      const modal = document.createElement('div');
+
+      modal.id = 'rx-atp-modal';
+      modal.className = 'rx-atp-modal';
+
+      modal.innerHTML = `
+        <div class="rx-atp-modal-box">
+
+          <div class="rx-atp-modal-head">
+            <strong id="rx-atp-modal-title">
+              Atelier
+            </strong>
+
+            <button
+              type="button"
+              class="rx-atp-close"
+              data-modal-close>
+              ✕
+            </button>
+          </div>
+
+          <div
+            id="rx-atp-modal-body"
+            class="rx-atp-modal-body">
+          </div>
+
+        </div>
+      `;
+
+      modal.addEventListener(
+        'click',
+        function (event) {
+          if (
+            event.target === modal ||
+            event.target.closest('[data-modal-close]')
+          ) {
+            closeModal();
+          }
+        }
+      );
+
+      document.body.appendChild(modal);
+    }
+  }
+
+  /* =========================================================
+     MODALES
+     ========================================================= */
+
+  function openModal(title, html) {
+    const modal =
+      document.getElementById('rx-atp-modal');
+
+    document.getElementById(
+      'rx-atp-modal-title'
+    ).textContent = title;
+
+    document.getElementById(
+      'rx-atp-modal-body'
+    ).innerHTML = html;
+
+    modal.classList.add('show');
+    RX.modalOpen = true;
+
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    const modal =
+      document.getElementById('rx-atp-modal');
+
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    RX.modalOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  /* =========================================================
+     DASHBOARD
+     ========================================================= */
+
+  function renderDashboard() {
+    return `
+      <div class="rx-atp-toolbar">
+        <button
+          type="button"
+          class="rx-atp-action"
+          data-atp-refresh>
+          🔄 Actualizar
+        </button>
+
+        <button
+          type="button"
+          class="rx-atp-action"
+          data-atp-storage>
+          🗄️ Comprobar fotos
+        </button>
+      </div>
+
+      <div class="rx-atp-grid">
+
+        <div class="rx-atp-card">
+          <h3>Artistas</h3>
+          <div class="rx-atp-number">
+            ${RX.artists.length}
+          </div>
+        </div>
+
+        <div class="rx-atp-card">
+          <h3>Flash</h3>
+          <div class="rx-atp-number">
+            ${RX.flash.length}
+          </div>
+        </div>
+
+        <div class="rx-atp-card">
+          <h3>Proyectos</h3>
+          <div class="rx-atp-number">
+            ${RX.projects.length}
+          </div>
+        </div>
+
+        <div class="rx-atp-card">
+          <h3>Aftercare</h3>
+          <div class="rx-atp-number">
+            ${RX.aftercare.length}
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:15px"
+           class="rx-atp-card">
+
+        <h3>Estado del Atelier</h3>
+
+        <div class="rx-atp-muted">
+          Todo se administra desde este panel.
+          Las fotografías se seleccionan directamente
+          desde el teléfono.
+        </div>
+
+        <div style="margin-top:10px">
+          <strong>Tablas conectadas:</strong>
+          artists · flash_designs ·
+          project_requests ·
+          project_request_images ·
+          aftercare_articles
+        </div>
+
+      </div>
+    `;
+  }
+
+  /* =========================================================
+     ARTISTAS
+     ========================================================= */
+
+  function renderArtists() {
+    const list = RX.artists.map(function (artist) {
+      return `
+        <div class="rx-atp-item">
+
+          ${
+            artist.image_url
+              ? `<img src="${esc(artist.image_url)}"
+                       alt="${esc(artist.name)}"
+                       loading="lazy">`
+              : `<div style="
+                    width:86px;
+                    height:86px;
+                    border-radius:12px;
+                    background:#252525;
+                    display:grid;
+                    place-items:center;
+                    color:#777">
+                    🎨
+                 </div>`
+          }
+
+          <div>
+            <div class="rx-atp-item-title">
+              ${esc(artist.name)}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${esc(artist.specialty || 'Sin especialidad')}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${artist.active ? '🟢 Activo' : '⚫ Inactivo'}
+            </div>
+          </div>
+
+          <div class="rx-atp-actions">
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-edit-artist="${esc(artist.id)}">
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-toggle-artist="${esc(artist.id)}">
+              ${artist.active ? 'Desactivar' : 'Activar'}
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action rx-atp-danger"
+              data-delete-artist="${esc(artist.id)}">
+              Eliminar
+            </button>
+
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="rx-atp-toolbar">
+        <button
+          type="button"
+          class="rx-atp-submit"
+          data-new-artist>
+          + Nuevo artista
+        </button>
+      </div>
+
+      <div class="rx-atp-list">
+        ${
+          list ||
+          `<div class="rx-atp-empty">
+             Todavía no hay artistas.
+           </div>`
+        }
+      </div>
+    `;
+  }
+
+  function artistForm(artist) {
+    const editing = !!artist;
+
+    return `
+      <form
+        id="rx-atp-artist-form"
+        class="rx-atp-form"
+        data-id="${editing ? esc(artist.id) : ''}">
+
+        <div class="rx-atp-form-grid">
+
+          <div class="rx-atp-field">
+            <label>Nombre</label>
+            <input
+              name="name"
+              required
+              value="${editing ? esc(artist.name) : ''}"
+              placeholder="Nombre del artista">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Especialidad</label>
+            <input
+              name="specialty"
+              value="${editing ? esc(artist.specialty) : ''}"
+              placeholder="Tatuaje, dibujo, realismo...">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Estilos</label>
+            <input
+              name="styles"
+              value="${editing ? esc(artist.styles) : ''}"
+              placeholder="Blackwork, fine line...">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Orden</label>
+            <input
+              name="sort_order"
+              type="number"
+              value="${editing ? esc(artist.sort_order || 0) : '0'}">
+          </div>
+
+          <div class="rx-atp-field full">
+            <label>Biografía</label>
+            <textarea
+              name="bio"
+              placeholder="Biografía del artista">${editing ? esc(artist.bio) : ''}</textarea>
+          </div>
+
+          <div class="rx-atp-field full">
+            <label>Instagram</label>
+            <input
+              name="instagram_url"
+              type="url"
+              value="${editing ? esc(artist.instagram_url) : ''}"
+              placeholder="https://instagram.com/...">
+          </div>
+
+          <div class="rx-atp-field full">
+            <div class="rx-atp-photo">
+
+              <label class="rx-atp-upload">
+                📷 Elegir foto
+                <input
+                  id="rx-atp-artist-photo"
+                  type="file"
+                  accept="image/*"
+                  capture="environment">
+              </label>
+
+              <div class="rx-atp-muted">
+                Puedes sacar una foto ahora mismo
+                o elegirla de la galería.
+              </div>
+
+              ${
+                editing && artist.image_url
+                  ? `<img
+                       class="rx-atp-photo-preview"
+                       id="rx-atp-artist-preview"
+                       src="${esc(artist.image_url)}"
+                       alt="">`
+                  : `<img
+                       class="rx-atp-photo-preview"
+                       id="rx-atp-artist-preview"
+                       style="display:none"
+                       alt="">`
+              }
+
+            </div>
+          </div>
+
+        </div>
+
+        <div style="
+          display:flex;
+          gap:8px;
+          justify-content:flex-end;
+          flex-wrap:wrap">
+
+          <button
+            type="button"
+            class="rx-atp-action"
+            data-modal-close>
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="rx-atp-submit rx-atp-submit">
+            ${editing ? 'Guardar cambios' : 'Crear artista'}
+          </button>
+
+        </div>
+
+      </form>
+    `;
+  }
+
+  async function saveArtist(form) {
+    if (!await requireAdmin()) return;
+
+    const db = getDB();
+    const id = text(form.dataset.id);
+    const fd = new FormData(form);
+
+    const name = text(fd.get('name'));
+
+    if (!name) {
+      toast('El nombre es obligatorio.', 'error');
+      return;
+    }
+
+    setBusy(true);
+
+    let newImageUrl = null;
+
+    try {
+      const fileInput =
+        document.getElementById('rx-atp-artist-photo');
+
+      if (fileInput &&
+          fileInput.files &&
+          fileInput.files[0]) {
+
+        const uploaded = await uploadImage(
+          fileInput.files[0],
+          'artists'
+        );
+
+        newImageUrl = uploaded.url;
+      }
+
+      const payload = {
+        name: name,
+        slug: slugify(name),
+        bio: text(fd.get('bio')),
+        specialty: text(fd.get('specialty')),
+        styles: text(fd.get('styles')),
+        instagram_url: text(fd.get('instagram_url')),
+        sort_order:
+          parseInt(fd.get('sort_order'), 10) || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      if (newImageUrl) {
+        payload.image_url = newImageUrl;
+      }
+
+      let result;
+
+      if (id) {
+        result = await db
+          .from('artists')
+          .update(payload)
+          .eq('id', id)
+          .select()
+          .single();
+      } else {
+        payload.active = true;
+
+        result = await db
+          .from('artists')
+          .insert(payload)
+          .select()
+          .single();
+      }
+
+      if (result.error) {
+        if (newImageUrl) {
+          await deleteImageByUrl(newImageUrl);
+        }
+
+        throw result.error;
+      }
+
+      if (
+        id &&
+        newImageUrl
+      ) {
+        const old = artistById(id);
+
+        if (old && old.image_url) {
+          await deleteImageByUrl(old.image_url);
+        }
+      }
+
+      closeModal();
+
+      toast(
+        id
+          ? 'Artista actualizado.'
+          : 'Artista creado.',
+        'success'
+      );
+
+      await fetchAll();
+
+    } catch (error) {
+      toast(
+        error && error.message
+          ? error.message
+          : 'No se pudo guardar el artista.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleArtist(id) {
+    if (!await requireAdmin()) return;
+
+    const artist = artistById(id);
+    if (!artist) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('artists')
+        .update({
+          active: !artist.active,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      toast(
+        artist.active
+          ? 'Artista desactivado.'
+          : 'Artista activado.',
+        'success'
+      );
+
+      await fetchAll();
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function deleteArtist(id) {
+    if (!await requireAdmin()) return;
+
+    const artist = artistById(id);
+    if (!artist) return;
+
+    if (!confirm(
+      '¿Eliminar definitivamente a ' +
+      artist.name +
+      '?'
+    )) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('artists')
+        .delete()
+        .eq('id', id);
+
+      if (result.error) {
+        /*
+         * Si Flash depende del artista mediante FK,
+         * lo correcto es desactivar/reasignar.
+         */
+        if (
+          /foreign|constraint|violat/i.test(
+            result.error.message || ''
+          )
+        ) {
+          throw new Error(
+            'No se puede eliminar porque este artista está relacionado con otros registros. Desactívalo o reasigna primero sus Flash.'
+          );
+        }
+
+        throw result.error;
+      }
+
+      if (artist.image_url) {
+        await deleteImageByUrl(
+          artist.image_url
+        );
+      }
+
+      toast('Artista eliminado.', 'success');
+
+      await fetchAll();
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  /* =========================================================
+     FLASH
+     ========================================================= */
+
+  function renderFlash() {
+    const list = RX.flash.map(function (item) {
+      const artist = artistById(item.artist_id);
+
+      return `
+        <div class="rx-atp-item">
+
+          ${
+            item.image_url
+              ? `<img src="${esc(item.image_url)}"
+                       alt="${esc(item.title)}"
+                       loading="lazy">`
+              : `<div style="
+                    width:86px;
+                    height:86px;
+                    border-radius:12px;
+                    background:#252525;
+                    display:grid;
+                    place-items:center;
+                    color:#777">
+                    ⚡
+                 </div>`
+          }
+
+          <div>
+            <div class="rx-atp-item-title">
+              ${esc(item.title)}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${artist ? esc(artist.name) : 'Sin artista'}
+              ·
+              ${esc(item.style || 'Sin estilo')}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${
+                item.price != null
+                  ? esc(item.currency || 'ARS') +
+                    ' ' +
+                    esc(item.price)
+                  : 'Precio no definido'
+              }
+            </div>
+
+            <div class="rx-atp-muted">
+              ${item.active ? '🟢 Activo' : '⚫ Inactivo'}
+              ·
+              ${esc(item.status || '')}
+            </div>
+          </div>
+
+          <div class="rx-atp-actions">
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-edit-flash="${esc(item.id)}">
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-toggle-flash="${esc(item.id)}">
+              ${item.active ? 'Desactivar' : 'Activar'}
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action rx-atp-danger"
+              data-delete-flash="${esc(item.id)}">
+              Eliminar
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="rx-atp-toolbar">
+
+        <button
+          type="button"
+          class="rx-atp-submit"
+          data-new-flash>
+          + Nuevo Flash
+        </button>
+
+      </div>
+
+      <div class="rx-atp-list">
+        ${
+          list ||
+          `<div class="rx-atp-empty">
+             Todavía no hay diseños Flash.
+           </div>`
+        }
+      </div>
+    `;
+  }
+
+  function flashForm(item) {
+    const editing = !!item;
+
+    const artistOptions = RX.artists
+      .map(function (artist) {
+        return `
+          <option
+            value="${esc(artist.id)}"
+            ${
+              editing &&
+              String(item.artist_id) === String(artist.id)
+                ? 'selected'
+                : ''
+            }>
+            ${esc(artist.name)}
+          </option>
+        `;
+      })
+      .join('');
+
+    return `
+      <form
+        id="rx-atp-flash-form"
+        class="rx-atp-form"
+        data-id="${editing ? esc(item.id) : ''}">
+
+        <div class="rx-atp-form-grid">
+
+          <div class="rx-atp-field">
+            <label>Título</label>
+            <input
+              name="title"
+              required
+              value="${editing ? esc(item.title) : ''}"
+              placeholder="Nombre del Flash">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Artista</label>
+            <select name="artist_id">
+              <option value="">
+                Sin artista
+              </option>
+              ${artistOptions}
+            </select>
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Estilo</label>
+            <input
+              name="style"
+              value="${editing ? esc(item.style) : ''}"
+              placeholder="Blackwork, tradicional...">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Zona corporal</label>
+            <input
+              name="body_area"
+              value="${editing ? esc(item.body_area) : ''}"
+              placeholder="Brazo, espalda...">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Tamaño</label>
+            <input
+              name="size_text"
+              value="${editing ? esc(item.size_text) : ''}"
+              placeholder="10 cm">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Precio</label>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              value="${editing && item.price != null ? esc(item.price) : ''}"
+              placeholder="0">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Moneda</label>
+            <input
+              name="currency"
+              value="${editing ? esc(item.currency || 'ARS') : 'ARS'}">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Estado</label>
+            <select name="status">
+              ${
+                [
+                  ['available','Disponible'],
+                  ['reserved','Reservado'],
+                  ['sold','Vendido'],
+                  ['inactive','Inactivo']
+                ].map(function (s) {
+                  return `
+                    <option
+                      value="${s[0]}"
+                      ${
+                        editing &&
+                        item.status === s[0]
+                          ? 'selected'
+                          : ''
+                      }>
+                      ${s[1]}
+                    </option>
+                  `;
+                }).join('')
+              }
+            </select>
+          </div>
+
+          <div class="rx-atp-field full">
+            <label>Descripción</label>
+            <textarea
+              name="description"
+              placeholder="Descripción del diseño">${editing ? esc(item.description) : ''}</textarea>
+          </div>
+
+          <div class="rx-atp-field full">
+            <div class="rx-atp-photo">
+
+              <label class="rx-atp-upload">
+                📷 Elegir fotografía
+                <input
+                  id="rx-atp-flash-photo"
+                  type="file"
+                  accept="image/*"
+                  capture="environment">
+              </label>
+
+              <div class="rx-atp-muted">
+                Cámara o galería del celular.
+              </div>
+
+              ${
+                editing && item.image_url
+                  ? `<img
+                       id="rx-atp-flash-preview"
+                       class="rx-atp-photo-preview"
+                       src="${esc(item.image_url)}"
+                       alt="">`
+                  : `<img
+                       id="rx-atp-flash-preview"
+                       class="rx-atp-photo-preview"
+                       style="display:none"
+                       alt="">`
+              }
+
+            </div>
+          </div>
+
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:flex-end;
+          gap:8px">
+
+          <button
+            type="button"
+            class="rx-atp-action"
+            data-modal-close>
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="rx-atp-submit">
+            ${editing ? 'Guardar cambios' : 'Crear Flash'}
+          </button>
+
+        </div>
+
+      </form>
+    `;
+  }
+
+  async function saveFlash(form) {
+    if (!await requireAdmin()) return;
+
+    const db = getDB();
+    const id = text(form.dataset.id);
+    const fd = new FormData(form);
+
+    const title = text(fd.get('title'));
+
+    if (!title) {
+      toast('El título es obligatorio.', 'error');
+      return;
+    }
+
+    setBusy(true);
+
+    let newImageUrl = null;
+
+    try {
+      const input =
+        document.getElementById('rx-atp-flash-photo');
+
+      if (input &&
+          input.files &&
+          input.files[0]) {
+
+        const uploaded = await uploadImage(
+          input.files[0],
+          'flash'
+        );
+
+        newImageUrl = uploaded.url;
+      }
+
+      const priceText = text(fd.get('price'));
+
+      const payload = {
+        title: title,
+        description: text(fd.get('description')),
+        artist_id:
+          text(fd.get('artist_id')) || null,
+        style: text(fd.get('style')),
+        body_area: text(fd.get('body_area')),
+        size_text: text(fd.get('size_text')),
+        price:
+          priceText === ''
+            ? null
+            : Number(priceText),
+        currency:
+          text(fd.get('currency')) || 'ARS',
+        status:
+          text(fd.get('status')) || 'available',
+        updated_at: new Date().toISOString()
+      };
+
+      if (newImageUrl) {
+        payload.image_url = newImageUrl;
+      }
+
+      let result;
+
+      if (id) {
+        result = await db
+          .from('flash_designs')
+          .update(payload)
+          .eq('id', id)
+          .select()
+          .single();
+      } else {
+        payload.active = true;
+
+        result = await db
+          .from('flash_designs')
+          .insert(payload)
+          .select()
+          .single();
+      }
+
+      if (result.error) {
+        if (newImageUrl) {
+          await deleteImageByUrl(newImageUrl);
+        }
+
+        throw result.error;
+      }
+
+      if (id && newImageUrl) {
+        const old = RX.flash.find(function (x) {
+          return String(x.id) === String(id);
+        });
+
+        if (old && old.image_url) {
+          await deleteImageByUrl(old.image_url);
+        }
+      }
+
+      closeModal();
+
+      toast(
+        id
+          ? 'Flash actualizado.'
+          : 'Flash creado.',
+        'success'
+      );
+
+      await fetchAll();
+
+    } catch (error) {
+      toast(
+        error.message ||
+        'No se pudo guardar el Flash.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleFlash(id) {
+    if (!await requireAdmin()) return;
+
+    const item = RX.flash.find(function (x) {
+      return String(x.id) === String(id);
+    });
+
+    if (!item) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('flash_designs')
+        .update({
+          active: !item.active,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      await fetchAll();
+
+      toast(
+        item.active
+          ? 'Flash desactivado.'
+          : 'Flash activado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function deleteFlash(id) {
+    if (!await requireAdmin()) return;
+
+    const item = RX.flash.find(function (x) {
+      return String(x.id) === String(id);
+    });
+
+    if (!item) return;
+
+    if (!confirm(
+      '¿Eliminar definitivamente este Flash?'
+    )) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('flash_designs')
+        .delete()
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      if (item.image_url) {
+        await deleteImageByUrl(item.image_url);
+      }
+
+      await fetchAll();
+
+      toast('Flash eliminado.', 'success');
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  /* =========================================================
+     PROYECTOS
+     ========================================================= */
+
+  const PROJECT_STATUS = {
+    new: 'Nuevo',
+    contacted: 'Contactado',
+    budget: 'Presupuesto',
+    confirmed: 'Confirmado',
+    finished: 'Terminado',
+    cancelled: 'Cancelado'
+  };
+
+  function projectStatusLabel(status) {
+    return PROJECT_STATUS[status] ||
+      status ||
+      'Nuevo';
+  }
+
+  function renderProjects() {
+    const list = RX.projects.map(function (project) {
+      const artist = artistById(project.artist_id);
+      const service = serviceById(project.service_id);
+
+      return `
+        <div
+          class="rx-atp-project"
+          data-project="${esc(project.id)}">
+
+          <div class="rx-atp-project-top">
+
+            <div>
+              <div class="rx-atp-item-title">
+                ${esc(project.name || 'Sin nombre')}
+              </div>
+
+              <div class="rx-atp-muted">
+                ${formatDate(project.created_at)}
+              </div>
+            </div>
+
+            <span
+              class="rx-atp-status"
+              data-status="${esc(project.status || 'new')}">
+              ${esc(projectStatusLabel(project.status))}
+            </span>
+
+          </div>
+
+          <div class="rx-atp-project-info">
+
+            <div>
+              📱
+              ${
+                project.phone
+                  ? `<a href="tel:${esc(safeTel(project.phone))}"
+                       style="color:#ffd54f">
+                       ${esc(project.phone)}
+                     </a>`
+                  : 'Sin teléfono'
+              }
+            </div>
+
+            <div>
+              ✉️
+              ${
+                project.email
+                  ? `<a href="mailto:${esc(safeMail(project.email))}"
+                       style="color:#ffd54f">
+                       ${esc(project.email)}
+                     </a>`
+                  : 'Sin email'
+              }
+            </div>
+
+            <div>
+              🎨 Artista:
+              ${artist ? esc(artist.name) : 'Sin asignar'}
+            </div>
+
+            <div>
+              🛠 Servicio:
+              ${service ? esc(service.name) : 'Sin asignar'}
+            </div>
+
+            <div>
+              📍 Zona:
+              ${esc(project.body_area || '—')}
+            </div>
+
+            <div>
+              📐 Tamaño:
+              ${esc(project.size_text || '—')}
+            </div>
+
+            <div>
+              💰 Presupuesto:
+              ${esc(project.budget_text || '—')}
+            </div>
+
+            <div>
+              📅 Fecha preferida:
+              ${formatDate(project.preferred_date)}
+            </div>
+
+          </div>
+
+          ${
+            project.description
+              ? `<div style="
+                    margin-top:12px;
+                    color:#ccc;
+                    font-size:13px;
+                    white-space:pre-wrap">
+                    ${esc(project.description)}
+                 </div>`
+              : ''
+          }
+
+          <div class="rx-atp-project-actions">
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-project-images="${esc(project.id)}">
+              📷 Fotos
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-project-status="${esc(project.id)}">
+              Cambiar estado
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action rx-atp-danger"
+              data-delete-project="${esc(project.id)}">
+              Eliminar
+            </button>
+
+          </div>
+
+          <div
+            id="rx-atp-project-images-${esc(project.id)}"
+            style="display:none">
+          </div>
+
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="rx-atp-toolbar">
+
+        <button
+          type="button"
+          class="rx-atp-action"
+          data-atp-refresh>
+          🔄 Actualizar solicitudes
+        </button>
+
+      </div>
+
+      <div class="rx-atp-list">
+
+        ${
+          list ||
+          `<div class="rx-atp-empty">
+             No hay solicitudes de proyectos.
+           </div>`
+        }
+
+      </div>
+    `;
+  }
+
+  function projectStatusForm(project) {
+    return `
+      <form
+        id="rx-atp-project-status-form"
+        class="rx-atp-form"
+        data-id="${esc(project.id)}">
+
+        <div class="rx-atp-field">
+
+          <label>Estado</label>
+
+          <select name="status">
+
+            ${
+              Object.keys(PROJECT_STATUS)
+                .map(function (key) {
+                  return `
+                    <option
+                      value="${key}"
+                      ${
+                        project.status === key
+                          ? 'selected'
+                          : ''
+                      }>
+                      ${PROJECT_STATUS[key]}
+                    </option>
+                  `;
+                })
+                .join('')
+            }
+
+          </select>
+
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:flex-end;
+          gap:8px">
+
+          <button
+            type="button"
+            class="rx-atp-action"
+            data-modal-close>
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="rx-atp-submit">
+            Guardar estado
+          </button>
+
+        </div>
+
+      </form>
+    `;
+  }
+
+  async function saveProjectStatus(form) {
+    if (!await requireAdmin()) return;
+
+    const db = getDB();
+    const id = text(form.dataset.id);
+    const fd = new FormData(form);
+
+    try {
+      const result = await db
+        .from('project_requests')
+        .update({
+          status:
+            text(fd.get('status')) || 'new',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      closeModal();
+
+      await fetchAll();
+
+      toast(
+        'Estado actualizado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function loadProjectImages(id) {
+    const db = getDB();
+
+    const container =
+      document.getElementById(
+        'rx-atp-project-images-' + id
+      );
+
+    if (!container) return;
+
+    container.style.display = 'block';
+    container.innerHTML =
+      '<div class="rx-atp-muted">Cargando fotos...</div>';
+
+    try {
+      const result = await db
+        .from('project_request_images')
+        .select('*')
+        .eq('project_request_id', id)
+        .order('sort_order', {
+          ascending: true
+        })
+        .order('created_at', {
+          ascending: true
+        });
+
+      if (result.error) throw result.error;
+
+      const images = result.data || [];
+
+      container.innerHTML = `
+        <div style="
+          margin-top:12px;
+          border-top:1px solid #303030;
+          padding-top:12px">
+
+          <div class="rx-atp-toolbar">
+
+            <label class="rx-atp-upload">
+              📷 Añadir fotos
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                data-project-file="${esc(id)}">
+            </label>
+
+          </div>
+
+          ${
+            images.length
+              ? `<div class="rx-atp-ref-grid">
+                  ${
+                    images.map(function (image) {
+                      return `
+                        <div style="position:relative">
+                          <img
+                            src="${esc(image.image_url)}"
+                            alt=""
+                            loading="lazy">
+
+                          <button
+                            type="button"
+                            class="rx-atp-action rx-atp-danger"
+                            style="
+                              position:absolute;
+                              top:4px;
+                              right:4px;
+                              padding:4px 7px"
+                            data-delete-project-image="${esc(image.id)}"
+                            data-image-url="${esc(image.image_url)}">
+                            ✕
+                          </button>
+                        </div>
+                      `;
+                    }).join('')
+                  }
+                </div>`
+              : `<div class="rx-atp-empty">
+                   No hay fotografías de referencia.
+                 </div>`
+          }
+
+        </div>
+      `;
+
+    } catch (error) {
+      container.innerHTML =
+        '<div class="rx-atp-muted">No se pudieron cargar las fotos.</div>';
+
+      toast(error.message, 'error');
+    }
+  }
+
+  async function uploadProjectImages(id, files) {
+    if (!await requireAdmin()) return;
+
+    if (!files || !files.length) return;
+
+    const db = getDB();
+
+    setBusy(true);
+
+    try {
+      const existing = await db
+        .from('project_request_images')
+        .select('sort_order')
+        .eq('project_request_id', id)
+        .order('sort_order', {
+          ascending: false
+        })
+        .limit(1);
+
+      if (existing.error) {
+        throw existing.error;
+      }
+
+      let nextOrder = 0;
+
+      if (
+        existing.data &&
+        existing.data[0] &&
+        Number.isFinite(
+          Number(existing.data[0].sort_order)
+        )
+      ) {
+        nextOrder =
+          Number(existing.data[0].sort_order) + 1;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        if (!isImage(files[i])) continue;
+
+        const uploaded = await uploadImage(
+          files[i],
+          'projects'
+        );
+
+        const result = await db
+          .from('project_request_images')
+          .insert({
+            project_request_id: id,
+            image_url: uploaded.url,
+            sort_order: nextOrder++
+          })
+          .select()
+          .single();
+
+        if (result.error) {
+          await deleteImageByUrl(uploaded.url);
+          throw result.error;
+        }
+      }
+
+      toast(
+        'Fotografías añadidas.',
+        'success'
+      );
+
+      await loadProjectImages(id);
+
+    } catch (error) {
+      toast(
+        error.message ||
+        'No se pudieron subir las fotografías.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteProjectImage(id, url) {
+    if (!await requireAdmin()) return;
+
+    if (!confirm(
+      '¿Eliminar esta fotografía?'
+    )) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('project_request_images')
+        .delete()
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      await deleteImageByUrl(url);
+
+      const parent =
+        document.querySelector(
+          '[data-project-images]'
+        );
+
+      /*
+       * Recarga todas las imágenes visibles del proyecto
+       * mediante el botón/elemento más cercano.
+       */
+      const projectBlock =
+        document.querySelector(
+          '[data-delete-project-image="' +
+          CSS.escape(String(id)) +
+          '"]'
+        );
+
+      if (projectBlock) {
+        const project =
+          projectBlock.closest('[data-project]');
+
+        if (project) {
+          await loadProjectImages(
+            project.dataset.project
+          );
+          return;
+        }
+      }
+
+      toast(
+        'Fotografía eliminada.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function deleteProject(id) {
+    if (!await requireAdmin()) return;
+
+    const project = RX.projects.find(function (x) {
+      return String(x.id) === String(id);
+    });
+
+    if (!project) return;
+
+    if (!confirm(
+      '¿Eliminar definitivamente esta solicitud y sus fotografías?'
+    )) return;
+
+    const db = getDB();
+
+    try {
+      const imagesResult = await db
+        .from('project_request_images')
+        .select('id,image_url')
+        .eq('project_request_id', id);
+
+      if (imagesResult.error) {
+        throw imagesResult.error;
+      }
+
+      const images = imagesResult.data || [];
+
+      const deleteImagesResult = await db
+        .from('project_request_images')
+        .delete()
+        .eq('project_request_id', id);
+
+      if (deleteImagesResult.error) {
+        throw deleteImagesResult.error;
+      }
+
+      const result = await db
+        .from('project_requests')
+        .delete()
+        .eq('id', id);
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      for (const image of images) {
+        if (image.image_url) {
+          await deleteImageByUrl(
+            image.image_url
+          );
+        }
+      }
+
+      await fetchAll();
+
+      toast(
+        'Proyecto eliminado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(
+        error.message ||
+        'No se pudo eliminar el proyecto.',
+        'error'
+      );
+    }
+  }
+
+  /* =========================================================
+     AFTERCARE
+     ========================================================= */
+
+  function renderAftercare() {
+    const list = RX.aftercare.map(function (item) {
+      return `
+        <div class="rx-atp-item">
+
+          <div style="
+            width:86px;
+            height:86px;
+            border-radius:12px;
+            background:#252525;
+            display:grid;
+            place-items:center;
+            color:#ffd54f;
+            font-size:28px">
+            🩹
+          </div>
+
+          <div>
+            <div class="rx-atp-item-title">
+              ${esc(item.title)}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${esc(item.summary || '')}
+            </div>
+
+            <div class="rx-atp-muted">
+              ${item.active ? '🟢 Activo' : '⚫ Inactivo'}
+            </div>
+          </div>
+
+          <div class="rx-atp-actions">
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-edit-aftercare="${esc(item.id)}">
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action"
+              data-toggle-aftercare="${esc(item.id)}">
+              ${item.active ? 'Desactivar' : 'Activar'}
+            </button>
+
+            <button
+              type="button"
+              class="rx-atp-action rx-atp-danger"
+              data-delete-aftercare="${esc(item.id)}">
+              Eliminar
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="rx-atp-toolbar">
+
+        <button
+          type="button"
+          class="rx-atp-submit"
+          data-new-aftercare>
+          + Nuevo artículo
+        </button>
+
+      </div>
+
+      <div class="rx-atp-list">
+
+        ${
+          list ||
+          `<div class="rx-atp-empty">
+             Todavía no hay artículos de Aftercare.
+           </div>`
+        }
+
+      </div>
+    `;
+  }
+
+  function aftercareForm(item) {
+    const editing = !!item;
+
+    return `
+      <form
+        id="rx-atp-aftercare-form"
+        class="rx-atp-form"
+        data-id="${editing ? esc(item.id) : ''}">
+
+        <div class="rx-atp-form-grid">
+
+          <div class="rx-atp-field">
+            <label>Título</label>
+            <input
+              name="title"
+              required
+              value="${editing ? esc(item.title) : ''}"
+              placeholder="Cuidados después del tatuaje">
+          </div>
+
+          <div class="rx-atp-field">
+            <label>Orden</label>
+            <input
+              name="sort_order"
+              type="number"
+              value="${editing ? esc(item.sort_order || 0) : '0'}">
+          </div>
+
+          <div class="rx-atp-field full">
+            <label>Resumen</label>
+            <input
+              name="summary"
+              value="${editing ? esc(item.summary) : ''}"
+              placeholder="Resumen breve">
+          </div>
+
+          <div class="rx-atp-field full">
+            <label>Contenido</label>
+            <textarea
+              name="body"
+              required
+              placeholder="Contenido completo del artículo">${editing ? esc(item.body) : ''}</textarea>
+          </div>
+
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:flex-end;
+          gap:8px">
+
+          <button
+            type="button"
+            class="rx-atp-action"
+            data-modal-close>
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="rx-atp-submit">
+            ${editing ? 'Guardar cambios' : 'Crear artículo'}
+          </button>
+
+        </div>
+
+      </form>
+    `;
+  }
+
+  async function saveAftercare(form) {
+    if (!await requireAdmin()) return;
+
+    const db = getDB();
+    const id = text(form.dataset.id);
+    const fd = new FormData(form);
+
+    const title = text(fd.get('title'));
+    const body = text(fd.get('body'));
+
+    if (!title || !body) {
+      toast(
+        'Título y contenido son obligatorios.',
+        'error'
+      );
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const payload = {
+        title: title,
+        slug: slugify(title),
+        summary: text(fd.get('summary')),
+        body: body,
+        sort_order:
+          parseInt(fd.get('sort_order'), 10) || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      let result;
+
+      if (id) {
+        result = await db
+          .from('aftercare_articles')
+          .update(payload)
+          .eq('id', id);
+      } else {
+        payload.active = true;
+
+        result = await db
+          .from('aftercare_articles')
+          .insert(payload);
+      }
+
+      if (result.error) throw result.error;
+
+      closeModal();
+
+      await fetchAll();
+
+      toast(
+        id
+          ? 'Artículo actualizado.'
+          : 'Artículo creado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleAftercare(id) {
+    if (!await requireAdmin()) return;
+
+    const item = RX.aftercare.find(function (x) {
+      return String(x.id) === String(id);
+    });
+
+    if (!item) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('aftercare_articles')
+        .update({
+          active: !item.active,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      await fetchAll();
+
+      toast(
+        item.active
+          ? 'Artículo desactivado.'
+          : 'Artículo activado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function deleteAftercare(id) {
+    if (!await requireAdmin()) return;
+
+    const item = RX.aftercare.find(function (x) {
+      return String(x.id) === String(id);
+    });
+
+    if (!item) return;
+
+    if (!confirm(
+      '¿Eliminar definitivamente este artículo?'
+    )) return;
+
+    const db = getDB();
+
+    try {
+      const result = await db
+        .from('aftercare_articles')
+        .delete()
+        .eq('id', id);
+
+      if (result.error) throw result.error;
+
+      await fetchAll();
+
+      toast(
+        'Artículo eliminado.',
+        'success'
+      );
+
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+
+  function renderCurrent() {
+    const content =
+      document.getElementById('rx-atp-content');
+
+    if (!content) return;
+
+    document.querySelectorAll(
+      '[data-atp-tab]'
+    ).forEach(function (button) {
+      button.classList.toggle(
+        'active',
+        button.dataset.atpTab === RX.currentTab
+      );
+    });
+
+    if (RX.currentTab === 'dashboard') {
+      content.innerHTML = renderDashboard();
+      return;
+    }
+
+    if (RX.currentTab === 'artists') {
+      content.innerHTML = renderArtists();
+      return;
+    }
+
+    if (RX.currentTab === 'flash') {
+      content.innerHTML = renderFlash();
+      return;
+    }
+
+    if (RX.currentTab === 'projects') {
+      content.innerHTML = renderProjects();
+      return;
+    }
+
+    if (RX.currentTab === 'aftercare') {
+      content.innerHTML = renderAftercare();
+      return;
+    }
+  }
+
+  /* =========================================================
+     EVENTOS
+     ========================================================= */
+
+  function bindEvents() {
+    document.addEventListener(
+      'click',
+      async function (event) {
+
+        const tab =
+          event.target.closest('[data-atp-tab]');
+
+        if (tab) {
+          RX.currentTab =
+            tab.dataset.atpTab ||
+            'dashboard';
+
+          renderCurrent();
+          return;
+        }
+
+        if (event.target.closest('[data-atp-close]')) {
+          close();
+          return;
+        }
+
+        if (event.target.closest('[data-modal-close]')) {
+          closeModal();
+          return;
+        }
+
+        if (event.target.closest('[data-atp-refresh]')) {
+          if (!await requireAdmin()) return;
+
+          try {
+            setBusy(true);
+            await fetchAll();
+            toast(
+              'Datos actualizados.',
+              'success'
+            );
+          } catch (error) {
+            toast(error.message, 'error');
+          } finally {
+            setBusy(false);
+          }
+
+          return;
+        }
+
+        if (event.target.closest('[data-atp-storage]')) {
+          if (!await requireAdmin()) return;
+
+          const result = await storageReady();
+
+          if (result.ok && !result.uncertain) {
+            toast(
+              'Storage OK: bucket "' +
+              RX.bucket +
+              '" encontrado.',
+              'success'
+            );
+          } else if (result.ok) {
+            toast(
+              'No pude verificar el bucket automáticamente; intentaré usar "' +
+              RX.bucket +
+              '".',
+              'info'
+            );
+          } else {
+            toast(
+              result.reason,
+              'error'
+            );
+          }
+
+          return;
+        }
+
+        if (event.target.closest('[data-new-artist]')) {
+          openModal(
+            'Nuevo artista',
+            artistForm(null)
+          );
+          return;
+        }
+
+        const editArtist =
+          event.target.closest('[data-edit-artist]');
+
+        if (editArtist) {
+          const item =
+            artistById(editArtist.dataset.editArtist);
+
+          if (item) {
+            openModal(
+              'Editar artista',
+              artistForm(item)
+            );
+          }
+
+          return;
+        }
+
+        const toggleArtistButton =
+          event.target.closest('[data-toggle-artist]');
+
+        if (toggleArtistButton) {
+          await toggleArtist(
+            toggleArtistButton.dataset.toggleArtist
+          );
+          return;
+        }
+
+        const deleteArtistButton =
+          event.target.closest('[data-delete-artist]');
+
+        if (deleteArtistButton) {
+          await deleteArtist(
+            deleteArtistButton.dataset.deleteArtist
+          );
+          return;
+        }
+
+        if (event.target.closest('[data-new-flash]')) {
+          openModal(
+            'Nuevo Flash',
+            flashForm(null)
+          );
+          return;
+        }
+
+        const editFlash =
+          event.target.closest('[data-edit-flash]');
+
+        if (editFlash) {
+          const item =
+            RX.flash.find(function (x) {
+              return String(x.id) ===
+                String(editFlash.dataset.editFlash);
+            });
+
+          if (item) {
+            openModal(
+              'Editar Flash',
+              flashForm(item)
+            );
+          }
+
+          return;
+        }
+
+        const toggleFlashButton =
+          event.target.closest('[data-toggle-flash]');
+
+        if (toggleFlashButton) {
+          await toggleFlash(
+            toggleFlashButton.dataset.toggleFlash
+          );
+          return;
+        }
+
+        const deleteFlashButton =
+          event.target.closest('[data-delete-flash]');
+
+        if (deleteFlashButton) {
+          await deleteFlash(
+            deleteFlashButton.dataset.deleteFlash
+          );
+          return;
+        }
+
+        const projectImagesButton =
+          event.target.closest('[data-project-images]');
+
+        if (projectImagesButton) {
+          await loadProjectImages(
+            projectImagesButton.dataset.projectImages
+          );
+          return;
+        }
+
+        const projectStatusButton =
+          event.target.closest('[data-project-status]');
+
+        if (projectStatusButton) {
+          const project =
+            RX.projects.find(function (x) {
+              return String(x.id) ===
+                String(projectStatusButton.dataset.projectStatus);
+            });
+
+          if (project) {
+            openModal(
+              'Estado del proyecto',
+              projectStatusForm(project)
+            );
+          }
+
+          return;
+        }
+
+        const deleteProjectButton =
+          event.target.closest('[data-delete-project]');
+
+        if (deleteProjectButton) {
+          await deleteProject(
+            deleteProjectButton.dataset.deleteProject
+          );
+          return;
+        }
+
+        if (event.target.closest('[data-new-aftercare]')) {
+          openModal(
+            'Nuevo Aftercare',
+            aftercareForm(null)
+          );
+          return;
+        }
+
+        const editAftercare =
+          event.target.closest('[data-edit-aftercare]');
+
+        if (editAftercare) {
+          const item =
+            RX.aftercare.find(function (x) {
+              return String(x.id) ===
+                String(editAftercare.dataset.editAftercare);
+            });
+
+          if (item) {
+            openModal(
+              'Editar Aftercare',
+              aftercareForm(item)
+            );
+          }
+
+          return;
+        }
+
+        const toggleAftercareButton =
+          event.target.closest('[data-toggle-aftercare]');
+
+        if (toggleAftercareButton) {
+          await toggleAftercare(
+            toggleAftercareButton.dataset.toggleAftercare
+          );
+          return;
+        }
+
+        const deleteAftercareButton =
+          event.target.closest('[data-delete-aftercare]');
+
+        if (deleteAftercareButton) {
+          await deleteAftercare(
+            deleteAftercareButton.dataset.deleteAftercare
+          );
+          return;
+        }
+
+        const deleteProjectImageButton =
+          event.target.closest(
+            '[data-delete-project-image]'
+          );
+
+        if (deleteProjectImageButton) {
+          await deleteProjectImage(
+            deleteProjectImageButton.dataset.deleteProjectImage,
+            deleteProjectImageButton.dataset.imageUrl
+          );
+          return;
+        }
+      }
+    );
+
+    document.addEventListener(
+      'change',
+      async function (event) {
+
+        const input = event.target;
+
+        if (
+          input.id === 'rx-atp-artist-photo' ||
+          input.id === 'rx-atp-flash-photo'
+        ) {
+          const file =
+            input.files &&
+            input.files[0];
+
+          if (!file) return;
+
+          if (!isImage(file)) {
+            toast(
+              'Selecciona una imagen.',
+              'error'
+            );
+            input.value = '';
+            return;
+          }
+
+          const previewId =
+            input.id === 'rx-atp-artist-photo'
+              ? 'rx-atp-artist-preview'
+              : 'rx-atp-flash-preview';
+
+          const preview =
+            document.getElementById(previewId);
+
+          if (preview) {
+            preview.src =
+              URL.createObjectURL(file);
+
+            preview.style.display = 'block';
+          }
+
+          return;
+        }
+
+        if (
+          input.matches(
+            'input[type="file"][data-project-file]'
+          )
+        ) {
+          const files = input.files;
+
+          if (!files || !files.length) return;
+
+          await uploadProjectImages(
+            input.dataset.projectFile,
+            Array.from(files)
+          );
+
+          input.value = '';
+        }
+      }
+    );
+
+    document.addEventListener(
+      'submit',
+      async function (event) {
+        const form = event.target;
+
+        if (
+          form.id === 'rx-atp-artist-form'
+        ) {
+          event.preventDefault();
+          await saveArtist(form);
+          return;
+        }
+
+        if (
+          form.id === 'rx-atp-flash-form'
+        ) {
+          event.preventDefault();
+          await saveFlash(form);
+          return;
+        }
+
+        if (
+          form.id === 'rx-atp-project-status-form'
+        ) {
+          event.preventDefault();
+          await saveProjectStatus(form);
+          return;
+        }
+
+        if (
+          form.id === 'rx-atp-aftercare-form'
+        ) {
+          event.preventDefault();
+          await saveAftercare(form);
+          return;
+        }
+      }
+    );
+
+    document.addEventListener(
+      'keydown',
+      function (event) {
+        if (
+          event.key === 'Escape'
+        ) {
+          if (RX.modalOpen) {
+            closeModal();
+          } else {
+            const overlay =
+              document.getElementById(
+                'rx-atp-overlay'
+              );
+
+            if (
+              overlay &&
+              overlay.classList.contains('show')
+            ) {
+              close();
+            }
+          }
+        }
+      }
+    );
+  }
+
+  /* =========================================================
+     APERTURA / CIERRE
+     ========================================================= */
+
+  async function open() {
+    if (!await requireAdmin()) {
+      await updateLauncherVisibility();
+      return;
+    }
+
+    const overlay =
+      document.getElementById(
+        'rx-atp-overlay'
+      );
+
+    if (!overlay) return;
+
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    RX.currentTab = 'dashboard';
+
+    renderCurrent();
+
+    try {
+      setBusy(true);
+      await fetchAll();
+    } catch (error) {
+      toast(
+        error.message ||
+        'No se pudieron cargar los datos.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function close() {
+    const overlay =
+      document.getElementById(
+        'rx-atp-overlay'
+      );
+
+    if (!overlay) return;
+
+    overlay.classList.remove('show');
+
+    if (!RX.modalOpen) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  /* =========================================================
+     INIT
+     ========================================================= */
+
+  async function init() {
+    if (RX.initialized) return;
+
+    RX.initialized = true;
+
+    injectStyles();
+    injectBase();
+    bindEvents();
+
+    /*
+     * Esperamos un instante por si el cliente Supabase
+     * principal del index todavía está inicializándose.
+     */
+    let attempts = 0;
+
+    while (!getDB() && attempts < 20) {
+      await new Promise(function (resolve) {
+        setTimeout(resolve, 250);
+      });
+
+      attempts++;
+    }
+
+    await updateLauncherVisibility();
+
+    const db = getDB();
+
+    /*
+     * Escuchamos cambios de sesión para ocultar el
+     * panel inmediatamente al cerrar sesión.
+     */
+    if (db && db.auth) {
+      try {
+        db.auth.onAuthStateChange(
+          function () {
+            setTimeout(
+              updateLauncherVisibility,
+              50
+            );
+          }
+        );
+      } catch (_) {}
+    }
+  }
+
+  /* =========================================================
+     API PÚBLICA
+     ========================================================= */
+
+  window.RoXThalAtelierPRO = {
+    open: open,
+    close: close,
+    reload: fetchAll,
+    openTab: function (tab) {
+      RX.currentTab = tab || 'dashboard';
+      open();
+    },
+    getAdmin: getAdmin,
+    uploadImage: uploadImage
+  };
+
+  if (
+    document.readyState === 'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      { once: true }
+    );
+  } else {
+    init();
+  }
+
+})();
+</script>
 </body>
 </html>
