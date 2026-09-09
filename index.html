@@ -6269,5 +6269,308 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 <!-- ============================================================
      FIN DEL BOTÓN FLOTANTE DE MÓDULOS
      ============================================================ -->
+   <!-- =========================================================
+     RoXThal Art Design — CAPA DE REPARACIÓN VISUAL
+     No reemplaza módulos, Supabase ni funciones existentes.
+     Pegar inmediatamente antes de </body>
+========================================================= -->
+<style id="rxRepairLayer">
+
+/* =========================================================
+   1. CONTENEDOR PRINCIPAL DE MÓDULOS
+========================================================= */
+
+#moduleGrid{
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+  box-sizing:border-box;
+}
+
+/* =========================================================
+   2. TARJETAS DE MÓDULOS
+========================================================= */
+
+#moduleGrid .module{
+  box-sizing:border-box;
+  min-width:0;
+  overflow:hidden;
+  word-break:normal;
+  overflow-wrap:anywhere;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
+}
+
+#moduleGrid .module:hover{
+  transform:translateY(-2px);
+}
+
+#moduleGrid .module:active{
+  transform:translateY(0);
+}
+
+/* Evita que contenido interno rompa el ancho */
+#moduleGrid .module *,
+#moduleGrid .module img{
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+#moduleGrid .module img{
+  height:auto;
+  object-fit:cover;
+}
+
+/* =========================================================
+   3. ORGANIZACIÓN VISUAL
+========================================================= */
+
+#moduleGrid.rx-repaired-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+/* =========================================================
+   4. MÓVIL
+========================================================= */
+
+@media(max-width:900px){
+
+  #moduleGrid.rx-repaired-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+
+}
+
+@media(max-width:560px){
+
+  #moduleGrid.rx-repaired-grid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  #moduleGrid .module{
+    width:100%;
+    min-height:0;
+  }
+
+}
+
+/* =========================================================
+   5. EVITAR DESBORDAMIENTO HORIZONTAL
+========================================================= */
+
+html,
+body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+#home,
+.view,
+main,
+section{
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+/* =========================================================
+   6. BOTÓN MÓDULOS
+   No cambia su funcionamiento; solamente asegura
+   que permanezca por encima del contenido.
+========================================================= */
+
+#rxModulesLauncher{
+  z-index:9998 !important;
+}
+
+#rxModulesOverlay{
+  z-index:9999 !important;
+}
+
+/* =========================================================
+   7. HERRAMIENTAS
+   Se conserva el sistema existente.
+========================================================= */
+
+#rxToolsLauncher{
+  z-index:9997 !important;
+}
+
+#rxToolsOverlay{
+  z-index:9999 !important;
+}
+
+/* =========================================================
+   8. ELEMENTOS INTERACTIVOS
+========================================================= */
+
+#moduleGrid .module,
+#rxModulesList button,
+#rxModulesList a{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* =========================================================
+   9. ACCESIBILIDAD VISUAL
+========================================================= */
+
+#moduleGrid .module:focus-visible,
+#rxModulesList button:focus-visible,
+#rxModulesList a:focus-visible{
+  outline:2px solid currentColor;
+  outline-offset:3px;
+}
+
+/* =========================================================
+   10. BLOQUEO DE SCROLL CUANDO HAY OVERLAY
+========================================================= */
+
+body.rx-overlay-open{
+  overflow:hidden !important;
+}
+
+</style>
+
+<script id="rxRepairLayerScript">
+(function(){
+
+  "use strict";
+
+  /* =======================================================
+     RoXThal Repair Layer
+     Solo organiza y protege la interfaz existente.
+     No redefine showView().
+     No redefine moduleDefinitions.
+     No crea cliente Supabase.
+  ======================================================= */
+
+  function rxApplyRepair(){
+
+    const grid = document.getElementById("moduleGrid");
+
+    if(!grid) return;
+
+    /* Marcar la rejilla ya existente */
+    grid.classList.add("rx-repaired-grid");
+
+    /* -------------------------------------------------------
+       Normalización segura de módulos existentes
+    ------------------------------------------------------- */
+
+    const modules = grid.querySelectorAll(
+      ".module[data-go], a.module[data-go], button.module[data-go]"
+    );
+
+    modules.forEach(function(module){
+
+      module.setAttribute("data-rx-repaired","true");
+
+      /* Evitar navegación accidental por enlaces vacíos */
+      const go = module.getAttribute("data-go");
+
+      if(go){
+        module.dataset.rxDestination = go;
+      }
+
+      /* Mejor comportamiento táctil */
+      module.style.webkitTapHighlightColor = "transparent";
+
+    });
+
+  }
+
+  /* =======================================================
+     Esperar al DOM
+  ======================================================= */
+
+  if(document.readyState === "loading"){
+    document.addEventListener(
+      "DOMContentLoaded",
+      rxApplyRepair,
+      {once:true}
+    );
+  }else{
+    rxApplyRepair();
+  }
+
+  /* =======================================================
+     Si el sistema original reconstruye moduleGrid,
+     volvemos a aplicar únicamente la capa visual.
+  ======================================================= */
+
+  let rxTimer = null;
+
+  const observer = new MutationObserver(function(){
+
+    clearTimeout(rxTimer);
+
+    rxTimer = setTimeout(function(){
+      rxApplyRepair();
+    },80);
+
+  });
+
+  const grid = document.getElementById("moduleGrid");
+
+  if(grid){
+
+    observer.observe(grid,{
+      childList:true,
+      subtree:true
+    });
+
+  }
+
+  /* =======================================================
+     Sincronización con los overlays existentes
+  ======================================================= */
+
+  function updateOverlayState(){
+
+    const modulesOverlay =
+      document.getElementById("rxModulesOverlay");
+
+    const toolsOverlay =
+      document.getElementById("rxToolsOverlay");
+
+    const modulesOpen =
+      modulesOverlay &&
+      getComputedStyle(modulesOverlay).display !== "none";
+
+    const toolsOpen =
+      toolsOverlay &&
+      getComputedStyle(toolsOverlay).display !== "none";
+
+    document.body.classList.toggle(
+      "rx-overlay-open",
+      !!(modulesOpen || toolsOpen)
+    );
+
+  }
+
+  const bodyObserver = new MutationObserver(
+    updateOverlayState
+  );
+
+  bodyObserver.observe(document.body,{
+    attributes:true,
+    attributeFilter:["class","style"],
+    subtree:true
+  });
+
+  updateOverlayState();
+
+})();
+</script>
+<!-- =========================================================
+     FIN CAPA DE REPARACIÓN
+========================================================= -->
 </body>
 </html>
