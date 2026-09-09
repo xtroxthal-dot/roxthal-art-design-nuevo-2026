@@ -16786,5 +16786,1646 @@ try{
 <!-- ============================================================
      FIN REPARADOR QUIRÚRGICO V5
      ============================================================ -->
+     <!-- ============================================================
+     RoXThal Art Design — ATELIER / PHASE 1
+     Bloque independiente — pegar antes de </body>
+     No reemplaza ni modifica módulos existentes.
+     ============================================================ -->
+<script>
+(() => {
+  "use strict";
+
+  /* Evita inicializaciones duplicadas */
+  if (window.__ROXTHAL_ATELIER_PHASE1__) return;
+  window.__ROXTHAL_ATELIER_PHASE1__ = true;
+
+  const APP = {
+    name: "RoXThal Atelier",
+    tables: {
+      artists: "artists",
+      flash: "flash_designs",
+      projects: "project_requests",
+      aftercare: "aftercare_articles"
+    }
+  };
+
+  /* ------------------------------------------------------------
+     Utilidades
+     ------------------------------------------------------------ */
+  const esc = (value) => {
+    if (value === null || value === undefined) return "";
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
+  const text = (value, fallback = "") =>
+    value === null || value === undefined || value === ""
+      ? fallback
+      : String(value);
+
+  const money = (value, currency = "ARS") => {
+    if (value === null || value === undefined || value === "") return "";
+    const n = Number(value);
+    if (!Number.isFinite(n)) return esc(value);
+
+    try {
+      return new Intl.NumberFormat("es-AR", {
+        maximumFractionDigits: 0
+      }).format(n) + (currency ? " " + currency : "");
+    } catch {
+      return String(n) + (currency ? " " + currency : "");
+    }
+  };
+
+  const isValidDate = (value) => {
+    if (!value) return true;
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+  };
+
+  /* ------------------------------------------------------------
+     Supabase
+     Utiliza primero el cliente existente de index.html.
+     ------------------------------------------------------------ */
+  function getSupabaseClient() {
+    try {
+      if (typeof db !== "undefined" && db) return db;
+    } catch (_) {}
+
+    try {
+      if (window.db) return window.db;
+    } catch (_) {}
+
+    return null;
+  }
+
+  const dbClient = getSupabaseClient();
+
+  /* ------------------------------------------------------------
+     CSS — misma estética RoXThal
+     ------------------------------------------------------------ */
+  const style = document.createElement("style");
+  style.id = "roxthal-atelier-phase1-style";
+
+  style.textContent = `
+    #rxAtelierLauncher,
+    #rxAtelierOverlay,
+    #rxAtelierOverlay * {
+      box-sizing: border-box;
+    }
+
+    #rxAtelierLauncher {
+      position: fixed;
+      right: 18px;
+      bottom: 88px;
+      z-index: 99990;
+      border: 1px solid rgba(255,193,7,.55);
+      background:
+        linear-gradient(145deg, rgba(28,28,28,.98), rgba(10,10,10,.98));
+      color: #ffd54a;
+      min-width: 58px;
+      height: 58px;
+      padding: 0 17px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow:
+        0 12px 35px rgba(0,0,0,.55),
+        0 0 25px rgba(255,193,7,.08);
+      font: 800 13px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      letter-spacing: .7px;
+      transition: .2s ease;
+    }
+
+    #rxAtelierLauncher:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,193,7,.9);
+      box-shadow:
+        0 15px 40px rgba(0,0,0,.65),
+        0 0 30px rgba(255,193,7,.14);
+    }
+
+    #rxAtelierLauncher .rx-launch-icon {
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    #rxAtelierOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99991;
+      display: none;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 18px;
+    }
+
+    #rxAtelierOverlay.rx-open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rx-atelier-window {
+      width: min(1120px, 100%);
+      max-height: min(900px, calc(100vh - 36px));
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at top right, rgba(255,193,7,.07), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(190,0,0,.08), transparent 35%),
+        #0b0b0b;
+      border: 1px solid rgba(255,193,7,.22);
+      border-radius: 24px;
+      box-shadow:
+        0 30px 90px rgba(0,0,0,.75),
+        0 0 60px rgba(255,193,7,.05);
+      color: #f3f3f3;
+    }
+
+    .rx-atelier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(10,10,10,.86);
+    }
+
+    .rx-atelier-brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .rx-atelier-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg,#171717,#090909);
+      border: 1px solid rgba(255,193,7,.32);
+      color: #ffd54a;
+      font-size: 22px;
+      box-shadow: inset 0 0 20px rgba(255,193,7,.04);
+      flex: 0 0 auto;
+    }
+
+    .rx-atelier-brand h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+      letter-spacing: .3px;
+    }
+
+    .rx-atelier-brand p {
+      margin: 4px 0 0;
+      color: #a9a9a9;
+      font-size: 12px;
+    }
+
+    .rx-atelier-close {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: #151515;
+      color: #ddd;
+      cursor: pointer;
+      font-size: 20px;
+      flex: 0 0 auto;
+    }
+
+    .rx-atelier-close:hover {
+      border-color: rgba(255,193,7,.4);
+      color: #ffd54a;
+    }
+
+    .rx-atelier-tabs {
+      display: flex;
+      gap: 7px;
+      padding: 12px 15px;
+      overflow-x: auto;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      scrollbar-width: thin;
+    }
+
+    .rx-atelier-tab {
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #111;
+      color: #aaa;
+      border-radius: 11px;
+      padding: 10px 13px;
+      cursor: pointer;
+      font: 700 12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      transition: .18s ease;
+    }
+
+    .rx-atelier-tab:hover {
+      color: #fff;
+      border-color: rgba(255,193,7,.25);
+    }
+
+    .rx-atelier-tab.rx-active {
+      color: #111;
+      background: linear-gradient(135deg,#ffd54a,#ffb300);
+      border-color: #ffd54a;
+      box-shadow: 0 5px 20px rgba(255,193,7,.1);
+    }
+
+    .rx-atelier-content {
+      overflow: auto;
+      padding: 22px;
+      min-height: 280px;
+    }
+
+    .rx-hero {
+      padding: 28px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,193,7,.14);
+      background:
+        linear-gradient(135deg,rgba(255,193,7,.08),transparent 45%),
+        linear-gradient(145deg,#151515,#0d0d0d);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rx-hero::after {
+      content: "✦";
+      position: absolute;
+      right: 25px;
+      top: 12px;
+      font-size: 100px;
+      color: rgba(255,193,7,.035);
+      pointer-events: none;
+    }
+
+    .rx-kicker {
+      color: #ffd54a;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .rx-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(27px,5vw,46px);
+      line-height: 1.02;
+    }
+
+    .rx-hero h1 span {
+      color: #ffd54a;
+    }
+
+    .rx-hero p {
+      max-width: 760px;
+      color: #bcbcbc;
+      line-height: 1.65;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .rx-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .rx-feature {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 18px;
+      background: #111;
+    }
+
+    .rx-feature strong {
+      display: block;
+      color: #eee;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .rx-feature span {
+      color: #929292;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .rx-grid {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .rx-card {
+      background:
+        linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.008)),
+        #111;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: .2s ease;
+    }
+
+    .rx-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,193,7,.24);
+    }
+
+    .rx-card-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: #181818;
+    }
+
+    .rx-card-body {
+      padding: 15px;
+    }
+
+    .rx-card h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+      color: #f3f3f3;
+    }
+
+    .rx-card p {
+      color: #9e9e9e;
+      font-size: 12px;
+      line-height: 1.55;
+      margin: 0 0 10px;
+    }
+
+    .rx-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .rx-tag {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 5px 8px;
+      background: rgba(255,193,7,.07);
+      border: 1px solid rgba(255,193,7,.12);
+      color: #e8c74d;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .rx-flash-price {
+      margin-top: 12px;
+      font-size: 17px;
+      font-weight: 900;
+      color: #ffd54a;
+    }
+
+    .rx-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 999px;
+      padding: 5px 8px;
+      background: rgba(50,205,50,.08);
+      color: #8fe28f;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .rx-status.rx-unavailable {
+      background: rgba(255,60,60,.08);
+      color: #ff9999;
+    }
+
+    .rx-empty {
+      padding: 38px 20px;
+      text-align: center;
+      border: 1px dashed rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: #101010;
+    }
+
+    .rx-empty-icon {
+      font-size: 35px;
+      margin-bottom: 10px;
+      opacity: .75;
+    }
+
+    .rx-empty h3 {
+      margin: 0 0 6px;
+      color: #eee;
+    }
+
+    .rx-empty p {
+      margin: 0 auto;
+      max-width: 530px;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .rx-form {
+      max-width: 850px;
+      margin: auto;
+    }
+
+    .rx-form-intro {
+      margin-bottom: 18px;
+    }
+
+    .rx-form-intro h2 {
+      margin: 0 0 6px;
+      font-size: 23px;
+    }
+
+    .rx-form-intro p {
+      margin: 0;
+      color: #999;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .rx-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .rx-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .rx-field-full {
+      grid-column: 1 / -1;
+    }
+
+    .rx-field label {
+      color: #c8c8c8;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .rx-field input,
+    .rx-field select,
+    .rx-field textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      background: #111;
+      color: #eee;
+      outline: none;
+      padding: 12px 13px;
+      font: 13px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      transition: .18s ease;
+    }
+
+    .rx-field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .rx-field input:focus,
+    .rx-field select:focus,
+    .rx-field textarea:focus {
+      border-color: rgba(255,193,7,.55);
+      box-shadow: 0 0 0 3px rgba(255,193,7,.06);
+    }
+
+    .rx-field small {
+      color: #737373;
+      font-size: 10px;
+    }
+
+    .rx-form-actions {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .rx-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 17px;
+      cursor: pointer;
+      font: 900 12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      transition: .18s ease;
+    }
+
+    .rx-btn-primary {
+      color: #111;
+      background: linear-gradient(135deg,#ffd54a,#ffb300);
+    }
+
+    .rx-btn-primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .rx-btn-secondary {
+      color: #ddd;
+      background: #171717;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .rx-message {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .rx-message.show {
+      display: block;
+    }
+
+    .rx-message.success {
+      color: #a7e6a7;
+      background: rgba(60,180,60,.08);
+      border: 1px solid rgba(60,180,60,.16);
+    }
+
+    .rx-message.error {
+      color: #ffb0b0;
+      background: rgba(220,40,40,.08);
+      border: 1px solid rgba(220,40,40,.15);
+    }
+
+    .rx-article {
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 17px;
+      background: #111;
+      margin-bottom: 11px;
+    }
+
+    .rx-article h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+    }
+
+    .rx-article .summary {
+      color: #aaa;
+      font-size: 12px;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .rx-article .body {
+      color: #c5c5c5;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .rx-loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 130px;
+      color: #888;
+      font-size: 12px;
+    }
+
+    .rx-spinner {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.12);
+      border-top-color: #ffd54a;
+      animation: rxSpin .7s linear infinite;
+    }
+
+    @keyframes rxSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .rx-artist-meta {
+      color: #ffd54a;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    .rx-link {
+      color: #ffd54a;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .rx-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 800px) {
+      #rxAtelierOverlay {
+        padding: 8px;
+      }
+
+      .rx-atelier-window {
+        max-height: calc(100vh - 16px);
+        border-radius: 19px;
+      }
+
+      .rx-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+      }
+
+      .rx-feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rx-content,
+      .rx-atelier-content {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      #rxAtelierLauncher {
+        right: 12px;
+        bottom: 76px;
+        width: 52px;
+        min-width: 52px;
+        padding: 0;
+        border-radius: 16px;
+      }
+
+      #rxAtelierLauncher .rx-launch-text {
+        display: none;
+      }
+
+      .rx-atelier-header {
+        padding: 14px;
+      }
+
+      .rx-atelier-content {
+        padding: 13px;
+      }
+
+      .rx-grid,
+      .rx-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rx-field-full {
+        grid-column: auto;
+      }
+
+      .rx-hero {
+        padding: 21px;
+      }
+
+      .rx-hero h1 {
+        font-size: 29px;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  /* ------------------------------------------------------------
+     HTML base
+     ------------------------------------------------------------ */
+  const launcher = document.createElement("button");
+  launcher.id = "rxAtelierLauncher";
+  launcher.type = "button";
+  launcher.setAttribute("aria-label", "Abrir RoXThal Atelier");
+  launcher.innerHTML = `
+    <span class="rx-launch-icon">✦</span>
+    <span class="rx-launch-text">ATELIER</span>
+  `;
+
+  const overlay = document.createElement("div");
+  overlay.id = "rxAtelierOverlay";
+  overlay.innerHTML = `
+    <div class="rx-atelier-window" role="dialog" aria-modal="true"
+         aria-label="RoXThal Atelier">
+
+      <div class="rx-atelier-header">
+        <div class="rx-atelier-brand">
+          <div class="rx-atelier-logo">✦</div>
+          <div>
+            <h2>RoXThal Atelier</h2>
+            <p>Arte · Diseño · Tatuaje · Formación</p>
+          </div>
+        </div>
+
+        <button type="button" class="rx-atelier-close"
+                id="rxAtelierClose" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="rx-atelier-tabs" role="tablist">
+        <button type="button" class="rx-atelier-tab rx-active"
+                data-rx-tab="home">Atelier</button>
+        <button type="button" class="rx-atelier-tab"
+                data-rx-tab="artists">Artistas</button>
+        <button type="button" class="rx-atelier-tab"
+                data-rx-tab="flash">Flash</button>
+        <button type="button" class="rx-atelier-tab"
+                data-rx-tab="project">Mi proyecto</button>
+        <button type="button" class="rx-atelier-tab"
+                data-rx-tab="aftercare">Aftercare</button>
+      </div>
+
+      <div class="rx-atelier-content" id="rxAtelierContent"></div>
+    </div>
+  `;
+
+  document.body.appendChild(launcher);
+  document.body.appendChild(overlay);
+
+  const content = overlay.querySelector("#rxAtelierContent");
+
+  let artistsCache = [];
+  let activeTab = "home";
+
+  /* ------------------------------------------------------------
+     Render principal
+     ------------------------------------------------------------ */
+  function renderHome() {
+    content.innerHTML = `
+      <section class="rx-hero">
+        <div class="rx-kicker">RoXThal Art Design</div>
+
+        <h1>
+          Donde una idea se convierte en
+          <span>obra.</span>
+        </h1>
+
+        <p>
+          Bienvenido al Atelier RoXThal. Un espacio pensado para conocer
+          nuestros artistas, descubrir diseños disponibles, preparar tu
+          proyecto y encontrar información útil antes y después de tu
+          sesión.
+        </p>
+
+        <div class="rx-feature-grid">
+          <div class="rx-feature">
+            <strong>✦ Artistas</strong>
+            <span>
+              Conoce el perfil, especialidad y estilos de cada artista
+              del Atelier.
+            </span>
+          </div>
+
+          <div class="rx-feature">
+            <strong>⚡ Flash RoXThal</strong>
+            <span>
+              Descubre diseños disponibles y encuentra inspiración para
+              tu próximo proyecto.
+            </span>
+          </div>
+
+          <div class="rx-feature">
+            <strong>✎ Mi proyecto</strong>
+            <span>
+              Cuéntanos tu idea y deja la información necesaria para
+              comenzar a darle forma.
+            </span>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  /* ------------------------------------------------------------
+     ARTISTAS
+     ------------------------------------------------------------ */
+  async function loadArtists() {
+    content.innerHTML = `
+      <div class="rx-loading">
+        <span class="rx-spinner"></span>
+        Cargando artistas...
+      </div>
+    `;
+
+    if (!dbClient) {
+      content.innerHTML = `
+        <div class="rx-empty">
+          <div class="rx-empty-icon">⚠</div>
+          <h3>Conexión no disponible</h3>
+          <p>
+            No se encontró el cliente de Supabase. La aplicación principal
+            no ha sido modificada.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const { data, error } = await dbClient
+        .from(APP.tables.artists)
+        .select(`
+          id,
+          name,
+          slug,
+          bio,
+          specialty,
+          styles,
+          image_url,
+          instagram_url,
+          active,
+          sort_order
+        `)
+        .eq("active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+
+      artistsCache = Array.isArray(data) ? data : [];
+
+      if (!artistsCache.length) {
+        content.innerHTML = `
+          <div class="rx-empty">
+            <div class="rx-empty-icon">✦</div>
+            <h3>El Atelier está creciendo</h3>
+            <p>
+              Próximamente encontrarás aquí los perfiles de los artistas
+              de RoXThal.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      content.innerHTML = `
+        <div class="rx-grid">
+          ${artistsCache.map(artist => {
+            const image = text(artist.image_url, "");
+            const instagram = text(artist.instagram_url, "");
+
+            return `
+              <article class="rx-card">
+                ${
+                  image
+                    ? `<img class="rx-card-image"
+                            src="${esc(image)}"
+                            alt="${esc(text(artist.name,"Artista"))}"
+                            loading="lazy"
+                            onerror="this.style.display='none'">`
+                    : `<div class="rx-card-image"
+                            style="display:grid;place-items:center;color:#ffd54a;font-size:44px">
+                            ✦
+                       </div>`
+                }
+
+                <div class="rx-card-body">
+                  <h3>${esc(text(artist.name,"Artista RoXThal"))}</h3>
+
+                  ${
+                    artist.specialty
+                      ? `<div class="rx-artist-meta">${esc(artist.specialty)}</div>`
+                      : ""
+                  }
+
+                  ${
+                    artist.bio
+                      ? `<p>${esc(artist.bio)}</p>`
+                      : ""
+                  }
+
+                  ${
+                    artist.styles
+                      ? `<div class="rx-tags">
+                          <span class="rx-tag">${esc(artist.styles)}</span>
+                         </div>`
+                      : ""
+                  }
+
+                  ${
+                    instagram
+                      ? `<div style="margin-top:12px">
+                          <a class="rx-link"
+                             href="${esc(instagram)}"
+                             target="_blank"
+                             rel="noopener noreferrer">
+                            Instagram ↗
+                          </a>
+                         </div>`
+                      : ""
+                  }
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+    } catch (error) {
+      console.error("[RoXThal Atelier] artists:", error);
+
+      content.innerHTML = `
+        <div class="rx-empty">
+          <div class="rx-empty-icon">✦</div>
+          <h3>Artistas RoXThal</h3>
+          <p>
+            En este momento no se pudieron cargar los perfiles.
+            Puedes volver a intentarlo más tarde.
+          </p>
+        </div>
+      `;
+    }
+  }
+
+  /* ------------------------------------------------------------
+     FLASH
+     ------------------------------------------------------------ */
+  async function loadFlash() {
+    content.innerHTML = `
+      <div class="rx-loading">
+        <span class="rx-spinner"></span>
+        Cargando Flash RoXThal...
+      </div>
+    `;
+
+    if (!dbClient) {
+      renderUnavailable("No se encontró la conexión con Supabase.");
+      return;
+    }
+
+    try {
+      const { data, error } = await dbClient
+        .from(APP.tables.flash)
+        .select(`
+          id,
+          title,
+          description,
+          image_url,
+          artist_id,
+          style,
+          body_area,
+          size_text,
+          price,
+          currency,
+          status,
+          active
+        `)
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const flash = Array.isArray(data) ? data : [];
+
+      if (!flash.length) {
+        content.innerHTML = `
+          <div class="rx-empty">
+            <div class="rx-empty-icon">⚡</div>
+            <h3>Flash RoXThal</h3>
+            <p>
+              Estamos preparando nuevos diseños exclusivos.
+              Cuando haya Flash disponible aparecerá aquí automáticamente.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      const artistMap = {};
+      artistsCache.forEach(a => {
+        artistMap[a.id] = a.name;
+      });
+
+      content.innerHTML = `
+        <div class="rx-grid">
+          ${flash.map(item => {
+            const available =
+              String(item.status || "").toLowerCase() === "available" ||
+              String(item.status || "").toLowerCase() === "disponible" ||
+              String(item.status || "").toLowerCase() === "available_now";
+
+            const artistName = artistMap[item.artist_id] || "";
+
+            return `
+              <article class="rx-card">
+                ${
+                  item.image_url
+                    ? `<img class="rx-card-image"
+                            src="${esc(item.image_url)}"
+                            alt="${esc(text(item.title,"Flash RoXThal"))}"
+                            loading="lazy"
+                            onerror="this.style.display='none'">`
+                    : `<div class="rx-card-image"
+                            style="display:grid;place-items:center;color:#ffd54a;font-size:42px">
+                            ⚡
+                       </div>`
+                }
+
+                <div class="rx-card-body">
+                  <div style="margin-bottom:9px">
+                    <span class="rx-status ${available ? "" : "rx-unavailable"}">
+                      ${available ? "● Disponible" : "● " + esc(text(item.status,"Consultar"))}
+                    </span>
+                  </div>
+
+                  <h3>${esc(text(item.title,"Flash RoXThal"))}</h3>
+
+                  ${
+                    item.description
+                      ? `<p>${esc(item.description)}</p>`
+                      : ""
+                  }
+
+                  <div class="rx-tags">
+                    ${
+                      item.style
+                        ? `<span class="rx-tag">${esc(item.style)}</span>`
+                        : ""
+                    }
+
+                    ${
+                      item.body_area
+                        ? `<span class="rx-tag">${esc(item.body_area)}</span>`
+                        : ""
+                    }
+
+                    ${
+                      item.size_text
+                        ? `<span class="rx-tag">${esc(item.size_text)}</span>`
+                        : ""
+                    }
+
+                    ${
+                      artistName
+                        ? `<span class="rx-tag">${esc(artistName)}</span>`
+                        : ""
+                    }
+                  </div>
+
+                  ${
+                    item.price !== null && item.price !== undefined
+                      ? `<div class="rx-flash-price">
+                           ${money(item.price, text(item.currency,"ARS"))}
+                         </div>`
+                      : ""
+                  }
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+    } catch (error) {
+      console.error("[RoXThal Atelier] flash:", error);
+
+      renderUnavailable(
+        "No se pudieron cargar los diseños Flash en este momento."
+      );
+    }
+  }
+
+  /* ------------------------------------------------------------
+     MI PROYECTO
+     ------------------------------------------------------------ */
+  async function loadProjectForm() {
+    content.innerHTML = `
+      <div class="rx-form">
+        <div class="rx-form-intro">
+          <div class="rx-kicker">Comienza aquí</div>
+          <h2>Cuéntanos tu proyecto</h2>
+          <p>
+            No necesitas tener todo decidido. Cuéntanos la idea,
+            el estilo que buscas y la zona del cuerpo. El Atelier
+            podrá utilizar esta información para continuar contigo.
+          </p>
+        </div>
+
+        <form id="rxProjectForm" autocomplete="on">
+
+          <div class="rx-form-grid">
+
+            <div class="rx-field">
+              <label for="rxProjectName">Nombre *</label>
+              <input
+                id="rxProjectName"
+                name="name"
+                type="text"
+                maxlength="120"
+                required
+                placeholder="Tu nombre">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectPhone">Teléfono *</label>
+              <input
+                id="rxProjectPhone"
+                name="phone"
+                type="tel"
+                maxlength="40"
+                required
+                placeholder="+54 ...">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectEmail">Email</label>
+              <input
+                id="rxProjectEmail"
+                name="email"
+                type="email"
+                maxlength="180"
+                placeholder="tu@email.com">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectArtist">Artista</label>
+              <select id="rxProjectArtist" name="artist_id">
+                <option value="">Aún no lo sé</option>
+                ${
+                  artistsCache.map(a =>
+                    `<option value="${esc(a.id)}">
+                      ${esc(a.name)}
+                    </option>`
+                  ).join("")
+                }
+              </select>
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectStyle">Estilo</label>
+              <input
+                id="rxProjectStyle"
+                name="style"
+                type="text"
+                maxlength="150"
+                placeholder="Blackwork, realismo, fine line...">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectArea">Zona del cuerpo</label>
+              <input
+                id="rxProjectArea"
+                name="body_area"
+                type="text"
+                maxlength="150"
+                placeholder="Brazo, espalda, pierna...">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectSize">Tamaño aproximado</label>
+              <input
+                id="rxProjectSize"
+                name="size_text"
+                type="text"
+                maxlength="100"
+                placeholder="10 cm, pequeño, grande...">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectBudget">Presupuesto aproximado</label>
+              <input
+                id="rxProjectBudget"
+                name="budget_text"
+                type="text"
+                maxlength="100"
+                placeholder="Opcional">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxProjectDate">Fecha preferida</label>
+              <input
+                id="rxProjectDate"
+                name="preferred_date"
+                type="date">
+            </div>
+
+            <div class="rx-field rx-field-full">
+              <label for="rxProjectDescription">Cuéntanos tu idea *</label>
+              <textarea
+                id="rxProjectDescription"
+                name="description"
+                maxlength="5000"
+                required
+                placeholder="Describe tu idea, referencias, significado, detalles que te gustaría incluir..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="rx-form-actions">
+            <button
+              class="rx-btn rx-btn-primary"
+              id="rxProjectSubmit"
+              type="submit">
+              Enviar proyecto ✦
+            </button>
+
+            <button
+              class="rx-btn rx-btn-secondary"
+              type="button"
+              id="rxProjectClear">
+              Limpiar
+            </button>
+          </div>
+
+          <div
+            id="rxProjectMessage"
+            class="rx-message"
+            role="status"
+            aria-live="polite">
+          </div>
+
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById("rxProjectForm");
+    const clearBtn = document.getElementById("rxProjectClear");
+    const message = document.getElementById("rxProjectMessage");
+    const submit = document.getElementById("rxProjectSubmit");
+
+    const showMessage = (msg, type) => {
+      message.textContent = msg;
+      message.className = "rx-message show " + type;
+    };
+
+    clearBtn.addEventListener("click", () => {
+      form.reset();
+      message.className = "rx-message";
+      message.textContent = "";
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!dbClient) {
+        showMessage(
+          "No se pudo conectar con el servicio. La aplicación principal sigue funcionando.",
+          "error"
+        );
+        return;
+      }
+
+      const fd = new FormData(form);
+
+      const name = String(fd.get("name") || "").trim();
+      const phone = String(fd.get("phone") || "").trim();
+      const email = String(fd.get("email") || "").trim();
+      const artistId = String(fd.get("artist_id") || "").trim();
+      const styleValue = String(fd.get("style") || "").trim();
+      const bodyArea = String(fd.get("body_area") || "").trim();
+      const sizeText = String(fd.get("size_text") || "").trim();
+      const budgetText = String(fd.get("budget_text") || "").trim();
+      const preferredDate = String(fd.get("preferred_date") || "").trim();
+      const description = String(fd.get("description") || "").trim();
+
+      if (!name || !phone || !description) {
+        showMessage(
+          "Completa nombre, teléfono y descripción del proyecto.",
+          "error"
+        );
+        return;
+      }
+
+      if (preferredDate && !isValidDate(preferredDate)) {
+        showMessage("La fecha indicada no es válida.", "error");
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = "Enviando...";
+
+      try {
+        /*
+         * Solo se insertan columnas públicas previstas para esta tabla.
+         * No se utiliza .select() para no intentar leer la solicitud
+         * después de crearla.
+         */
+        const payload = {
+          name,
+          phone,
+          description,
+          status: "new"
+        };
+
+        if (email) payload.email = email;
+        if (artistId) payload.artist_id = artistId;
+        if (styleValue) payload.style = styleValue;
+        if (bodyArea) payload.body_area = bodyArea;
+        if (sizeText) payload.size_text = sizeText;
+        if (budgetText) payload.budget_text = budgetText;
+        if (preferredDate) payload.preferred_date = preferredDate;
+
+        const { error } = await dbClient
+          .from(APP.tables.projects)
+          .insert(payload);
+
+        if (error) throw error;
+
+        form.reset();
+
+        showMessage(
+          "Tu proyecto fue enviado correctamente. El Atelier ya tiene la información para continuar contigo.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error("[RoXThal Atelier] project:", error);
+
+        showMessage(
+          "No pudimos enviar el proyecto en este momento. Inténtalo nuevamente.",
+          "error"
+        );
+
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "Enviar proyecto ✦";
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------
+     AFTERCARE
+     ------------------------------------------------------------ */
+  async function loadAftercare() {
+    content.innerHTML = `
+      <div class="rx-loading">
+        <span class="rx-spinner"></span>
+        Cargando Aftercare...
+      </div>
+    `;
+
+    if (!dbClient) {
+      renderAftercareFallback();
+      return;
+    }
+
+    try {
+      const { data, error } = await dbClient
+        .from(APP.tables.aftercare)
+        .select(`
+          id,
+          title,
+          slug,
+          summary,
+          body,
+          sort_order,
+          active
+        `)
+        .eq("active", true)
+        .order("sort_order", { ascending: true })
+        .order("title", { ascending: true });
+
+      if (error) throw error;
+
+      const articles = Array.isArray(data) ? data : [];
+
+      if (!articles.length) {
+        renderAftercareFallback();
+        return;
+      }
+
+      content.innerHTML = `
+        <div style="max-width:900px;margin:auto">
+          <div class="rx-form-intro">
+            <div class="rx-kicker">Cuidados</div>
+            <h2>Aftercare RoXThal</h2>
+            <p>
+              Información general para acompañarte después de tu sesión.
+              Ante cualquier duda, prioriza siempre las indicaciones
+              específicas de tu artista.
+            </p>
+          </div>
+
+          ${articles.map(article => `
+            <article class="rx-article">
+              <h3>${esc(text(article.title,"Cuidados"))}</h3>
+
+              ${
+                article.summary
+                  ? `<div class="summary">${esc(article.summary)}</div>`
+                  : ""
+              }
+
+              ${
+                article.body
+                  ? `<div class="body">${esc(article.body)}</div>`
+                  : ""
+              }
+            </article>
+          `).join("")}
+        </div>
+      `;
+
+    } catch (error) {
+      console.error("[RoXThal Atelier] aftercare:", error);
+      renderAftercareFallback();
+    }
+  }
+
+  function renderAftercareFallback() {
+    content.innerHTML = `
+      <div style="max-width:900px;margin:auto">
+
+        <div class="rx-form-intro">
+          <div class="rx-kicker">Cuidados</div>
+          <h2>Aftercare RoXThal</h2>
+          <p>
+            Una guía general para acompañarte durante los primeros días.
+            Las instrucciones de tu artista tienen prioridad.
+          </p>
+        </div>
+
+        <article class="rx-article">
+          <h3>Después de la sesión</h3>
+          <div class="body">
+            Mantén la zona limpia y sigue exactamente las indicaciones
+            proporcionadas por tu artista respecto de la protección inicial.
+          </div>
+        </article>
+
+        <article class="rx-article">
+          <h3>Limpieza</h3>
+          <div class="body">
+            Lava suavemente la zona con las indicaciones y productos
+            recomendados por tu artista. Evita frotar, rascar o manipular
+            innecesariamente el tatuaje.
+          </div>
+        </article>
+
+        <article class="rx-article">
+          <h3>Durante la cicatrización</h3>
+          <div class="body">
+            Evita arrancar piel o costras y protege la zona de fricción
+            innecesaria. No expongas el tatuaje a situaciones que tu artista
+            haya indicado evitar durante la cicatrización.
+          </div>
+        </article>
+
+        <article class="rx-article">
+          <h3>Consulta</h3>
+          <div class="body">
+            Si observas algo que te preocupa, consulta primero con tu artista
+            y, si corresponde, con un profesional sanitario.
+          </div>
+        </article>
+
+      </div>
+    `;
+  }
+
+  /* ------------------------------------------------------------
+     Helpers
+     ------------------------------------------------------------ */
+  function renderUnavailable(message) {
+    content.innerHTML = `
+      <div class="rx-empty">
+        <div class="rx-empty-icon">✦</div>
+        <h3>RoXThal Atelier</h3>
+        <p>${esc(message)}</p>
+      </div>
+    `;
+  }
+
+  async function openTab(tab) {
+    activeTab = tab;
+
+    overlay.querySelectorAll(".rx-atelier-tab").forEach(button => {
+      button.classList.toggle(
+        "rx-active",
+        button.dataset.rxTab === tab
+      );
+    });
+
+    switch (tab) {
+      case "artists":
+        await loadArtists();
+        break;
+
+      case "flash":
+        /*
+         * Cargamos artistas primero para poder mostrar el nombre
+         * del artista asociado a cada Flash.
+         */
+        if (!artistsCache.length) {
+          try {
+            if (dbClient) {
+              const { data } = await dbClient
+                .from(APP.tables.artists)
+                .select("id,name")
+                .eq("active", true);
+
+              artistsCache = Array.isArray(data) ? data : [];
+            }
+          } catch (_) {}
+        }
+
+        await loadFlash();
+        break;
+
+      case "project":
+        /*
+         * Si aún no hay artistas cargados, los obtenemos para
+         * alimentar el selector.
+         */
+        if (!artistsCache.length) {
+          try {
+            if (dbClient) {
+              const { data } = await dbClient
+                .from(APP.tables.artists)
+                .select("id,name")
+                .eq("active", true)
+                .order("sort_order", { ascending: true });
+
+              artistsCache = Array.isArray(data) ? data : [];
+            }
+          } catch (_) {}
+        }
+
+        await loadProjectForm();
+        break;
+
+      case "aftercare":
+        await loadAftercare();
+        break;
+
+      default:
+        renderHome();
+    }
+  }
+
+  function openAtelier(tab = "home") {
+    overlay.classList.add("rx-open");
+    document.body.style.overflow = "hidden";
+    openTab(tab);
+  }
+
+  function closeAtelier() {
+    overlay.classList.remove("rx-open");
+    document.body.style.overflow = "";
+  }
+
+  /* ------------------------------------------------------------
+     Eventos
+     ------------------------------------------------------------ */
+  launcher.addEventListener("click", () => {
+    openAtelier("home");
+  });
+
+  overlay.querySelector("#rxAtelierClose")
+    .addEventListener("click", closeAtelier);
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeAtelier();
+    }
+  });
+
+  overlay.querySelectorAll(".rx-atelier-tab")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        openTab(button.dataset.rxTab);
+      });
+    });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" &&
+        overlay.classList.contains("rx-open")) {
+      closeAtelier();
+    }
+  });
+
+  /* ------------------------------------------------------------
+     API opcional para la aplicación existente.
+     No pisa funciones existentes.
+     ------------------------------------------------------------ */
+  window.RoXThalAtelier = {
+    open: openAtelier,
+    close: closeAtelier,
+    openTab,
+    reload: () => openTab(activeTab)
+  };
+
+  /* Render inicial sin abrir el panel */
+  renderHome();
+
+})();
+</script>                                  
 </body>
 </html>
