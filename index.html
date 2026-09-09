@@ -5478,5 +5478,796 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+   <!-- ============================================================
+     RoXThal — BOTÓN FLOTANTE DE MÓDULOS
+     Pegar TODO este bloque justo antes de </body>
+     ============================================================ -->
+
+<style>
+  /* ---------- BOTÓN FLOTANTE ---------- */
+
+  #rxModulesLauncher {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 99990;
+
+    width: 58px;
+    height: 58px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 50%;
+
+    background:
+      linear-gradient(145deg, #222, #090909);
+
+    color: #fff;
+    box-shadow:
+      0 8px 28px rgba(0,0,0,.45),
+      inset 0 1px 0 rgba(255,255,255,.12);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 26px;
+    cursor: pointer;
+    user-select: none;
+
+    transition:
+      transform .2s ease,
+      box-shadow .2s ease,
+      background .2s ease;
+  }
+
+  #rxModulesLauncher:hover {
+    transform: translateY(-50%) scale(1.06);
+    box-shadow:
+      0 10px 32px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.16);
+  }
+
+  #rxModulesLauncher:active {
+    transform: translateY(-50%) scale(.96);
+  }
+
+  #rxModulesLauncher .rx-modules-icon {
+    line-height: 1;
+  }
+
+  #rxModulesLauncher .rx-modules-label {
+    position: absolute;
+    right: 68px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    padding: 7px 11px;
+    border-radius: 8px;
+
+    background: rgba(10,10,10,.94);
+    border: 1px solid rgba(255,255,255,.12);
+
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+
+  #rxModulesLauncher:hover .rx-modules-label {
+    opacity: 1;
+  }
+
+
+  /* ---------- FONDO ---------- */
+
+  #rxModulesOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99991;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+
+  #rxModulesOverlay.rx-open {
+    display: flex;
+  }
+
+
+  /* ---------- PANEL ---------- */
+
+  #rxModulesPanel {
+    width: min(560px, 100%);
+    max-height: min(760px, 90vh);
+
+    overflow: hidden;
+
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,.13);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(31,31,31,.98),
+        rgba(8,8,8,.98)
+      );
+
+    box-shadow:
+      0 25px 80px rgba(0,0,0,.65);
+
+    color: #fff;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+
+  /* ---------- CABECERA ---------- */
+
+  #rxModulesHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid rgba(255,255,255,.09);
+  }
+
+  #rxModulesTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .2px;
+  }
+
+  #rxModulesSubtitle {
+    margin: 4px 0 0;
+    color: rgba(255,255,255,.58);
+    font-size: 12px;
+  }
+
+  #rxModulesClose {
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.06);
+    color: #fff;
+
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+  }
+
+  #rxModulesClose:hover {
+    background: rgba(255,255,255,.12);
+  }
+
+
+  /* ---------- LISTA DE MÓDULOS ---------- */
+
+  #rxModulesList {
+    padding: 16px;
+    overflow-y: auto;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .rx-module-item {
+    min-height: 64px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 12px 14px;
+
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.045);
+    color: #fff;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+      background .18s ease,
+      transform .18s ease,
+      border-color .18s ease;
+  }
+
+  .rx-module-item:hover {
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.18);
+    transform: translateY(-1px);
+  }
+
+  .rx-module-item:active {
+    transform: scale(.98);
+  }
+
+  .rx-module-icon {
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: rgba(255,255,255,.08);
+
+    font-size: 20px;
+  }
+
+  .rx-module-name {
+    min-width: 0;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+
+  /* ---------- ESTADOS ---------- */
+
+  #rxModulesEmpty {
+    grid-column: 1 / -1;
+
+    padding: 30px 15px;
+
+    text-align: center;
+
+    color: rgba(255,255,255,.55);
+    font-size: 13px;
+  }
+
+
+  /* ---------- MÓVIL ---------- */
+
+  @media (max-width: 560px) {
+
+    #rxModulesLauncher {
+      right: 12px;
+      width: 54px;
+      height: 54px;
+    }
+
+    #rxModulesLauncher .rx-modules-label {
+      display: none;
+    }
+
+    #rxModulesOverlay {
+      padding: 12px;
+    }
+
+    #rxModulesPanel {
+      width: 100%;
+      max-height: 92vh;
+      border-radius: 19px;
+    }
+
+    #rxModulesList {
+      grid-template-columns: 1fr;
+      padding: 12px;
+    }
+
+    #rxModulesTitle {
+      font-size: 18px;
+    }
+  }
+
+
+  /* ---------- EVITAR SCROLL DEL FONDO ---------- */
+
+  body.rx-modules-lock {
+    overflow: hidden !important;
+  }
+</style>
+
+
+<!-- ============================================================
+     BOTÓN
+     ============================================================ -->
+
+<button
+  id="rxModulesLauncher"
+  type="button"
+  aria-label="Abrir módulos RoXThal"
+  aria-controls="rxModulesOverlay"
+  aria-expanded="false">
+
+  <span class="rx-modules-icon">☰</span>
+  <span class="rx-modules-label">Módulos</span>
+
+</button>
+
+
+<!-- ============================================================
+     PANEL DE MÓDULOS
+     ============================================================ -->
+
+<div
+  id="rxModulesOverlay"
+  aria-hidden="true">
+
+  <div
+    id="rxModulesPanel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="rxModulesTitle">
+
+    <div id="rxModulesHeader">
+
+      <div>
+        <h2 id="rxModulesTitle">Módulos RoXThal</h2>
+        <p id="rxModulesSubtitle">
+          Acceso directo a todas las secciones
+        </p>
+      </div>
+
+      <button
+        id="rxModulesClose"
+        type="button"
+        aria-label="Cerrar módulos">
+        ×
+      </button>
+
+    </div>
+
+    <div id="rxModulesList"></div>
+
+  </div>
+</div>
+
+
+<script>
+(function () {
+
+  "use strict";
+
+  /* ==========================================================
+     ELEMENTOS
+     ========================================================== */
+
+  const launcher = document.getElementById("rxModulesLauncher");
+  const overlay  = document.getElementById("rxModulesOverlay");
+  const closeBtn = document.getElementById("rxModulesClose");
+  const list     = document.getElementById("rxModulesList");
+
+
+  /* ==========================================================
+     ICONOS
+     No se crean módulos nuevos.
+     Solo damos iconos a los módulos que ya existen.
+     ========================================================== */
+
+  const icons = {
+    home: "🏠",
+    services: "🎨",
+    gallery: "🖼️",
+    school: "🎓",
+    radio: "📻",
+    photos: "📸",
+    videos: "🎥",
+    reviews: "⭐",
+    raffle: "🎟️",
+    sorteos: "🎟️",
+    payments: "💳",
+    searchers: "🔎",
+    buscadores: "🔎",
+    location: "📍",
+    contact: "📞",
+    visits: "👁️",
+    about: "ℹ️",
+    ia: "🤖",
+    ai: "🤖",
+    admin: "⚙️",
+    students: "👨‍🎓",
+    alumnos: "👨‍🎓",
+    tools: "🧰",
+    library: "📚",
+    shop: "🛒",
+    tienda: "🛒"
+  };
+
+
+  /* ==========================================================
+     NORMALIZAR TEXTO
+     ========================================================== */
+
+  function normalize(text) {
+
+    return String(text || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
+  }
+
+
+  /* ==========================================================
+     OBTENER ICONO
+     ========================================================== */
+
+  function getIcon(element) {
+
+    const target =
+      element.getAttribute("data-go") ||
+      element.getAttribute("href") ||
+      "";
+
+    const key = normalize(target)
+      .replace(/^#/, "")
+      .replace(/[^a-z0-9_-]/g, "");
+
+    if (icons[key]) {
+      return icons[key];
+    }
+
+    const text = normalize(element.textContent);
+
+    if (text.includes("galer")) return "🖼️";
+    if (text.includes("escuela")) return "🎓";
+    if (text.includes("servicio")) return "🎨";
+    if (text.includes("radio")) return "📻";
+    if (text.includes("foto")) return "📸";
+    if (text.includes("video")) return "🎥";
+    if (text.includes("rese")) return "⭐";
+    if (text.includes("sorte")) return "🎟️";
+    if (text.includes("pago")) return "💳";
+    if (text.includes("busc")) return "🔎";
+    if (text.includes("ubic")) return "📍";
+    if (text.includes("contact")) return "📞";
+    if (text.includes("visita")) return "👁️";
+    if (text.includes("sobre")) return "ℹ️";
+    if (text.includes("ia")) return "🤖";
+    if (text.includes("admin")) return "⚙️";
+    if (text.includes("alumn")) return "👨‍🎓";
+    if (text.includes("herramient")) return "🧰";
+    if (text.includes("bibli")) return "📚";
+    if (text.includes("tienda")) return "🛒";
+
+    return "◈";
+
+  }
+
+
+  /* ==========================================================
+     OBTENER NOMBRE LIMPIO
+     ========================================================== */
+
+  function getName(element) {
+
+    const clone = element.cloneNode(true);
+
+    clone.querySelectorAll(
+      "svg, img, i, .icon, .emoji"
+    ).forEach(function (node) {
+      node.remove();
+    });
+
+    let text = clone.textContent
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return text || "Módulo";
+
+  }
+
+
+  /* ==========================================================
+     ENCONTRAR LOS MÓDULOS EXISTENTES
+     ========================================================== */
+
+  function getOriginalModules() {
+
+    const grid = document.getElementById("moduleGrid");
+
+    if (!grid) {
+      return [];
+    }
+
+    return Array.from(
+      grid.querySelectorAll(
+        ".module[data-go], a.module[data-go], button.module[data-go]"
+      )
+    );
+
+  }
+
+
+  /* ==========================================================
+     CONSTRUIR MENÚ
+     ========================================================== */
+
+  function buildModulesMenu() {
+
+    if (!list) {
+      return;
+    }
+
+    const modules = getOriginalModules();
+
+    list.innerHTML = "";
+
+    if (!modules.length) {
+
+      list.innerHTML = `
+        <div id="rxModulesEmpty">
+          Cargando módulos…
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const used = new Set();
+
+
+    modules.forEach(function (original) {
+
+      const go =
+        original.getAttribute("data-go") ||
+        original.getAttribute("href") ||
+        "";
+
+      const name = getName(original);
+
+      const uniqueKey =
+        String(go).trim() +
+        "|" +
+        normalize(name);
+
+      if (used.has(uniqueKey)) {
+        return;
+      }
+
+      used.add(uniqueKey);
+
+
+      const item = document.createElement("button");
+
+      item.type = "button";
+      item.className = "rx-module-item";
+
+      item.setAttribute(
+        "data-rx-module-go",
+        go
+      );
+
+      item.innerHTML = `
+        <span class="rx-module-icon">
+          ${getIcon(original)}
+        </span>
+
+        <span class="rx-module-name">
+          ${name}
+        </span>
+      `;
+
+
+      item.addEventListener("click", function () {
+
+        closeModules();
+
+        /*
+         * IMPORTANTE:
+         * No inventamos una navegación nueva.
+         * Activamos el módulo original de la aplicación.
+         */
+
+        try {
+
+          original.click();
+
+        } catch (error) {
+
+          /*
+           * Respaldo para enlaces normales.
+           */
+
+          const href =
+            original.getAttribute("href");
+
+          if (
+            href &&
+            href !== "#" &&
+            !href.startsWith("javascript:")
+          ) {
+            window.location.href = href;
+          }
+
+        }
+
+      });
+
+
+      list.appendChild(item);
+
+    });
+
+  }
+
+
+  /* ==========================================================
+     ABRIR
+     ========================================================== */
+
+  function openModules() {
+
+    buildModulesMenu();
+
+    overlay.classList.add("rx-open");
+    overlay.setAttribute("aria-hidden", "false");
+
+    launcher.setAttribute(
+      "aria-expanded",
+      "true"
+    );
+
+    document.body.classList.add(
+      "rx-modules-lock"
+    );
+
+  }
+
+
+  /* ==========================================================
+     CERRAR
+     ========================================================== */
+
+  function closeModules() {
+
+    overlay.classList.remove("rx-open");
+    overlay.setAttribute("aria-hidden", "true");
+
+    launcher.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+
+    document.body.classList.remove(
+      "rx-modules-lock"
+    );
+
+  }
+
+
+  /* ==========================================================
+     EVENTOS
+     ========================================================== */
+
+  launcher.addEventListener(
+    "click",
+    function () {
+
+      if (
+        overlay.classList.contains("rx-open")
+      ) {
+        closeModules();
+      } else {
+        openModules();
+      }
+
+    }
+  );
+
+
+  closeBtn.addEventListener(
+    "click",
+    closeModules
+  );
+
+
+  overlay.addEventListener(
+    "click",
+    function (event) {
+
+      if (
+        event.target === overlay
+      ) {
+        closeModules();
+      }
+
+    }
+  );
+
+
+  document.addEventListener(
+    "keydown",
+    function (event) {
+
+      if (
+        event.key === "Escape" &&
+        overlay.classList.contains("rx-open")
+      ) {
+        closeModules();
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     ACTUALIZACIÓN DINÁMICA
+     
+     Si moduleGrid se genera después mediante JavaScript,
+     esperamos a que aparezcan los módulos.
+     ========================================================== */
+
+  let refreshTimer = null;
+
+  function scheduleRefresh() {
+
+    clearTimeout(refreshTimer);
+
+    refreshTimer = setTimeout(
+      buildModulesMenu,
+      150
+    );
+
+  }
+
+
+  const moduleGrid =
+    document.getElementById("moduleGrid");
+
+
+  if (moduleGrid) {
+
+    const observer =
+      new MutationObserver(
+        scheduleRefresh
+      );
+
+    observer.observe(
+      moduleGrid,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+
+  }
+
+
+  /* ==========================================================
+     PRIMERA CARGA
+     ========================================================== */
+
+  buildModulesMenu();
+
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN DEL BOTÓN FLOTANTE DE MÓDULOS
+     ============================================================ -->
 </body>
 </html>
