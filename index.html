@@ -7734,5 +7734,2467 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+   
+   <!-- =========================================================
+     RoXThal — HERRAMIENTAS
+     MEJORA / REPARADOR AUTÓNOMO
+     No modifica Supabase ni app.js
+========================================================= -->
+
+<style id="roxthal-tools-style">
+#roxthalTools{
+  --rt-gold:#d7b45a;
+  --rt-gold2:#f2da91;
+  --rt-bg:#080809;
+  --rt-panel:#15151a;
+  --rt-panel2:#1e1e26;
+  --rt-line:#34343e;
+  --rt-text:#f5f5f5;
+  --rt-muted:#a7a7b2;
+  --rt-green:#2ecc71;
+  --rt-red:#e74c3c;
+  --rt-blue:#1877f2;
+
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:99990;
+  background:rgba(0,0,0,.88);
+  backdrop-filter:blur(8px);
+  overflow-y:auto;
+  padding:18px;
+}
+
+#roxthalTools.rt-open{
+  display:block;
+}
+
+#roxthalTools .rt-shell{
+  width:min(1180px,100%);
+  margin:20px auto 50px;
+  background:var(--rt-bg);
+  border:1px solid var(--rt-line);
+  border-radius:22px;
+  box-shadow:0 20px 70px rgba(0,0,0,.65);
+  overflow:hidden;
+}
+
+#roxthalTools .rt-head{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 20px;
+  background:rgba(8,8,9,.96);
+  border-bottom:1px solid var(--rt-line);
+}
+
+#roxthalTools .rt-title{
+  margin:0;
+  color:#fff;
+  font-size:clamp(1.25rem,3vw,1.8rem);
+}
+
+#roxthalTools .rt-subtitle{
+  margin:3px 0 0;
+  color:var(--rt-muted);
+  font-size:.88rem;
+}
+
+#roxthalTools .rt-close{
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
+  border-radius:50%;
+  background:var(--rt-panel2);
+  border:1px solid var(--rt-line);
+  color:#fff;
+  font-size:1.35rem;
+}
+
+#roxthalTools .rt-close:hover{
+  background:var(--rt-gold);
+  color:#000;
+}
+
+#roxthalTools .rt-tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:12px 16px;
+  background:var(--rt-panel);
+  border-bottom:1px solid var(--rt-line);
+}
+
+#roxthalTools .rt-tab{
+  white-space:nowrap;
+  padding:11px 15px;
+  border-radius:10px;
+  background:var(--rt-panel2);
+  border:1px solid var(--rt-line);
+  color:var(--rt-muted);
+  font-weight:800;
+}
+
+#roxthalTools .rt-tab.active{
+  background:var(--rt-gold);
+  border-color:var(--rt-gold);
+  color:#000;
+}
+
+#roxthalTools .rt-body{
+  padding:18px;
+}
+
+#roxthalTools .rt-pane{
+  display:none;
+}
+
+#roxthalTools .rt-pane.active{
+  display:block;
+}
+
+#roxthalTools .rt-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+  gap:16px;
+}
+
+#roxthalTools .rt-card{
+  background:var(--rt-panel);
+  border:1px solid var(--rt-line);
+  border-radius:17px;
+  padding:17px;
+}
+
+#roxthalTools .rt-card h3{
+  margin:0 0 7px;
+  color:#fff;
+  font-size:1.08rem;
+}
+
+#roxthalTools .rt-card h4{
+  margin:14px 0 6px;
+  color:var(--rt-gold2);
+}
+
+#roxthalTools .rt-help{
+  margin:0 0 14px;
+  color:var(--rt-muted);
+  font-size:.87rem;
+  line-height:1.55;
+}
+
+#roxthalTools label{
+  display:block;
+  margin:9px 0 5px;
+  color:#ddd;
+  font-size:.85rem;
+  font-weight:700;
+}
+
+#roxthalTools input,
+#roxthalTools select,
+#roxthalTools textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:9px;
+  border:1px solid var(--rt-line);
+  background:#09090b;
+  color:#fff;
+}
+
+#roxthalTools input[type="color"]{
+  height:44px;
+  padding:4px;
+}
+
+#roxthalTools input[type="range"]{
+  padding:0;
+}
+
+#roxthalTools .rt-row{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+#roxthalTools .rt-row3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+#roxthalTools .rt-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+#roxthalTools .rt-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:10px 13px;
+  border-radius:9px;
+  border:1px solid var(--rt-line);
+  background:var(--rt-panel2);
+  color:#fff;
+  font-weight:800;
+}
+
+#roxthalTools .rt-btn:hover{
+  border-color:var(--rt-gold);
+}
+
+#roxthalTools .rt-btn.primary{
+  background:var(--rt-gold);
+  color:#000;
+  border-color:var(--rt-gold);
+}
+
+#roxthalTools .rt-result{
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  background:#09090b;
+  border:1px solid var(--rt-line);
+  color:var(--rt-gold2);
+  min-height:42px;
+  white-space:pre-wrap;
+}
+
+#roxthalTools .rt-note{
+  margin-top:10px;
+  padding:10px 12px;
+  border-left:3px solid var(--rt-gold);
+  background:rgba(215,180,90,.08);
+  color:#ddd;
+  font-size:.84rem;
+}
+
+#roxthalTools .rt-links{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+
+#roxthalTools .rt-links a{
+  padding:10px;
+  border-radius:9px;
+  background:var(--rt-panel2);
+  border:1px solid var(--rt-line);
+  text-align:center;
+  color:var(--rt-gold2);
+  font-size:.82rem;
+}
+
+#roxthalTools .rt-check{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  margin:9px 0;
+  color:#ddd;
+  font-size:.88rem;
+}
+
+#roxthalTools .rt-check input{
+  width:auto;
+  margin-top:4px;
+}
+
+#roxthalTools .rt-progress{
+  height:10px;
+  border-radius:99px;
+  overflow:hidden;
+  background:#09090b;
+  border:1px solid var(--rt-line);
+  margin-top:10px;
+}
+
+#roxthalTools .rt-progress span{
+  display:block;
+  width:0;
+  height:100%;
+  background:var(--rt-gold);
+  transition:width .2s;
+}
+
+#roxthalTools .rt-value-strip{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  height:45px;
+  margin-top:12px;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid var(--rt-line);
+}
+
+#roxthalTools .rt-value-strip span:nth-child(1){background:#fff}
+#roxthalTools .rt-value-strip span:nth-child(2){background:#eee}
+#roxthalTools .rt-value-strip span:nth-child(3){background:#ddd}
+#roxthalTools .rt-value-strip span:nth-child(4){background:#ccc}
+#roxthalTools .rt-value-strip span:nth-child(5){background:#aaa}
+#roxthalTools .rt-value-strip span:nth-child(6){background:#888}
+#roxthalTools .rt-value-strip span:nth-child(7){background:#666}
+#roxthalTools .rt-value-strip span:nth-child(8){background:#444}
+#roxthalTools .rt-value-strip span:nth-child(9){background:#222}
+#roxthalTools .rt-value-strip span:nth-child(10){background:#000}
+
+#roxthalTools .rt-grid-preview{
+  width:100%;
+  max-width:650px;
+  aspect-ratio:4/3;
+  display:block;
+  margin:12px auto 0;
+  background:#fff;
+  border-radius:10px;
+  border:1px solid var(--rt-line);
+  touch-action:none;
+}
+
+#roxthalTools .rt-canvas-wrap{
+  position:relative;
+  width:100%;
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--rt-line);
+}
+
+#roxthalTools #rtKidsCanvas{
+  display:block;
+  width:100%;
+  height:auto;
+  background:#fff;
+  touch-action:none;
+  cursor:crosshair;
+}
+
+#roxthalTools .rt-color-palette{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:10px;
+}
+
+#roxthalTools .rt-color{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:2px solid #fff;
+  box-shadow:0 0 0 1px #555;
+}
+
+#roxthalTools .rt-challenge{
+  padding:12px;
+  margin-top:8px;
+  background:var(--rt-panel2);
+  border:1px solid var(--rt-line);
+  border-radius:10px;
+}
+
+#roxthalTools .rt-hidden{
+  display:none!important;
+}
+
+@media(max-width:650px){
+  #roxthalTools{
+    padding:7px;
+  }
+
+  #roxthalTools .rt-shell{
+    margin:0 auto 25px;
+    border-radius:15px;
+  }
+
+  #roxthalTools .rt-head{
+    padding:13px;
+  }
+
+  #roxthalTools .rt-body{
+    padding:11px;
+  }
+
+  #roxthalTools .rt-row,
+  #roxthalTools .rt-row3{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+<section id="roxthalTools" aria-hidden="true">
+  <div class="rt-shell">
+
+    <div class="rt-head">
+      <div>
+        <h2 class="rt-title">🧰 Herramientas RoXThal</h2>
+        <p class="rt-subtitle">
+          Recursos prácticos para tatuadores, artistas y alumnos.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="rt-close"
+        id="rtClose"
+        aria-label="Cerrar Herramientas"
+      >✕</button>
+    </div>
+
+    <div class="rt-tabs" role="tablist">
+
+      <button
+        type="button"
+        class="rt-tab active"
+        data-rt-tab="tattoo"
+      >🖋️ Tatuadores</button>
+
+      <button
+        type="button"
+        class="rt-tab"
+        data-rt-tab="artist"
+      >🎨 Artistas</button>
+
+      <button
+        type="button"
+        class="rt-tab"
+        data-rt-tab="kids"
+      >🧒🎨 Pinta y Crea</button>
+
+    </div>
+
+    <div class="rt-body">
+
+      <!-- =====================================================
+           TATUADORES
+      ====================================================== -->
+
+      <div
+        class="rt-pane active"
+        data-rt-pane="tattoo"
+      >
+
+        <div class="rt-grid">
+
+          <!-- CONVERSOR -->
+
+          <article class="rt-card">
+
+            <h3>📏 Conversor de medidas</h3>
+
+            <p class="rt-help">
+              Convierte rápidamente milímetros, centímetros y pulgadas.
+              Útil para preparar tamaños de diseños y referencias.
+            </p>
+
+            <div class="rt-row">
+
+              <div>
+                <label for="rtMeasureValue">Valor</label>
+                <input
+                  id="rtMeasureValue"
+                  type="number"
+                  step="any"
+                  value="10"
+                >
+              </div>
+
+              <div>
+                <label for="rtMeasureUnit">Unidad</label>
+                <select id="rtMeasureUnit">
+                  <option value="mm">mm</option>
+                  <option value="cm">cm</option>
+                  <option value="in">pulgadas</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div
+              class="rt-result"
+              id="rtMeasureResult"
+            ></div>
+
+            <div class="rt-note">
+              1 pulgada = 25,4 mm. Usa las medidas reales del área
+              corporal antes de preparar el stencil.
+            </div>
+
+          </article>
+
+          <!-- ESCALA -->
+
+          <article class="rt-card">
+
+            <h3>📐 Escala proporcional</h3>
+
+            <p class="rt-help">
+              Mantiene la proporción original del diseño.
+              Introduce una medida original y la medida final deseada.
+            </p>
+
+            <label>Medida original</label>
+            <input
+              id="rtScaleOriginal"
+              type="number"
+              step="any"
+              value="10"
+            >
+
+            <label>Medida final</label>
+            <input
+              id="rtScaleFinal"
+              type="number"
+              step="any"
+              value="15"
+            >
+
+            <div
+              class="rt-result"
+              id="rtScaleResult"
+            ></div>
+
+            <div class="rt-actions">
+              <button
+                class="rt-btn primary"
+                type="button"
+                id="rtScaleBtn"
+              >Calcular</button>
+            </div>
+
+          </article>
+
+          <!-- REDUCCIÓN -->
+
+          <article class="rt-card">
+
+            <h3>🔽 Reducción / ampliación</h3>
+
+            <p class="rt-help">
+              Calcula directamente el tamaño final aplicando un porcentaje.
+              100 % mantiene el tamaño; 50 % lo reduce a la mitad.
+            </p>
+
+            <label>Tamaño original</label>
+            <input
+              id="rtPercentOriginal"
+              type="number"
+              step="any"
+              value="20"
+            >
+
+            <label>Porcentaje</label>
+            <input
+              id="rtPercent"
+              type="number"
+              step="any"
+              value="50"
+            >
+
+            <div
+              class="rt-result"
+              id="rtPercentResult"
+            ></div>
+
+            <button
+              class="rt-btn primary"
+              type="button"
+              id="rtPercentBtn"
+            >Calcular</button>
+
+          </article>
+
+          <!-- REGLA DE TRES -->
+
+          <article class="rt-card">
+
+            <h3>🔢 Regla de tres</h3>
+
+            <p class="rt-help">
+              Resuelve proporciones: si A corresponde a B,
+              calcula cuánto corresponde a C.
+            </p>
+
+            <div class="rt-row3">
+
+              <div>
+                <label>A</label>
+                <input id="rtRuleA" type="number" step="any" value="10">
+              </div>
+
+              <div>
+                <label>B</label>
+                <input id="rtRuleB" type="number" step="any" value="20">
+              </div>
+
+              <div>
+                <label>C</label>
+                <input id="rtRuleC" type="number" step="any" value="15">
+              </div>
+
+            </div>
+
+            <div
+              class="rt-result"
+              id="rtRuleResult"
+            ></div>
+
+            <button
+              class="rt-btn primary"
+              type="button"
+              id="rtRuleBtn"
+            >Resolver</button>
+
+          </article>
+
+          <!-- CUADRÍCULA -->
+
+          <article class="rt-card">
+
+            <h3>▦ Generador de cuadrícula</h3>
+
+            <p class="rt-help">
+              Divide una referencia en filas y columnas para facilitar
+              la transferencia proporcional del dibujo.
+            </p>
+
+            <div class="rt-row">
+
+              <div>
+                <label>Columnas</label>
+                <input
+                  id="rtGridCols"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value="6"
+                >
+              </div>
+
+              <div>
+                <label>Filas</label>
+                <input
+                  id="rtGridRows"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value="6"
+                >
+              </div>
+
+            </div>
+
+            <canvas
+              id="rtGridCanvas"
+              class="rt-grid-preview"
+              width="800"
+              height="600"
+            ></canvas>
+
+            <div class="rt-actions">
+
+              <button
+                class="rt-btn primary"
+                type="button"
+                id="rtGridBtn"
+              >Generar</button>
+
+              <button
+                class="rt-btn"
+                type="button"
+                id="rtGridDownload"
+              >Guardar cuadrícula</button>
+
+            </div>
+
+          </article>
+
+          <!-- VALORES -->
+
+          <article class="rt-card">
+
+            <h3>🖤 Escala de valores</h3>
+
+            <p class="rt-help">
+              Utiliza los valores para estudiar luces, medios tonos y sombras.
+              Antes de tatuar, identifica las masas principales de luz y sombra.
+            </p>
+
+            <div class="rt-value-strip">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+
+            <div class="rt-note">
+              Consejo: entrecerrar los ojos ayuda a detectar las masas
+              principales sin distraerse con los detalles.
+            </div>
+
+          </article>
+
+          <!-- CHECKLIST -->
+
+          <article class="rt-card">
+
+            <h3>✅ Checklist profesional</h3>
+
+            <p class="rt-help">
+              Comprueba los puntos básicos antes de comenzar un trabajo.
+            </p>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Diseño y tamaño confirmados
+            </label>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Zona corporal revisada
+            </label>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Referencia preparada
+            </label>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Stencil revisado
+            </label>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Material preparado
+            </label>
+
+            <label class="rt-check">
+              <input type="checkbox" class="rt-check-item">
+              Higiene y protección preparadas
+            </label>
+
+            <div class="rt-progress">
+              <span id="rtChecklistProgress"></span>
+            </div>
+
+            <div
+              class="rt-result"
+              id="rtChecklistResult"
+            >0 % completado</div>
+
+          </article>
+
+          <!-- BUSCADOR -->
+
+          <article class="rt-card">
+
+            <h3>🔎 Referencias para tatuaje</h3>
+
+            <p class="rt-help">
+              Busca referencias visuales. Utiliza referencias como estudio,
+              no como sustituto de una composición propia.
+            </p>
+
+            <input
+              id="rtTattooSearch"
+              type="search"
+              placeholder="Ej.: serpiente blackwork"
+            >
+
+            <div class="rt-links">
+
+              <a
+                href="#"
+                data-rt-search="google"
+              >Google Imágenes</a>
+
+              <a
+                href="#"
+                data-rt-search="bing"
+              >Bing</a>
+
+              <a
+                href="#"
+                data-rt-search="pinterest"
+              >Pinterest</a>
+
+              <a
+                href="#"
+                data-rt-search="instagram"
+              >Instagram</a>
+
+              <a
+                href="#"
+                data-rt-search="artstation"
+              >ArtStation</a>
+
+              <a
+                href="#"
+                data-rt-search="deviantart"
+              >DeviantArt</a>
+
+            </div>
+
+          </article>
+
+          <!-- GUÍA -->
+
+          <article class="rt-card">
+
+            <h3>📚 Guía rápida para tatuaje</h3>
+
+            <h4>1. Referencia</h4>
+            <p class="rt-help">
+              Analiza forma, anatomía, dirección, contraste y puntos focales.
+            </p>
+
+            <h4>2. Composición</h4>
+            <p class="rt-help">
+              Comprueba que el diseño funcione en la zona corporal elegida.
+            </p>
+
+            <h4>3. Tamaño</h4>
+            <p class="rt-help">
+              Define medidas antes de preparar el stencil.
+            </p>
+
+            <h4>4. Lectura</h4>
+            <p class="rt-help">
+              El tatuaje debe mantener una lectura clara incluso a distancia.
+            </p>
+
+            <h4>5. Contraste</h4>
+            <p class="rt-help">
+              Reserva los valores más oscuros para las zonas que necesiten
+              estructura y profundidad.
+            </p>
+
+          </article>
+
+        </div>
+      </div>
+
+      <!-- =====================================================
+           ARTISTAS
+      ====================================================== -->
+
+      <div
+        class="rt-pane"
+        data-rt-pane="artist"
+      >
+
+        <div class="rt-grid">
+
+          <!-- COLOR -->
+
+          <article class="rt-card">
+
+            <h3>🎨 Mezclador RGB</h3>
+
+            <p class="rt-help">
+              Combina rojo, verde y azul para comprender cómo se construye
+              un color digital.
+            </p>
+
+            <label>Rojo</label>
+            <input id="rtR" type="range" min="0" max="255" value="215">
+
+            <label>Verde</label>
+            <input id="rtG" type="range" min="0" max="255" value="180">
+
+            <label>Azul</label>
+            <input id="rtB" type="range" min="0" max="255" value="90">
+
+            <div
+              id="rtColorPreview"
+              style="
+                height:80px;
+                border-radius:10px;
+                margin-top:12px;
+                border:1px solid #444;
+              "
+            ></div>
+
+            <div
+              class="rt-result"
+              id="rtColorResult"
+            ></div>
+
+          </article>
+
+          <!-- ARMONÍAS -->
+
+          <article class="rt-card">
+
+            <h3>🌈 Armonías de color</h3>
+
+            <p class="rt-help">
+              Introduce un color base y genera relaciones cromáticas útiles
+              para ilustración y pintura.
+            </p>
+
+            <input
+              id="rtHarmonyColor"
+              type="color"
+              value="#d7b45a"
+            >
+
+            <select id="rtHarmonyType">
+              <option value="complementary">Complementaria</option>
+              <option value="analogous">Análoga</option>
+              <option value="triadic">Triádica</option>
+            </select>
+
+            <div
+              class="rt-result"
+              id="rtHarmonyResult"
+            ></div>
+
+            <div
+              id="rtHarmonySwatches"
+              class="rt-color-palette"
+            ></div>
+
+            <button
+              class="rt-btn primary"
+              type="button"
+              id="rtHarmonyBtn"
+            >Generar armonía</button>
+
+          </article>
+
+          <!-- COMPOSICIÓN -->
+
+          <article class="rt-card">
+
+            <h3>📐 Regla de tercios</h3>
+
+            <p class="rt-help">
+              Divide mentalmente el formato en tres partes horizontales
+              y verticales. Los cruces son zonas fuertes para colocar
+              elementos importantes.
+            </p>
+
+            <div
+              style="
+                position:relative;
+                aspect-ratio:4/3;
+                background:#fff;
+                border-radius:10px;
+                overflow:hidden;
+                background-image:
+                  linear-gradient(to right,
+                    transparent 32.9%,
+                    #d7b45a 33%,
+                    transparent 33.1%,
+                    transparent 66.2%,
+                    #d7b45a 66.3%,
+                    transparent 66.4%
+                  ),
+                  linear-gradient(to bottom,
+                    transparent 32.9%,
+                    #d7b45a 33%,
+                    transparent 33.1%,
+                    transparent 66.2%,
+                    #d7b45a 66.3%,
+                    transparent 66.4%
+                  );
+              "
+            ></div>
+
+          </article>
+
+          <!-- VALORES -->
+
+          <article class="rt-card">
+
+            <h3>🌓 Análisis de valores</h3>
+
+            <p class="rt-help">
+              Una buena composición puede leerse antes de observar
+              los detalles. Trabaja primero con masas claras, medias y oscuras.
+            </p>
+
+            <div class="rt-value-strip">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+
+            <div class="rt-note">
+              Ejercicio: intenta reducir una referencia a solo 3 valores:
+              luz, medio tono y sombra.
+            </div>
+
+          </article>
+
+          <!-- PROPORCIONES -->
+
+          <article class="rt-card">
+
+            <h3>📏 Proporciones</h3>
+
+            <p class="rt-help">
+              Usa una medida conocida como referencia para comparar otras
+              dimensiones del dibujo.
+            </p>
+
+            <label>Medida de referencia</label>
+            <input
+              id="rtArtRef"
+              type="number"
+              step="any"
+              value="10"
+            >
+
+            <label>Medida observada</label>
+            <input
+              id="rtArtObs"
+              type="number"
+              step="any"
+              value="7"
+            >
+
+            <div
+              class="rt-result"
+              id="rtArtPropResult"
+            ></div>
+
+            <button
+              class="rt-btn primary"
+              type="button"
+              id="rtArtPropBtn"
+            >Calcular relación</button>
+
+          </article>
+
+          <!-- BUSCADOR -->
+
+          <article class="rt-card">
+
+            <h3>🔎 Buscador de arte</h3>
+
+            <p class="rt-help">
+              Explora artistas, técnicas, estilos y referencias.
+            </p>
+
+            <input
+              id="rtArtSearch"
+              type="search"
+              placeholder="Ej.: expresionismo retrato"
+            >
+
+            <div class="rt-links">
+
+              <a href="#" data-rt-art-search="google">Google</a>
+              <a href="#" data-rt-art-search="behance">Behance</a>
+              <a href="#" data-rt-art-search="artstation">ArtStation</a>
+              <a href="#" data-rt-art-search="pinterest">Pinterest</a>
+              <a href="#" data-rt-art-search="dribbble">Dribbble</a>
+              <a href="#" data-rt-art-search="deviantart">DeviantArt</a>
+
+            </div>
+
+          </article>
+
+          <!-- EJERCICIOS -->
+
+          <article class="rt-card">
+
+            <h3>✏️ Ejercicios de entrenamiento</h3>
+
+            <div class="rt-challenge">
+              <strong>Ejercicio 1 — 5 minutos</strong>
+              <p class="rt-help">
+                Dibuja una forma simple sin levantar demasiado el lápiz.
+              </p>
+            </div>
+
+            <div class="rt-challenge">
+              <strong>Ejercicio 2 — Valores</strong>
+              <p class="rt-help">
+                Reproduce una referencia utilizando solamente tres valores.
+              </p>
+            </div>
+
+            <div class="rt-challenge">
+              <strong>Ejercicio 3 — Composición</strong>
+              <p class="rt-help">
+                Crea tres miniaturas de una misma escena y cambia
+                el punto focal.
+              </p>
+            </div>
+
+          </article>
+
+        </div>
+      </div>
+
+      <!-- =====================================================
+           NIÑOS
+      ====================================================== -->
+
+      <div
+        class="rt-pane"
+        data-rt-pane="kids"
+      >
+
+        <div class="rt-grid">
+
+          <article class="rt-card" style="grid-column:1/-1">
+
+            <h3>🧒🎨 Pinta y Crea</h3>
+
+            <p class="rt-help">
+              Espacio de dibujo libre para alumnos. Funciona en pantalla
+              táctil, con lápiz digital o con ratón. El dibujo permanece
+              en el dispositivo y no se sube a Supabase.
+            </p>
+
+            <div class="rt-canvas-wrap">
+              <canvas
+                id="rtKidsCanvas"
+                width="900"
+                height="600"
+              ></canvas>
+            </div>
+
+            <div class="rt-row">
+
+              <div>
+                <label>Color</label>
+                <input
+                  id="rtKidsColor"
+                  type="color"
+                  value="#111111"
+                >
+              </div>
+
+              <div>
+                <label>Tamaño del pincel</label>
+                <input
+                  id="rtKidsSize"
+                  type="range"
+                  min="1"
+                  max="60"
+                  value="8"
+                >
+              </div>
+
+            </div>
+
+            <div class="rt-color-palette">
+
+              <button class="rt-color" type="button" data-kids-color="#111111" style="background:#111"></button>
+              <button class="rt-color" type="button" data-kids-color="#e74c3c" style="background:#e74c3c"></button>
+              <button class="rt-color" type="button" data-kids-color="#f1c40f" style="background:#f1c40f"></button>
+              <button class="rt-color" type="button" data-kids-color="#2ecc71" style="background:#2ecc71"></button>
+              <button class="rt-color" type="button" data-kids-color="#3498db" style="background:#3498db"></button>
+              <button class="rt-color" type="button" data-kids-color="#9b59b6" style="background:#9b59b6"></button>
+              <button class="rt-color" type="button" data-kids-color="#e67e22" style="background:#e67e22"></button>
+              <button class="rt-color" type="button" data-kids-color="#ffffff" style="background:#fff"></button>
+
+            </div>
+
+            <div class="rt-actions">
+
+              <button
+                class="rt-btn"
+                type="button"
+                id="rtKidsUndo"
+              >↩️ Deshacer</button>
+
+              <button
+                class="rt-btn"
+                type="button"
+                id="rtKidsRedo"
+              >↪️ Rehacer</button>
+
+              <button
+                class="rt-btn"
+                type="button"
+                id="rtKidsEraser"
+              >🧽 Borrador</button>
+
+              <button
+                class="rt-btn"
+                type="button"
+                id="rtKidsClear"
+              >🗑️ Limpiar</button>
+
+              <button
+                class="rt-btn primary"
+                type="button"
+                id="rtKidsSave"
+              >💾 Guardar PNG</button>
+
+            </div>
+
+            <div class="rt-note">
+              <strong>Cómo usarlo:</strong>
+              elige un color, ajusta el tamaño y dibuja con el dedo,
+              lápiz o ratón. Usa Deshacer/Rehacer para corregir.
+              El borrador pinta nuevamente sobre el fondo blanco.
+            </div>
+
+          </article>
+
+          <article class="rt-card">
+
+            <h3>🎯 Retos creativos</h3>
+
+            <div class="rt-challenge">
+              🐉 Dibuja un animal imaginario.
+            </div>
+
+            <div class="rt-challenge">
+              🚀 Diseña una nave espacial.
+            </div>
+
+            <div class="rt-challenge">
+              🌳 Dibuja un árbol mágico.
+            </div>
+
+            <div class="rt-challenge">
+              👾 Inventa un personaje.
+            </div>
+
+            <div class="rt-challenge">
+              🏠 Diseña una casa del futuro.
+            </div>
+
+          </article>
+
+          <article class="rt-card">
+
+            <h3>🏆 Niveles</h3>
+
+            <h4>🟢 Nivel 1 — Explorador</h4>
+            <p class="rt-help">
+              Experimenta con líneas, puntos y colores.
+            </p>
+
+            <h4>🔵 Nivel 2 — Creador</h4>
+            <p class="rt-help">
+              Combina formas y crea un personaje o escenario.
+            </p>
+
+            <h4>🟣 Nivel 3 — Artista</h4>
+            <p class="rt-help">
+              Crea una composición completa con fondo, personaje
+              y elementos secundarios.
+            </p>
+
+          </article>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+
+  "use strict";
+
+  /* =========================================================
+     NAMESPACE
+  ========================================================= */
+
+  const RT = window.RoXThalTools = window.RoXThalTools || {};
+
+  if(RT.initialized){
+    return;
+  }
+
+  RT.initialized = true;
+
+  const root = document.getElementById("roxthalTools");
+
+  if(!root){
+    return;
+  }
+
+  const $ = (selector) => root.querySelector(selector);
+  const $$ = (selector) => root.querySelectorAll(selector);
+
+  /* =========================================================
+     ABRIR / CERRAR
+  ========================================================= */
+
+  function openTools(){
+    root.classList.add("rt-open");
+    root.setAttribute("aria-hidden","false");
+    document.body.style.overflow = "hidden";
+
+    const active = root.querySelector(".rt-tab.active");
+    if(!active){
+      const first = root.querySelector(".rt-tab");
+      if(first) first.click();
+    }
+  }
+
+  function closeTools(){
+    root.classList.remove("rt-open");
+    root.setAttribute("aria-hidden","true");
+    document.body.style.overflow = "";
+  }
+
+  RT.open = openTools;
+  RT.close = closeTools;
+
+  $("#rtClose")?.addEventListener("click",closeTools);
+
+  root.addEventListener("click",(event)=>{
+    if(event.target === root){
+      closeTools();
+    }
+  });
+
+  document.addEventListener("keydown",(event)=>{
+    if(event.key === "Escape" && root.classList.contains("rt-open")){
+      closeTools();
+    }
+  });
+
+  /* =========================================================
+     CONECTAR BOTÓN EXISTENTE
+     ========================================================= */
+
+  function findToolsButtons(){
+
+    const candidates = [
+      "[data-tools]",
+      "[data-tool]",
+      "[data-module='tools']",
+      "[data-module='herramientas']",
+      "#toolsButton",
+      "#herramientasBtn",
+      "#btnHerramientas",
+      "#openTools",
+      "#openHerramientas",
+      ".tools-button",
+      ".herramientas-button",
+      ".floating-tools",
+      ".btn-herramientas",
+      "a[href='#roxthalTools']",
+      "button"
+    ];
+
+    const found = new Set();
+
+    candidates.forEach(selector=>{
+      document.querySelectorAll(selector).forEach(element=>{
+        const text = (
+          element.textContent ||
+          element.getAttribute("aria-label") ||
+          element.title ||
+          ""
+        ).trim().toLowerCase();
+
+        const looksLikeTools =
+          text.includes("herramientas") ||
+          text.includes("tools");
+
+        const explicitlyMarked =
+          element.hasAttribute("data-tools") ||
+          element.hasAttribute("data-tool") ||
+          element.getAttribute("data-module") === "tools" ||
+          element.getAttribute("data-module") === "herramientas";
+
+        if(looksLikeTools || explicitlyMarked){
+          found.add(element);
+        }
+      });
+    });
+
+    return [...found];
+  }
+
+  function bindExistingButtons(){
+
+    findToolsButtons().forEach(button=>{
+
+      if(button.dataset.roxthalToolsBound === "1"){
+        return;
+      }
+
+      button.dataset.roxthalToolsBound = "1";
+
+      button.addEventListener("click",(event)=>{
+        const href = button.getAttribute("href");
+
+        if(
+          href === "#roxthalTools" ||
+          href === "#herramientas" ||
+          button.matches("[data-tools],[data-tool]")
+        ){
+          event.preventDefault();
+          openTools();
+        }
+      });
+
+    });
+  }
+
+  bindExistingButtons();
+
+  /* =========================================================
+     TABS
+  ========================================================= */
+
+  $$(".rt-tab").forEach(tab=>{
+
+    tab.addEventListener("click",()=>{
+
+      const name = tab.dataset.rtTab;
+
+      $$(".rt-tab").forEach(item=>{
+        item.classList.toggle("active",item === tab);
+      });
+
+      $$(".rt-pane").forEach(pane=>{
+        pane.classList.toggle(
+          "active",
+          pane.dataset.rtPane === name
+        );
+      });
+
+    });
+
+  });
+
+  /* =========================================================
+     CONVERSOR
+  ========================================================= */
+
+  function updateConverter(){
+
+    const value = Number($("#rtMeasureValue")?.value || 0);
+    const unit = $("#rtMeasureUnit")?.value || "mm";
+
+    if(!Number.isFinite(value)){
+      return;
+    }
+
+    let mm = value;
+
+    if(unit === "cm"){
+      mm = value * 10;
+    }
+
+    if(unit === "in"){
+      mm = value * 25.4;
+    }
+
+    $("#rtMeasureResult").textContent =
+      `${mm.toFixed(2)} mm\n` +
+      `${(mm/10).toFixed(2)} cm\n` +
+      `${(mm/25.4).toFixed(2)} pulgadas`;
+
+  }
+
+  $("#rtMeasureValue")?.addEventListener("input",updateConverter);
+  $("#rtMeasureUnit")?.addEventListener("change",updateConverter);
+
+  updateConverter();
+
+  /* =========================================================
+     ESCALA
+  ========================================================= */
+
+  function calculateScale(){
+
+    const original = Number($("#rtScaleOriginal")?.value);
+    const finalValue = Number($("#rtScaleFinal")?.value);
+
+    if(!Number.isFinite(original) || !Number.isFinite(finalValue) || original === 0){
+      $("#rtScaleResult").textContent = "Introduce valores válidos.";
+      return;
+    }
+
+    const percentage = finalValue / original * 100;
+
+    $("#rtScaleResult").textContent =
+      `Escala: ${percentage.toFixed(2)} %\n` +
+      `Factor: ${(finalValue/original).toFixed(4)}×`;
+
+  }
+
+  $("#rtScaleBtn")?.addEventListener("click",calculateScale);
+
+  /* =========================================================
+     REDUCCIÓN / AMPLIACIÓN
+  ========================================================= */
+
+  $("#rtPercentBtn")?.addEventListener("click",()=>{
+
+    const original = Number($("#rtPercentOriginal")?.value);
+    const percentage = Number($("#rtPercent")?.value);
+
+    if(!Number.isFinite(original) || !Number.isFinite(percentage)){
+      $("#rtPercentResult").textContent = "Introduce valores válidos.";
+      return;
+    }
+
+    const result = original * percentage / 100;
+
+    $("#rtPercentResult").textContent =
+      `Resultado: ${result.toFixed(2)}\n` +
+      `Factor: ${(percentage/100).toFixed(4)}×`;
+
+  });
+
+  /* =========================================================
+     REGLA DE TRES
+  ========================================================= */
+
+  $("#rtRuleBtn")?.addEventListener("click",()=>{
+
+    const a = Number($("#rtRuleA")?.value);
+    const b = Number($("#rtRuleB")?.value);
+    const c = Number($("#rtRuleC")?.value);
+
+    if(!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c) || a === 0){
+      $("#rtRuleResult").textContent = "Introduce valores válidos.";
+      return;
+    }
+
+    const result = b * c / a;
+
+    $("#rtRuleResult").textContent =
+      `Resultado: ${result.toFixed(3)}`;
+
+  });
+
+  /* =========================================================
+     CUADRÍCULA REAL
+  ========================================================= */
+
+  const gridCanvas = $("#rtGridCanvas");
+  const gridCtx = gridCanvas?.getContext("2d");
+
+  function drawGrid(){
+
+    if(!gridCanvas || !gridCtx){
+      return;
+    }
+
+    const cols = Math.max(
+      1,
+      Math.min(30,Number($("#rtGridCols")?.value || 6))
+    );
+
+    const rows = Math.max(
+      1,
+      Math.min(30,Number($("#rtGridRows")?.value || 6))
+    );
+
+    gridCtx.clearRect(
+      0,
+      0,
+      gridCanvas.width,
+      gridCanvas.height
+    );
+
+    gridCtx.fillStyle = "#fff";
+    gridCtx.fillRect(
+      0,
+      0,
+      gridCanvas.width,
+      gridCanvas.height
+    );
+
+    gridCtx.strokeStyle = "rgba(20,20,20,.55)";
+    gridCtx.lineWidth = 1;
+
+    for(let c=1;c<cols;c++){
+
+      const x = gridCanvas.width * c / cols;
+
+      gridCtx.beginPath();
+      gridCtx.moveTo(x,0);
+      gridCtx.lineTo(x,gridCanvas.height);
+      gridCtx.stroke();
+
+    }
+
+    for(let r=1;r<rows;r++){
+
+      const y = gridCanvas.height * r / rows;
+
+      gridCtx.beginPath();
+      gridCtx.moveTo(0,y);
+      gridCtx.lineTo(gridCanvas.width,y);
+      gridCtx.stroke();
+
+    }
+
+    gridCtx.strokeStyle = "rgba(0,0,0,.8)";
+    gridCtx.strokeRect(
+      .5,
+      .5,
+      gridCanvas.width-1,
+      gridCanvas.height-1
+    );
+
+  }
+
+  $("#rtGridBtn")?.addEventListener("click",drawGrid);
+
+  $("#rtGridDownload")?.addEventListener("click",()=>{
+
+    if(!gridCanvas){
+      return;
+    }
+
+    const link = document.createElement("a");
+
+    link.download = "roxthal-cuadricula.png";
+    link.href = gridCanvas.toDataURL("image/png");
+
+    link.click();
+
+  });
+
+  drawGrid();
+
+  /* =========================================================
+     CHECKLIST
+  ========================================================= */
+
+  function updateChecklist(){
+
+    const items = [
+      ...root.querySelectorAll(".rt-check-item")
+    ];
+
+    const checked = items.filter(item=>item.checked).length;
+
+    const percent = items.length
+      ? Math.round(checked/items.length*100)
+      : 0;
+
+    const bar = $("#rtChecklistProgress");
+
+    if(bar){
+      bar.style.width = percent + "%";
+    }
+
+    const result = $("#rtChecklistResult");
+
+    if(result){
+      result.textContent =
+        `${percent} % completado (${checked}/${items.length})`;
+    }
+
+  }
+
+  $$(".rt-check-item").forEach(item=>{
+    item.addEventListener("change",updateChecklist);
+  });
+
+  updateChecklist();
+
+  /* =========================================================
+     RGB
+  ========================================================= */
+
+  function updateRGB(){
+
+    const r = Number($("#rtR")?.value || 0);
+    const g = Number($("#rtG")?.value || 0);
+    const b = Number($("#rtB")?.value || 0);
+
+    const hex =
+      "#" +
+      [r,g,b]
+        .map(value=>value.toString(16).padStart(2,"0"))
+        .join("")
+        .toUpperCase();
+
+    const preview = $("#rtColorPreview");
+
+    if(preview){
+      preview.style.background = hex;
+    }
+
+    const result = $("#rtColorResult");
+
+    if(result){
+      result.textContent =
+        `RGB: ${r}, ${g}, ${b}\nHEX: ${hex}`;
+    }
+
+  }
+
+  ["rtR","rtG","rtB"].forEach(id=>{
+    $("#"+id)?.addEventListener("input",updateRGB);
+  });
+
+  updateRGB();
+
+  /* =========================================================
+     HEX -> HSL
+  ========================================================= */
+
+  function hexToHsl(hex){
+
+    hex = hex.replace("#","");
+
+    if(hex.length !== 6){
+      return null;
+    }
+
+    const r = parseInt(hex.substring(0,2),16)/255;
+    const g = parseInt(hex.substring(2,4),16)/255;
+    const b = parseInt(hex.substring(4,6),16)/255;
+
+    const max = Math.max(r,g,b);
+    const min = Math.min(r,g,b);
+
+    let h = 0;
+    let s = 0;
+    const l = (max+min)/2;
+
+    if(max !== min){
+
+      const d = max-min;
+
+      s = l > .5
+        ? d/(2-max-min)
+        : d/(max+min);
+
+      switch(max){
+
+        case r:
+          h = (g-b)/d + (g<b ? 6 : 0);
+          break;
+
+        case g:
+          h = (b-r)/d + 2;
+          break;
+
+        default:
+          h = (r-g)/d + 4;
+
+      }
+
+      h /= 6;
+
+    }
+
+    return {
+      h:h*360,
+      s:s*100,
+      l:l*100
+    };
+
+  }
+
+  /* =========================================================
+     HSL -> HEX
+  ========================================================= */
+
+  function hslToHex(h,s,l){
+
+    h /= 360;
+    s /= 100;
+    l /= 100;
+
+    if(s === 0){
+
+      const v = Math.round(l*255);
+
+      return "#" +
+        [v,v,v]
+          .map(x=>x.toString(16).padStart(2,"0"))
+          .join("");
+
+    }
+
+    const hue2rgb = (p,q,t)=>{
+
+      if(t<0) t+=1;
+      if(t>1) t-=1;
+
+      if(t<1/6) return p+(q-p)*6*t;
+      if(t<1/2) return q;
+      if(t<2/3) return p+(q-p)*(2/3-t)*6;
+
+      return p;
+
+    };
+
+    const q =
+      l < .5
+        ? l*(1+s)
+        : l+s-l*s;
+
+    const p = 2*l-q;
+
+    const r = hue2rgb(p,q,h+1/3);
+    const g = hue2rgb(p,q,h);
+    const b = hue2rgb(p,q,h-1/3);
+
+    return "#" +
+      [r,g,b]
+        .map(x=>Math.round(x*255).toString(16).padStart(2,"0"))
+        .join("");
+
+  }
+
+  /* =========================================================
+     ARMONÍAS
+  ========================================================= */
+
+  $("#rtHarmonyBtn")?.addEventListener("click",()=>{
+
+    const color = $("#rtHarmonyColor")?.value || "#d7b45a";
+    const type = $("#rtHarmonyType")?.value || "complementary";
+
+    const hsl = hexToHsl(color);
+
+    if(!hsl){
+      return;
+    }
+
+    let offsets = [0,180];
+
+    if(type === "analogous"){
+      offsets = [-30,0,30];
+    }
+
+    if(type === "triadic"){
+      offsets = [0,120,240];
+    }
+
+    const colors = offsets.map(offset=>{
+
+      let h = (hsl.h + offset) % 360;
+
+      if(h < 0){
+        h += 360;
+      }
+
+      return hslToHex(
+        h,
+        hsl.s,
+        hsl.l
+      );
+
+    });
+
+    $("#rtHarmonyResult").textContent =
+      colors.join("  •  ");
+
+    const swatches = $("#rtHarmonySwatches");
+
+    if(swatches){
+
+      swatches.innerHTML = "";
+
+      colors.forEach(hex=>{
+
+        const item = document.createElement("div");
+
+        item.style.width = "60px";
+        item.style.height = "60px";
+        item.style.borderRadius = "10px";
+        item.style.background = hex;
+        item.style.border = "1px solid #555";
+        item.title = hex;
+
+        swatches.appendChild(item);
+
+      });
+
+    }
+
+  });
+
+  /* =========================================================
+     PROPORCIONES ARTÍSTICAS
+  ========================================================= */
+
+  $("#rtArtPropBtn")?.addEventListener("click",()=>{
+
+    const ref = Number($("#rtArtRef")?.value);
+    const obs = Number($("#rtArtObs")?.value);
+
+    if(!Number.isFinite(ref) || !Number.isFinite(obs) || ref === 0){
+      $("#rtArtPropResult").textContent = "Introduce valores válidos.";
+      return;
+    }
+
+    $("#rtArtPropResult").textContent =
+      `Relación: ${(obs/ref).toFixed(3)}×\n` +
+      `Porcentaje: ${(obs/ref*100).toFixed(2)} %`;
+
+  });
+
+  /* =========================================================
+     BUSCADORES
+  ========================================================= */
+
+  function openSearch(engine,query){
+
+    const q = encodeURIComponent(query.trim());
+
+    if(!q){
+      return;
+    }
+
+    const urls = {
+
+      google:
+        `https://www.google.com/search?tbm=isch&q=${q}`,
+
+      bing:
+        `https://www.bing.com/images/search?q=${q}`,
+
+      pinterest:
+        `https://www.pinterest.com/search/pins/?q=${q}`,
+
+      instagram:
+        `https://www.instagram.com/explore/search/keyword/?q=${q}`,
+
+      artstation:
+        `https://www.artstation.com/search?q=${q}`,
+
+      deviantart:
+        `https://www.deviantart.com/search?q=${q}`,
+
+      behance:
+        `https://www.behance.net/search/projects?search=${q}`,
+
+      dribbble:
+        `https://dribbble.com/search/${q}`
+
+    };
+
+    const url = urls[engine];
+
+    if(url){
+      window.open(url,"_blank","noopener,noreferrer");
+    }
+
+  }
+
+  root.querySelectorAll("[data-rt-search]").forEach(link=>{
+
+    link.addEventListener("click",(event)=>{
+
+      event.preventDefault();
+
+      const query = $("#rtTattooSearch")?.value || "";
+
+      if(!query.trim()){
+        $("#rtTattooSearch")?.focus();
+        return;
+      }
+
+      openSearch(
+        link.dataset.rtSearch,
+        query
+      );
+
+    });
+
+  });
+
+  root.querySelectorAll("[data-rt-art-search]").forEach(link=>{
+
+    link.addEventListener("click",(event)=>{
+
+      event.preventDefault();
+
+      const query = $("#rtArtSearch")?.value || "";
+
+      if(!query.trim()){
+        $("#rtArtSearch")?.focus();
+        return;
+      }
+
+      openSearch(
+        link.dataset.rtArtSearch,
+        query
+      );
+
+    });
+
+  });
+
+  /* =========================================================
+     LIENZO INFANTIL
+  ========================================================= */
+
+  const canvas = $("#rtKidsCanvas");
+
+  if(canvas){
+
+    const ctx = canvas.getContext("2d",{
+      alpha:false
+    });
+
+    const history = [];
+    const future = [];
+
+    const MAX_HISTORY = 8;
+
+    let drawing = false;
+    let eraser = false;
+    let pointerId = null;
+
+    function fillWhite(){
+
+      ctx.save();
+
+      ctx.fillStyle = "#fff";
+
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      ctx.restore();
+
+    }
+
+    function snapshot(){
+
+      return ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+    }
+
+    function restore(imageData){
+
+      ctx.putImageData(
+        imageData,
+        0,
+        0
+      );
+
+    }
+
+    function pushHistory(){
+
+      history.push(
+        snapshot()
+      );
+
+      if(history.length > MAX_HISTORY){
+        history.shift();
+      }
+
+      future.length = 0;
+
+    }
+
+    function updateHistoryButtons(){
+
+      const undo = $("#rtKidsUndo");
+      const redo = $("#rtKidsRedo");
+
+      if(undo){
+        undo.disabled = history.length === 0;
+      }
+
+      if(redo){
+        redo.disabled = future.length === 0;
+      }
+
+    }
+
+    function position(event){
+
+      const rect = canvas.getBoundingClientRect();
+
+      return {
+        x:(event.clientX-rect.left) *
+          canvas.width/rect.width,
+
+        y:(event.clientY-rect.top) *
+          canvas.height/rect.height
+      };
+
+    }
+
+    function start(event){
+
+      event.preventDefault();
+
+      pushHistory();
+
+      drawing = true;
+      pointerId = event.pointerId;
+
+      try{
+        canvas.setPointerCapture(event.pointerId);
+      }catch(_){}
+
+      const p = position(event);
+
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+
+      drawDot(p);
+
+    }
+
+    function drawDot(p){
+
+      const color =
+        eraser
+          ? "#fff"
+          : ($("#rtKidsColor")?.value || "#111");
+
+      const size =
+        Number($("#rtKidsSize")?.value || 8);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(
+        p.x,
+        p.y,
+        size/2,
+        0,
+        Math.PI*2
+      );
+      ctx.fill();
+
+    }
+
+    function move(event){
+
+      if(!drawing){
+        return;
+      }
+
+      if(
+        pointerId !== null &&
+        event.pointerId !== pointerId
+      ){
+        return;
+      }
+
+      event.preventDefault();
+
+      const p = position(event);
+
+      const color =
+        eraser
+          ? "#fff"
+          : ($("#rtKidsColor")?.value || "#111");
+
+      const size =
+        Number($("#rtKidsSize")?.value || 8);
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+
+    }
+
+    function end(event){
+
+      if(!drawing){
+        return;
+      }
+
+      drawing = false;
+
+      try{
+        if(pointerId !== null){
+          canvas.releasePointerCapture(pointerId);
+        }
+      }catch(_){}
+
+      pointerId = null;
+
+      updateHistoryButtons();
+
+    }
+
+    canvas.addEventListener("pointerdown",start);
+    canvas.addEventListener("pointermove",move);
+    canvas.addEventListener("pointerup",end);
+    canvas.addEventListener("pointercancel",end);
+
+    $("#rtKidsUndo")?.addEventListener("click",()=>{
+
+      if(!history.length){
+        return;
+      }
+
+      future.push(
+        snapshot()
+      );
+
+      restore(
+        history.pop()
+      );
+
+      updateHistoryButtons();
+
+    });
+
+    $("#rtKidsRedo")?.addEventListener("click",()=>{
+
+      if(!future.length){
+        return;
+      }
+
+      history.push(
+        snapshot()
+      );
+
+      restore(
+        future.pop()
+      );
+
+      updateHistoryButtons();
+
+    });
+
+    $("#rtKidsEraser")?.addEventListener("click",()=>{
+
+      eraser = !eraser;
+
+      const button = $("#rtKidsEraser");
+
+      if(button){
+        button.textContent =
+          eraser
+            ? "🖌️ Pincel"
+            : "🧽 Borrador";
+      }
+
+    });
+
+    $("#rtKidsClear")?.addEventListener("click",()=>{
+
+      pushHistory();
+
+      fillWhite();
+
+      updateHistoryButtons();
+
+    });
+
+    $("#rtKidsSave")?.addEventListener("click",()=>{
+
+      const link = document.createElement("a");
+
+      link.download =
+        "roxthal-pinta-y-crea.png";
+
+      link.href =
+        canvas.toDataURL("image/png");
+
+      link.click();
+
+    });
+
+    root.querySelectorAll("[data-kids-color]").forEach(button=>{
+
+      button.addEventListener("click",()=>{
+
+        const color = button.dataset.kidsColor;
+
+        const picker = $("#rtKidsColor");
+
+        if(picker){
+          picker.value = color;
+        }
+
+        eraser = false;
+
+        const eraserButton = $("#rtKidsEraser");
+
+        if(eraserButton){
+          eraserButton.textContent = "🧽 Borrador";
+        }
+
+      });
+
+    });
+
+    fillWhite();
+    updateHistoryButtons();
+
+  }
+
+  /* =========================================================
+     OBSERVADOR
+     Si el botón flotante aparece dinámicamente,
+     se conecta sin crear otro.
+  ========================================================= */
+
+  const observer = new MutationObserver(()=>{
+    bindExistingButtons();
+  });
+
+  observer.observe(document.body,{
+    childList:true,
+    subtree:true
+  });
+
+  /* =========================================================
+     EXPOSICIÓN
+  ========================================================= */
+
+  window.RoXThalToolsRepair = function(){
+
+    bindExistingButtons();
+    updateConverter();
+    updateRGB();
+    drawGrid();
+    updateChecklist();
+
+  };
+
+})();
+</script>
+
+<!-- =========================================================
+     REPARADOR FINAL
+     Debe permanecer justo antes de </body>
+========================================================= -->
+
+<script>
+(function(){
+
+  "use strict";
+
+  function repairRoXThalTools(){
+
+    const tools =
+      document.getElementById("roxthalTools");
+
+    if(!tools){
+      return;
+    }
+
+    /*
+      No crea botones.
+      No crea otro módulo.
+      Solo verifica que el módulo existente
+      pueda abrirse desde un control Herramientas.
+    */
+
+    const candidates = [
+      ...document.querySelectorAll(
+        "[data-tools], [data-tool], [data-module='tools'], [data-module='herramientas'], button, a"
+      )
+    ];
+
+    candidates.forEach(element=>{
+
+      if(element.dataset.roxthalRepairBound === "1"){
+        return;
+      }
+
+      const text = (
+        element.textContent ||
+        element.getAttribute("aria-label") ||
+        element.title ||
+        ""
+      ).toLowerCase();
+
+      if(
+        text.includes("herramientas") ||
+        text.includes("tools") ||
+        element.hasAttribute("data-tools") ||
+        element.hasAttribute("data-tool")
+      ){
+
+        element.dataset.roxthalRepairBound = "1";
+
+        element.addEventListener("click",(event)=>{
+
+          const href =
+            element.getAttribute("href");
+
+          if(
+            href === "#roxthalTools" ||
+            href === "#herramientas" ||
+            element.hasAttribute("data-tools") ||
+            element.hasAttribute("data-tool")
+          ){
+
+            event.preventDefault();
+
+            if(window.RoXThalTools &&
+               typeof window.RoXThalTools.open === "function"){
+
+              window.RoXThalTools.open();
+
+            }
+
+          }
+
+        });
+
+      }
+
+    });
+
+    if(
+      window.RoXThalToolsRepair &&
+      typeof window.RoXThalToolsRepair === "function"
+    ){
+
+      window.RoXThalToolsRepair();
+
+    }
+
+  }
+
+  if(document.readyState === "loading"){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      repairRoXThalTools,
+      {once:true}
+    );
+
+  }else{
+
+    repairRoXThalTools();
+
+  }
+
+  window.addEventListener(
+    "load",
+    repairRoXThalTools,
+    {once:true}
+  );
+
+})();
+</script>
 </body>
 </html>
