@@ -6862,5 +6862,1579 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
 })();
 </script>
+   <!-- =========================================================
+     ROXTHAL — SERVICIOS ADMIN V3
+     Formulario real + foto móvil + Supabase Storage
+     No requiere IDs concretos del formulario anterior
+     ========================================================= -->
+
+<script>
+(function () {
+  'use strict';
+
+  const RX_SERVICE_MARK = 'data-roxthal-services-v3';
+
+  let rxServicesReady = false;
+  let rxServicesObserver = null;
+  let rxEditingId = null;
+  let rxSelectedFile = null;
+
+  function rxDB() {
+    return window.db ||
+           window.supabaseClient ||
+           window.supabase ||
+           null;
+  }
+
+  function rxToast(message, type) {
+    try {
+      if (typeof window.toast === 'function') {
+        window.toast(message);
+        return;
+      }
+    } catch (_) {}
+
+    const old = document.getElementById('rx-service-toast');
+    if (old) old.remove();
+
+    const box = document.createElement('div');
+    box.id = 'rx-service-toast';
+    box.textContent = message;
+
+    box.style.cssText = `
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translateX(-50%);
+      z-index:999999;
+      background:#111;
+      color:#fff;
+      padding:13px 18px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      font-size:14px;
+      max-width:90vw;
+      text-align:center;
+    `;
+
+    document.body.appendChild(box);
+
+    setTimeout(() => {
+      box.remove();
+    }, 3500);
+  }
+
+  function rxEscape(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function rxSlug(text) {
+    return String(text || 'servicio')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'servicio';
+  }
+
+  function rxFindServicesForm() {
+
+    const buttons = Array.from(document.querySelectorAll('button'));
+
+    const saveButton = buttons.find(btn =>
+      (btn.textContent || '')
+        .trim()
+        .toLowerCase()
+        .includes('guardar servicio')
+    );
+
+    if (!saveButton) return null;
+
+    let container =
+      saveButton.closest('form') ||
+      saveButton.closest('[data-admin-panel]') ||
+      saveButton.parentElement;
+
+    if (!container) return null;
+
+    /*
+      Buscamos el contenedor más razonable que contenga
+      los campos Nombre / Descripción / Activo.
+    */
+    let candidate = container;
+
+    for (let i = 0; i < 6 && candidate.parentElement; i++) {
+
+      const text = (candidate.innerText || '').toLowerCase();
+
+      if (
+        text.includes('nombre') &&
+        text.includes('descripción') &&
+        text.includes('activo') &&
+        text.includes('guardar servicio')
+      ) {
+        container = candidate;
+        break;
+      }
+
+      candidate = candidate.parentElement;
+    }
+
+    return container;
+  }
+
+  function rxBuildForm(container) {
+
+    if (!container) return false;
+
+    if (container.getAttribute(RX_SERVICE_MARK) === '1') {
+      return true;
+    }
+
+    /*
+      No tocamos el panel entero.
+      Solo reemplazamos el contenido del bloque que contiene
+      el formulario antiguo.
+    */
+
+    let target = container;
+
+    if (container.matches('form')) {
+      target = container;
+    } else {
+
+      const formInside = container.querySelector('form');
+
+      if (formInside) {
+        target = formInside;
+      } else {
+
+        /*
+          Si el HTML original no utiliza <form>, usamos el
+          bloque contenedor detectado.
+        */
+        target = container;
+      }
+    }
+
+    target.setAttribute(RX_SERVICE_MARK, '1');
+
+    target.innerHTML = `
+      <div style="
+        display:flex;
+        flex-direction:column;
+        gap:14px;
+        width:100%;
+      ">
+
+        <div style="
+          font-size:20px;
+          font-weight:800;
+          margin-bottom:2px;
+        ">
+          🛠️ Gestión de servicios
+        </div>
+
+        <div style="
+          font-size:13px;
+          opacity:.72;
+          margin-bottom:5px;
+        ">
+          Administra nombre, descripción, precio, orden, estado y fotografía.
+        </div>
+
+        <input
+          type="hidden"
+          id="rxServiceId"
+          value=""
+        >
+
+        <div class="field">
+          <label for="rxServiceName">Nombre</label>
+
+          <input
+            id="rxServiceName"
+            type="text"
+            autocomplete="off"
+            placeholder="Ej.: Atelier de Arte"
+          >
+        </div>
+
+        <div class="field">
+          <label for="rxServiceDescription">Descripción</label>
+
+          <textarea
+            id="rxServiceDescription"
+            rows="4"
+            placeholder="Descripción del servicio..."
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="rxServicePrice">
+            Precio
+          </label>
+
+          <input
+            id="rxServicePrice"
+            type="number"
+            min="0"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="0"
+          >
+        </div>
+
+        <div class="field">
+          <label for="rxServiceOrder">
+            Orden de aparición
+          </label>
+
+          <input
+            id="rxServiceOrder"
+            type="number"
+            step="1"
+            inputmode="numeric"
+            value="0"
+          >
+        </div>
+
+        <div class="field">
+          <label
+            style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+              cursor:pointer;
+            "
+          >
+            <input
+              id="rxServiceActive"
+              type="checkbox"
+              checked
+              style="
+                width:20px;
+                height:20px;
+              "
+            >
+
+            <span>
+              Servicio activo y visible
+            </span>
+          </label>
+        </div>
+
+        <div class="field">
+
+          <label for="rxServiceImage">
+            📷 Fotografía del servicio
+          </label>
+
+          <input
+            id="rxServiceImage"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style="
+              width:100%;
+              padding:10px;
+              border:1px solid rgba(255,255,255,.18);
+              border-radius:10px;
+              background:rgba(255,255,255,.04);
+            "
+          >
+
+          <div
+            id="rxServiceImageInfo"
+            style="
+              font-size:12px;
+              opacity:.7;
+              margin-top:6px;
+            "
+          >
+            Puedes elegir una foto de la galería o tomar una nueva con la cámara.
+          </div>
+
+          <div
+            id="rxServicePreview"
+            style="
+              display:none;
+              margin-top:10px;
+            "
+          >
+            <img
+              id="rxServicePreviewImg"
+              alt="Vista previa"
+              style="
+                display:block;
+                width:100%;
+                max-width:420px;
+                max-height:280px;
+                object-fit:cover;
+                border-radius:14px;
+                border:1px solid rgba(255,255,255,.15);
+              "
+            >
+          </div>
+
+        </div>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top:4px;
+          "
+        >
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="rxServiceSave"
+          >
+            💾 Guardar servicio
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            id="rxServiceClear"
+          >
+            Limpiar
+          </button>
+
+        </div>
+
+        <div
+          id="rxServiceStatus"
+          style="
+            min-height:20px;
+            font-size:13px;
+            margin-top:2px;
+          "
+        ></div>
+
+      </div>
+
+      <div
+        id="rxServicesAdminList"
+        style="
+          margin-top:25px;
+        "
+      ></div>
+    `;
+
+    const fileInput =
+      document.getElementById('rxServiceImage');
+
+    if (fileInput) {
+
+      fileInput.addEventListener('change', function () {
+
+        const file = this.files && this.files[0];
+
+        rxSelectedFile = file || null;
+
+        const preview =
+          document.getElementById('rxServicePreview');
+
+        const previewImg =
+          document.getElementById('rxServicePreviewImg');
+
+        const info =
+          document.getElementById('rxServiceImageInfo');
+
+        if (!file) {
+
+          if (preview) {
+            preview.style.display = 'none';
+          }
+
+          if (info) {
+            info.textContent =
+              'Puedes elegir una foto de la galería o tomar una nueva con la cámara.';
+          }
+
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+
+          rxSelectedFile = null;
+          this.value = '';
+
+          rxToast(
+            'Selecciona una imagen válida.',
+            'error'
+          );
+
+          return;
+        }
+
+        if (file.size > 15 * 1024 * 1024) {
+
+          rxSelectedFile = null;
+          this.value = '';
+
+          rxToast(
+            'La imagen supera 15 MB.',
+            'error'
+          );
+
+          return;
+        }
+
+        if (info) {
+          info.textContent =
+            'Imagen seleccionada: ' +
+            file.name +
+            ' (' +
+            Math.round(file.size / 1024) +
+            ' KB)';
+        }
+
+        const reader =
+          new FileReader();
+
+        reader.onload = function (event) {
+
+          if (previewImg) {
+            previewImg.src =
+              event.target.result;
+          }
+
+          if (preview) {
+            preview.style.display = 'block';
+          }
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const save =
+      document.getElementById('rxServiceSave');
+
+    if (save) {
+
+      save.addEventListener(
+        'click',
+        rxSaveService
+      );
+    }
+
+    const clear =
+      document.getElementById('rxServiceClear');
+
+    if (clear) {
+
+      clear.addEventListener(
+        'click',
+        rxClearService
+      );
+    }
+
+    rxServicesReady = true;
+
+    rxLoadAdminServices();
+
+    return true;
+  }
+
+  async function rxSaveService() {
+
+    const db = rxDB();
+
+    if (!db) {
+      rxToast(
+        'No se encontró la conexión con Supabase.',
+        'error'
+      );
+      return;
+    }
+
+    const id =
+      document.getElementById('rxServiceId')?.value ||
+      '';
+
+    const name =
+      document.getElementById('rxServiceName')?.value
+        ?.trim() || '';
+
+    const description =
+      document.getElementById('rxServiceDescription')?.value
+        ?.trim() || '';
+
+    const priceRaw =
+      document.getElementById('rxServicePrice')?.value;
+
+    const sortRaw =
+      document.getElementById('rxServiceOrder')?.value;
+
+    const active =
+      document.getElementById('rxServiceActive')?.checked !== false;
+
+    const status =
+      document.getElementById('rxServiceStatus');
+
+    const save =
+      document.getElementById('rxServiceSave');
+
+    if (!name) {
+
+      rxToast(
+        'Escribe el nombre del servicio.',
+        'error'
+      );
+
+      return;
+    }
+
+    const price =
+      priceRaw === '' ||
+      priceRaw == null
+        ? 0
+        : Number(priceRaw);
+
+    const sortOrder =
+      sortRaw === '' ||
+      sortRaw == null
+        ? 0
+        : Number(sortRaw);
+
+    if (!Number.isFinite(price) || price < 0) {
+
+      rxToast(
+        'El precio no es válido.',
+        'error'
+      );
+
+      return;
+    }
+
+    if (!Number.isFinite(sortOrder)) {
+
+      rxToast(
+        'El orden no es válido.',
+        'error'
+      );
+
+      return;
+    }
+
+    if (save) {
+      save.disabled = true;
+      save.textContent =
+        rxSelectedFile
+          ? '⏳ Subiendo foto...'
+          : '⏳ Guardando...';
+    }
+
+    if (status) {
+      status.textContent =
+        'Procesando...';
+    }
+
+    try {
+
+      let oldImageUrl = null;
+      let imageUrl = null;
+
+      /*
+        Si estamos editando, primero obtenemos el registro actual
+        para conservar la imagen si no se selecciona otra.
+      */
+
+      if (id) {
+
+        const existing =
+          await db
+            .from('services')
+            .select(
+              'id,name,description,active,price,image_url,sort_order'
+            )
+            .eq('id', id)
+            .maybeSingle();
+
+        if (existing.error) {
+          throw existing.error;
+        }
+
+        if (existing.data) {
+          oldImageUrl =
+            existing.data.image_url || null;
+
+          imageUrl =
+            existing.data.image_url || null;
+        }
+      }
+
+      /*
+        SUBIDA DE IMAGEN
+      */
+
+      if (rxSelectedFile) {
+
+        const extension =
+          (
+            rxSelectedFile.name
+              .split('.')
+              .pop() ||
+            'jpg'
+          )
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
+
+        const safeExtension =
+          extension || 'jpg';
+
+        const unique =
+          crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now() +
+              '-' +
+              Math.random()
+                .toString(36)
+                .slice(2);
+
+        const path =
+          'services/' +
+          unique +
+          '-' +
+          rxSlug(name) +
+          '.' +
+          safeExtension;
+
+        if (status) {
+          status.textContent =
+            'Subiendo fotografía...';
+        }
+
+        const upload =
+          await db
+            .storage
+            .from('images')
+            .upload(
+              path,
+              rxSelectedFile,
+              {
+                cacheControl: '3600',
+                upsert: false,
+                contentType:
+                  rxSelectedFile.type ||
+                  'image/jpeg'
+              }
+            );
+
+        if (upload.error) {
+          throw upload.error;
+        }
+
+        const publicResult =
+          db
+            .storage
+            .from('images')
+            .getPublicUrl(path);
+
+        imageUrl =
+          publicResult?.data?.publicUrl ||
+          null;
+
+        if (!imageUrl) {
+          throw new Error(
+            'Supabase no devolvió la URL pública de la imagen.'
+          );
+        }
+      }
+
+      /*
+        GUARDAR REGISTRO
+      */
+
+      const payload = {
+        name: name,
+        description: description,
+        price: price,
+        sort_order: Math.trunc(sortOrder),
+        active: active
+      };
+
+      if (imageUrl !== null) {
+        payload.image_url =
+          imageUrl;
+      }
+
+      let result;
+
+      if (id) {
+
+        result =
+          await db
+            .from('services')
+            .update(payload)
+            .eq('id', id);
+
+      } else {
+
+        result =
+          await db
+            .from('services')
+            .insert(payload);
+      }
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      /*
+        Si se guardó una imagen nueva y había una vieja,
+        intentamos eliminar únicamente la vieja.
+      */
+
+      if (
+        rxSelectedFile &&
+        oldImageUrl &&
+        oldImageUrl !== imageUrl
+      ) {
+
+        await rxDeleteStorageObject(
+          oldImageUrl
+        );
+      }
+
+      rxToast(
+        id
+          ? 'Servicio actualizado correctamente.'
+          : 'Servicio creado correctamente.',
+        'success'
+      );
+
+      rxClearService();
+
+      await rxLoadAdminServices();
+
+      await rxRefreshPublicServices();
+
+    } catch (error) {
+
+      console.error(
+        'RoXThal Servicios V3:',
+        error
+      );
+
+      const message =
+        error?.message ||
+        'No se pudo guardar el servicio.';
+
+      if (status) {
+        status.textContent =
+          'Error: ' + message;
+      }
+
+      rxToast(
+        'No se pudo guardar: ' + message,
+        'error'
+      );
+
+    } finally {
+
+      if (save) {
+        save.disabled = false;
+        save.textContent =
+          '💾 Guardar servicio';
+      }
+    }
+  }
+
+  function rxClearService() {
+
+    rxEditingId = null;
+    rxSelectedFile = null;
+
+    const fields = [
+      'rxServiceId',
+      'rxServiceName',
+      'rxServiceDescription',
+      'rxServicePrice',
+      'rxServiceOrder'
+    ];
+
+    fields.forEach(id => {
+
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.value = '';
+      }
+    });
+
+    const active =
+      document.getElementById(
+        'rxServiceActive'
+      );
+
+    if (active) {
+      active.checked = true;
+    }
+
+    const file =
+      document.getElementById(
+        'rxServiceImage'
+      );
+
+    if (file) {
+      file.value = '';
+    }
+
+    const preview =
+      document.getElementById(
+        'rxServicePreview'
+      );
+
+    if (preview) {
+      preview.style.display = 'none';
+    }
+
+    const previewImg =
+      document.getElementById(
+        'rxServicePreviewImg'
+      );
+
+    if (previewImg) {
+      previewImg.removeAttribute('src');
+    }
+
+    const info =
+      document.getElementById(
+        'rxServiceImageInfo'
+      );
+
+    if (info) {
+      info.textContent =
+        'Puedes elegir una foto de la galería o tomar una nueva con la cámara.';
+    }
+
+    const status =
+      document.getElementById(
+        'rxServiceStatus'
+      );
+
+    if (status) {
+      status.textContent = '';
+    }
+  }
+
+  async function rxLoadAdminServices() {
+
+    const db = rxDB();
+
+    if (!db) return;
+
+    const list =
+      document.getElementById(
+        'rxServicesAdminList'
+      );
+
+    if (!list) return;
+
+    list.innerHTML =
+      '<div style="opacity:.7;padding:10px 0;">Cargando servicios...</div>';
+
+    try {
+
+      const result =
+        await db
+          .from('services')
+          .select(
+            'id,name,description,active,price,image_url,sort_order,created_at,updated_at'
+          )
+          .order(
+            'sort_order',
+            { ascending: true }
+          )
+          .order(
+            'created_at',
+            { ascending: true }
+          );
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      const rows =
+        result.data || [];
+
+      if (!rows.length) {
+
+        list.innerHTML =
+          '<div style="opacity:.7;padding:10px 0;">No hay servicios registrados.</div>';
+
+        return;
+      }
+
+      list.innerHTML = `
+        <div style="
+          font-size:17px;
+          font-weight:800;
+          margin-bottom:12px;
+        ">
+          Servicios existentes
+        </div>
+
+        <div style="
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        ">
+          ${rows.map(rxAdminServiceCard).join('')}
+        </div>
+      `;
+
+      list
+        .querySelectorAll(
+          '[data-rx-edit-service]'
+        )
+        .forEach(button => {
+
+          button.addEventListener(
+            'click',
+            () => {
+              rxEditService(
+                button.dataset.rxEditService
+              );
+            }
+          );
+        });
+
+      list
+        .querySelectorAll(
+          '[data-rx-delete-service]'
+        )
+        .forEach(button => {
+
+          button.addEventListener(
+            'click',
+            () => {
+              rxDeleteService(
+                button.dataset.rxDeleteService
+              );
+            }
+          );
+        });
+
+    } catch (error) {
+
+      console.error(
+        'RoXThal: error cargando servicios',
+        error
+      );
+
+      list.innerHTML =
+        '<div style="color:#ff7777;">No se pudieron cargar los servicios.</div>';
+    }
+  }
+
+  function rxAdminServiceCard(row) {
+
+    const image =
+      row.image_url
+        ? `
+          <img
+            src="${rxEscape(row.image_url)}"
+            alt="${rxEscape(row.name)}"
+            style="
+              width:90px;
+              height:70px;
+              object-fit:cover;
+              border-radius:10px;
+              flex:none;
+            "
+          >
+        `
+        : `
+          <div style="
+            width:90px;
+            height:70px;
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:rgba(255,255,255,.06);
+            font-size:25px;
+            flex:none;
+          ">
+            🖼️
+          </div>
+        `;
+
+    const state =
+      row.active
+        ? 'VISIBLE'
+        : 'OCULTO';
+
+    const price =
+      Number(row.price || 0);
+
+    return `
+      <div
+        class="admin-item"
+        style="
+          display:flex;
+          gap:12px;
+          align-items:flex-start;
+          padding:12px;
+          border-radius:14px;
+          overflow:hidden;
+        "
+      >
+
+        ${image}
+
+        <div style="
+          flex:1;
+          min-width:0;
+        ">
+
+          <div style="
+            font-weight:800;
+            font-size:16px;
+          ">
+            ${rxEscape(row.name)}
+          </div>
+
+          <div style="
+            font-size:13px;
+            opacity:.75;
+            margin-top:4px;
+          ">
+            ${rxEscape(row.description || '')}
+          </div>
+
+          <div style="
+            font-size:12px;
+            opacity:.8;
+            margin-top:7px;
+          ">
+            💰 $${price.toLocaleString('es-AR')}
+            · Orden ${Number(row.sort_order || 0)}
+            · ${state}
+          </div>
+
+          <div style="
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            margin-top:10px;
+          ">
+
+            <button
+              type="button"
+              class="btn btn-small"
+              data-rx-edit-service="${rxEscape(row.id)}"
+            >
+              ✏️ Editar
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-danger btn-small"
+              data-rx-delete-service="${rxEscape(row.id)}"
+            >
+              🗑️ Eliminar
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+  async function rxEditService(id) {
+
+    const db = rxDB();
+
+    if (!db || !id) return;
+
+    try {
+
+      const result =
+        await db
+          .from('services')
+          .select(
+            'id,name,description,active,price,image_url,sort_order'
+          )
+          .eq('id', id)
+          .maybeSingle();
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (!result.data) {
+
+        rxToast(
+          'No se encontró el servicio.',
+          'error'
+        );
+
+        return;
+      }
+
+      const row =
+        result.data;
+
+      const idField =
+        document.getElementById(
+          'rxServiceId'
+        );
+
+      const name =
+        document.getElementById(
+          'rxServiceName'
+        );
+
+      const description =
+        document.getElementById(
+          'rxServiceDescription'
+        );
+
+      const price =
+        document.getElementById(
+          'rxServicePrice'
+        );
+
+      const order =
+        document.getElementById(
+          'rxServiceOrder'
+        );
+
+      const active =
+        document.getElementById(
+          'rxServiceActive'
+        );
+
+      if (idField) idField.value = row.id;
+      if (name) name.value = row.name || '';
+      if (description) description.value = row.description || '';
+      if (price) price.value = row.price ?? 0;
+      if (order) order.value = row.sort_order ?? 0;
+      if (active) active.checked = !!row.active;
+
+      rxEditingId = row.id;
+      rxSelectedFile = null;
+
+      const file =
+        document.getElementById(
+          'rxServiceImage'
+        );
+
+      if (file) {
+        file.value = '';
+      }
+
+      const preview =
+        document.getElementById(
+          'rxServicePreview'
+        );
+
+      const previewImg =
+        document.getElementById(
+          'rxServicePreviewImg'
+        );
+
+      if (row.image_url) {
+
+        if (previewImg) {
+          previewImg.src =
+            row.image_url;
+        }
+
+        if (preview) {
+          preview.style.display =
+            'block';
+        }
+
+      } else if (preview) {
+
+        preview.style.display =
+          'none';
+      }
+
+      const info =
+        document.getElementById(
+          'rxServiceImageInfo'
+        );
+
+      if (info) {
+
+        info.textContent =
+          row.image_url
+            ? 'Fotografía actual cargada. Selecciona otra solamente si quieres reemplazarla.'
+            : 'Este servicio todavía no tiene fotografía.';
+      }
+
+      const status =
+        document.getElementById(
+          'rxServiceStatus'
+        );
+
+      if (status) {
+        status.textContent =
+          'Editando: ' + row.name;
+      }
+
+      document
+        .getElementById(
+          'rxServiceName'
+        )
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'center'
+        });
+
+    } catch (error) {
+
+      console.error(
+        'RoXThal: error editando servicio',
+        error
+      );
+
+      rxToast(
+        'No se pudo cargar el servicio.',
+        'error'
+      );
+    }
+  }
+
+  async function rxDeleteService(id) {
+
+    const db = rxDB();
+
+    if (!db || !id) return;
+
+    const confirmed =
+      window.confirm(
+        '¿Eliminar este servicio?\n\nTambién se intentará eliminar su fotografía de Storage. Esta acción no afecta a los demás servicios.'
+      );
+
+    if (!confirmed) return;
+
+    try {
+
+      const existing =
+        await db
+          .from('services')
+          .select(
+            'id,name,image_url'
+          )
+          .eq('id', id)
+          .maybeSingle();
+
+      if (existing.error) {
+        throw existing.error;
+      }
+
+      const imageUrl =
+        existing.data?.image_url ||
+        null;
+
+      const deleted =
+        await db
+          .from('services')
+          .delete()
+          .eq('id', id);
+
+      if (deleted.error) {
+        throw deleted.error;
+      }
+
+      if (imageUrl) {
+        await rxDeleteStorageObject(
+          imageUrl
+        );
+      }
+
+      rxToast(
+        'Servicio eliminado correctamente.',
+        'success'
+      );
+
+      await rxLoadAdminServices();
+
+      await rxRefreshPublicServices();
+
+    } catch (error) {
+
+      console.error(
+        'RoXThal: error eliminando servicio',
+        error
+      );
+
+      rxToast(
+        'No se pudo eliminar: ' +
+        (error?.message || 'error desconocido'),
+        'error'
+      );
+    }
+  }
+
+  async function rxDeleteStorageObject(url) {
+
+    const db = rxDB();
+
+    if (!db || !url) return;
+
+    try {
+
+      const marker =
+        '/storage/v1/object/public/images/';
+
+      const index =
+        url.indexOf(marker);
+
+      if (index === -1) {
+        return;
+      }
+
+      const path =
+        decodeURIComponent(
+          url.slice(
+            index + marker.length
+          )
+        );
+
+      if (!path) return;
+
+      const result =
+        await db
+          .storage
+          .from('images')
+          .remove([path]);
+
+      if (result.error) {
+
+        console.warn(
+          'RoXThal: no se pudo borrar la imagen antigua',
+          result.error
+        );
+      }
+
+    } catch (error) {
+
+      console.warn(
+        'RoXThal: error eliminando objeto Storage',
+        error
+      );
+    }
+  }
+
+  async function rxRefreshPublicServices() {
+
+    const db = rxDB();
+
+    if (!db) return;
+
+    const list =
+      document.getElementById(
+        'servicesList'
+      );
+
+    if (!list) return;
+
+    try {
+
+      const result =
+        await db
+          .from('services')
+          .select(
+            'id,name,description,active,price,image_url,sort_order'
+          )
+          .eq('active', true)
+          .order(
+            'sort_order',
+            { ascending:true }
+          )
+          .order(
+            'created_at',
+            { ascending:true }
+          );
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      const rows =
+        result.data || [];
+
+      list.innerHTML =
+        rows.map(row => {
+
+          const image =
+            row.image_url
+              ? `
+                <img
+                  src="${rxEscape(row.image_url)}"
+                  alt="${rxEscape(row.name)}"
+                  loading="lazy"
+                  style="
+                    width:100%;
+                    aspect-ratio:16/9;
+                    object-fit:cover;
+                    display:block;
+                    border-radius:14px;
+                    margin-bottom:14px;
+                  "
+                >
+              `
+              : '';
+
+          const price =
+            Number(row.price || 0);
+
+          const priceHtml =
+            price > 0
+              ? `
+                <div style="
+                  margin-top:10px;
+                  font-weight:800;
+                ">
+                  $${price.toLocaleString('es-AR')}
+                </div>
+              `
+              : '';
+
+          return `
+            <article
+              class="admin-item"
+              style="
+                padding:14px;
+                border-radius:16px;
+                overflow:hidden;
+              "
+            >
+
+              ${image}
+
+              <h3 style="
+                margin:0 0 8px;
+              ">
+                ${rxEscape(row.name)}
+              </h3>
+
+              <p style="
+                margin:0;
+                opacity:.78;
+              ">
+                ${rxEscape(row.description || '')}
+              </p>
+
+              ${priceHtml}
+
+            </article>
+          `;
+
+        }).join('');
+
+    } catch (error) {
+
+      /*
+        Si el cargador original de la aplicación existe,
+        lo dejamos funcionar normalmente.
+      */
+
+      console.warn(
+        'RoXThal: no se pudo refrescar servicesList directamente.',
+        error
+      );
+
+      try {
+
+        if (typeof window.loadServices === 'function') {
+          await window.loadServices();
+        }
+
+      } catch (_) {}
+    }
+  }
+
+  function rxTryInstall() {
+
+    if (rxServicesReady) return;
+
+    const container =
+      rxFindServicesForm();
+
+    if (!container) return;
+
+    rxBuildForm(container);
+  }
+
+  function rxStartObserver() {
+
+    rxTryInstall();
+
+    if (rxServicesObserver) return;
+
+    rxServicesObserver =
+      new MutationObserver(
+        function () {
+
+          if (!rxServicesReady) {
+            rxTryInstall();
+          }
+
+        }
+      );
+
+    rxServicesObserver.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+  }
+
+  /*
+    El panel administrativo puede construirse después
+    de cargar la página, por eso hacemos varios intentos.
+  */
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      rxStartObserver
+    );
+
+  } else {
+
+    rxStartObserver();
+  }
+
+  setTimeout(rxTryInstall, 500);
+  setTimeout(rxTryInstall, 1500);
+  setTimeout(rxTryInstall, 3000);
+  setTimeout(rxTryInstall, 5000);
+
+})();
+</script>
+<!-- =========================================================
+     FIN ROXTHAL — SERVICIOS ADMIN V3
+     ========================================================= -->
 </body>
 </html>
