@@ -6882,11 +6882,38 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
   let oldImageUrl = '';
 
   function getDB() {
-    return window.db ||
-           window.supabaseClient ||
-           window.supabase ||
-           null;
-  }
+    try {
+        if (typeof db !== 'undefined' &&
+            db &&
+            typeof db.from === 'function' &&
+            db.storage) {
+            return db;
+        }
+    } catch (e) {}
+
+    try {
+        if (typeof supabaseClient !== 'undefined' &&
+            supabaseClient &&
+            typeof supabaseClient.from === 'function' &&
+            supabaseClient.storage) {
+            return supabaseClient;
+        }
+    } catch (e) {}
+
+    if (window.db &&
+        typeof window.db.from === 'function' &&
+        window.db.storage) {
+        return window.db;
+    }
+
+    if (window.supabaseClient &&
+        typeof window.supabaseClient.from === 'function' &&
+        window.supabaseClient.storage) {
+        return window.supabaseClient;
+    }
+
+    return null;
+}
 
   function escapeHTML(value) {
     return String(value ?? '')
