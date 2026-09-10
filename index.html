@@ -19779,6 +19779,3315 @@ window.RoXThalStudio={
 
 })();
 </script>
-                                                                                                                                                                                                                                                                         
+      <!-- ============================================================
+     ROXTHAL ART DESIGN
+     MÓDULO APUNTES — INDEPENDIENTE
+     VERSIÓN REVISADA
+     
+     PEGAR TODO ESTE BLOQUE JUSTO ANTES DE </body>
+     
+     NO MODIFICA:
+     - Herramientas → NOTAS
+     - Sorteo
+     - Control de Alumnos
+     - otras funciones existentes
+     - tablas existentes
+     
+     ============================================================ -->
+
+<style>
+/* ============================================================
+   ROXTHAL APUNTES — ESTILOS AISLADOS
+   ============================================================ */
+
+#rx-apuntes-overlay{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:none;
+  overflow:auto;
+  padding:18px;
+  box-sizing:border-box;
+  background:rgba(0,0,0,.80);
+  backdrop-filter:blur(8px);
+}
+
+#rx-apuntes-overlay.rx-apuntes-open{
+  display:block;
+}
+
+#rx-apuntes-shell{
+  width:min(1100px,100%);
+  min-height:calc(100vh - 36px);
+  margin:0 auto;
+  box-sizing:border-box;
+  overflow:hidden;
+  border:1px solid var(--border,#333);
+  border-radius:22px;
+  background:var(--surface,#111);
+  color:var(--text,#fff);
+  box-shadow:0 25px 80px rgba(0,0,0,.55);
+}
+
+.rx-ap-header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:17px 20px;
+  border-bottom:1px solid var(--border,#333);
+  background:var(--surface,#111);
+}
+
+.rx-ap-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.rx-ap-icon{
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:var(--yellow,#ffd400);
+  color:#111;
+  font-size:22px;
+  font-weight:900;
+}
+
+.rx-ap-title{
+  margin:0;
+  font-size:20px;
+  font-weight:900;
+}
+
+.rx-ap-subtitle{
+  margin:3px 0 0;
+  color:var(--muted,#999);
+  font-size:12px;
+}
+
+.rx-ap-close{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  border:1px solid var(--border,#333);
+  border-radius:12px;
+  background:var(--surface2,#181818);
+  color:var(--text,#fff);
+  cursor:pointer;
+  font-size:22px;
+  font-weight:900;
+}
+
+.rx-ap-body{
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.rx-ap-section{
+  margin-bottom:18px;
+  padding:18px;
+  border:1px solid var(--border,#333);
+  border-radius:18px;
+  background:var(--surface2,#181818);
+}
+
+.rx-ap-section:last-child{
+  margin-bottom:0;
+}
+
+.rx-ap-section h3{
+  margin:0 0 15px;
+  font-size:17px;
+  font-weight:900;
+}
+
+.rx-ap-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.rx-ap-field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-width:0;
+}
+
+.rx-ap-field.full{
+  grid-column:1/-1;
+}
+
+.rx-ap-label{
+  color:var(--muted,#aaa);
+  font-size:12px;
+  font-weight:800;
+}
+
+.rx-ap-input,
+.rx-ap-textarea,
+.rx-ap-select{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid var(--border,#444);
+  border-radius:12px;
+  outline:none;
+  background:var(--surface,#111);
+  color:var(--text,#fff);
+  padding:12px 13px;
+  font:inherit;
+}
+
+.rx-ap-input:focus,
+.rx-ap-textarea:focus,
+.rx-ap-select:focus{
+  border-color:var(--yellow,#ffd400);
+}
+
+.rx-ap-textarea{
+  min-height:190px;
+  resize:vertical;
+  line-height:1.55;
+}
+
+.rx-ap-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:15px;
+}
+
+.rx-ap-btn{
+  min-height:42px;
+  box-sizing:border-box;
+  border:1px solid var(--border,#444);
+  border-radius:12px;
+  padding:10px 15px;
+  background:var(--surface,#111);
+  color:var(--text,#fff);
+  cursor:pointer;
+  font:inherit;
+  font-weight:800;
+}
+
+.rx-ap-btn:hover{
+  filter:brightness(1.10);
+}
+
+.rx-ap-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.rx-ap-btn.primary{
+  border-color:var(--yellow,#ffd400);
+  background:var(--yellow,#ffd400);
+  color:#111;
+}
+
+.rx-ap-btn.danger{
+  border-color:rgba(255,70,70,.45);
+  background:rgba(255,70,70,.10);
+  color:#ff8585;
+}
+
+.rx-ap-password-box{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+}
+
+.rx-ap-password{
+  flex:1 1 190px;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  border:1px dashed var(--yellow,#ffd400);
+  border-radius:12px;
+  padding:10px 12px;
+  background:rgba(255,212,0,.06);
+  color:var(--text,#fff);
+  font-weight:900;
+  letter-spacing:1px;
+  text-align:center;
+  user-select:all;
+}
+
+.rx-ap-status{
+  display:none;
+  margin-top:12px;
+  padding:11px 13px;
+  box-sizing:border-box;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.4;
+}
+
+.rx-ap-status.show{
+  display:block;
+}
+
+.rx-ap-status.ok{
+  border:1px solid rgba(50,200,100,.35);
+  background:rgba(50,200,100,.10);
+  color:#72e69a;
+}
+
+.rx-ap-status.error{
+  border:1px solid rgba(255,60,60,.35);
+  background:rgba(255,60,60,.10);
+  color:#ff8585;
+}
+
+.rx-ap-status.info{
+  border:1px solid rgba(80,150,255,.35);
+  background:rgba(80,150,255,.10);
+  color:#8ebaff;
+}
+
+.rx-ap-photo-preview{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+
+.rx-ap-photo-preview img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border:1px solid var(--border,#333);
+  border-radius:12px;
+}
+
+.rx-ap-note-list{
+  display:grid;
+  gap:12px;
+}
+
+.rx-ap-note-item{
+  padding:14px;
+  border:1px solid var(--border,#333);
+  border-radius:14px;
+  background:var(--surface,#111);
+}
+
+.rx-ap-note-item-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.rx-ap-note-name{
+  font-weight:900;
+  word-break:break-word;
+}
+
+.rx-ap-note-date{
+  margin-top:4px;
+  color:var(--muted,#999);
+  font-size:11px;
+}
+
+.rx-ap-note-text{
+  margin-top:12px;
+  white-space:pre-wrap;
+  line-height:1.55;
+  word-break:break-word;
+}
+
+.rx-ap-empty{
+  padding:28px 15px;
+  color:var(--muted,#999);
+  text-align:center;
+}
+
+.rx-ap-loading{
+  padding:40px 20px;
+  color:var(--muted,#aaa);
+  text-align:center;
+}
+
+/* ============================================================
+   ALUMNO
+   ============================================================ */
+
+#rx-ap-student-gate{
+  width:min(500px,100%);
+  margin:55px auto;
+}
+
+.rx-ap-student-welcome{
+  margin-bottom:22px;
+  text-align:center;
+}
+
+.rx-ap-student-welcome .big{
+  margin-bottom:7px;
+  font-size:26px;
+  font-weight:900;
+}
+
+.rx-ap-student-welcome .small{
+  color:var(--muted,#999);
+  font-size:13px;
+}
+
+.rx-ap-student-password{
+  text-align:center;
+  font-size:20px;
+  letter-spacing:3px;
+}
+
+.rx-ap-student-note{
+  margin-bottom:18px;
+  padding:20px;
+  border:1px solid var(--border,#333);
+  border-radius:20px;
+  background:var(--surface2,#181818);
+}
+
+.rx-ap-student-note h2{
+  margin:0 0 7px;
+  font-size:22px;
+  line-height:1.25;
+}
+
+.rx-ap-student-note-date{
+  margin-bottom:18px;
+  color:var(--muted,#999);
+  font-size:11px;
+}
+
+.rx-ap-student-content{
+  white-space:pre-wrap;
+  line-height:1.7;
+  font-size:15px;
+  word-break:break-word;
+}
+
+.rx-ap-student-photos{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+  margin-top:20px;
+}
+
+.rx-ap-student-photos a{
+  display:block;
+}
+
+.rx-ap-student-photos img{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border:1px solid var(--border,#333);
+  border-radius:14px;
+}
+
+.rx-ap-download{
+  width:100%;
+  margin-top:20px;
+}
+
+@media(max-width:700px){
+
+  #rx-apuntes-overlay{
+    padding:0;
+  }
+
+  #rx-apuntes-shell{
+    min-height:100vh;
+    border-radius:0;
+  }
+
+  .rx-ap-header{
+    padding:14px 15px;
+  }
+
+  .rx-ap-body{
+    padding:14px;
+  }
+
+  .rx-ap-section{
+    padding:14px;
+  }
+
+  .rx-ap-grid{
+    grid-template-columns:1fr;
+  }
+
+  .rx-ap-field.full{
+    grid-column:auto;
+  }
+
+  .rx-ap-student-note{
+    padding:15px;
+  }
+
+  .rx-ap-note-item-head{
+    flex-direction:column;
+  }
+
+  .rx-ap-note-item-head .rx-ap-btn{
+    width:100%;
+  }
+
+}
+</style>
+
+
+<!-- ============================================================
+     INTERFAZ DEL MÓDULO
+     ============================================================ -->
+
+<div id="rx-apuntes-overlay" aria-hidden="true">
+
+  <div id="rx-apuntes-shell">
+
+    <header class="rx-ap-header">
+
+      <div class="rx-ap-brand">
+
+        <div class="rx-ap-icon">📝</div>
+
+        <div>
+          <h2 class="rx-ap-title">Apuntes</h2>
+          <p class="rx-ap-subtitle">
+            RoXThal Art Design
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="rx-ap-close"
+        id="rx-ap-close"
+        aria-label="Cerrar Apuntes">
+        ×
+      </button>
+
+    </header>
+
+
+    <main class="rx-ap-body">
+
+      <!-- ======================================================
+           ADMINISTRADOR
+           ====================================================== -->
+
+      <section id="rx-ap-admin-view" style="display:none">
+
+        <div class="rx-ap-section">
+
+          <h3>🔐 Acceso del alumno</h3>
+
+          <div class="rx-ap-grid">
+
+            <div class="rx-ap-field">
+
+              <label class="rx-ap-label">
+                Alumno
+              </label>
+
+              <select
+                id="rx-ap-student-select"
+                class="rx-ap-select">
+
+                <option value="">
+                  Cargando alumnos…
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="rx-ap-field">
+
+              <label class="rx-ap-label">
+                Contraseña del alumno
+              </label>
+
+              <div class="rx-ap-password-box">
+
+                <div
+                  id="rx-ap-generated-password"
+                  class="rx-ap-password">
+                  —
+                </div>
+
+                <button
+                  type="button"
+                  class="rx-ap-btn primary"
+                  id="rx-ap-generate-password">
+                  🔑 Generar
+                </button>
+
+                <button
+                  type="button"
+                  class="rx-ap-btn"
+                  id="rx-ap-copy-password">
+                  📋 Copiar
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            id="rx-ap-admin-password-status"
+            class="rx-ap-status">
+          </div>
+
+        </div>
+
+
+        <div class="rx-ap-section">
+
+          <h3>✏️ Crear nuevo apunte</h3>
+
+          <div class="rx-ap-grid">
+
+            <div class="rx-ap-field full">
+
+              <label class="rx-ap-label">
+                Título
+              </label>
+
+              <input
+                id="rx-ap-title-input"
+                class="rx-ap-input"
+                type="text"
+                maxlength="180"
+                placeholder="Título del apunte">
+
+            </div>
+
+
+            <div class="rx-ap-field full">
+
+              <label class="rx-ap-label">
+                Texto del apunte
+              </label>
+
+              <textarea
+                id="rx-ap-content-input"
+                class="rx-ap-textarea"
+                maxlength="30000"
+                placeholder="Escribe aquí el apunte para el alumno…"></textarea>
+
+            </div>
+
+
+            <div class="rx-ap-field full">
+
+              <label class="rx-ap-label">
+                Fotografías
+              </label>
+
+              <input
+                id="rx-ap-photo-input"
+                class="rx-ap-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple>
+
+              <small style="color:var(--muted,#999)">
+                Puedes seleccionar una o varias fotografías desde
+                la galería del teléfono.
+              </small>
+
+              <div
+                id="rx-ap-photo-preview"
+                class="rx-ap-photo-preview">
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="rx-ap-actions">
+
+            <button
+              type="button"
+              class="rx-ap-btn primary"
+              id="rx-ap-save">
+              💾 Guardar apunte
+            </button>
+
+            <button
+              type="button"
+              class="rx-ap-btn"
+              id="rx-ap-clear-form">
+              Limpiar
+            </button>
+
+          </div>
+
+
+          <div
+            id="rx-ap-save-status"
+            class="rx-ap-status">
+          </div>
+
+        </div>
+
+
+        <div class="rx-ap-section">
+
+          <h3>📚 Apuntes existentes</h3>
+
+          <div
+            id="rx-ap-admin-note-list"
+            class="rx-ap-note-list">
+
+            <div class="rx-ap-empty">
+              Selecciona un alumno para ver sus apuntes.
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ======================================================
+           ALUMNO
+           ====================================================== -->
+
+      <section id="rx-ap-student-view">
+
+        <div id="rx-ap-student-gate">
+
+          <div class="rx-ap-student-welcome">
+
+            <div class="big">
+              🔒 Tus apuntes
+            </div>
+
+            <div class="small">
+              Introduce tu contraseña para acceder.
+            </div>
+
+          </div>
+
+
+          <div class="rx-ap-section">
+
+            <div class="rx-ap-field">
+
+              <label class="rx-ap-label">
+                Contraseña
+              </label>
+
+              <input
+                id="rx-ap-student-password"
+                class="rx-ap-input rx-ap-student-password"
+                type="password"
+                autocomplete="off"
+                inputmode="text"
+                placeholder="Introduce tu contraseña">
+
+            </div>
+
+
+            <div class="rx-ap-actions">
+
+              <button
+                type="button"
+                class="rx-ap-btn primary"
+                id="rx-ap-student-login"
+                style="width:100%">
+                🔓 Entrar
+              </button>
+
+            </div>
+
+
+            <div
+              id="rx-ap-login-status"
+              class="rx-ap-status">
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="rx-ap-student-content"
+          style="display:none">
+
+          <div class="rx-ap-section">
+
+            <div
+              class="rx-ap-student-welcome"
+              style="margin-bottom:0">
+
+              <div
+                class="big"
+                id="rx-ap-student-name">
+                Mis apuntes
+              </div>
+
+              <div class="small">
+                Estos son tus apuntes privados.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div id="rx-ap-student-notes">
+
+            <div class="rx-ap-loading">
+              Cargando tus apuntes…
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</div>
+
+
+<script>
+(function(){
+
+  "use strict";
+
+
+  /* ==========================================================
+     CONFIGURACIÓN
+     ========================================================== */
+
+  const RX_AP_SUPABASE_URL =
+    "https://hxtzlrsmjwrpqgjgbzyl.supabase.co";
+
+  const RX_AP_SUPABASE_KEY =
+    "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+  const RX_AP_FUNCTION_URL =
+    RX_AP_SUPABASE_URL +
+    "/functions/v1/apuntes-fotos";
+
+  const RX_AP_BUCKET =
+    "apuntes-fotos";
+
+
+  /* ==========================================================
+     COMPROBACIÓN SUPABASE
+     ========================================================== */
+
+  if(
+    !window.supabase ||
+    typeof window.supabase.createClient !== "function"
+  ){
+
+    console.error(
+      "[RoXThal Apuntes] Supabase JS no está disponible."
+    );
+
+    return;
+  }
+
+
+  const sb =
+    window.supabase.createClient(
+      RX_AP_SUPABASE_URL,
+      RX_AP_SUPABASE_KEY,
+      {
+        auth:{
+          persistSession:true,
+          autoRefreshToken:true
+        }
+      }
+    );
+
+
+  /* ==========================================================
+     ELEMENTOS
+     ========================================================== */
+
+  const overlay =
+    document.getElementById(
+      "rx-apuntes-overlay"
+    );
+
+  const closeBtn =
+    document.getElementById(
+      "rx-ap-close"
+    );
+
+  const adminView =
+    document.getElementById(
+      "rx-ap-admin-view"
+    );
+
+  const studentView =
+    document.getElementById(
+      "rx-ap-student-view"
+    );
+
+  const studentSelect =
+    document.getElementById(
+      "rx-ap-student-select"
+    );
+
+  const generatedPassword =
+    document.getElementById(
+      "rx-ap-generated-password"
+    );
+
+  const titleInput =
+    document.getElementById(
+      "rx-ap-title-input"
+    );
+
+  const contentInput =
+    document.getElementById(
+      "rx-ap-content-input"
+    );
+
+  const photoInput =
+    document.getElementById(
+      "rx-ap-photo-input"
+    );
+
+  const photoPreview =
+    document.getElementById(
+      "rx-ap-photo-preview"
+    );
+
+  const adminNoteList =
+    document.getElementById(
+      "rx-ap-admin-note-list"
+    );
+
+  const saveStatus =
+    document.getElementById(
+      "rx-ap-save-status"
+    );
+
+  const adminPasswordStatus =
+    document.getElementById(
+      "rx-ap-admin-password-status"
+    );
+
+  const studentGate =
+    document.getElementById(
+      "rx-ap-student-gate"
+    );
+
+  const studentContent =
+    document.getElementById(
+      "rx-ap-student-content"
+    );
+
+  const studentPassword =
+    document.getElementById(
+      "rx-ap-student-password"
+    );
+
+  const studentLogin =
+    document.getElementById(
+      "rx-ap-student-login"
+    );
+
+  const loginStatus =
+    document.getElementById(
+      "rx-ap-login-status"
+    );
+
+  const studentName =
+    document.getElementById(
+      "rx-ap-student-name"
+    );
+
+  const studentNotes =
+    document.getElementById(
+      "rx-ap-student-notes"
+    );
+
+
+  /* ==========================================================
+     ESTADO PRIVADO
+     ========================================================== */
+
+  let rxSessionToken = null;
+  let rxSessionExpiresAt = null;
+  let rxStudentId = null;
+  let rxStudentName = null;
+
+  let rxIsAdmin = false;
+
+  let rxSelectedPhotos = [];
+
+  let rxStudents = [];
+
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+
+  function showStatus(
+    element,
+    message,
+    type
+  ){
+
+    if(!element) return;
+
+    element.textContent =
+      message || "";
+
+    element.className =
+      "rx-ap-status show " +
+      (type || "info");
+
+  }
+
+
+  function clearStatus(element){
+
+    if(!element) return;
+
+    element.textContent = "";
+
+    element.className =
+      "rx-ap-status";
+
+  }
+
+
+  function escapeHtml(value){
+
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  function formatDate(value){
+
+    if(!value) return "";
+
+    try{
+
+      return new Date(value)
+        .toLocaleString(
+          "es-AR",
+          {
+            dateStyle:"medium",
+            timeStyle:"short"
+          }
+        );
+
+    }catch(error){
+
+      return String(value);
+
+    }
+
+  }
+
+
+  function generatePassword(){
+
+    const chars =
+      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+
+    const random =
+      new Uint32Array(12);
+
+    crypto.getRandomValues(random);
+
+    let result = "";
+
+    for(let i=0;i<10;i++){
+
+      result +=
+        chars[random[i] % chars.length];
+
+    }
+
+    return result;
+
+  }
+
+
+  function getExtension(file){
+
+    const type =
+      String(file?.type || "")
+        .toLowerCase();
+
+    if(type === "image/png")
+      return "png";
+
+    if(type === "image/webp")
+      return "webp";
+
+    if(type === "image/gif")
+      return "gif";
+
+    return "jpg";
+
+  }
+
+
+  /* ==========================================================
+     COMPROBAR ADMINISTRADOR
+     ========================================================== */
+
+  async function checkAdmin(){
+
+    try{
+
+      const {
+        data,
+        error
+      } = await sb.auth.getUser();
+
+      if(error || !data?.user){
+        return false;
+      }
+
+      return (
+        data.user.app_metadata?.role ===
+        "admin"
+      );
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Apuntes] Error comprobando administrador:",
+        error
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     CARGAR ALUMNOS
+     ========================================================== */
+
+  async function loadStudents(){
+
+    studentSelect.innerHTML =
+      '<option value="">Cargando alumnos…</option>';
+
+    const {
+      data,
+      error
+    } = await sb
+      .from("students")
+      .select("id,name")
+      .order(
+        "name",
+        {ascending:true}
+      );
+
+    if(error){
+
+      console.error(error);
+
+      studentSelect.innerHTML =
+        '<option value="">No se pudieron cargar los alumnos</option>';
+
+      showStatus(
+        adminPasswordStatus,
+        "No se pudieron cargar los alumnos.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    rxStudents =
+      Array.isArray(data)
+        ? data
+        : [];
+
+    studentSelect.innerHTML =
+      '<option value="">Selecciona un alumno…</option>';
+
+    rxStudents.forEach(
+      function(student){
+
+        const option =
+          document.createElement("option");
+
+        option.value =
+          student.id;
+
+        option.textContent =
+          student.name ||
+          "Alumno sin nombre";
+
+        studentSelect.appendChild(
+          option
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ==========================================================
+     GENERAR CONTRASEÑA
+     ========================================================== */
+
+  async function generateStudentPassword(){
+
+    clearStatus(
+      adminPasswordStatus
+    );
+
+    const studentId =
+      studentSelect.value;
+
+    if(!studentId){
+
+      showStatus(
+        adminPasswordStatus,
+        "Primero selecciona un alumno.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    const password =
+      generatePassword();
+
+    generatedPassword.textContent =
+      password;
+
+    showStatus(
+      adminPasswordStatus,
+      "Guardando contraseña de forma segura…",
+      "info"
+    );
+
+    const {
+      error
+    } = await sb.rpc(
+      "apuntes_establecer_password_alumno",
+      {
+        p_student_id:studentId,
+        p_password:password
+      }
+    );
+
+    if(error){
+
+      console.error(error);
+
+      generatedPassword.textContent =
+        "—";
+
+      showStatus(
+        adminPasswordStatus,
+        "No se pudo guardar la contraseña.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    showStatus(
+      adminPasswordStatus,
+      "Contraseña creada correctamente. Cópiala y entrégasela al alumno.",
+      "ok"
+    );
+
+  }
+
+
+  /* ==========================================================
+     COPIAR CONTRASEÑA
+     ========================================================== */
+
+  async function copyPassword(){
+
+    const password =
+      generatedPassword.textContent.trim();
+
+    if(
+      !password ||
+      password === "—"
+    ){
+      return;
+    }
+
+    try{
+
+      await navigator.clipboard.writeText(
+        password
+      );
+
+      showStatus(
+        adminPasswordStatus,
+        "Contraseña copiada.",
+        "ok"
+      );
+
+    }catch(error){
+
+      showStatus(
+        adminPasswordStatus,
+        "No se pudo copiar automáticamente. Mantén pulsada la contraseña para copiarla.",
+        "info"
+      );
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     PREVISUALIZACIÓN DE FOTOGRAFÍAS
+     ========================================================== */
+
+  photoInput.addEventListener(
+    "change",
+    function(){
+
+      rxSelectedPhotos =
+        Array.from(
+          photoInput.files || []
+        );
+
+      photoPreview.innerHTML =
+        "";
+
+      rxSelectedPhotos.forEach(
+        function(file){
+
+          const reader =
+            new FileReader();
+
+          reader.onload =
+            function(){
+
+              const img =
+                document.createElement(
+                  "img"
+                );
+
+              img.src =
+                reader.result;
+
+              img.alt =
+                file.name ||
+                "Fotografía";
+
+              photoPreview.appendChild(
+                img
+              );
+
+            };
+
+          reader.readAsDataURL(file);
+
+        }
+      );
+
+    }
+  );
+
+
+  /* ==========================================================
+     GUARDAR APUNTE
+     ========================================================== */
+
+  async function saveNote(){
+
+    clearStatus(saveStatus);
+
+    const studentId =
+      studentSelect.value;
+
+    const title =
+      titleInput.value.trim();
+
+    const content =
+      contentInput.value.trim();
+
+    if(!studentId){
+
+      showStatus(
+        saveStatus,
+        "Selecciona primero un alumno.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    if(!title){
+
+      showStatus(
+        saveStatus,
+        "Escribe un título para el apunte.",
+        "error"
+      );
+
+      titleInput.focus();
+
+      return;
+
+    }
+
+    if(
+      !content &&
+      rxSelectedPhotos.length === 0
+    ){
+
+      showStatus(
+        saveStatus,
+        "El apunte debe contener texto o al menos una fotografía.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const saveBtn =
+      document.getElementById(
+        "rx-ap-save"
+      );
+
+    saveBtn.disabled =
+      true;
+
+
+    showStatus(
+      saveStatus,
+      "Guardando apunte…",
+      "info"
+    );
+
+
+    let noteId = null;
+
+    const uploadedPaths = [];
+
+
+    try{
+
+      /* ------------------------------------------------------
+         CREAR APUNTE
+         ------------------------------------------------------ */
+
+      const {
+        data:note,
+        error:noteError
+      } = await sb
+        .from("apuntes")
+        .insert({
+          student_id:studentId,
+          title:title,
+          content:content,
+          published:true,
+          sort_order:0
+        })
+        .select("id")
+        .single();
+
+
+      if(noteError){
+        throw noteError;
+      }
+
+      if(!note?.id){
+
+        throw new Error(
+          "No se recibió el identificador del apunte."
+        );
+
+      }
+
+      noteId =
+        note.id;
+
+
+      /* ------------------------------------------------------
+         SUBIR FOTOGRAFÍAS
+         ------------------------------------------------------ */
+
+      const photoRows = [];
+
+      for(
+        let i=0;
+        i<rxSelectedPhotos.length;
+        i++
+      ){
+
+        const file =
+          rxSelectedPhotos[i];
+
+
+        if(
+          !file.type ||
+          !file.type.startsWith("image/")
+        ){
+          continue;
+        }
+
+
+        if(
+          file.size >
+          10 * 1024 * 1024
+        ){
+
+          throw new Error(
+            "La fotografía \"" +
+            file.name +
+            "\" supera el límite de 10 MB."
+          );
+
+        }
+
+
+        const extension =
+          getExtension(file);
+
+
+        const storagePath =
+          "alumnos/" +
+          studentId +
+          "/apuntes/" +
+          noteId +
+          "/" +
+          crypto.randomUUID() +
+          "." +
+          extension;
+
+
+        const {
+          error:uploadError
+        } = await sb.storage
+          .from(RX_AP_BUCKET)
+          .upload(
+            storagePath,
+            file,
+            {
+              contentType:file.type,
+              upsert:false
+            }
+          );
+
+
+        if(uploadError){
+          throw uploadError;
+        }
+
+
+        uploadedPaths.push(
+          storagePath
+        );
+
+
+        photoRows.push({
+          apunte_id:noteId,
+          storage_path:storagePath,
+          sort_order:i
+        });
+
+      }
+
+
+      /* ------------------------------------------------------
+         REGISTRAR FOTOGRAFÍAS
+         ------------------------------------------------------ */
+
+      if(photoRows.length){
+
+        const {
+          error:photoDbError
+        } = await sb
+          .from("apuntes_fotos")
+          .insert(photoRows);
+
+
+        if(photoDbError){
+          throw photoDbError;
+        }
+
+      }
+
+
+      showStatus(
+        saveStatus,
+        "Apunte guardado correctamente.",
+        "ok"
+      );
+
+
+      clearForm();
+
+      await loadAdminNotes();
+
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Apuntes] Error guardando apunte:",
+        error
+      );
+
+
+      /*
+       * Si algo falla después de subir fotografías,
+       * intentamos limpiar los archivos que acabamos
+       * de subir para no dejar basura en Storage.
+       */
+
+      if(uploadedPaths.length){
+
+        try{
+
+          await sb.storage
+            .from(RX_AP_BUCKET)
+            .remove(uploadedPaths);
+
+        }catch(cleanError){
+
+          console.warn(
+            "[RoXThal Apuntes] Limpieza de Storage:",
+            cleanError
+          );
+
+        }
+
+      }
+
+
+      if(noteId){
+
+        try{
+
+          await sb
+            .from("apuntes")
+            .delete()
+            .eq("id",noteId);
+
+        }catch(cleanNoteError){
+
+          console.warn(
+            "[RoXThal Apuntes] Limpieza del apunte:",
+            cleanNoteError
+          );
+
+        }
+
+      }
+
+
+      showStatus(
+        saveStatus,
+        "No se pudo guardar el apunte: " +
+        (
+          error?.message ||
+          "error desconocido"
+        ),
+        "error"
+      );
+
+
+    }finally{
+
+      saveBtn.disabled =
+        false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     LIMPIAR FORMULARIO
+     ========================================================== */
+
+  function clearForm(){
+
+    titleInput.value =
+      "";
+
+    contentInput.value =
+      "";
+
+    photoInput.value =
+      "";
+
+    photoPreview.innerHTML =
+      "";
+
+    rxSelectedPhotos =
+      [];
+
+  }
+
+
+  /* ==========================================================
+     CARGAR APUNTES DEL ADMIN
+     ========================================================== */
+
+  async function loadAdminNotes(){
+
+    const studentId =
+      studentSelect.value;
+
+    if(!studentId){
+
+      adminNoteList.innerHTML =
+        '<div class="rx-ap-empty">Selecciona un alumno para ver sus apuntes.</div>';
+
+      return;
+
+    }
+
+
+    adminNoteList.innerHTML =
+      '<div class="rx-ap-loading">Cargando apuntes…</div>';
+
+
+    const {
+      data,
+      error
+    } = await sb
+      .from("apuntes")
+      .select(
+        "id,title,content,published,sort_order,created_at,updated_at"
+      )
+      .eq(
+        "student_id",
+        studentId
+      )
+      .order(
+        "sort_order",
+        {ascending:true}
+      )
+      .order(
+        "created_at",
+        {ascending:false}
+      );
+
+
+    if(error){
+
+      console.error(error);
+
+      adminNoteList.innerHTML =
+        '<div class="rx-ap-empty">No se pudieron cargar los apuntes.</div>';
+
+      return;
+
+    }
+
+
+    if(!data?.length){
+
+      adminNoteList.innerHTML =
+        '<div class="rx-ap-empty">Este alumno todavía no tiene apuntes.</div>';
+
+      return;
+
+    }
+
+
+    adminNoteList.innerHTML =
+      "";
+
+
+    for(
+      const note of data
+    ){
+
+      const {
+        data:photos
+      } = await sb
+        .from("apuntes_fotos")
+        .select(
+          "id,storage_path,sort_order"
+        )
+        .eq(
+          "apunte_id",
+          note.id
+        )
+        .order(
+          "sort_order",
+          {ascending:true}
+        );
+
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+      item.className =
+        "rx-ap-note-item";
+
+
+      item.innerHTML = `
+
+        <div class="rx-ap-note-item-head">
+
+          <div>
+
+            <div class="rx-ap-note-name">
+              ${escapeHtml(note.title)}
+            </div>
+
+            <div class="rx-ap-note-date">
+              ${escapeHtml(
+                formatDate(
+                  note.updated_at ||
+                  note.created_at
+                )
+              )}
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            class="rx-ap-btn danger"
+            data-rx-delete-apunte="${escapeHtml(note.id)}">
+            🗑️ Eliminar
+          </button>
+
+        </div>
+
+
+        <div class="rx-ap-note-text">
+          ${escapeHtml(note.content || "")}
+        </div>
+
+
+        ${
+          photos?.length
+          ?
+          `
+            <div style="
+              margin-top:12px;
+              color:var(--muted,#999);
+              font-size:12px;
+            ">
+              📷 ${photos.length} fotografía(s)
+            </div>
+          `
+          :
+          ""
+        }
+
+      `;
+
+
+      adminNoteList.appendChild(
+        item
+      );
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     ELIMINAR APUNTE
+     ========================================================== */
+
+  async function deleteNote(noteId){
+
+    if(!rxIsAdmin){
+      return;
+    }
+
+
+    if(!noteId){
+      return;
+    }
+
+
+    const confirmed =
+      window.confirm(
+        "¿Eliminar este apunte y sus fotografías?"
+      );
+
+
+    if(!confirmed){
+      return;
+    }
+
+
+    try{
+
+      const {
+        data:photos,
+        error:photosError
+      } = await sb
+        .from("apuntes_fotos")
+        .select("storage_path")
+        .eq(
+          "apunte_id",
+          noteId
+        );
+
+
+      if(photosError){
+        throw photosError;
+      }
+
+
+      const paths =
+        (photos || [])
+          .map(
+            item =>
+              item.storage_path
+          )
+          .filter(Boolean);
+
+
+      if(paths.length){
+
+        const {
+          error:storageError
+        } = await sb.storage
+          .from(RX_AP_BUCKET)
+          .remove(paths);
+
+
+        if(storageError){
+
+          console.warn(
+            "[RoXThal Apuntes] Storage:",
+            storageError
+          );
+
+        }
+
+      }
+
+
+      const {
+        error:photoDeleteError
+      } = await sb
+        .from("apuntes_fotos")
+        .delete()
+        .eq(
+          "apunte_id",
+          noteId
+        );
+
+
+      if(photoDeleteError){
+        throw photoDeleteError;
+      }
+
+
+      const {
+        error:noteDeleteError
+      } = await sb
+        .from("apuntes")
+        .delete()
+        .eq(
+          "id",
+          noteId
+        );
+
+
+      if(noteDeleteError){
+        throw noteDeleteError;
+      }
+
+
+      await loadAdminNotes();
+
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Apuntes] Error eliminando:",
+        error
+      );
+
+      alert(
+        "No se pudo eliminar el apunte."
+      );
+
+    }
+
+  }
+
+
+  adminNoteList.addEventListener(
+    "click",
+    function(event){
+
+      const button =
+        event.target.closest(
+          "[data-rx-delete-apunte]"
+        );
+
+      if(!button){
+        return;
+      }
+
+      deleteNote(
+        button.dataset.rxDeleteApunte
+      );
+
+    }
+  );
+
+
+  /* ==========================================================
+     LOGIN DEL ALUMNO
+     ========================================================== */
+
+  async function studentLoginAction(){
+
+    clearStatus(
+      loginStatus
+    );
+
+
+    const password =
+      studentPassword.value.trim();
+
+
+    if(!password){
+
+      showStatus(
+        loginStatus,
+        "Introduce tu contraseña.",
+        "error"
+      );
+
+      studentPassword.focus();
+
+      return;
+
+    }
+
+
+    studentLogin.disabled =
+      true;
+
+
+    showStatus(
+      loginStatus,
+      "Comprobando contraseña…",
+      "info"
+    );
+
+
+    try{
+
+      const {
+        data,
+        error
+      } = await sb.rpc(
+        "apuntes_iniciar_sesion_alumno",
+        {
+          p_password:password
+        }
+      );
+
+
+      if(error){
+        throw error;
+      }
+
+
+      const session =
+        Array.isArray(data)
+          ? data[0]
+          : data;
+
+
+      if(
+        !session ||
+        !session.session_token ||
+        !session.student_id
+      ){
+
+        throw new Error(
+          "invalid_password"
+        );
+
+      }
+
+
+      /*
+       * La sesión SOLO vive en memoria.
+       * No localStorage.
+       * No sessionStorage.
+       */
+
+      rxSessionToken =
+        session.session_token;
+
+      rxSessionExpiresAt =
+        session.expires_at;
+
+      rxStudentId =
+        session.student_id;
+
+      rxStudentName =
+        session.student_name ||
+        "Alumno";
+
+
+      studentName.textContent =
+        "Hola, " +
+        rxStudentName;
+
+
+      studentGate.style.display =
+        "none";
+
+      studentContent.style.display =
+        "block";
+
+
+      clearStatus(
+        loginStatus
+      );
+
+
+      await loadStudentNotes();
+
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Apuntes] Login:",
+        error
+      );
+
+
+      showStatus(
+        loginStatus,
+        "Contraseña incorrecta o sesión no disponible.",
+        "error"
+      );
+
+
+    }finally{
+
+      studentLogin.disabled =
+        false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     OBTENER APUNTES DEL ALUMNO
+     ========================================================== */
+
+  async function loadStudentNotes(){
+
+    if(!rxSessionToken){
+      return;
+    }
+
+
+    studentNotes.innerHTML =
+      '<div class="rx-ap-loading">Cargando tus apuntes…</div>';
+
+
+    const {
+      data,
+      error
+    } = await sb.rpc(
+      "apuntes_obtener_alumno",
+      {
+        p_session_token:
+          rxSessionToken
+      }
+    );
+
+
+    if(error){
+
+      console.error(
+        "[RoXThal Apuntes] Obtener alumno:",
+        error
+      );
+
+
+      clearStudentSession();
+
+      showStudentGate();
+
+
+      showStatus(
+        loginStatus,
+        "La sesión ha caducado. Vuelve a introducir tu contraseña.",
+        "error"
+      );
+
+
+      return;
+
+    }
+
+
+    const notes =
+      Array.isArray(data)
+        ? data
+        : [];
+
+
+    if(!notes.length){
+
+      studentNotes.innerHTML =
+        `
+        <div class="rx-ap-section">
+          <div class="rx-ap-empty">
+            No tienes apuntes disponibles.
+          </div>
+        </div>
+        `;
+
+      return;
+
+    }
+
+
+    studentNotes.innerHTML =
+      "";
+
+
+    for(
+      const note of notes
+    ){
+
+      const article =
+        document.createElement(
+          "article"
+        );
+
+      article.className =
+        "rx-ap-student-note";
+
+
+      const photoPaths =
+        Array.isArray(note.photo_paths)
+          ? note.photo_paths
+          : [];
+
+
+      let photoUrls = {};
+
+
+      /* ------------------------------------------------------
+         OBTENER URLs TEMPORALES SEGURAS
+         ------------------------------------------------------ */
+
+      if(photoPaths.length){
+
+        try{
+
+          const response =
+            await fetch(
+              RX_AP_FUNCTION_URL,
+              {
+                method:"POST",
+
+                headers:{
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    session_token:
+                      rxSessionToken,
+
+                    paths:
+                      photoPaths
+                  })
+              }
+            );
+
+
+          const json =
+            await response.json();
+
+
+          if(response.ok){
+
+            photoUrls =
+              json.urls || {};
+
+          }
+
+
+        }catch(photoError){
+
+          console.warn(
+            "[RoXThal Apuntes] Error fotografías:",
+            photoError
+          );
+
+        }
+
+      }
+
+
+      let photosHtml =
+        "";
+
+
+      photoPaths.forEach(
+        function(path){
+
+          const url =
+            photoUrls[path];
+
+
+          if(!url){
+            return;
+          }
+
+
+          photosHtml += `
+
+            <a
+              href="${escapeHtml(url)}"
+              target="_blank"
+              rel="noopener">
+
+              <img
+                src="${escapeHtml(url)}"
+                alt="Fotografía del apunte"
+                loading="lazy">
+
+            </a>
+
+          `;
+
+        }
+      );
+
+
+      article.innerHTML = `
+
+        <h2>
+          ${escapeHtml(
+            note.title ||
+            "Apunte"
+          )}
+        </h2>
+
+
+        <div class="rx-ap-student-note-date">
+
+          Actualizado:
+          ${escapeHtml(
+            formatDate(
+              note.updated_at
+            )
+          )}
+
+        </div>
+
+
+        ${
+          note.content
+          ?
+          `
+            <div class="rx-ap-student-content">
+              ${escapeHtml(
+                note.content
+              )}
+            </div>
+          `
+          :
+          ""
+        }
+
+
+        ${
+          photosHtml
+          ?
+          `
+            <div class="rx-ap-student-photos">
+              ${photosHtml}
+            </div>
+          `
+          :
+          ""
+        }
+
+
+        <button
+          type="button"
+          class="rx-ap-btn primary rx-ap-download"
+          data-rx-download-note="${escapeHtml(note.id)}">
+
+          📥 Descargar apunte
+
+        </button>
+
+      `;
+
+
+      const downloadButton =
+        article.querySelector(
+          "[data-rx-download-note]"
+        );
+
+
+      downloadButton._rxNoteData = {
+
+        id:
+          note.id,
+
+        title:
+          note.title ||
+          "Apunte",
+
+        content:
+          note.content ||
+          "",
+
+        updated_at:
+          note.updated_at,
+
+        photoUrls:
+          Object.values(
+            photoUrls
+          )
+
+      };
+
+
+      studentNotes.appendChild(
+        article
+      );
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     CONVERTIR IMAGEN A DATA URL
+     ========================================================== */
+
+  async function imageUrlToDataUrl(url){
+
+    const response =
+      await fetch(
+        url,
+        {
+          mode:"cors"
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "No se pudo descargar una fotografía."
+      );
+
+    }
+
+
+    const blob =
+      await response.blob();
+
+
+    return await new Promise(
+      function(resolve,reject){
+
+        const reader =
+          new FileReader();
+
+        reader.onload =
+          function(){
+            resolve(
+              reader.result
+            );
+          };
+
+        reader.onerror =
+          reject;
+
+        reader.readAsDataURL(
+          blob
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ==========================================================
+     DESCARGAR APUNTE
+     ========================================================== */
+
+  async function downloadNote(button){
+
+    const data =
+      button._rxNoteData;
+
+
+    if(!data){
+      return;
+    }
+
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Preparando descarga…";
+
+
+    try{
+
+      let imagesHtml =
+        "";
+
+
+      /*
+       * Intentamos incrustar las fotografías
+       * dentro del archivo descargado.
+       */
+
+      for(
+        const url of data.photoUrls || []
+      ){
+
+        try{
+
+          const dataUrl =
+            await imageUrlToDataUrl(
+              url
+            );
+
+
+          imagesHtml += `
+
+            <div style="
+              margin:20px 0;
+            ">
+
+              <img
+                src="${dataUrl}"
+                style="
+                  display:block;
+                  max-width:100%;
+                  height:auto;
+                  border-radius:12px;
+                ">
+
+            </div>
+
+          `;
+
+        }catch(error){
+
+          /*
+           * Si una imagen no puede incrustarse,
+           * no bloqueamos la descarga completa.
+           */
+
+          console.warn(
+            "[RoXThal Apuntes] No se pudo incrustar una imagen:",
+            error
+          );
+
+        }
+
+      }
+
+
+      const html =
+`
+<!doctype html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1">
+
+<title>
+${escapeHtml(data.title)}
+</title>
+
+<style>
+
+body{
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  max-width:900px;
+
+  margin:
+    40px auto;
+
+  padding:
+    20px;
+
+  line-height:1.7;
+
+  color:#111;
+
+  background:#fff;
+}
+
+h1{
+  line-height:1.2;
+}
+
+.meta{
+  margin-bottom:25px;
+  color:#666;
+  font-size:13px;
+}
+
+.content{
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+img{
+  display:block;
+  max-width:100%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>
+${escapeHtml(data.title)}
+</h1>
+
+<div class="meta">
+
+RoXThal Art Design
+
+<br>
+
+${escapeHtml(
+  formatDate(
+    data.updated_at
+  )
+)}
+
+</div>
+
+
+<div class="content">
+${escapeHtml(data.content)}
+</div>
+
+
+${imagesHtml}
+
+
+</body>
+
+</html>
+`.trim();
+
+
+      const blob =
+        new Blob(
+          [html],
+          {
+            type:
+              "text/html;charset=utf-8"
+          }
+        );
+
+
+      const objectUrl =
+        URL.createObjectURL(
+          blob
+        );
+
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+
+      link.href =
+        objectUrl;
+
+
+      link.download =
+        (
+          data.title ||
+          "apunte"
+        )
+        .replace(
+          /[\\/:*?"<>|]+/g,
+          "_"
+        )
+        .trim()
+        .slice(
+          0,
+          100
+        ) +
+        ".html";
+
+
+      document.body.appendChild(
+        link
+      );
+
+
+      link.click();
+
+
+      link.remove();
+
+
+      setTimeout(
+        function(){
+
+          URL.revokeObjectURL(
+            objectUrl
+          );
+
+        },
+        3000
+      );
+
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Apuntes] Descarga:",
+        error
+      );
+
+
+      alert(
+        "No se pudo preparar la descarga del apunte."
+      );
+
+
+    }finally{
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "📥 Descargar apunte";
+
+    }
+
+  }
+
+
+  studentNotes.addEventListener(
+    "click",
+    function(event){
+
+      const button =
+        event.target.closest(
+          "[data-rx-download-note]"
+        );
+
+
+      if(!button){
+        return;
+      }
+
+
+      downloadNote(
+        button
+      );
+
+    }
+  );
+
+
+  /* ==========================================================
+     VISTA DEL ALUMNO
+     ========================================================== */
+
+  function showStudentGate(){
+
+    studentGate.style.display =
+      "block";
+
+    studentContent.style.display =
+      "none";
+
+  }
+
+
+  /* ==========================================================
+     BORRAR SESIÓN DEL ALUMNO
+     ========================================================== */
+
+  function clearStudentSession(){
+
+    rxSessionToken =
+      null;
+
+    rxSessionExpiresAt =
+      null;
+
+    rxStudentId =
+      null;
+
+    rxStudentName =
+      null;
+
+
+    studentPassword.value =
+      "";
+
+    studentNotes.innerHTML =
+      "";
+
+  }
+
+
+  /* ==========================================================
+     ABRIR MÓDULO
+     ========================================================== */
+
+  async function openModule(){
+
+    overlay.classList.add(
+      "rx-apuntes-open"
+    );
+
+
+    overlay.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+
+    rxIsAdmin =
+      await checkAdmin();
+
+
+    if(rxIsAdmin){
+
+      /*
+       * ADMINISTRADOR
+       */
+
+      adminView.style.display =
+        "block";
+
+      studentView.style.display =
+        "none";
+
+
+      await loadStudents();
+
+
+    }else{
+
+      /*
+       * ALUMNO
+       */
+
+      adminView.style.display =
+        "none";
+
+      studentView.style.display =
+        "block";
+
+
+      showStudentGate();
+
+
+      studentPassword.value =
+        "";
+
+
+      setTimeout(
+        function(){
+
+          studentPassword.focus();
+
+        },
+        100
+      );
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     CERRAR MÓDULO
+     ========================================================== */
+
+  function closeModule(){
+
+    overlay.classList.remove(
+      "rx-apuntes-open"
+    );
+
+
+    overlay.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+
+    /*
+     * MUY IMPORTANTE:
+     *
+     * Al salir del módulo se destruye
+     * la sesión personalizada del alumno.
+     *
+     * Por tanto, al volver a entrar
+     * tendrá que introducir nuevamente
+     * la contraseña.
+     */
+
+    clearStudentSession();
+
+    showStudentGate();
+
+    clearStatus(
+      loginStatus
+    );
+
+  }
+
+
+  closeBtn.addEventListener(
+    "click",
+    closeModule
+  );
+
+
+  overlay.addEventListener(
+    "click",
+    function(event){
+
+      if(
+        event.target ===
+        overlay
+      ){
+
+        closeModule();
+
+      }
+
+    }
+  );
+
+
+  document.addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key === "Escape" &&
+        overlay.classList.contains(
+          "rx-apuntes-open"
+        )
+      ){
+
+        closeModule();
+
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     EVENTOS
+     ========================================================== */
+
+  document
+    .getElementById(
+      "rx-ap-generate-password"
+    )
+    .addEventListener(
+      "click",
+      generateStudentPassword
+    );
+
+
+  document
+    .getElementById(
+      "rx-ap-copy-password"
+    )
+    .addEventListener(
+      "click",
+      copyPassword
+    );
+
+
+  document
+    .getElementById(
+      "rx-ap-save"
+    )
+    .addEventListener(
+      "click",
+      saveNote
+    );
+
+
+  document
+    .getElementById(
+      "rx-ap-clear-form"
+    )
+    .addEventListener(
+      "click",
+      clearForm
+    );
+
+
+  studentLogin.addEventListener(
+    "click",
+    studentLoginAction
+  );
+
+
+  studentPassword.addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key ===
+        "Enter"
+      ){
+
+        studentLoginAction();
+
+      }
+
+    }
+  );
+
+
+  studentSelect.addEventListener(
+    "change",
+    async function(){
+
+      generatedPassword.textContent =
+        "—";
+
+
+      clearStatus(
+        adminPasswordStatus
+      );
+
+
+      clearStatus(
+        saveStatus
+      );
+
+
+      clearForm();
+
+
+      await loadAdminNotes();
+
+    }
+  );
+
+
+  /* ==========================================================
+     TARJETA DEL MÓDULO
+     ========================================================== */
+
+  function installModuleCard(){
+
+    const grid =
+      document.getElementById(
+        "moduleGrid"
+      );
+
+
+    if(!grid){
+      return false;
+    }
+
+
+    if(
+      document.getElementById(
+        "rx-apuntes-module-card"
+      )
+    ){
+
+      return true;
+
+    }
+
+
+    const card =
+      document.createElement(
+        "button"
+      );
+
+
+    card.type =
+      "button";
+
+    card.id =
+      "rx-apuntes-module-card";
+
+
+    card.style.cssText = `
+
+      all:unset;
+
+      box-sizing:border-box;
+
+      display:flex;
+
+      flex-direction:column;
+
+      gap:8px;
+
+      cursor:pointer;
+
+      padding:18px;
+
+      min-height:135px;
+
+      border-radius:18px;
+
+      background:
+        var(--surface2,#181818);
+
+      border:
+        1px solid var(--border,#333);
+
+      color:
+        var(--text,#fff);
+
+      transition:
+        transform .15s ease,
+        filter .15s ease;
+
+    `;
+
+
+    card.innerHTML = `
+
+      <div style="
+        width:45px;
+        height:45px;
+        border-radius:13px;
+        display:grid;
+        place-items:center;
+        background:var(--yellow,#ffd400);
+        color:#111;
+        font-size:23px;
+      ">
+        📝
+      </div>
+
+
+      <div style="
+        font-size:17px;
+        font-weight:900;
+      ">
+        Apuntes
+      </div>
+
+
+      <div style="
+        font-size:12px;
+        color:var(--muted,#999);
+        line-height:1.4;
+      ">
+        Apuntes privados para alumnos
+      </div>
+
+    `;
+
+
+    card.addEventListener(
+      "mouseenter",
+      function(){
+
+        card.style.transform =
+          "translateY(-2px)";
+
+        card.style.filter =
+          "brightness(1.08)";
+
+      }
+    );
+
+
+    card.addEventListener(
+      "mouseleave",
+      function(){
+
+        card.style.transform =
+          "";
+
+        card.style.filter =
+          "";
+
+      }
+    );
+
+
+    card.addEventListener(
+      "click",
+      openModule
+    );
+
+
+    grid.appendChild(
+      card
+    );
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     ESPERAR A MODULEGRID
+     ========================================================== */
+
+  if(!installModuleCard()){
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          if(
+            installModuleCard()
+          ){
+
+            observer.disconnect();
+
+          }
+
+        }
+      );
+
+
+    observer.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+
+    setTimeout(
+      function(){
+
+        observer.disconnect();
+
+      },
+      30000
+    );
+
+  }
+
+
+  /* ==========================================================
+     API INTERNA
+     ========================================================== */
+
+  window.RoXThalApuntes = {
+
+    open:
+      openModule,
+
+    close:
+      closeModule,
+
+    supabase:
+      sb
+
+  };
+
+
+  console.log(
+    "[RoXThal Apuntes] Módulo independiente cargado."
+  );
+
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN ROXTHAL ART DESIGN — MÓDULO APUNTES
+     ============================================================ -->                                                                                                                                                                                                                                                                   
 </body>
 </html>
