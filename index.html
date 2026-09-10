@@ -1613,17 +1613,17 @@ async function loadRaffles(){
       return;
     }
 
-    const {data: entries, error: entriesError} = await db
-      .from('raffle_entries')
-      .select('number')
-      .eq('raffle_id', raffle.id)
-      .not('number','is',null);
+   const {data: rpcNumbers, error: rpcError} = await db.rpc(
+  'get_active_raffle_numbers'
+);
 
-    if(entriesError) throw entriesError;
+if(rpcError) throw rpcError;
 
-    const occupied = new Set(
-      (entries || []).map(entry => Number(entry.number))
-    );
+const occupied = new Set(
+  (Array.isArray(rpcNumbers) ? rpcNumbers : [])
+    .map(number => Number(number))
+    .filter(Number.isInteger)
+);
 
     const occupiedCount = occupied.size;
     const remaining = RAFFLE_TOTAL_NUMBERS - occupiedCount;
