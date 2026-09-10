@@ -23088,6 +23088,304 @@ ${imagesHtml}
 
 <!-- ============================================================
      FIN ROXTHAL ART DESIGN — MÓDULO APUNTES
-     ============================================================ -->                                                                                                                                                                                                                                                                   
+     ============================================================ -->   
+   <!-- ============================================================
+     ROXTHAL ART DESIGN
+     REPARADOR DE TARJETA — MÓDULO APUNTES
+     
+     NO MODIFICA:
+     - Supabase
+     - Tablas
+     - Sorteo
+     - NOTAS
+     - Control de Alumnos
+     - Otros módulos
+     
+     Su única función es mantener visible la tarjeta
+     de Apuntes aunque moduleGrid sea reconstruido.
+     ============================================================ -->
+
+<style>
+#rx-apuntes-repair-card{
+  cursor:pointer;
+  position:relative;
+}
+
+#rx-apuntes-repair-card img{
+  object-fit:cover;
+}
+
+#rx-apuntes-repair-card .rx-ap-repair-badge{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#ffd400;
+  color:#111;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+</style>
+
+<script>
+(function(){
+
+  "use strict";
+
+  /* ==========================================================
+     CONFIGURACIÓN
+     ========================================================== */
+
+  const CARD_ID = "rx-apuntes-repair-card";
+  const GRID_ID = "moduleGrid";
+
+
+  /* ==========================================================
+     CREAR TARJETA
+     ========================================================== */
+
+  function installApuntesCard(){
+
+    const grid =
+      document.getElementById(GRID_ID);
+
+    if(!grid){
+      return false;
+    }
+
+
+    /*
+     * Si ya existe, no hacemos absolutamente nada.
+     */
+
+    if(document.getElementById(CARD_ID)){
+      return true;
+    }
+
+
+    /*
+     * Crear tarjeta.
+     */
+
+    const card =
+      document.createElement("article");
+
+    card.id = CARD_ID;
+    card.className = "module";
+
+    card.innerHTML = `
+      <span class="rx-ap-repair-badge">
+        PRIVADO
+      </span>
+
+      <img
+        src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
+        alt="Apuntes"
+        loading="lazy">
+
+      <div class="module-content">
+
+        <div class="module-num">
+          MÓDULO 17
+        </div>
+
+        <h3>
+          Apuntes
+        </h3>
+
+        <p>
+          Apuntes privados para cada alumno.
+        </p>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-small">
+          Entrar
+        </button>
+
+      </div>
+    `;
+
+
+    /* ========================================================
+       ABRIR EL MÓDULO REAL
+       ======================================================== */
+
+    function openApuntes(event){
+
+      if(event){
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+
+      /*
+       * El módulo Apuntes ya cargado expone:
+       *
+       * window.RoXThalApuntes.open()
+       */
+
+      if(
+        window.RoXThalApuntes &&
+        typeof window.RoXThalApuntes.open === "function"
+      ){
+
+        window.RoXThalApuntes.open();
+
+        return;
+      }
+
+
+      /*
+       * Si todavía está terminando de cargar,
+       * esperamos un instante.
+       */
+
+      setTimeout(function(){
+
+        if(
+          window.RoXThalApuntes &&
+          typeof window.RoXThalApuntes.open === "function"
+        ){
+
+          window.RoXThalApuntes.open();
+
+        }else{
+
+          console.warn(
+            "[RoXThal Apuntes] El módulo todavía no está disponible."
+          );
+
+        }
+
+      },300);
+
+    }
+
+
+    card.addEventListener(
+      "click",
+      openApuntes
+    );
+
+
+    /*
+     * También funciona directamente desde el botón.
+     */
+
+    const button =
+      card.querySelector("button");
+
+    if(button){
+
+      button.addEventListener(
+        "click",
+        openApuntes
+      );
+
+    }
+
+
+    /*
+     * Añadir al final del Hub.
+     */
+
+    grid.appendChild(card);
+
+
+    return true;
+  }
+
+
+  /* ==========================================================
+     ESPERAR A QUE APAREZCA MODULEGRID
+     ========================================================== */
+
+  function startRepair(){
+
+    /*
+     * Intento inmediato.
+     */
+
+    installApuntesCard();
+
+
+    /*
+     * Vigilar toda la aplicación.
+     *
+     * Esto es importante porque RoXThal reconstruye
+     * moduleGrid dinámicamente.
+     */
+
+    const observer =
+      new MutationObserver(function(){
+
+        installApuntesCard();
+
+      });
+
+
+    observer.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+
+    /*
+     * Intentos adicionales por si algún módulo
+     * tarda en inicializarse.
+     */
+
+    let attempts = 0;
+
+    const timer =
+      setInterval(function(){
+
+        attempts++;
+
+        installApuntesCard();
+
+        if(attempts >= 20){
+
+          clearInterval(timer);
+
+        }
+
+      },500);
+
+  }
+
+
+  /* ==========================================================
+     ARRANQUE SEGURO
+     ========================================================== */
+
+  if(document.readyState === "loading"){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startRepair,
+      {once:true}
+    );
+
+  }else{
+
+    startRepair();
+
+  }
+
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN REPARADOR DE TARJETA — APUNTES
+     ============================================================ -->
 </body>
 </html>
