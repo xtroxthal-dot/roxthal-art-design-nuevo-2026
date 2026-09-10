@@ -19578,5 +19578,189 @@ window.RoXThalStudio={
 
 })();
 </script>
+ <!-- =========================================================
+     ROXTHAL — REPARADOR QUIRÚRGICO SORTEO
+     Corrige el bucle MutationObserver -> synchronize -> updateUI
+     No modifica Supabase ni datos del sorteo.
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_SORTEO_LOOP_REPAIR__) return;
+  window.__ROXTHAL_SORTEO_LOOP_REPAIR__ = true;
+
+  /*
+   * El sincronizador existente actualiza repetidamente:
+   *   raffleShareCount.textContent
+   *   raffleShareBar.style.width
+   *   raffleRegisterButton.disabled
+   *   raffleRegisterButton.style.opacity
+   *
+   * Esas escrituras son observadas por su MutationObserver global.
+   *
+   * Este reparador convierte esas cuatro escrituras en operaciones
+   * idempotentes: si el valor ya es exactamente el mismo, NO se
+   * vuelve a escribir y, por tanto, NO genera una nueva mutación.
+   */
+
+  function protectTextContent(el) {
+    if (!el || el.__roxthalTextRepair) return;
+    el.__roxthalTextRepair = true;
+
+    const proto = Object.getPrototypeOf(el);
+    const descriptor = Object.getOwnPropertyDescriptor(proto, 'textContent');
+
+    if (!descriptor || !descriptor.get || !descriptor.set) return;
+
+    Object.defineProperty(el, 'textContent', {
+      configurable: true,
+      enumerable: descriptor.enumerable,
+      get: function () {
+        return descriptor.get.call(this);
+      },
+      set: function (value) {
+        const next = String(value);
+        const current = String(descriptor.get.call(this) ?? '');
+
+        if (current === next) return;
+
+        descriptor.set.call(this, value);
+      }
+    });
+  }
+
+  function protectStyleProperty(style, property) {
+    if (!style) return;
+
+    const key = '__roxthalStyleRepair_' + property;
+    if (style[key]) return;
+    style[key] = true;
+
+    let proto = style;
+    let descriptor = null;
+
+    while (proto && !descriptor) {
+      descriptor =
+        Object.getOwnPropertyDescriptor(proto, property);
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    if (!descriptor || !descriptor.get || !descriptor.set) return;
+
+    Object.defineProperty(style, property, {
+      configurable: true,
+      enumerable: descriptor.enumerable,
+      get: function () {
+        return descriptor.get.call(this);
+      },
+      set: function (value) {
+        const next = String(value);
+        const current = String(descriptor.get.call(this) || '');
+
+        if (current === next) return;
+
+        descriptor.set.call(this, value);
+      }
+    });
+  }
+
+  function protectBooleanProperty(el, property) {
+    if (!el) return;
+
+    const key = '__roxthalBooleanRepair_' + property;
+    if (el[key]) return;
+    el[key] = true;
+
+    let proto = el;
+    let descriptor = null;
+
+    while (proto && !descriptor) {
+      descriptor =
+        Object.getOwnPropertyDescriptor(proto, property);
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    if (!descriptor || !descriptor.get || !descriptor.set) return;
+
+    Object.defineProperty(el, property, {
+      configurable: true,
+      enumerable: descriptor.enumerable,
+      get: function () {
+        return descriptor.get.call(this);
+      },
+      set: function (value) {
+        const next = !!value;
+        const current = !!descriptor.get.call(this);
+
+        if (current === next) return;
+
+        descriptor.set.call(this, value);
+      }
+    });
+  }
+
+  function repairRaffleDOM() {
+    const counter =
+      document.getElementById('raffleShareCount');
+
+    const bar =
+      document.getElementById('raffleShareBar');
+
+    const registerButton =
+      document.getElementById('raffleRegisterButton');
+
+    if (counter) {
+      protectTextContent(counter);
+    }
+
+    if (bar) {
+      protectStyleProperty(bar.style, 'width');
+    }
+
+    if (registerButton) {
+      protectBooleanProperty(registerButton, 'disabled');
+      protectStyleProperty(registerButton.style, 'opacity');
+    }
+
+    /*
+     * Cuando los tres elementos ya existen, no necesitamos seguir
+     * buscando. El módulo puede aparecer dinámicamente.
+     */
+    if (counter || bar || registerButton) {
+      if (counter && bar && registerButton && timer) {
+        clearInterval(timer);
+      }
+    }
+  }
+
+  let timer = null;
+
+  /*
+   * Primera instalación.
+   */
+  repairRaffleDOM();
+
+  /*
+   * El Sorteo puede construir sus elementos al abrirse.
+   * Este intervalo solo busca los elementos; NO modifica el DOM.
+   */
+  timer = setInterval(repairRaffleDOM, 250);
+
+  /*
+   * Seguridad adicional: no dejamos el intervalo vivo indefinidamente.
+   */
+  setTimeout(function () {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }, 30000);
+
+  console.log(
+    'RoXThal: reparador del bucle del Sorteo instalado correctamente.'
+  );
+})();
+</script>
 </body>
 </html>
