@@ -18935,6 +18935,53 @@ window.RoXThalStudio={
 };
 
 })();
-</script>                                                                                                                                                                                                                                                                                    
+</script>   
+     <script>
+/* RoXThal Studio — reparador */
+(function(){
+  'use strict';
+
+  const fab=document.getElementById('rxStudioFab');
+  const overlay=document.getElementById('rxStudioOverlay');
+  const source=document.getElementById('roxthalStudioScript');
+
+  if(!fab||!overlay||!source){
+    console.error('RoXThal Studio: no se encontró el módulo original completo.');
+    return;
+  }
+
+  /* Reutiliza la conexión Supabase existente */
+  try{
+    if(typeof db!=='undefined' && db) window.db=db;
+  }catch(e){
+    console.error('RoXThal Studio: no se pudo acceder a la conexión existente.',e);
+  }
+
+  /* Repara y reinicia el módulo si quedó bloqueado */
+  if(!window.RoXThalStudio?.open){
+    try{
+      delete window.__ROXTHAL_STUDIO_V2__;
+
+      let code=source.textContent||'';
+      code=code.replace(/db\s*=\s*window\.db/g,'db=(window.db||null)');
+
+      const repaired=document.createElement('script');
+      repaired.textContent=code;
+      document.body.appendChild(repaired);
+    }catch(e){
+      console.error('RoXThal Studio: error al reparar/inicializar.',e);
+    }
+  }
+
+  /* Seguro: el botón siempre puede abrir el Studio */
+  if(!fab.dataset.rxRepairBound){
+    fab.dataset.rxRepairBound='1';
+    fab.addEventListener('click',function(){
+      overlay.style.display='block';
+      overlay.setAttribute('aria-hidden','false');
+    });
+  }
+})();
+</script>
 </body>
 </html>
