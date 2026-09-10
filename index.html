@@ -18982,5 +18982,601 @@ window.RoXThalStudio={
 })();
 </script>
    <script src="./roxthal-repair.js"></script>
+     <!-- ============================================================
+     ROXTHAL — REPARADOR DEL SORTEO / SINCRONIZACIÓN
+     NO BORRA DATOS — NO MODIFICA TABLAS — NO MODIFICA RPC
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------
+     CONFIGURACIÓN
+     ------------------------------------------------------------ */
+  const RX_SUPABASE_URL =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+
+  const RX_SUPABASE_KEY =
+    'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const RX_LOCAL_COUNT_KEY = 'roxthal_raffle_share_count';
+  const RX_LOCAL_ID_KEY    = 'roxthal_raffle_participant_key';
+
+  const RX_REQUIRED = 10;
+
+  let rxLastServerCount = null;
+  let rxLastSyncedCount = null;
+  let rxSyncRunning = false;
+  let rxFormBound = false;
+
+  /* ------------------------------------------------------------
+     NORMALIZACIÓN
+     ------------------------------------------------------------ */
+  function rxClean(value) {
+    return String(value || '').trim();
+  }
+
+  function rxNormalizePhone(value) {
+    return rxClean(value).replace(/[^\d+]/g, '');
+  }
+
+  function rxNormalizeEmail(value) {
+    return rxClean(value).toLowerCase();
+  }
+
+  function rxNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.min(RX_REQUIRED, Math.floor(n))) : 0;
+  }
+
+  /* ------------------------------------------------------------
+     LOCALSTORAGE SEGURO
+     ------------------------------------------------------------ */
+  function rxGetLocalCount() {
+    try {
+      return rxNumber(localStorage.getItem(RX_LOCAL_COUNT_KEY));
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function rxSetLocalCount(count) {
+    count = rxNumber(count);
+
+    try {
+      localStorage.setItem(RX_LOCAL_COUNT_KEY, String(count));
+    } catch (e) {}
+
+    return count;
+  }
+
+  /* ------------------------------------------------------------
+     BUSCAR IDENTIDAD DEL PARTICIPANTE
+     ------------------------------------------------------------ */
+  function rxFindField(form, selectors) {
+    if (!form) return '';
+
+    for (const selector of selectors) {
+      try {
+        const el = form.querySelector(selector);
+        if (el && rxClean(el.value)) {
+          return rxClean(el.value);
+        }
+      } catch (e) {}
+    }
+
+    return '';
+  }
+
+  function rxGetParticipantKey() {
+
+    /* Primero respetamos una identidad ya creada */
+    try {
+      const saved = rxClean(localStorage.getItem(RX_LOCAL_ID_KEY));
+      if (saved) return saved;
+    } catch (e) {}
+
+    const form =
+      document.getElementById('raffleRegistrationForm') ||
+      document.querySelector('form[id*="raffle" i]') ||
+      document.querySelector('form[id*="sorteo" i]');
+
+    if (!form) return '';
+
+    const phone = rxFindField(form, [
+      'input[name="phone"]',
+      'input[name="telefono"]',
+      'input[name="tel"]',
+      'input[type="tel"]',
+      '#rafflePhone',
+      '#sorteoPhone',
+      '#phone',
+      '#telefono'
+    ]);
+
+    if (phone) {
+      const key = 'phone:' + rxNormalizePhone(phone);
+
+      try {
+        localStorage.setItem(RX_LOCAL_ID_KEY, key);
+      } catch (e) {}
+
+      return key;
+    }
+
+    const email = rxFindField(form, [
+      'input[name="email"]',
+      'input[name="correo"]',
+      'input[type="email"]',
+      '#raffleEmail',
+      '#sorteoEmail',
+      '#email',
+      '#correo'
+    ]);
+
+    if (email) {
+      const key = 'email:' + rxNormalizeEmail(email);
+
+      try {
+        localStorage.setItem(RX_LOCAL_ID_KEY, key);
+      } catch (e) {}
+
+      return key;
+    }
+
+    return '';
+  }
+
+  /* ------------------------------------------------------------
+     LLAMADA RPC DIRECTA
+     ------------------------------------------------------------ */
+  async function rxRPC(functionName, body) {
+
+    const response = await fetch(
+      RX_SUPABASE_URL + '/rest/v1/rpc/' + encodeURIComponent(functionName),
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': RX_SUPABASE_KEY,
+          'Authorization': 'Bearer ' + RX_SUPABASE_KEY
+        },
+        body: JSON.stringify(body || {})
+      }
+    );
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch (e) {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const message =
+        data && (data.message || data.error || data.hint)
+          ? (data.message || data.error || data.hint)
+          : ('HTTP ' + response.status);
+
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  /* ------------------------------------------------------------
+     LEER PROGRESO DEL SERVIDOR
+     ------------------------------------------------------------ */
+  async function rxReadServer() {
+
+    const participantKey = rxGetParticipantKey();
+
+    if (!participantKey) {
+      return null;
+    }
+
+    try {
+
+      const data = await rxRPC(
+        'get_raffle_share_progress',
+        {
+          p_participant_key: participantKey
+        }
+      );
+
+      let serverCount = 0;
+
+      if (data && typeof data === 'object') {
+        serverCount = rxNumber(
+          data.share_count ??
+          data.shareCount ??
+          data.count ??
+          0
+        );
+      }
+
+      rxLastServerCount = serverCount;
+
+      /*
+       * Nunca reducimos un contador local.
+       * El máximo entre servidor y dispositivo es la fuente segura.
+       */
+      const localCount = rxGetLocalCount();
+      const merged = Math.max(localCount, serverCount);
+
+      rxSetLocalCount(merged);
+
+      return {
+        participantKey,
+        serverCount,
+        localCount,
+        count: merged,
+        completed: merged >= RX_REQUIRED
+      };
+
+    } catch (error) {
+
+      console.warn(
+        '[RoXThal Sorteo] No se pudo leer el progreso del servidor:',
+        error
+      );
+
+      return null;
+    }
+  }
+
+  /* ------------------------------------------------------------
+     GUARDAR PROGRESO EN SERVIDOR
+     ------------------------------------------------------------ */
+  async function rxWriteServer(count) {
+
+    const participantKey = rxGetParticipantKey();
+
+    if (!participantKey) {
+      return false;
+    }
+
+    count = rxNumber(count);
+
+    /*
+     * Evitamos llamadas repetidas innecesarias.
+     */
+    if (
+      rxLastSyncedCount !== null &&
+      count <= rxLastSyncedCount
+    ) {
+      return true;
+    }
+
+    try {
+
+      const data = await rxRPC(
+        'sync_raffle_share_progress',
+        {
+          p_participant_key: participantKey,
+          p_share_count: count
+        }
+      );
+
+      let serverCount = count;
+
+      if (data && typeof data === 'object') {
+        serverCount = rxNumber(
+          data.share_count ??
+          data.shareCount ??
+          data.count ??
+          count
+        );
+      }
+
+      /*
+       * El servidor utiliza el máximo, por lo que nunca
+       * sustituimos un progreso superior por uno inferior.
+       */
+      const finalCount = Math.max(count, serverCount);
+
+      rxSetLocalCount(finalCount);
+      rxLastServerCount = finalCount;
+      rxLastSyncedCount = finalCount;
+
+      return true;
+
+    } catch (error) {
+
+      console.warn(
+        '[RoXThal Sorteo] No se pudo sincronizar el progreso:',
+        error
+      );
+
+      return false;
+    }
+  }
+
+  /* ------------------------------------------------------------
+     SINCRONIZACIÓN COMPLETA
+     ------------------------------------------------------------ */
+  async function rxSynchronize() {
+
+    if (rxSyncRunning) return;
+
+    const participantKey = rxGetParticipantKey();
+
+    if (!participantKey) return;
+
+    rxSyncRunning = true;
+
+    try {
+
+      const server = await rxReadServer();
+
+      if (!server) return;
+
+      const localCount = rxGetLocalCount();
+
+      const merged = Math.max(
+        localCount,
+        server.serverCount
+      );
+
+      rxSetLocalCount(merged);
+
+      if (
+        server.serverCount < merged ||
+        rxLastSyncedCount === null
+      ) {
+        await rxWriteServer(merged);
+      }
+
+      rxUpdateUI(merged);
+
+    } finally {
+
+      rxSyncRunning = false;
+    }
+  }
+
+  /* ------------------------------------------------------------
+     ACTUALIZACIÓN VISUAL NO DESTRUCTIVA
+     ------------------------------------------------------------ */
+  function rxUpdateUI(count) {
+
+    count = rxNumber(count);
+
+    /*
+     * Actualizamos elementos cuyo texto/atributo claramente
+     * representa el contador. No reemplazamos el HTML del módulo.
+     */
+
+    const selectors = [
+      '[data-raffle-share-count]',
+      '[data-sorteo-share-count]',
+      '#raffleShareCount',
+      '#sorteoShareCount',
+      '#raffleProgressCount',
+      '#sorteoProgressCount'
+    ];
+
+    selectors.forEach(function (selector) {
+
+      document.querySelectorAll(selector).forEach(function (el) {
+
+        if ('value' in el && el.tagName === 'INPUT') {
+          el.value = String(count);
+        } else {
+          el.textContent = String(count);
+        }
+
+        el.setAttribute('data-synced-by-roxthal', 'true');
+      });
+
+    });
+
+    /*
+     * Barra de progreso, si existe.
+     */
+    document.querySelectorAll(
+      '[data-raffle-progress], [data-sorteo-progress]'
+    ).forEach(function (bar) {
+
+      const percent = Math.round(
+        (count / RX_REQUIRED) * 100
+      );
+
+      if (
+        bar.tagName === 'PROGRESS' ||
+        'value' in bar
+      ) {
+        try {
+          bar.value = percent;
+          bar.max = 100;
+        } catch (e) {}
+      }
+
+      bar.style.setProperty(
+        '--raffle-progress',
+        percent + '%'
+      );
+
+      bar.setAttribute(
+        'aria-valuenow',
+        String(percent)
+      );
+    });
+  }
+
+  /* ------------------------------------------------------------
+     VIGILAR CAMBIOS DEL CONTADOR LOCAL
+     ------------------------------------------------------------ */
+  function rxMonitorLocalStorage() {
+
+    const count = rxGetLocalCount();
+
+    if (
+      rxLastSyncedCount === null ||
+      count !== rxLastSyncedCount
+    ) {
+      rxUpdateUI(count);
+
+      if (rxGetParticipantKey()) {
+        rxWriteServer(count);
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------
+     PROTECCIÓN DEL FORMULARIO
+     ------------------------------------------------------------ */
+  function rxBindRegistrationForm() {
+
+    if (rxFormBound) return;
+
+    const form =
+      document.getElementById('raffleRegistrationForm') ||
+      document.querySelector('form[id*="raffle" i]') ||
+      document.querySelector('form[id*="sorteo" i]');
+
+    if (!form) return;
+
+    rxFormBound = true;
+
+    form.addEventListener(
+      'submit',
+      async function (event) {
+
+        const localCount = rxGetLocalCount();
+
+        /*
+         * Antes de bloquear, intentamos recuperar el servidor.
+         */
+        const server = await rxReadServer();
+
+        const count = Math.max(
+          localCount,
+          server ? server.serverCount : 0
+        );
+
+        rxSetLocalCount(count);
+
+        /*
+         * Menos de 10: bloqueo seguro.
+         */
+        if (count < RX_REQUIRED) {
+
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
+          rxUpdateUI(count);
+
+          const faltan = RX_REQUIRED - count;
+
+          alert(
+            'Para participar en el sorteo debes completar las ' +
+            RX_REQUIRED +
+            ' acciones de compartir.\n\n' +
+            'Te faltan ' +
+            faltan +
+            ' acción' +
+            (faltan === 1 ? '' : 'es') +
+            '.'
+          );
+
+          return false;
+        }
+
+        /*
+         * Ya cumplió: sincronizamos antes de dejar
+         * continuar al formulario existente.
+         */
+        await rxWriteServer(count);
+
+      },
+      true
+    );
+  }
+
+  /* ------------------------------------------------------------
+     INICIALIZACIÓN
+     ------------------------------------------------------------ */
+  async function rxInit() {
+
+    console.log(
+      '[RoXThal Sorteo] Reparador de sincronización activo.'
+    );
+
+    rxBindRegistrationForm();
+
+    await rxSynchronize();
+
+    rxUpdateUI(rxGetLocalCount());
+  }
+
+  /* ------------------------------------------------------------
+     ARRANQUE
+     ------------------------------------------------------------ */
+  if (
+    document.readyState === 'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      rxInit,
+      { once: true }
+    );
+  } else {
+    rxInit();
+  }
+
+  /*
+   * Si el formulario aparece dinámicamente, lo detectamos.
+   */
+  const rxObserver = new MutationObserver(function () {
+
+    rxBindRegistrationForm();
+
+  });
+
+  try {
+    rxObserver.observe(
+      document.documentElement,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  } catch (e) {}
+
+  /*
+   * Sincronización periódica.
+   */
+  setInterval(function () {
+
+    rxMonitorLocalStorage();
+
+  }, 2500);
+
+  /*
+   * Al volver a la aplicación.
+   */
+  window.addEventListener(
+    'pageshow',
+    function () {
+      rxSynchronize();
+    }
+  );
+
+  document.addEventListener(
+    'visibilitychange',
+    function () {
+
+      if (!document.hidden) {
+        rxSynchronize();
+      }
+
+    }
+  );
+
+})();
+</script>
 </body>
 </html>
