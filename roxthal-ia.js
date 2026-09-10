@@ -1,22 +1,68 @@
 /* =========================================================
    RoXThal IA — conexión independiente
+   Compatible con la aplicación principal y RoXThal Studio.
    No contiene ninguna clave secreta.
    ========================================================= */
 
 (() => {
   "use strict";
 
+  /* =========================================================
+     PUENTE SUPABASE
+     El index principal utiliza su propio cliente.
+     Studio necesita acceder a ese mismo cliente mediante
+     window.db. Si ya existe, NO se crea otro.
+     ========================================================= */
+
+  try {
+    if (!window.db && window.supabase?.createClient) {
+      window.db = window.supabase.createClient(
+        "https://hxtzlrsmjwrpqgjgbzyl.supabase.co",
+        "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "RoXThal: no se pudo preparar el puente Supabase global.",
+      error
+    );
+  }
+
+  /* =========================================================
+     ROXTHAL IA
+     ========================================================= */
+
   const FUNCTION_URL =
     "https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-ia";
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
   const input = document.getElementById("aiInput");
   const send = document.getElementById("aiSend");
   const messages = document.getElementById("aiMessages");
 
+  /*
+     Si esta interfaz no está presente en la página,
+     no hacemos nada y no interferimos con el resto de la app.
+  */
+
   if (!input || !send || !messages) {
     console.warn("RoXThal IA: interfaz no encontrada.");
     return;
+  }
+
+  /* =========================================================
+     MENSAJES
+     ========================================================= */
+
+  function escapeHTML(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function addMessage(text, type) {
@@ -32,11 +78,15 @@ const SUPABASE_PUBLISHABLE_KEY =
     if (type === "user") {
       item.style.background = "#f2c400";
       item.style.color = "#080808";
-      item.innerHTML = "<strong>Tú</strong><br>" + escapeHTML(text);
+      item.innerHTML =
+        "<strong>Tú</strong><br>" +
+        escapeHTML(text);
     } else {
       item.style.background = "#181818";
       item.style.color = "#f5f5f5";
-      item.innerHTML = "<strong>RoXThal IA</strong><br>" + escapeHTML(text);
+      item.innerHTML =
+        "<strong>RoXThal IA</strong><br>" +
+        escapeHTML(text);
     }
 
     messages.appendChild(item);
@@ -45,14 +95,9 @@ const SUPABASE_PUBLISHABLE_KEY =
     return item;
   }
 
-  function escapeHTML(text) {
-    return String(text)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+  /* =========================================================
+     CONSULTA A ROXTHAL IA
+     ========================================================= */
 
   async function askAI() {
     const question = input.value.trim();
@@ -70,10 +115,12 @@ const SUPABASE_PUBLISHABLE_KEY =
     try {
       const response = await fetch(FUNCTION_URL, {
         method: "POST",
+
         headers: {
-  "Content-Type": "application/json",
-  "apikey": SUPABASE_PUBLISHABLE_KEY
-},
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_PUBLISHABLE_KEY
+        },
+
         body: JSON.stringify({
           question
         })
@@ -84,12 +131,15 @@ const SUPABASE_PUBLISHABLE_KEY =
       try {
         data = await response.json();
       } catch {
-        throw new Error("La respuesta del servidor no es válida.");
+        throw new Error(
+          "La respuesta del servidor no es válida."
+        );
       }
 
       if (!response.ok) {
         throw new Error(
-          data.error || "No se pudo conectar con RoXThal IA."
+          data.error ||
+          "No se pudo conectar con RoXThal IA."
         );
       }
 
@@ -110,7 +160,10 @@ const SUPABASE_PUBLISHABLE_KEY =
         "ai"
       );
 
-      console.error("RoXThal IA:", error);
+      console.error(
+        "RoXThal IA:",
+        error
+      );
 
     } finally {
       input.disabled = false;
@@ -119,13 +172,23 @@ const SUPABASE_PUBLISHABLE_KEY =
     }
   }
 
-  send.addEventListener("click", askAI);
+  /* =========================================================
+     EVENTOS
+     ========================================================= */
 
-  input.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      askAI();
+  send.addEventListener(
+    "click",
+    askAI
+  );
+
+  input.addEventListener(
+    "keydown",
+    event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        askAI();
+      }
     }
-  });
+  );
 
 })();
