@@ -1491,7 +1491,910 @@ async function loadMedia(){const box=$('mediaList');const {data,error}=await db.
 async function loadReviews(){const box=$('reviewsList');const {data,error}=await db.from('reviews').select('*').eq('approved',true).order('created_at',{ascending:false});if(error){box.innerHTML='<div class="empty">No se pudieron cargar las reseñas.</div>';return}box.innerHTML=(data||[]).length?(data||[]).map(r=>`<article class="card"><div style="color:var(--yellow);font-size:20px">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div><h3 style="margin:7px 0">${esc(r.name)}</h3><p class="muted">${esc(r.comment)}</p></article>`).join(''):'<div class="empty">Todavía no hay reseñas publicadas.</div>'}
 $('submitReview').onclick=async()=>{const name=$('reviewName').value.trim(),comment=$('reviewComment').value.trim(),rating=Number($('reviewRating').value);if(!name||!comment)return toast('Completa nombre y comentario.');const {error}=await db.from('reviews').insert({name,comment,rating,approved:false});if(error)return toast('No se pudo enviar la reseña.');$('reviewName').value='';$('reviewComment').value='';toast('Reseña enviada para moderación.');loadReviews()}
 
+/* =========================================================
+   MÓDULO 8 — SORTEO
+   ========================================================= */
 
+const RAFFLE_TOTAL_NUMBERS = 100;
+const RAFFLE_REQUIRED_SHARES = 10;
+const RAFFLE_PARTICIPANT_STORAGE = 'roxthal_raffle_participant_key';
+
+let raffleServerShareCount = 0;
+
+
+/* =========================================================
+   IDENTIDAD DEL PARTICIPANTE
+   ========================================================= */
+
+function normalizeRaffleParticipantKey(value){
+
+  if(typeof value !== 'string') return '';
+
+  const key = value.trim();
+
+  if(!key) return '';
+
+  return key;
+}
+
+
+function createRaffleParticipantKey(){
+
+  try{
+
+    if(
+      typeof crypto !== 'undefined' &&
+      typeof crypto.randomUUID === 'function'
+    ){
+
+      return crypto.randomUUID();
+
+    }
+
+  }catch(error){
+
+    console.warn(
+      'RoXThal — no se pudo generar UUID:',
+      error
+    );
+
+  }
+
+  return (
+    'rx_' +
+    Date.now().toString(36) +
+    '_' +
+    Math.random().toString(36).slice(2,12)
+  );
+
+}
+
+
+function getRaffleParticipantKey(){
+
+  try{
+
+    return normalizeRaffleParticipantKey(
+      localStorage.getItem(
+        RAFFLE_PARTICIPANT_STORAGE
+      )
+    );
+
+  }catch(error){
+
+    console.warn(
+      'RoXThal — error leyendo participante:',
+      error
+    );
+
+    return '';
+
+  }
+
+}
+
+
+function ensureRaffleParticipantKey(){
+
+  let key = getRaffleParticipantKey();
+
+  if(key) return key;
+
+  key = createRaffleParticipantKey();
+
+  try{
+
+    localStorage.setItem(
+      RAFFLE_PARTICIPANT_STORAGE,
+      key
+    );
+
+  }catch(error){
+
+    console.warn(
+      'RoXThal — no se pudo guardar participante:',
+      error
+    );
+
+  }
+
+  return key;
+
+}
+
+
+/* =========================================================
+   CONTADOR DEL REQUISITO
+   ========================================================= */
+
+function getRaffleShareCount(){
+
+  const count = Number(raffleServerShareCount);
+
+  if(!Number.isFinite(count)) return 0;
+
+  return Math.max(
+    0,
+    Math.min(
+      RAFFLE_REQUIRED_SHARES,
+      Math.floor(count)
+    )
+  );
+
+}
+
+
+function setRaffleShareCount(value){
+
+  const count = Number(value);
+
+  raffleServerShareCount =
+    Number.isFinite(count)
+      ? Math.max(
+          0,
+          Math.min(
+            RAFFLE_REQUIRED_SHARES,
+            Math.floor(count)
+          )
+        )
+      : 0;
+
+  /*
+   * El progreso NO se guarda como autoridad
+   * en localStorage.
+   *
+   * Si el registro fue completado correctamente,
+   * se abandona la identidad anterior para que
+   * la próxima participación empiece desde cero.
+   */
+
+  if(raffleServerShareCount === 0){
+
+    try{
+
+      localStorage.removeItem(
+        RAFFLE_PARTICIPANT_STORAGE
+      );
+
+    }catch(error){
+
+      console.warn(
+        'RoXThal — no se pudo reiniciar participante:',
+        error
+      );
+
+    }
+
+  }
+
+  updateRaffleShareUI();
+
+}
+
+
+async function loadRaffleShareProgress(participantKey){
+
+  const key =
+    normalizeRaffleParticipantKey(participantKey) ||
+    ensureRaffleParticipantKey();
+
+  const {data,error} = await db.rpc(
+    'get_raffle_share_progress',
+    {
+      p_participant_key: key
+    }
+  );
+
+  if(error) throw error;
+
+  raffleServerShareCount =
+    Math.max(
+      0,
+      Math.min(
+        RAFFLE_REQUIRED_SHARES,
+        Number(data?.share_count) || 0
+      )
+    );
+
+  updateRaffleShareUI();
+
+  return data;
+
+}
+
+
+async function saveRaffleShareProgress(
+  participantKey,
+  shareCount
+){
+
+  const key =
+    normalizeRaffleParticipantKey(participantKey) ||
+    ensureRaffleParticipantKey();
+
+  const count =
+    Math.max(
+      0,
+      Math.min(
+        RAFFLE_REQUIRED_SHARES,
+        Number(shareCount) || 0
+      )
+    );
+
+  const {data,error} = await db.rpc(
+    'sync_raffle_share_progress',
+    {
+      p_participant_key: key,
+      p_share_count: count
+    }
+  );
+
+  if(error) throw error;
+
+  raffleServerShareCount =
+    Math.max(
+      0,
+      Math.min(
+        RAFFLE_REQUIRED_SHARES,
+        Number(data?.share_count) || 0
+      )
+    );
+
+  updateRaffleShareUI();
+
+  return data;
+
+}
+
+
+/* =========================================================
+   ACTUALIZACIÓN DE INTERFAZ
+   ========================================================= */
+
+function updateRaffleShareUI(){
+
+  const count = getRaffleShareCount();
+
+  const completed =
+    count >= RAFFLE_REQUIRED_SHARES;
+
+  const counter = $('raffleShareCount');
+
+  if(counter){
+
+    counter.textContent =
+      `${count}/${RAFFLE_REQUIRED_SHARES}`;
+
+  }
+
+  const shareButton =
+    $('raffleShareButton');
+
+  if(shareButton){
+
+    shareButton.disabled = completed;
+
+    shareButton.innerHTML =
+      completed
+        ? '✅ Requisito completado'
+        : `📲 Compartir (${count}/${RAFFLE_REQUIRED_SHARES})`;
+
+  }
+
+  const registerButton =
+    $('raffleRegisterButton');
+
+  if(registerButton){
+
+    registerButton.disabled = !completed;
+
+  }
+
+}
+
+
+/* =========================================================
+   COMPARTIR LA APLICACIÓN
+   ========================================================= */
+
+async function shareRaffleApp(){
+
+  try{
+
+    const key =
+      ensureRaffleParticipantKey();
+
+    let current =
+      getRaffleShareCount();
+
+    if(current >= RAFFLE_REQUIRED_SHARES){
+
+      updateRaffleShareUI();
+
+      toast(
+        '✅ Ya completaste las 10 acciones de compartir.'
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Se utiliza la URL real de la aplicación
+     * en la que se encuentra el usuario.
+     */
+
+    const shareUrl =
+      window.location.href.split('#')[0];
+
+
+    const shareData = {
+
+      title:
+        'RoXThal Art Design',
+
+      text:
+        '🎨 Conocé RoXThal Art Design — Arte, tatuajes, cursos y mucho más.',
+
+      url:
+        shareUrl
+
+    };
+
+
+    /*
+     * Compartir nativo.
+     * El contador aumenta solamente cuando
+     * navigator.share() finaliza correctamente.
+     */
+
+    if(
+      navigator.share &&
+      typeof navigator.share === 'function'
+    ){
+
+      try{
+
+        await navigator.share(
+          shareData
+        );
+
+      }catch(error){
+
+        /*
+         * Cancelar la ventana de compartir
+         * NO suma una acción.
+         */
+
+        if(
+          error &&
+          error.name === 'AbortError'
+        ){
+
+          return;
+
+        }
+
+        throw error;
+
+      }
+
+    }else{
+
+      /*
+       * Fallback para navegadores sin Web Share API.
+       */
+
+      if(
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ){
+
+        await navigator.clipboard.writeText(
+          shareUrl
+        );
+
+        toast(
+          '🔗 Enlace copiado. Compartilo para completar la acción.'
+        );
+
+      }else{
+
+        window.prompt(
+          'Copiá este enlace para compartir RoXThal Art Design:',
+          shareUrl
+        );
+
+      }
+
+    }
+
+
+    /*
+     * Se vuelve a consultar el estado antes
+     * de incrementar para mantener sincronización.
+     */
+
+    await loadRaffleShareProgress(key);
+
+    current =
+      getRaffleShareCount();
+
+    if(
+      current >= RAFFLE_REQUIRED_SHARES
+    ){
+
+      toast(
+        '🎉 ¡Completaste las 10 acciones! Ya podés participar del sorteo.'
+      );
+
+      updateRaffleShareUI();
+
+      return;
+
+    }
+
+
+    const nextCount =
+      current + 1;
+
+
+    const result =
+      await saveRaffleShareProgress(
+        key,
+        nextCount
+      );
+
+
+    const savedCount =
+      Number(result?.share_count) || nextCount;
+
+
+    if(
+      savedCount >= RAFFLE_REQUIRED_SHARES
+    ){
+
+      toast(
+        '🎉 ¡10/10 completado! Ya podés elegir tu número.'
+      );
+
+    }else{
+
+      toast(
+        `📲 Acción registrada: ${savedCount}/${RAFFLE_REQUIRED_SHARES}`
+      );
+
+    }
+
+
+    updateRaffleShareUI();
+
+
+  }catch(error){
+
+    console.error(
+      'RoXThal — error compartiendo sorteo:',
+      error
+    );
+
+    toast(
+      'No se pudo registrar la acción de compartir.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CARGAR SORTEO
+   ========================================================= */
+
+async function loadRaffles(){
+
+  const container =
+    $('raffleList');
+
+  if(!container) return;
+
+
+  try{
+
+    const participantKey =
+      ensureRaffleParticipantKey();
+
+
+    /*
+     * Primero recuperamos desde Supabase
+     * el progreso real del participante.
+     */
+
+    await loadRaffleShareProgress(
+      participantKey
+    );
+
+
+    const {
+      data: raffle,
+      error: raffleError
+    } = await db
+      .from('raffles')
+      .select('*')
+      .eq('active',true)
+      .maybeSingle();
+
+
+    if(raffleError) throw raffleError;
+
+
+    if(!raffle){
+
+      container.innerHTML = `
+
+        <div class="card">
+
+          <div class="status">
+            No hay un sorteo activo en este momento.
+          </div>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const {
+      data: rpcNumbers,
+      error: rpcError
+    } = await db.rpc(
+      'get_active_raffle_numbers'
+    );
+
+
+    if(rpcError) throw rpcError;
+
+
+    const occupied =
+      new Set(
+        (
+          Array.isArray(rpcNumbers)
+            ? rpcNumbers
+            : []
+        )
+        .map(number => Number(number))
+        .filter(
+          Number.isInteger
+        )
+      );
+
+
+    const occupiedCount =
+      occupied.size;
+
+
+    const remaining =
+      Math.max(
+        0,
+        RAFFLE_TOTAL_NUMBERS -
+        occupiedCount
+      );
+
+
+    const shareCount =
+      getRaffleShareCount();
+
+
+    const canRegister =
+      shareCount >=
+      RAFFLE_REQUIRED_SHARES;
+
+
+    const numbersHTML =
+      Array.from(
+        {
+          length:
+            RAFFLE_TOTAL_NUMBERS
+        },
+        (_,index) => {
+
+          const number =
+            index + 1;
+
+          const isOccupied =
+            occupied.has(number);
+
+          return `
+
+            <span
+              class="tag"
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:42px;
+                margin:3px;
+                opacity:${isOccupied ? '.35' : '1'};
+              "
+            >
+              ${String(number).padStart(2,'0')}
+            </span>
+
+          `;
+
+        }
+      ).join('');
+
+
+    container.innerHTML = `
+
+      <div class="card">
+
+        <div class="label">
+          SORTEO ACTIVO
+        </div>
+
+        <h3>
+          ${esc(
+            raffle.title ||
+            'Sorteo RoXThal Art Design'
+          )}
+        </h3>
+
+        <p class="muted">
+          Elegí un número del 01 al 100.
+        </p>
+
+
+        <div
+          class="row"
+          style="margin:15px 0"
+        >
+
+          <span>
+            Números ocupados
+          </span>
+
+          <b>
+            ${occupiedCount}/${RAFFLE_TOTAL_NUMBERS}
+          </b>
+
+        </div>
+
+
+        <div
+          class="row"
+          style="margin-bottom:15px"
+        >
+
+          <span>
+            Disponibles
+          </span>
+
+          <b>
+            ${remaining}
+          </b>
+
+        </div>
+
+
+        ${
+          remaining > 0
+            ? `
+              <p class="muted">
+                Faltan ${remaining}
+                números para realizar el sorteo.
+              </p>
+            `
+            : `
+              <p class="status">
+                🎉 Los 100 números están completos.
+              </p>
+            `
+        }
+
+
+        <div
+          style="
+            margin-top:20px;
+            padding:18px;
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:14px;
+          "
+        >
+
+          <div class="label">
+            REQUISITO PARA PARTICIPAR
+          </div>
+
+          <h3>
+            Compartí la aplicación 10 veces
+          </h3>
+
+          <p class="muted">
+            Usá el botón oficial de compartir.
+            El progreso queda sincronizado
+            con el sorteo.
+          </p>
+
+
+          <div
+            id="raffleShareCount"
+            style="
+              font-size:32px;
+              font-weight:800;
+              margin:12px 0;
+            "
+          >
+            ${shareCount}/${RAFFLE_REQUIRED_SHARES}
+          </div>
+
+
+          <button
+            id="raffleShareButton"
+            class="btn btn-primary"
+            onclick="shareRaffleApp()"
+            ${canRegister ? 'disabled' : ''}
+          >
+            ${
+              canRegister
+                ? '✅ Requisito completado'
+                : `📲 Compartir (${shareCount}/${RAFFLE_REQUIRED_SHARES})`
+            }
+          </button>
+
+
+          <button
+            id="raffleRegisterButton"
+            class="btn"
+            onclick="openRaffleRegistration()"
+            ${canRegister ? '' : 'disabled'}
+            style="margin-top:10px"
+          >
+            🎟️ Elegir mi número
+          </button>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:20px;
+            padding:18px;
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:14px;
+          "
+        >
+
+          <div class="label">
+            PREMIO
+          </div>
+
+          <h3>
+            🎁 Sorteo RoXThal Art Design
+          </h3>
+
+          <p class="muted">
+            El premio y las condiciones
+            se informarán dentro de la
+            publicación correspondiente.
+          </p>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:20px;
+            padding:18px;
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:14px;
+          "
+        >
+
+          <div class="label">
+            ¿CÓMO FUNCIONA?
+          </div>
+
+          <p class="muted">
+            1. Compartí la aplicación
+            mediante el botón oficial.
+          </p>
+
+          <p class="muted">
+            2. Completá las 10 acciones.
+          </p>
+
+          <p class="muted">
+            3. Elegí un número disponible
+            entre 01 y 100.
+          </p>
+
+          <p class="muted">
+            4. Completá tus datos.
+          </p>
+
+          <p class="muted">
+            5. Confirmá tu participación.
+          </p>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:20px;
+          "
+        >
+
+          <div class="label">
+            NÚMEROS DEL SORTEO
+          </div>
+
+          <div
+            style="
+              margin-top:12px;
+              display:flex;
+              flex-wrap:wrap;
+            "
+          >
+            ${numbersHTML}
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    updateRaffleShareUI();
+
+
+  }catch(error){
+
+    console.error(
+      'RoXThal — error cargando sorteo:',
+      error
+    );
+
+
+    container.innerHTML = `
+
+      <div class="card">
+
+        <div class="status">
+          No se pudo cargar el sorteo.
+        </div>
+
+        <p class="muted">
+          ${esc(
+            error.message ||
+            'Error desconocido'
+          )}
+        </p>
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/*
+ * Compatibilidad con los onclick del HTML.
+ */
+
+window.shareRaffleApp =
+  shareRaffleApp;
+
+window.loadRaffles =
+  loadRaffles;
 
 async function openRaffleRegistration(){
 
