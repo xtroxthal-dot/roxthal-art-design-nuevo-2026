@@ -23387,5 +23387,928 @@ ${imagesHtml}
 <!-- ============================================================
      FIN REPARADOR DE TARJETA — APUNTES
      ============================================================ -->
+   <!-- ============================================================
+     ROXTHAL · ANALÍTICA DE VISITAS
+     BLOQUE AUTÓNOMO · PEGAR JUSTO ANTES DE </body>
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------
+     CONFIGURACIÓN
+     ------------------------------------------------------------ */
+  const TABLE = 'roxthal_visit_events';
+  const RPC = 'roxthal_visits_dashboard';
+  const VISITOR_KEY = 'roxthal_analytics_visitor_id';
+  const SESSION_KEY = 'roxthal_analytics_session_id';
+  const START_KEY = 'roxthal_analytics_session_start';
+
+  const MODULES = {
+    home: 'Inicio',
+    services: 'Servicios',
+    gallery: 'Galería',
+    school: 'Escuela',
+    radio: 'Radio',
+    media: 'Fotos y Vídeos',
+    reviews: 'Reseñas',
+    raffle: 'Sorteo',
+    payments: 'Pagos',
+    search: 'Buscadores',
+    contact: 'Ubicación y Contacto',
+    visits: 'Visitas',
+    about: 'Sobre RoXThal',
+    ai: 'RoXThal IA',
+    admin: 'Administrador',
+    students: 'Control de Alumnos'
+  };
+
+  let visitorId = null;
+  let sessionId = null;
+  let sessionStart = Date.now();
+  let currentModule = null;
+  let sessionClosed = false;
+  let initialized = false;
+
+  /* ------------------------------------------------------------
+     UTILIDADES SEGURAS
+     ------------------------------------------------------------ */
+  function uuid() {
+    try {
+      if (crypto && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+    } catch (_) {}
+
+    return 'rx-' +
+      Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2, 12);
+  }
+
+  function storageGet(storage, key) {
+    try {
+      return storage.getItem(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function storageSet(storage, key, value) {
+    try {
+      storage.setItem(key, value);
+    } catch (_) {}
+  }
+
+  function getVisitorId() {
+    let id = storageGet(localStorage, VISITOR_KEY);
+
+    if (!id) {
+      id = uuid();
+      storageSet(localStorage, VISITOR_KEY, id);
+      return {
+        id,
+        isNew: true
+      };
+    }
+
+    return {
+      id,
+      isNew: false
+    };
+  }
+
+  function getSessionId() {
+    let id = storageGet(sessionStorage, SESSION_KEY);
+
+    if (!id) {
+      id = uuid();
+      storageSet(sessionStorage, SESSION_KEY, id);
+      storageSet(sessionStorage, START_KEY, String(Date.now()));
+    }
+
+    const start = Number(
+      storageGet(sessionStorage, START_KEY)
+    );
+
+    return {
+      id,
+      start: Number.isFinite(start) && start > 0
+        ? start
+        : Date.now()
+    };
+  }
+
+  function detectDevice() {
+    const w = window.innerWidth || 0;
+
+    if (/tablet|ipad/i.test(navigator.userAgent) ||
+        (w >= 600 && w < 1024)) {
+      return 'tablet';
+    }
+
+    if (/mobile|android|iphone|ipod/i.test(navigator.userAgent) ||
+        w < 600) {
+      return 'mobile';
+    }
+
+    return 'desktop';
+  }
+
+  function detectOS() {
+    const ua = navigator.userAgent || '';
+
+    if (/Windows/i.test(ua)) return 'Windows';
+    if (/Android/i.test(ua)) return 'Android';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+    if (/Mac OS X/i.test(ua)) return 'macOS';
+    if (/Linux/i.test(ua)) return 'Linux';
+
+    return 'Other';
+  }
+
+  function detectBrowser() {
+    const ua = navigator.userAgent || '';
+
+    if (/Edg\//i.test(ua)) return 'Edge';
+    if (/OPR\//i.test(ua)) return 'Opera';
+    if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) return 'Chrome';
+    if (/Firefox\//i.test(ua)) return 'Firefox';
+    if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) {
+      return 'Safari';
+    }
+
+    return 'Other';
+  }
+
+  function cleanText(value, max) {
+    return String(value || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, max);
+  }
+
+  function currentReferrer() {
+    try {
+      return cleanText(document.referrer || '', 500);
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function currentModuleName() {
+    if (currentModule && MODULES[currentModule]) {
+      return MODULES[currentModule];
+    }
+
+    return currentModule || '';
+  }
+
+  /* ------------------------------------------------------------
+     SUPABASE
+     ------------------------------------------------------------ */
+  async function recordEvent(type, extra) {
+    try {
+      if (typeof db === 'undefined' || !db) return;
+
+      const payload = Object.assign({
+        visitor_id: visitorId,
+        session_id: sessionId,
+        event_type: cleanText(type, 80),
+        module_id: currentModule || null,
+        module_name: currentModuleName() || null,
+        device_type: detectDevice(),
+        operating_system: detectOS(),
+        browser: detectBrowser(),
+        referrer: currentReferrer() || null,
+        is_new_visitor: !!window.__roxthalAnalyticsNewVisitor,
+        metadata: {}
+      }, extra || {});
+
+      const result = await db
+        .from(TABLE)
+        .insert(payload);
+
+      if (result && result.error) {
+        console.warn(
+          'RoXThal Analytics:',
+          result.error.message
+        );
+      }
+    } catch (error) {
+      /*
+       * IMPORTANTE:
+       * La analítica jamás debe romper la aplicación.
+       */
+      console.warn(
+        'RoXThal Analytics no pudo registrar el evento.',
+        error
+      );
+    }
+  }
+
+  /* ------------------------------------------------------------
+     INICIALIZACIÓN DE VISITANTE / SESIÓN
+     ------------------------------------------------------------ */
+  function initializeIdentity() {
+    const visitor = getVisitorId();
+    const session = getSessionId();
+
+    visitorId = visitor.id;
+    sessionId = session.id;
+    sessionStart = session.start;
+
+    window.__roxthalAnalyticsNewVisitor = visitor.isNew;
+  }
+
+  /* ------------------------------------------------------------
+     DETECCIÓN DE MÓDULO ACTIVO
+     ------------------------------------------------------------ */
+  function detectCurrentModule() {
+    for (const id of Object.keys(MODULES)) {
+      const el = document.getElementById(id);
+
+      if (!el) continue;
+
+      const hidden = el.classList.contains('hidden');
+
+      if (!hidden) {
+        return id;
+      }
+    }
+
+    return null;
+  }
+
+  async function registerModule(moduleId) {
+    if (!moduleId) return;
+
+    if (moduleId === currentModule) return;
+
+    currentModule = moduleId;
+
+    await recordEvent(
+      moduleId === 'home'
+        ? 'page_view'
+        : 'module_view',
+      {
+        module_id: moduleId,
+        module_name: MODULES[moduleId] || moduleId
+      }
+    );
+  }
+
+  /* ------------------------------------------------------------
+     OBSERVADOR DE NAVEGACIÓN
+     ------------------------------------------------------------
+     NO modifica showView().
+     Simplemente observa los cambios de clase que showView()
+     ya realiza.
+     ------------------------------------------------------------ */
+  function observeNavigation() {
+    const observer = new MutationObserver(function () {
+      const moduleId = detectCurrentModule();
+
+      if (moduleId) {
+        registerModule(moduleId);
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    const initial = detectCurrentModule();
+
+    if (initial) {
+      registerModule(initial);
+    }
+  }
+
+  /* ------------------------------------------------------------
+     CLICKS ÚTILES
+     ------------------------------------------------------------ */
+  function installClickTracking() {
+    document.addEventListener(
+      'click',
+      function (event) {
+        try {
+          const target = event.target.closest(
+            'a,button,[data-go],[data-gallery-filter]'
+          );
+
+          if (!target) return;
+
+          /*
+           * No registramos los controles internos del panel
+           * analítico para no contaminar las estadísticas.
+           */
+          if (target.closest('#roxthal-visit-analytics')) {
+            return;
+          }
+
+          const text = cleanText(
+            target.innerText ||
+            target.getAttribute('aria-label') ||
+            target.getAttribute('title') ||
+            '',
+            120
+          );
+
+          const href = cleanText(
+            target.getAttribute('href') || '',
+            300
+          );
+
+          const go = cleanText(
+            target.getAttribute('data-go') || '',
+            80
+          );
+
+          recordEvent('click', {
+            action_target: text || go || href || target.tagName,
+            metadata: {
+              href: href || null,
+              data_go: go || null
+            }
+          });
+        } catch (_) {}
+      },
+      true
+    );
+  }
+
+  /* ------------------------------------------------------------
+     FINAL DE SESIÓN
+     ------------------------------------------------------------ */
+  function closeSession(reason) {
+    if (sessionClosed) return;
+
+    sessionClosed = true;
+
+    const duration = Math.max(
+      0,
+      Math.round((Date.now() - sessionStart) / 1000)
+    );
+
+    /*
+     * No usamos await aquí porque el navegador puede estar
+     * cerrando la página.
+     */
+    recordEvent('session_end', {
+      duration_seconds: duration,
+      metadata: {
+        reason: reason || 'unknown'
+      }
+    });
+  }
+
+  function installSessionTracking() {
+    document.addEventListener(
+      'visibilitychange',
+      function () {
+        if (document.visibilityState === 'hidden') {
+          closeSession('visibility_hidden');
+        }
+      }
+    );
+
+    window.addEventListener(
+      'pagehide',
+      function () {
+        closeSession('pagehide');
+      }
+    );
+  }
+
+  /* ------------------------------------------------------------
+     PANEL ADMINISTRATIVO
+     ------------------------------------------------------------ */
+  function installStyles() {
+    if (document.getElementById('roxthal-analytics-style')) {
+      return;
+    }
+
+    const style = document.createElement('style');
+    style.id = 'roxthal-analytics-style';
+
+    style.textContent = `
+      #roxthal-visit-analytics {
+        margin-top: 18px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-head {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-bottom:14px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-title {
+        margin:0;
+        font-size:22px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-sub {
+        margin:4px 0 0;
+        color:var(--muted);
+        font-size:13px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-controls {
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-controls button {
+        cursor:pointer;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-stats {
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:10px;
+        margin-bottom:14px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-stat {
+        background:var(--surface);
+        border:1px solid var(--border);
+        border-radius:14px;
+        padding:15px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-stat b {
+        display:block;
+        font-size:28px;
+        color:var(--yellow);
+      }
+
+      #roxthal-visit-analytics .rx-analytics-stat span {
+        color:var(--muted);
+        font-size:13px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-grid {
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:14px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-box {
+        background:var(--surface);
+        border:1px solid var(--border);
+        border-radius:14px;
+        padding:15px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-box h4 {
+        margin:0 0 12px;
+        font-size:16px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-list {
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-row {
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        padding:7px 0;
+        border-bottom:1px solid var(--border);
+        font-size:13px;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-row:last-child {
+        border-bottom:0;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-row span:first-child {
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-row b {
+        color:var(--yellow);
+        flex:none;
+      }
+
+      #roxthal-visit-analytics .rx-analytics-loading {
+        text-align:center;
+        padding:20px;
+        color:var(--muted);
+      }
+
+      @media(max-width:700px) {
+        #roxthal-visit-analytics .rx-analytics-stats {
+          grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+
+        #roxthal-visit-analytics .rx-analytics-grid {
+          grid-template-columns:1fr;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function analyticsContainer() {
+    const visits = document.getElementById('visits');
+
+    if (!visits) return null;
+
+    return visits.querySelector('.container') || visits;
+  }
+
+  function ensureAnalyticsPanel() {
+    let panel = document.getElementById(
+      'roxthal-visit-analytics'
+    );
+
+    if (panel) return panel;
+
+    const container = analyticsContainer();
+
+    if (!container) return null;
+
+    panel = document.createElement('div');
+    panel.id = 'roxthal-visit-analytics';
+    panel.className = 'card';
+
+    panel.innerHTML = `
+      <div class="rx-analytics-head">
+        <div>
+          <h3 class="rx-analytics-title">
+            Analítica detallada
+          </h3>
+          <p class="rx-analytics-sub">
+            Estadísticas privadas del administrador.
+          </p>
+        </div>
+
+        <div class="rx-analytics-controls">
+          <button
+            type="button"
+            class="btn btn-small"
+            data-rx-days="1"
+          >24 h</button>
+
+          <button
+            type="button"
+            class="btn btn-small"
+            data-rx-days="7"
+          >7 días</button>
+
+          <button
+            type="button"
+            class="btn btn-small"
+            data-rx-days="30"
+          >30 días</button>
+
+          <button
+            type="button"
+            class="btn btn-small"
+            data-rx-days="90"
+          >90 días</button>
+        </div>
+      </div>
+
+      <div class="rx-analytics-stats">
+        <div class="rx-analytics-stat">
+          <b id="rxStatEvents">—</b>
+          <span>Eventos</span>
+        </div>
+
+        <div class="rx-analytics-stat">
+          <b id="rxStatVisitors">—</b>
+          <span>Visitantes únicos</span>
+        </div>
+
+        <div class="rx-analytics-stat">
+          <b id="rxStatSessions">—</b>
+          <span>Sesiones</span>
+        </div>
+
+        <div class="rx-analytics-stat">
+          <b id="rxStatNew">—</b>
+          <span>Nuevos visitantes</span>
+        </div>
+      </div>
+
+      <div id="rxAnalyticsContent">
+        <div class="rx-analytics-loading">
+          Selecciona un período para cargar las estadísticas.
+        </div>
+      </div>
+    `;
+
+    container.appendChild(panel);
+
+    panel.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-rx-days]');
+
+      if (!button) return;
+
+      loadDashboard(
+        Number(button.dataset.rxDays) || 7
+      );
+    });
+
+    return panel;
+  }
+
+  /* ------------------------------------------------------------
+     RENDER DEL DASHBOARD
+     ------------------------------------------------------------ */
+  function safeArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function number(value) {
+    return Number(value || 0).toLocaleString('es-AR');
+  }
+
+  function escapeHTML(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderList(title, items) {
+    const rows = safeArray(items);
+
+    return `
+      <div class="rx-analytics-box">
+        <h4>${escapeHTML(title)}</h4>
+
+        <div class="rx-analytics-list">
+          ${
+            rows.length
+              ? rows.map(function (item) {
+                  const name =
+                    item.name ??
+                    item.module_name ??
+                    item.module_id ??
+                    item.action_target ??
+                    item.device_type ??
+                    item.operating_system ??
+                    item.browser ??
+                    item.referrer ??
+                    'Sin dato';
+
+                  const count =
+                    item.count ??
+                    item.total ??
+                    item.events ??
+                    0;
+
+                  return `
+                    <div class="rx-analytics-row">
+                      <span>${escapeHTML(name || 'Directo')}</span>
+                      <b>${number(count)}</b>
+                    </div>
+                  `;
+                }).join('')
+              : '<div class="rx-analytics-loading">Sin datos.</div>'
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  async function isAdmin() {
+    try {
+      if (typeof getAdmin === 'function') {
+        const user = await getAdmin();
+        return !!user;
+      }
+
+      if (typeof db === 'undefined' || !db) {
+        return false;
+      }
+
+      const result = await db.auth.getUser();
+      const user = result && result.data
+        ? result.data.user
+        : null;
+
+      return user &&
+        user.app_metadata &&
+        user.app_metadata.role === 'admin';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function loadDashboard(days) {
+    try {
+      if (!(await isAdmin())) {
+        return;
+      }
+
+      const panel = ensureAnalyticsPanel();
+
+      if (!panel) return;
+
+      const content = document.getElementById(
+        'rxAnalyticsContent'
+      );
+
+      if (content) {
+        content.innerHTML =
+          '<div class="rx-analytics-loading">Cargando estadísticas…</div>';
+      }
+
+      const result = await db.rpc(
+        RPC,
+        {
+          p_days: Math.max(
+            1,
+            Math.min(365, Number(days) || 7)
+          )
+        }
+      );
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      const data = result.data || {};
+
+      document.getElementById('rxStatEvents').textContent =
+        number(data.total_events);
+
+      document.getElementById('rxStatVisitors').textContent =
+        number(data.unique_visitors);
+
+      document.getElementById('rxStatSessions').textContent =
+        number(data.sessions);
+
+      document.getElementById('rxStatNew').textContent =
+        number(data.new_visitors);
+
+      if (content) {
+        content.innerHTML = `
+          <div class="rx-analytics-grid">
+
+            ${renderList(
+              'Módulos más visitados',
+              data.modules
+            )}
+
+            ${renderList(
+              'Dispositivos',
+              data.devices
+            )}
+
+            ${renderList(
+              'Sistemas operativos',
+              data.systems
+            )}
+
+            ${renderList(
+              'Navegadores',
+              data.browsers
+            )}
+
+            ${renderList(
+              'Acciones',
+              data.actions
+            )}
+
+            ${renderList(
+              'Procedencia',
+              data.referrers
+            )}
+
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.warn(
+        'RoXThal Analytics dashboard:',
+        error
+      );
+
+      const content = document.getElementById(
+        'rxAnalyticsContent'
+      );
+
+      if (content) {
+        content.innerHTML = `
+          <div class="status err">
+            No se pudieron cargar las estadísticas.
+          </div>
+        `;
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------
+     MOSTRAR DASHBOARD SOLO AL ADMINISTRADOR
+     ------------------------------------------------------------ */
+  async function checkVisitsPanel() {
+    const visits = document.getElementById('visits');
+
+    if (!visits) return;
+
+    const isVisible =
+      !visits.classList.contains('hidden');
+
+    if (!isVisible) return;
+
+    if (!(await isAdmin())) {
+      const old = document.getElementById(
+        'roxthal-visit-analytics'
+      );
+
+      if (old) old.remove();
+
+      return;
+    }
+
+    installStyles();
+
+    const panel = ensureAnalyticsPanel();
+
+    if (panel && !panel.dataset.loaded) {
+      panel.dataset.loaded = '1';
+      await loadDashboard(7);
+    }
+  }
+
+  /* ------------------------------------------------------------
+     OBSERVA LA APERTURA DEL MÓDULO VISITAS
+     ------------------------------------------------------------ */
+  function observeVisits() {
+    const visits = document.getElementById('visits');
+
+    if (!visits) return;
+
+    const observer = new MutationObserver(function () {
+      checkVisitsPanel();
+    });
+
+    observer.observe(visits, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  /* ------------------------------------------------------------
+     ARRANQUE
+     ------------------------------------------------------------ */
+  function start() {
+    if (initialized) return;
+
+    initialized = true;
+
+    initializeIdentity();
+
+    recordEvent('page_view', {
+      module_id: 'home',
+      module_name: 'Inicio'
+    });
+
+    observeNavigation();
+    installClickTracking();
+    installSessionTracking();
+    observeVisits();
+
+    /*
+     * Comprobación inicial por si la aplicación ya está
+     * mostrando Visitas cuando este bloque se ejecuta.
+     */
+    setTimeout(checkVisitsPanel, 500);
+  }
+
+  /*
+   * El bloque está al final del body, pero igualmente esperamos
+   * a que el DOM esté preparado.
+   */
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      start,
+      { once: true }
+    );
+  } else {
+    start();
+  }
+
+})();
+</script>
 </body>
 </html>
