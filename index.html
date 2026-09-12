@@ -24310,5 +24310,350 @@ ${imagesHtml}
 
 })();
 </script>
+   <script>
+/* ============================================================
+   ROXTHAL · ANALÍTICA DETALLADA — REPARACIÓN DEL DASHBOARD
+   SOLO LECTURA · NO CREA EVENTOS · NO TOCA EL CONTADOR GENERAL
+   ============================================================ */
+(function(){
+
+  if(window.__ROXTHAL_ANALYTICS_DASHBOARD_FIX__) return;
+  window.__ROXTHAL_ANALYTICS_DASHBOARD_FIX__ = true;
+
+  const RXA_URL = 'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+  const RXA_KEY = 'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const rxDB = window.supabase.createClient(RXA_URL, RXA_KEY);
+
+  const MODULES = {
+    home:'Inicio',
+    services:'Servicios',
+    gallery:'Galería',
+    school:'Escuela',
+    radio:'Radio',
+    media:'Fotos y Vídeos',
+    reviews:'Reseñas',
+    raffle:'Sorteo',
+    payments:'Pagos',
+    search:'Buscadores',
+    contact:'Ubicación y Contacto',
+    visits:'Visitas',
+    about:'Sobre RoXThal',
+    ai:'RoXThal IA',
+    admin:'Administrador',
+    students:'Control de Alumnos',
+    notes:'Apuntes'
+  };
+
+  const esc = value => String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+
+  function number(value){
+    return Number(value || 0).toLocaleString('es-AR');
+  }
+
+  function rows(value){
+    if(!Array.isArray(value)) return [];
+    return value.filter(x => x && typeof x === 'object');
+  }
+
+  function renderRows(list){
+    const data = rows(list);
+
+    if(!data.length){
+      return '<div class="muted" style="padding:8px 0">Sin actividad registrada</div>';
+    }
+
+    return data.map(item => `
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        padding:9px 0;
+        border-bottom:1px solid rgba(255,255,255,.08)
+      ">
+        <span style="overflow:hidden;text-overflow:ellipsis">
+          ${esc(item.label || 'Desconocido')}
+        </span>
+        <strong style="color:var(--yellow);white-space:nowrap">
+          ${number(item.count)}
+        </strong>
+      </div>
+    `).join('');
+  }
+
+  function section(title, data){
+    return `
+      <div class="card" style="margin-top:14px">
+        <div class="label">${esc(title)}</div>
+        <div style="margin-top:8px">
+          ${renderRows(data)}
+        </div>
+      </div>
+    `;
+  }
+
+  function hideOldAnalytics(){
+    [
+      'roxthal-visit-analytics',
+      'roxthal-analytics-final',
+      'roxthal-analytics-definitive',
+      'roxthal-analytics',
+      'visitAnalytics'
+    ].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display='none';
+    });
+  }
+
+  function getContainer(){
+    return document.getElementById('visits') ||
+           document.querySelector('#visits.view');
+  }
+
+  function ensurePanel(){
+    const container=getContainer();
+    if(!container) return null;
+
+    let panel=document.getElementById('roxthalAnalyticsV2');
+
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='roxthalAnalyticsV2';
+      panel.className='container';
+      panel.style.marginTop='18px';
+      container.appendChild(panel);
+    }
+
+    return panel;
+  }
+
+  function isAdminUser(user){
+    return user &&
+      user.app_metadata &&
+      user.app_metadata.role === 'admin';
+  }
+
+  async function loadDashboard(days){
+
+    const panel=ensurePanel();
+    if(!panel) return;
+
+    panel.innerHTML=`
+      <div class="card" style="text-align:center">
+        <div class="label">ANALÍTICA DETALLADA</div>
+        <p class="muted">Cargando estadísticas…</p>
+      </div>
+    `;
+
+    try{
+
+      const auth=await rxDB.auth.getUser();
+      const user=auth?.data?.user;
+
+      if(!isAdminUser(user)){
+        panel.innerHTML='';
+        panel.style.display='none';
+        return;
+      }
+
+      panel.style.display='block';
+
+      const {data,error}=await rxDB.rpc(
+        'roxthal_visits_dashboard',
+        {p_days:Number(days)}
+      );
+
+      if(error){
+        console.error('RoXThal Analytics RPC:',error);
+
+        panel.innerHTML=`
+          <div class="card">
+            <div class="label">ANALÍTICA DETALLADA</div>
+            <p style="margin:8px 0">
+              No se pudo cargar el informe.
+            </p>
+            <p class="muted" style="font-size:12px">
+              ${esc(error.message || 'Error desconocido')}
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      const d=data || {};
+
+      panel.innerHTML=`
+        <div class="section-head" style="margin-top:20px">
+          <div class="label">ADMINISTRADOR</div>
+          <h2 class="section-title">Analítica detallada</h2>
+          <p class="section-desc">
+            Estadísticas privadas de visitantes y navegación.
+          </p>
+        </div>
+
+        <div style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+          margin:12px 0
+        ">
+          ${[1,7,30,90].map(n=>`
+            <button
+              type="button"
+              class="btn"
+              data-rx-analytics-days="${n}"
+              style="${Number(days)===n
+                ? 'outline:2px solid var(--yellow)'
+                : ''}">
+              ${n===1?'24 h':n+' días'}
+            </button>
+          `).join('')}
+        </div>
+
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:10px
+        ">
+
+          <div class="card" style="text-align:center">
+            <div class="label">EVENTOS</div>
+            <div style="
+              font-size:34px;
+              font-weight:900;
+              color:var(--yellow)
+            ">
+              ${number(d.total_events)}
+            </div>
+          </div>
+
+          <div class="card" style="text-align:center">
+            <div class="label">VISITANTES ÚNICOS</div>
+            <div style="
+              font-size:34px;
+              font-weight:900;
+              color:var(--yellow)
+            ">
+              ${number(d.unique_visitors)}
+            </div>
+          </div>
+
+          <div class="card" style="text-align:center">
+            <div class="label">SESIONES</div>
+            <div style="
+              font-size:34px;
+              font-weight:900;
+              color:var(--yellow)
+            ">
+              ${number(d.sessions)}
+            </div>
+          </div>
+
+          <div class="card" style="text-align:center">
+            <div class="label">NUEVOS VISITANTES</div>
+            <div style="
+              font-size:34px;
+              font-weight:900;
+              color:var(--yellow)
+            ">
+              ${number(d.new_visitors)}
+            </div>
+          </div>
+
+        </div>
+
+        ${section('Módulos más visitados',d.modules)}
+        ${section('Dispositivos',d.devices)}
+        ${section('Sistemas operativos',d.systems)}
+        ${section('Navegadores',d.browsers)}
+        ${section('Acciones',d.actions)}
+        ${section('Procedencia',d.referrers)}
+      `;
+
+      panel.querySelectorAll('[data-rx-analytics-days]')
+        .forEach(button=>{
+          button.addEventListener('click',()=>{
+            loadDashboard(
+              Number(button.dataset.rxAnalyticsDays)
+            );
+          });
+        });
+
+    }catch(error){
+
+      console.error('RoXThal Analytics:',error);
+
+      panel.innerHTML=`
+        <div class="card">
+          <div class="label">ANALÍTICA DETALLADA</div>
+          <p>No se pudo cargar la analítica.</p>
+        </div>
+      `;
+    }
+  }
+
+  async function activate(){
+
+    hideOldAnalytics();
+
+    const panel=ensurePanel();
+    if(!panel) return;
+
+    const auth=await rxDB.auth.getUser();
+    const user=auth?.data?.user;
+
+    if(!isAdminUser(user)){
+      panel.style.display='none';
+      return;
+    }
+
+    loadDashboard(7);
+  }
+
+  document.addEventListener('click',e=>{
+
+    const button=e.target.closest('[data-go="visits"]');
+
+    if(button){
+      setTimeout(activate,100);
+    }
+
+  });
+
+  const visits=document.getElementById('visits');
+
+  if(visits){
+
+    const observer=new MutationObserver(()=>{
+      const visible=!visits.classList.contains('hidden');
+
+      if(visible){
+        activate();
+      }
+    });
+
+    observer.observe(visits,{
+      attributes:true,
+      attributeFilter:['class']
+    });
+
+  }
+
+  setTimeout(()=>{
+    const visits=document.getElementById('visits');
+
+    if(visits && !visits.classList.contains('hidden')){
+      activate();
+    }
+  },1200);
+
+})();
+</script>
 </body>
 </html>
