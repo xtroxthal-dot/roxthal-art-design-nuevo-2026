@@ -22689,5 +22689,1002 @@ ${imagesHtml}
 
 })();
 </script>
+   <!-- =========================================================
+     ROXTHAL NEWS — MÓDULO AUTOMÁTICO
+     Noticias de arte y tatuaje
+     Actualización automática cada 72 horas
+     ========================================================= -->
+
+<style>
+  /* =========================
+     ROXTHAL NEWS
+     ========================= */
+
+  #roxthalNewsModule {
+    margin-top: 30px;
+  }
+
+  #roxthalNewsModule .rx-news-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+
+  #roxthalNewsModule .rx-news-update {
+    font-size: 12px;
+    opacity: .65;
+    text-align: right;
+  }
+
+  #roxthalNewsModule .rx-news-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  #roxthalNewsModule .rx-news-filter {
+    border: 1px solid rgba(255,255,255,.12);
+    background: transparent;
+    color: inherit;
+    border-radius: 999px;
+    padding: 8px 13px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  #roxthalNewsModule .rx-news-filter.active {
+    background: currentColor;
+    color: #111;
+  }
+
+  #roxthalNewsModule .rx-news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+
+  #roxthalNewsModule .rx-news-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 245px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.035);
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    transition:
+      transform .2s ease,
+      box-shadow .2s ease,
+      border-color .2s ease;
+  }
+
+  #roxthalNewsModule .rx-news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 38px rgba(0,0,0,.14);
+    border-color: rgba(255,255,255,.20);
+  }
+
+  #roxthalNewsModule .rx-news-category {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    opacity: .75;
+    margin-bottom: 12px;
+  }
+
+  #roxthalNewsModule .rx-news-title {
+    margin: 0 0 12px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  #roxthalNewsModule .rx-news-summary {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 14px;
+    opacity: .78;
+    flex: 1;
+  }
+
+  #roxthalNewsModule .rx-news-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  #roxthalNewsModule .rx-news-source {
+    font-size: 11px;
+    opacity: .55;
+  }
+
+  #roxthalNewsModule .rx-news-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,.15);
+    color: inherit;
+  }
+
+  #roxthalNewsModule .rx-news-loading,
+  #roxthalNewsModule .rx-news-empty {
+    padding: 35px 20px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px dashed rgba(255,255,255,.14);
+    opacity: .7;
+  }
+
+  #roxthalNewsModule .rx-news-error {
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,100,100,.20);
+    font-size: 13px;
+    opacity: .8;
+  }
+
+  @media(max-width:600px) {
+    #roxthalNewsModule .rx-news-header {
+      align-items: flex-start;
+    }
+
+    #roxthalNewsModule .rx-news-update {
+      text-align: left;
+    }
+
+    #roxthalNewsModule .rx-news-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section id="roxthalNewsModule" class="view hidden">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="label">Actualidad</div>
+
+      <div class="rx-news-header">
+        <div>
+          <h2 class="section-title">📰 RoXThal News</h2>
+
+          <p class="section-desc">
+            Noticias seleccionadas automáticamente sobre tatuaje,
+            arte, artistas, tendencias y eventos.
+          </p>
+        </div>
+
+        <div id="roxthalNewsUpdated"
+             class="rx-news-update">
+          Actualizando información...
+        </div>
+      </div>
+    </div>
+
+    <div id="roxthalNewsFilters"
+         class="rx-news-filters">
+    </div>
+
+    <div id="roxthalNewsList"
+         class="rx-news-grid">
+
+      <div class="rx-news-loading">
+        Cargando noticias...
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+
+  'use strict';
+
+  /* =========================================================
+     CONFIGURACIÓN
+     ========================================================= */
+
+  const RX_NEWS_SUPABASE_URL =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+
+  const RX_NEWS_SUPABASE_KEY =
+    'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const RX_NEWS_FUNCTION =
+    RX_NEWS_SUPABASE_URL +
+    '/functions/v1/roxthal-news-refresh';
+
+  const RX_NEWS_TABLE =
+    'roxthal_news';
+
+  const RX_NEWS_72_HOURS =
+    72 * 60 * 60 * 1000;
+
+
+  /* =========================================================
+     CLIENTE SUPABASE
+     Reutiliza el existente cuando está disponible.
+     ========================================================= */
+
+  let rxNewsDb = null;
+
+  try {
+
+    if (window.db &&
+        typeof window.db.from === 'function') {
+
+      rxNewsDb = window.db;
+
+    } else if (
+      window.supabase &&
+      typeof window.supabase.createClient === 'function'
+    ) {
+
+      rxNewsDb =
+        window.supabase.createClient(
+          RX_NEWS_SUPABASE_URL,
+          RX_NEWS_SUPABASE_KEY
+        );
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      'RoXThal News: no se pudo inicializar Supabase.',
+      error
+    );
+
+  }
+
+
+  /* =========================================================
+     UTILIDADES
+     ========================================================= */
+
+  function escapeHTML(value) {
+
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) {
+      return '';
+    }
+
+    try {
+
+      return new Intl.DateTimeFormat(
+        'es-AR',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }
+      ).format(new Date(value));
+
+    } catch (_) {
+
+      return '';
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ICONOS DE CATEGORÍA
+     ========================================================= */
+
+  function categoryIcon(category) {
+
+    const icons = {
+
+      'Tatuaje': '🖋️',
+
+      'Arte': '🎨',
+
+      'Tendencias': '🔥',
+
+      'Convenciones': '🏆',
+
+      'Historia': '📚'
+
+    };
+
+    return icons[category] || '📰';
+
+  }
+
+
+  /* =========================================================
+     CARGAR NOTICIAS
+     ========================================================= */
+
+  async function loadRoXThalNews() {
+
+    const list =
+      document.getElementById(
+        'roxthalNewsList'
+      );
+
+    const updated =
+      document.getElementById(
+        'roxthalNewsUpdated'
+      );
+
+    const filters =
+      document.getElementById(
+        'roxthalNewsFilters'
+      );
+
+    if (!list || !rxNewsDb) {
+      return;
+    }
+
+    try {
+
+      const response =
+        await rxNewsDb
+          .from(RX_NEWS_TABLE)
+          .select(
+            'id,title,summary,source_name,source_url,image_url,category,published_at,created_at'
+          )
+          .order(
+            'published_at',
+            {
+              ascending: false
+            }
+          );
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      const news =
+        response.data || [];
+
+      if (!news.length) {
+
+        list.innerHTML = `
+          <div class="rx-news-empty">
+            <div style="font-size:32px;margin-bottom:10px;">
+              📰
+            </div>
+            <strong>Preparando RoXThal News</strong>
+            <p>
+              Las noticias aparecerán automáticamente
+              cuando se complete la primera actualización.
+            </p>
+          </div>
+        `;
+
+        if (updated) {
+          updated.textContent =
+            'Esperando primera actualización';
+        }
+
+        return;
+      }
+
+
+      /* =====================================================
+         FILTROS
+         ===================================================== */
+
+      const categories = [
+        'Todas',
+        ...new Set(
+          news
+            .map(item => item.category)
+            .filter(Boolean)
+        )
+      ];
+
+      filters.innerHTML =
+        categories
+          .map((category, index) => `
+            <button
+              type="button"
+              class="rx-news-filter ${index === 0 ? 'active' : ''}"
+              data-rx-news-category="${escapeHTML(category)}"
+            >
+              ${category === 'Todas'
+                ? '📰 Todas'
+                : categoryIcon(category) + ' ' + escapeHTML(category)}
+            </button>
+          `)
+          .join('');
+
+
+      /* =====================================================
+         RENDER
+         ===================================================== */
+
+      function renderNews(category) {
+
+        const filtered =
+          category === 'Todas'
+            ? news
+            : news.filter(
+                item =>
+                  item.category === category
+              );
+
+
+        list.innerHTML =
+          filtered
+            .map(item => {
+
+              const title =
+                escapeHTML(item.title);
+
+              const summary =
+                escapeHTML(item.summary);
+
+              const source =
+                escapeHTML(
+                  item.source_name ||
+                  'Fuente'
+                );
+
+              const cat =
+                escapeHTML(
+                  item.category ||
+                  'Actualidad'
+                );
+
+              const link =
+                escapeHTML(
+                  item.source_url ||
+                  '#'
+                );
+
+              const date =
+                formatDate(
+                  item.published_at ||
+                  item.created_at
+                );
+
+              return `
+
+                <article
+                  class="rx-news-card"
+                >
+
+                  <div class="rx-news-category">
+                    ${categoryIcon(item.category)}
+                    &nbsp;
+                    ${cat}
+                  </div>
+
+                  <h3 class="rx-news-title">
+                    ${title}
+                  </h3>
+
+                  <p class="rx-news-summary">
+                    ${summary}
+                  </p>
+
+                  <div class="rx-news-footer">
+
+                    <div class="rx-news-source">
+                      ${source}
+                      ${date ? ' · ' + date : ''}
+                    </div>
+
+                    <a
+                      class="rx-news-link"
+                      href="${link}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Leer noticia ↗
+                    </a>
+
+                  </div>
+
+                </article>
+
+              `;
+
+            })
+            .join('');
+
+
+        if (!filtered.length) {
+
+          list.innerHTML = `
+            <div class="rx-news-empty">
+              No hay noticias en esta categoría.
+            </div>
+          `;
+
+        }
+
+      }
+
+
+      renderNews('Todas');
+
+
+      /* =====================================================
+         EVENTOS DE FILTROS
+         ===================================================== */
+
+      filters
+        .querySelectorAll(
+          '.rx-news-filter'
+        )
+        .forEach(button => {
+
+          button.addEventListener(
+            'click',
+            function () {
+
+              filters
+                .querySelectorAll(
+                  '.rx-news-filter'
+                )
+                .forEach(btn =>
+                  btn.classList.remove(
+                    'active'
+                  )
+                );
+
+              this.classList.add(
+                'active'
+              );
+
+              renderNews(
+                this.dataset
+                  .rxNewsCategory
+              );
+
+            }
+          );
+
+        });
+
+
+      /* =====================================================
+         FECHA DE ACTUALIZACIÓN
+         ===================================================== */
+
+      const newest =
+        news
+          .map(
+            item =>
+              new Date(
+                item.created_at
+              ).getTime()
+          )
+          .filter(
+            value =>
+              !Number.isNaN(value)
+          )
+          .sort(
+            (a,b) => b - a
+          )[0];
+
+      if (updated && newest) {
+
+        updated.textContent =
+          'Actualizado: ' +
+          formatDate(new Date(newest));
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        'RoXThal News: error cargando noticias',
+        error
+      );
+
+      list.innerHTML = `
+        <div class="rx-news-error">
+          No se pudieron cargar las noticias
+          en este momento. Inténtalo nuevamente
+          más tarde.
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SOLICITAR ACTUALIZACIÓN
+     
+     El servidor controla que solo se actualice
+     cuando hayan pasado 72 horas.
+     ========================================================= */
+
+  async function requestNewsRefresh() {
+
+    try {
+
+      await fetch(
+        RX_NEWS_FUNCTION,
+        {
+          method: 'GET',
+          cache: 'no-store'
+        }
+      );
+
+    } catch (error) {
+
+      console.warn(
+        'RoXThal News: actualización automática no disponible.',
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     AÑADIR ROXTHAL NEWS AL HUB DE MÓDULOS
+     ========================================================= */
+
+  function addNewsToModuleHub() {
+
+    const grid =
+      document.getElementById(
+        'moduleGrid'
+      );
+
+    if (!grid) {
+      return false;
+    }
+
+
+    /* Evita duplicados */
+
+    if (
+      grid.querySelector(
+        '[data-roxthal-news-module]'
+      )
+    ) {
+
+      return true;
+
+    }
+
+
+    const card =
+      document.createElement('div');
+
+    card.setAttribute(
+      'data-roxthal-news-module',
+      'true'
+    );
+
+    card.className =
+      'module-card';
+
+    card.innerHTML = `
+
+      <button
+        type="button"
+        class="module-card-inner"
+        data-go="roxthalNewsModule"
+        style="
+          width:100%;
+          height:100%;
+          border:0;
+          background:transparent;
+          color:inherit;
+          cursor:pointer;
+          text-align:inherit;
+        "
+      >
+
+        <div
+          style="
+            font-size:38px;
+            margin-bottom:12px;
+          "
+        >
+          📰
+        </div>
+
+        <div
+          class="label"
+        >
+          ACTUALIDAD
+        </div>
+
+        <h3>
+          RoXThal News
+        </h3>
+
+        <p>
+          Noticias automáticas de arte,
+          tatuaje, artistas, tendencias
+          y eventos.
+        </p>
+
+      </button>
+
+    `;
+
+    grid.appendChild(card);
+
+
+    /* Compatible con el sistema
+       de navegación existente */
+
+    const button =
+      card.querySelector(
+        '[data-go="roxthalNewsModule"]'
+      );
+
+    if (button) {
+
+      button.addEventListener(
+        'click',
+        function () {
+
+          const target =
+            document.getElementById(
+              'roxthalNewsModule'
+            );
+
+          if (!target) {
+            return;
+          }
+
+
+          /* Oculta vistas */
+
+          document
+            .querySelectorAll(
+              '.view'
+            )
+            .forEach(view => {
+
+              view.classList.add(
+                'hidden'
+              );
+
+            });
+
+
+          target.classList.remove(
+            'hidden'
+          );
+
+
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+
+
+          loadRoXThalNews();
+
+        }
+      );
+
+    }
+
+    return true;
+
+  }
+
+
+  /* =========================================================
+     NAVEGACIÓN DIRECTA
+     ========================================================= */
+
+  function setupDirectNavigation() {
+
+    document
+      .querySelectorAll(
+        '[data-go="roxthalNewsModule"]'
+      )
+      .forEach(button => {
+
+        if (
+          button.dataset
+            .roxNewsBound === '1'
+        ) {
+          return;
+        }
+
+        button.dataset
+          .roxNewsBound = '1';
+
+        button.addEventListener(
+          'click',
+          function () {
+
+            const target =
+              document.getElementById(
+                'roxthalNewsModule'
+              );
+
+            if (!target) {
+              return;
+            }
+
+            document
+              .querySelectorAll(
+                '.view'
+              )
+              .forEach(view =>
+                view.classList.add(
+                  'hidden'
+                )
+              );
+
+            target.classList.remove(
+              'hidden'
+            );
+
+            loadRoXThalNews();
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /* =========================================================
+     INICIALIZACIÓN
+     ========================================================= */
+
+  async function initRoXThalNews() {
+
+    let attempts = 0;
+
+    const timer =
+      setInterval(
+        async function () {
+
+          attempts++;
+
+          const section =
+            document.getElementById(
+              'roxthalNewsModule'
+            );
+
+          if (
+            section &&
+            rxNewsDb
+          ) {
+
+            clearInterval(timer);
+
+            addNewsToModuleHub();
+
+            setupDirectNavigation();
+
+            /*
+             * Pedimos al servidor que compruebe
+             * si ya han pasado 72 horas.
+             *
+             * Si todavía no corresponde,
+             * simplemente no hace nada.
+             */
+
+            await requestNewsRefresh();
+
+            /*
+             * Esperamos un poco para dar tiempo
+             * a la función de actualización
+             * a insertar el nuevo lote.
+             */
+
+            setTimeout(
+              loadRoXThalNews,
+              1200
+            );
+
+            return;
+
+          }
+
+          if (attempts >= 40) {
+
+            clearInterval(timer);
+
+            console.warn(
+              'RoXThal News: no se pudo inicializar.'
+            );
+
+          }
+
+        },
+        500
+      );
+
+  }
+
+
+  /* =========================================================
+     OBSERVADOR DEL DOM
+     ========================================================= */
+
+  const observer =
+    new MutationObserver(
+      function () {
+
+        addNewsToModuleHub();
+
+        setupDirectNavigation();
+
+      }
+    );
+
+
+  if (document.body) {
+
+    observer.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ARRANQUE
+     ========================================================= */
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      initRoXThalNews
+    );
+
+  } else {
+
+    initRoXThalNews();
+
+  }
+
+
+})();
+</script>
 </body>
 </html>
