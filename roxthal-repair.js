@@ -567,3 +567,61 @@
 
 })();
 })();
+/* ============================================================
+   ROXTHAL — ELIMINAR SOLO ANALÍTICA DUPLICADA ANTIGUA
+   Conserva #roxthalAnalyticsV2.
+   No modifica Supabase ni datos.
+   ============================================================ */
+
+(function () {
+  "use strict";
+
+  if (window.__ROXTHAL_ANALYTICS_DUPLICATE_FIX__) return;
+  window.__ROXTHAL_ANALYTICS_DUPLICATE_FIX__ = true;
+
+  function removeOldAnalytics() {
+    const oldPanel = document.getElementById(
+      "roxthal-visit-analytics"
+    );
+
+    if (oldPanel) {
+      oldPanel.remove();
+      console.info(
+        "[RoXThal] Analítica antigua duplicada eliminada."
+      );
+    }
+  }
+
+  function initAnalyticsDuplicateFix() {
+    removeOldAnalytics();
+
+    const visits = document.getElementById("visits");
+
+    if (!visits) return;
+
+    const observer = new MutationObserver(function () {
+      removeOldAnalytics();
+    });
+
+    observer.observe(visits, {
+      childList: true,
+      subtree: true
+    });
+
+    /* Limpiezas de seguridad para contenido
+       que pueda aparecer con retraso. */
+    setTimeout(removeOldAnalytics, 100);
+    setTimeout(removeOldAnalytics, 500);
+    setTimeout(removeOldAnalytics, 1200);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initAnalyticsDuplicateFix,
+      { once: true }
+    );
+  } else {
+    initAnalyticsDuplicateFix();
+  }
+})();
