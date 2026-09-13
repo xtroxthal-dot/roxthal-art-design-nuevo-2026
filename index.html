@@ -1500,7 +1500,7 @@ async function loadMedia(){const box=$('mediaList');const {data,error}=await db.
 async function loadReviews(){const box=$('reviewsList');const {data,error}=await db.from('reviews').select('*').eq('approved',true).order('created_at',{ascending:false});if(error){box.innerHTML='<div class="empty">No se pudieron cargar las reseñas.</div>';return}box.innerHTML=(data||[]).length?(data||[]).map(r=>`<article class="card"><div style="color:var(--yellow);font-size:20px">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div><h3 style="margin:7px 0">${esc(r.name)}</h3><p class="muted">${esc(r.comment)}</p></article>`).join(''):'<div class="empty">Todavía no hay reseñas publicadas.</div>'}
 $('submitReview').onclick=async()=>{const name=$('reviewName').value.trim(),comment=$('reviewComment').value.trim(),rating=Number($('reviewRating').value);if(!name||!comment)return toast('Completa nombre y comentario.');const {error}=await db.from('reviews').insert({name,comment,rating,approved:false});if(error)return toast('No se pudo enviar la reseña.');$('reviewName').value='';$('reviewComment').value='';toast('Reseña enviada para moderación.');loadReviews()}
 
-<script>
+
 /* =========================================================
    ROXTHAL — SORTEO V5
    IMPLEMENTACIÓN LIMPIA
