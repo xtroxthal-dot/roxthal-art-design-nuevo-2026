@@ -23686,5 +23686,121 @@ ${imagesHtml}
 
 })();
 </script>
+    <!-- =========================================================
+     ROXTHAL NEWS — BOTÓN VOLVER
+     Pegar justo antes de </body>
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  function instalarBotonVolverNews() {
+
+    const news = document.getElementById('roxthalNewsModule');
+    if (!news) return;
+
+    // Evitar duplicados
+    if (document.getElementById('rxNewsBackButton')) return;
+
+    const boton = document.createElement('button');
+
+    boton.id = 'rxNewsBackButton';
+    boton.type = 'button';
+    boton.innerHTML = '← Volver a módulos';
+
+    boton.style.cssText = `
+      display:block;
+      width:calc(100% - 32px);
+      max-width:700px;
+      margin:16px auto 8px;
+      padding:14px 18px;
+      border:0;
+      border-radius:14px;
+      background:linear-gradient(135deg,#111,#292929);
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.25);
+      position:relative;
+      z-index:9999;
+    `;
+
+    boton.addEventListener('click', function () {
+
+      // Cerrar RoXThal News
+      news.classList.add('hidden');
+
+      // Intentar volver al contenedor principal de módulos
+      const posibles = [
+        document.getElementById('modules'),
+        document.getElementById('moduleGrid'),
+        document.querySelector('.modules')
+      ];
+
+      let encontrado = false;
+
+      for (const elemento of posibles) {
+        if (elemento) {
+          elemento.classList.remove('hidden');
+          encontrado = true;
+        }
+      }
+
+      // Si la aplicación utiliza un botón/enlace de inicio,
+      // también intentamos activarlo.
+      const inicio = document.querySelector(
+        '[data-go="home"],' +
+        '[data-go="inicio"],' +
+        '[data-go="modules"],' +
+        '[data-go="modulos"]'
+      );
+
+      if (inicio) {
+        try {
+          inicio.click();
+          encontrado = true;
+        } catch (e) {}
+      }
+
+      // Quitar posibles vistas abiertas que tengan la clase .view
+      if (encontrado) {
+        document.querySelectorAll('.view').forEach(function (vista) {
+          if (vista !== news && vista.id !== 'roxthalNewsModule') {
+            // No tocamos vistas que ya estén visibles fuera de la navegación.
+          }
+        });
+      }
+
+      // Llevar al usuario arriba
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // Lo colocamos al principio de RoXThal News
+    news.insertBefore(boton, news.firstChild);
+  }
+
+  // Instalar cuando cargue la aplicación
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', instalarBotonVolverNews);
+  } else {
+    instalarBotonVolverNews();
+  }
+
+  // Por si RoXThal News se crea dinámicamente
+  const observer = new MutationObserver(function () {
+    instalarBotonVolverNews();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+})();
+</script>     
 </body>
 </html>
