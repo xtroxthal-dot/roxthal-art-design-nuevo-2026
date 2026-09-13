@@ -1,4 +1,4 @@
-const CACHE_NAME = "roxthal-art-design-v3";
+const CACHE_NAME = "roxthal-art-design-v4";
 
 const APP_SHELL = [
   "./",
