@@ -22194,6 +22194,322 @@ ${imagesHtml}
 
 })();
 </script>
-   
+   <!-- ============================================================
+     ROXTHAL — GANADOR DEL SORTEO
+     VERSION PUBLICA / ADMIN
+     SOLO LECTURA — NO REALIZA NI REPITE SORTEOS
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_WINNER_PUBLIC_V2__) return;
+  window.__ROXTHAL_WINNER_PUBLIC_V2__ = true;
+
+  const CARD_ID = 'roxthalPublicWinner';
+
+  function escWinner(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function (c) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[c];
+    });
+  }
+
+  async function roxthalShowWinner() {
+
+    const container = document.getElementById('raffleList');
+
+    if (!container) return;
+
+    /*
+     * Utilizamos EXCLUSIVAMENTE el cliente Supabase
+     * que ya utiliza la aplicación.
+     */
+    if (typeof db === 'undefined' || !db || typeof db.from !== 'function') {
+      return;
+    }
+
+    try {
+
+      /*
+       * Buscar el último sorteo que YA fue realizado.
+       * Esto NO ejecuta ningún sorteo.
+       */
+      const raffleQuery = await db
+        .from('raffles')
+        .select(
+          'id,title,prize,status,winner_entry_id,drawn_at'
+        )
+        .eq('status', 'drawn')
+        .not('winner_entry_id', 'is', null)
+        .order('drawn_at', {
+          ascending: false
+        })
+        .limit(1);
+
+      if (raffleQuery.error) {
+        console.warn(
+          'RoXThal ganador:',
+          raffleQuery.error.message
+        );
+        return;
+      }
+
+      const raffle =
+        raffleQuery.data &&
+        raffleQuery.data.length
+          ? raffleQuery.data[0]
+          : null;
+
+      if (!raffle || !raffle.winner_entry_id) {
+        return;
+      }
+
+      /*
+       * Obtener únicamente nombre y número.
+       * Teléfono y email NO se consultan.
+       */
+      const winnerQuery = await db
+        .from('raffle_entries')
+        .select('name,number')
+        .eq('id', raffle.winner_entry_id)
+        .limit(1);
+
+      if (winnerQuery.error) {
+        console.warn(
+          'RoXThal ganador:',
+          winnerQuery.error.message
+        );
+        return;
+      }
+
+      const winner =
+        winnerQuery.data &&
+        winnerQuery.data.length
+          ? winnerQuery.data[0]
+          : null;
+
+      if (!winner) return;
+
+      /*
+       * Si loadRaffles() acaba de reconstruir el módulo,
+       * eliminamos la referencia antigua y la volvemos a crear.
+       */
+      const oldCard =
+        document.getElementById(CARD_ID);
+
+      if (oldCard) {
+        oldCard.remove();
+      }
+
+      const card =
+        document.createElement('div');
+
+      card.id = CARD_ID;
+      card.className = 'card';
+
+      card.style.cssText = [
+        'margin-top:18px',
+        'padding:28px 20px',
+        'text-align:center',
+        'border:1px solid rgba(242,196,0,.65)',
+        'background:linear-gradient(145deg,#1d1905,#111)',
+        'box-shadow:0 0 35px rgba(242,196,0,.10)',
+        'border-radius:17px'
+      ].join(';');
+
+      const name =
+        winner.name &&
+        String(winner.name).trim()
+          ? String(winner.name).trim()
+          : 'Ganador';
+
+      const number =
+        winner.number !== null &&
+        winner.number !== undefined
+          ? String(winner.number)
+          : '—';
+
+      const title =
+        raffle.title &&
+        String(raffle.title).trim()
+          ? String(raffle.title).trim()
+          : 'Sorteo RoXThal Art Design';
+
+      card.innerHTML = `
+        <div style="
+          color:#f2c400;
+          font-size:12px;
+          font-weight:900;
+          letter-spacing:2px;
+          text-transform:uppercase;
+          margin-bottom:10px;
+        ">
+          🏆 GANADOR DEL SORTEO
+        </div>
+
+        <div style="
+          font-size:15px;
+          color:#aaa;
+          margin-bottom:12px;
+        ">
+          ${escWinner(title)}
+        </div>
+
+        <div style="
+          font-size:clamp(28px,7vw,44px);
+          font-weight:900;
+          line-height:1.1;
+          margin:8px 0;
+        ">
+          ${escWinner(name)}
+        </div>
+
+        <div style="
+          color:#f2c400;
+          font-size:clamp(36px,9vw,58px);
+          font-weight:900;
+          line-height:1;
+          margin:15px 0;
+        ">
+          Nº ${escWinner(number)}
+        </div>
+
+        <div style="
+          margin-top:15px;
+          color:#888;
+          font-size:12px;
+        ">
+          Resultado oficial del sorteo.
+        </div>
+      `;
+
+      /*
+       * IMPORTANTE:
+       * appendChild al FINAL del módulo.
+       */
+      container.appendChild(card);
+
+    } catch (error) {
+
+      /*
+       * Nunca interrumpimos la aplicación si este
+       * bloque tiene algún problema.
+       */
+      console.warn(
+        'RoXThal: error mostrando ganador.',
+        error
+      );
+    }
+  }
+
+
+  /*
+   * ==========================================================
+   * OBSERVADOR DEL MÓDULO SORTEO
+   * ==========================================================
+   *
+   * loadRaffles() puede reconstruir raffleList.
+   * Por eso observamos sus cambios y volvemos a colocar
+   * el ganador después de que la aplicación termine de pintar.
+   */
+  function installWinnerObserver() {
+
+    const container =
+      document.getElementById('raffleList');
+
+    if (!container) {
+      setTimeout(
+        installWinnerObserver,
+        500
+      );
+      return;
+    }
+
+    let timer = null;
+
+    const observer =
+      new MutationObserver(function () {
+
+        if (timer) {
+          clearTimeout(timer);
+        }
+
+        timer = setTimeout(
+          function () {
+
+            /*
+             * Si todavía no está la tarjeta,
+             * intentamos colocarla.
+             */
+            if (
+              !document.getElementById(CARD_ID)
+            ) {
+              roxthalShowWinner();
+            }
+
+          },
+          180
+        );
+      });
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true
+    });
+
+    /*
+     * Primera comprobación.
+     */
+    setTimeout(
+      roxthalShowWinner,
+      500
+    );
+  }
+
+
+  /*
+   * ==========================================================
+   * ARRANQUE
+   * ==========================================================
+   */
+  function start() {
+
+    installWinnerObserver();
+
+    /*
+     * Segunda comprobación por seguridad después
+     * de que toda la aplicación haya terminado de cargar.
+     */
+    setTimeout(
+      roxthalShowWinner,
+      1800
+    );
+  }
+
+
+  if (
+    document.readyState === 'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      start,
+      { once:true }
+    );
+
+  } else {
+
+    start();
+
+  }
+
+})();
+</script>
 </body>
 </html>
