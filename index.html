@@ -27323,6 +27323,846 @@ ${imagesHtml}
 
 })();
 </script>
+<!-- ============================================================
+     ROXTHAL TIENDA — REPARACIÓN QUIRÚRGICA DEL CONFIRMAR PEDIDO
+     V14.1
+     
+     SOLO INTERCEPTA #rxSubmitOrderV13
+     NO OBSERVA BODY
+     NO MODIFICA SUPABASE
+     NO MODIFICA EDGE FUNCTION
+     NO MODIFICA TIENDA V3
+     NO USA MERCADO PAGO
+     ============================================================ -->
 
+<script>
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_STORE_ORDER_FIX_V14_1__) return;
+  window.__ROXTHAL_STORE_ORDER_FIX_V14_1__ = true;
+
+  const RX_URL =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+
+  const RX_KEY =
+    'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const RX_PRODUCTS =
+    RX_URL + '/rest/v1/roxthal_store_products';
+
+  const RX_ORDER_FUNCTION =
+    RX_URL + '/functions/v1/roxthal-store-orders';
+
+  const RX_CART_KEY =
+    'roxthal_store_cart_v13';
+
+  function esc(value){
+    return String(value ?? '').replace(/[&<>\"']/g,function(c){
+      return {
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '\"':'&quot;',
+        "'":'&#039;'
+      }[c];
+    });
+  }
+
+  function money(value){
+    return '$' + Number(value || 0).toLocaleString('es-AR',{
+      minimumFractionDigits:0,
+      maximumFractionDigits:2
+    });
+  }
+
+  function getCart(){
+
+    try{
+
+      const raw =
+        localStorage.getItem(RX_CART_KEY);
+
+      const cart =
+        raw ? JSON.parse(raw) : [];
+
+      return Array.isArray(cart)
+        ? cart
+        : [];
+
+    }catch(error){
+
+      return [];
+
+    }
+
+  }
+
+  function clearCart(){
+
+    try{
+      localStorage.removeItem(RX_CART_KEY);
+    }catch(error){}
+
+    const button =
+      document.getElementById(
+        'rxStoreCartButtonV13'
+      );
+
+    if(button){
+      button.textContent = '🛒 Carrito';
+    }
+
+  }
+
+  function getValue(id){
+
+    return document
+      .getElementById(id)
+      ?.value
+      ?.trim() || '';
+
+  }
+
+  function showError(message){
+
+    const box =
+      document.getElementById(
+        'rxOrderMessageV13'
+      );
+
+    if(box){
+
+      box.className =
+        'status err';
+
+      box.textContent =
+        message;
+
+      box.classList.remove(
+        'hidden'
+      );
+
+      box.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest'
+      });
+
+    }
+
+    if(typeof window.toast === 'function'){
+      window.toast(message);
+    }
+
+  }
+
+  function showSuccess(order,method){
+
+    const content =
+      document.getElementById(
+        'rxStoreCartContentV13'
+      );
+
+    if(!content) return;
+
+    const orderId =
+      order?.id
+        ? String(order.id)
+            .slice(0,8)
+            .toUpperCase()
+        : 'SIN-ID';
+
+    const subtotal =
+      Number(order?.subtotal || 0);
+
+    if(method === 'shipping'){
+
+      content.innerHTML = `
+
+        <div class="card"
+             style="
+               border:1px solid #215f3c;
+               background:#101810;
+               text-align:center;
+               padding:24px 18px;
+             ">
+
+          <div style="
+            font-size:48px;
+            margin-bottom:12px;
+          ">
+            ✅
+          </div>
+
+          <div class="label">
+            SOLICITUD RECIBIDA
+          </div>
+
+          <h2 style="
+            margin:8px 0 14px;
+          ">
+            Pedido #${esc(orderId)}
+          </h2>
+
+          <p style="
+            color:#8de2ae;
+            line-height:1.6;
+          ">
+            Recibimos correctamente tu solicitud.
+          </p>
+
+          <div style="
+            margin:18px 0;
+            padding:15px;
+            border:1px solid #5a4900;
+            border-radius:12px;
+            background:#191600;
+            color:#ddd;
+            line-height:1.6;
+            text-align:left;
+          ">
+
+            <strong style="color:#f2c400">
+              📦 Envío a cotizar
+            </strong>
+
+            <br><br>
+
+            Subtotal de productos:
+            <strong>
+              ${money(subtotal)}
+            </strong>
+
+            <br><br>
+
+            El costo de envío todavía no está incluido.
+
+            RoXThal revisará la dirección indicada,
+            calculará el envío y preparará el presupuesto.
+
+            <br><br>
+
+            <strong>
+              El pedido queda pendiente hasta que
+              aceptes el presupuesto.
+            </strong>
+
+          </div>
+
+          <p style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.5;
+          ">
+            Conservá tu número de pedido:
+            <strong style="color:#f2c400">
+              #${esc(orderId)}
+            </strong>
+          </p>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="rxOrderCloseSuccessV14"
+            style="
+              width:100%;
+              margin-top:18px;
+              min-height:48px;
+            ">
+            Volver a la tienda
+          </button>
+
+        </div>
+
+      `;
+
+    }else{
+
+      content.innerHTML = `
+
+        <div class="card"
+             style="
+               border:1px solid #215f3c;
+               background:#101810;
+               text-align:center;
+               padding:24px 18px;
+             ">
+
+          <div style="
+            font-size:48px;
+            margin-bottom:12px;
+          ">
+            ✅
+          </div>
+
+          <div class="label">
+            PEDIDO RECIBIDO
+          </div>
+
+          <h2 style="
+            margin:8px 0 14px;
+          ">
+            Pedido #${esc(orderId)}
+          </h2>
+
+          <p style="
+            color:#8de2ae;
+            line-height:1.6;
+          ">
+            Tu pedido fue registrado correctamente.
+          </p>
+
+          <div style="
+            margin:18px 0;
+            padding:15px;
+            border:1px solid #292929;
+            border-radius:12px;
+            background:#181818;
+            color:#ddd;
+            line-height:1.6;
+            text-align:left;
+          ">
+
+            <strong>
+              🏪 Retiro en RoXThal
+            </strong>
+
+            <br><br>
+
+            Subtotal:
+            <strong style="color:#f2c400">
+              ${money(subtotal)}
+            </strong>
+
+            <br><br>
+
+            RoXThal se pondrá en contacto contigo
+            para coordinar el retiro.
+
+          </div>
+
+          <p style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.5;
+          ">
+            Conservá tu número de pedido:
+            <strong style="color:#f2c400">
+              #${esc(orderId)}
+            </strong>
+          </p>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="rxOrderCloseSuccessV14"
+            style="
+              width:100%;
+              margin-top:18px;
+              min-height:48px;
+            ">
+            Volver a la tienda
+          </button>
+
+        </div>
+
+      `;
+
+    }
+
+    const closeButton =
+      document.getElementById(
+        'rxOrderCloseSuccessV14'
+      );
+
+    if(closeButton){
+
+      closeButton.onclick =
+        function(){
+
+          const overlay =
+            document.getElementById(
+              'rxStoreCartOverlayV13'
+            );
+
+          if(overlay){
+            overlay.style.display='none';
+          }
+
+        };
+
+    }
+
+  }
+
+  async function submitOrderV14(){
+
+    const button =
+      document.getElementById(
+        'rxSubmitOrderV13'
+      );
+
+    if(!button) return;
+
+    if(button.dataset.rxSubmitting === '1'){
+      return;
+    }
+
+    button.dataset.rxSubmitting = '1';
+    button.disabled = true;
+
+    const name =
+      getValue(
+        'rxCustomerNameV13'
+      );
+
+    const whatsapp =
+      getValue(
+        'rxCustomerWhatsappV13'
+      );
+
+    const email =
+      getValue(
+        'rxCustomerEmailV13'
+      ) || null;
+
+    const method =
+      document.getElementById(
+        'rxDeliveryMethodV13'
+      )?.value || '';
+
+    if(!name){
+
+      button.dataset.rxSubmitting='0';
+      button.disabled=false;
+
+      showError(
+        'Completá tu nombre.'
+      );
+
+      return;
+
+    }
+
+    if(!whatsapp){
+
+      button.dataset.rxSubmitting='0';
+      button.disabled=false;
+
+      showError(
+        'Completá tu WhatsApp.'
+      );
+
+      return;
+
+    }
+
+    if(
+      method !== 'shipping' &&
+      method !== 'pickup'
+    ){
+
+      button.dataset.rxSubmitting='0';
+      button.disabled=false;
+
+      showError(
+        'Seleccioná una forma de entrega.'
+      );
+
+      return;
+
+    }
+
+    const cart =
+      getCart();
+
+    if(!cart.length){
+
+      button.dataset.rxSubmitting='0';
+      button.disabled=false;
+
+      showError(
+        'El carrito está vacío.'
+      );
+
+      return;
+
+    }
+
+    let address = {
+
+      address_street:null,
+      address_number:null,
+      address_floor:null,
+      address_apartment:null,
+      address_locality:null,
+      address_postal_code:null,
+      address_reference:null
+
+    };
+
+    if(method === 'shipping'){
+
+      address.address_street =
+        getValue(
+          'rxAddressStreetV13'
+        );
+
+      address.address_number =
+        getValue(
+          'rxAddressNumberV13'
+        );
+
+      address.address_floor =
+        getValue(
+          'rxAddressFloorV13'
+        ) || null;
+
+      address.address_apartment =
+        getValue(
+          'rxAddressApartmentV13'
+        ) || null;
+
+      address.address_locality =
+        getValue(
+          'rxAddressLocalityV13'
+        );
+
+      address.address_postal_code =
+        getValue(
+          'rxAddressPostalV13'
+        ) || null;
+
+      address.address_reference =
+        getValue(
+          'rxAddressReferenceV13'
+        ) || null;
+
+      if(
+        !address.address_street ||
+        !address.address_number ||
+        !address.address_locality
+      ){
+
+        button.dataset.rxSubmitting='0';
+        button.disabled=false;
+
+        showError(
+          'Completá calle, número y localidad.'
+        );
+
+        return;
+
+      }
+
+    }
+
+    button.textContent =
+      '⏳ Enviando pedido...';
+
+    const message =
+      document.getElementById(
+        'rxOrderMessageV13'
+      );
+
+    if(message){
+
+      message.className='status';
+
+      message.textContent =
+        'Verificando productos y stock...';
+
+      message.classList.remove(
+        'hidden'
+      );
+
+    }
+
+    try{
+
+      /* ------------------------------------------------------
+         CONSULTA REAL DEL CATÁLOGO
+         ------------------------------------------------------ */
+
+      const response =
+        await fetch(
+          RX_PRODUCTS +
+          '?select=id,name,price,stock,active' +
+          '&active=eq.true',
+          {
+            method:'GET',
+            headers:{
+              'apikey':RX_KEY,
+              'Authorization':
+                'Bearer ' + RX_KEY,
+              'Accept':
+                'application/json'
+            }
+          }
+        );
+
+      if(!response.ok){
+
+        throw new Error(
+          'No se pudo verificar la tienda.'
+        );
+
+      }
+
+      const products =
+        await response.json();
+
+      if(
+        !Array.isArray(products)
+      ){
+
+        throw new Error(
+          'Respuesta inválida de la tienda.'
+        );
+
+      }
+
+      /* ------------------------------------------------------
+         VALIDACIÓN Y NORMALIZACIÓN DEL CARRITO
+         ------------------------------------------------------ */
+
+      const items=[];
+
+      for(const cartItem of cart){
+
+        const product =
+          products.find(
+            p =>
+              p.id ===
+              cartItem.product_id
+          );
+
+        if(!product){
+
+          throw new Error(
+            'Uno de los productos ya no está disponible.'
+          );
+
+        }
+
+        const quantity =
+          Number(
+            cartItem.quantity || 0
+          );
+
+        if(
+          !Number.isInteger(quantity) ||
+          quantity < 1
+        ){
+
+          throw new Error(
+            'Cantidad inválida en el carrito.'
+          );
+
+        }
+
+        const stock =
+          Number(
+            product.stock || 0
+          );
+
+        if(stock < quantity){
+
+          throw new Error(
+            'El stock de "' +
+            product.name +
+            '" ya no alcanza para tu pedido.'
+          );
+
+        }
+
+        items.push({
+
+          product_id:
+            product.id,
+
+          quantity:
+            quantity
+
+        });
+
+      }
+
+      /* ------------------------------------------------------
+         ENVÍO AL SERVIDOR
+         ------------------------------------------------------ */
+
+      if(message){
+
+        message.textContent =
+          'Registrando pedido...';
+
+      }
+
+      const orderResponse =
+        await fetch(
+          RX_ORDER_FUNCTION,
+          {
+            method:'POST',
+
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+
+            body:JSON.stringify({
+
+              action:
+                'create_order',
+
+              customer_name:
+                name,
+
+              customer_whatsapp:
+                whatsapp,
+
+              customer_email:
+                email,
+
+              delivery_method:
+                method,
+
+              address_street:
+                address.address_street,
+
+              address_number:
+                address.address_number,
+
+              address_floor:
+                address.address_floor,
+
+              address_apartment:
+                address.address_apartment,
+
+              address_locality:
+                address.address_locality,
+
+              address_postal_code:
+                address.address_postal_code,
+
+              address_reference:
+                address.address_reference,
+
+              items:
+                items
+
+            })
+
+          }
+        );
+
+      let result=null;
+
+      try{
+
+        result =
+          await orderResponse.json();
+
+      }catch(error){
+
+        result=null;
+
+      }
+
+      if(
+        !orderResponse.ok ||
+        !result ||
+        result.ok !== true
+      ){
+
+        throw new Error(
+          result?.error ||
+          'El servidor no pudo registrar el pedido.'
+        );
+
+      }
+
+      /* ------------------------------------------------------
+         ÉXITO DEFINITIVO
+         ------------------------------------------------------ */
+
+      clearCart();
+
+      /*
+       * IMPORTANTE:
+       * NO llamamos renderCart().
+       * NO destruimos el mensaje.
+       * Pintamos directamente la confirmación.
+       */
+
+      showSuccess(
+        result.order,
+        method
+      );
+
+    }catch(error){
+
+      console.error(
+        'RoXThal Tienda V14.1:',
+        error
+      );
+
+      button.dataset.rxSubmitting='0';
+      button.disabled=false;
+
+      button.textContent =
+        'Solicitar presupuesto / pedido';
+
+      showError(
+        error?.message ||
+        'No se pudo registrar el pedido.'
+      );
+
+      return;
+
+    }
+
+  }
+
+  /* ----------------------------------------------------------
+     INTERCEPTOR ÚNICAMENTE DEL BOTÓN DEL PEDIDO
+     ---------------------------------------------------------- */
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const button =
+        event.target.closest(
+          '#rxSubmitOrderV13'
+        );
+
+      if(!button){
+        return;
+      }
+
+      /*
+       * El handler V13 está asignado directamente
+       * al botón con .onclick.
+       *
+       * Capturamos aquí ANTES de llegar al botón
+       * para impedir que V13 ejecute su versión.
+       */
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      submitOrderV14();
+
+    },
+    true
+  );
+
+})();
+</script>
+
+<!-- ==================== FIN REPARACIÓN V14.1 ==================== -->
 </body>
 </html>
