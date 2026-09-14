@@ -31252,5 +31252,211 @@ const boot=setInterval(()=>{
 
 })();
 </script>
+       <script>
+(function(){
+  if(window.__ROXTHAL_STORE_DELETE_DELIVERED_V1__) return;
+  window.__ROXTHAL_STORE_DELETE_DELIVERED_V1__ = true;
+
+  const ENDPOINT =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-store-orders';
+
+  function findStatus(){
+    return document.getElementById('rxOrderStatusV2') ||
+           document.getElementById('roxthalOrderStatus');
+  }
+
+  function findOrderId(){
+    const d = window.__ROXTHAL_STORE_ORDERS_DATA_V2__;
+    if(d?.orders?.length){
+      const detail = document.getElementById('rxOrderDetailV2');
+      if(detail){
+        const selected = detail.querySelector('[data-order-id]');
+        if(selected) return selected.dataset.orderId;
+      }
+    }
+
+    if(window.selectedOrderId) return window.selectedOrderId;
+
+    const buttons = document.querySelectorAll(
+      '[data-roxthal-order], .rx-open-order-v2'
+    );
+
+    for(const b of buttons){
+      if(b.classList.contains('active') ||
+         b.getAttribute('aria-current') === 'true'){
+        return b.dataset.roxthalOrder || b.dataset.orderId || null;
+      }
+    }
+
+    return null;
+  }
+
+  function currentOrderId(){
+    const v = window.__ROXTHAL_STORE_ORDERS_DATA_V2__;
+
+    if(v?.orders?.length){
+      const detail = document.getElementById('rxOrderDetailV2');
+      if(detail){
+        const text = detail.innerText || '';
+        const match = text.match(/Pedido\s*#([A-Fa-f0-9]{8})/);
+        if(match){
+          const found = v.orders.find(o =>
+            String(o.id).toUpperCase().startsWith(match[1].toUpperCase())
+          );
+          if(found) return found.id;
+        }
+      }
+    }
+
+    return findOrderId();
+  }
+
+  function updateDeleteButton(){
+
+    const status = findStatus();
+    const save =
+      document.getElementById('rxSaveOrderV2') ||
+      document.getElementById('roxthalSaveOrder');
+
+    if(!status || !save) return;
+
+    let btn = document.getElementById(
+      'roxthalDeleteDeliveredOrderV1'
+    );
+
+    if(!btn){
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'roxthalDeleteDeliveredOrderV1';
+      btn.className = 'btn btn-danger';
+      btn.style.width = '100%';
+      btn.style.marginTop = '10px';
+      btn.textContent = '🗑️ Eliminar pedido entregado';
+
+      save.insertAdjacentElement('afterend', btn);
+
+      btn.onclick = async function(){
+
+        const orderId = currentOrderId();
+
+        if(!orderId){
+          alert('No se pudo identificar el pedido.');
+          return;
+        }
+
+        if(status.value !== 'delivered'){
+          alert('Primero marca el pedido como Entregado y guarda los cambios.');
+          return;
+        }
+
+        const ok = confirm(
+          '¿Eliminar definitivamente este pedido?\n\n' +
+          'Esta acción borrará el pedido y sus productos asociados.'
+        );
+
+        if(!ok) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Eliminando...';
+
+        try{
+
+          const {data:sessionData} =
+            await db.auth.getSession();
+
+          const token =
+            sessionData?.session?.access_token;
+
+          if(!token){
+            throw new Error(
+              'La sesión del administrador no está disponible.'
+            );
+          }
+
+          const response = await fetch(ENDPOINT,{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer '+token
+            },
+            body:JSON.stringify({
+              action:'delete_order',
+              order_id:orderId
+            })
+          });
+
+          const result = await response.json();
+
+          if(!response.ok || !result.ok){
+            throw new Error(
+              result?.error || 'No se pudo eliminar el pedido.'
+            );
+          }
+
+          btn.textContent = '✅ Pedido eliminado';
+
+          if(typeof loadStoreOrders === 'function'){
+            await loadStoreOrders();
+          }
+
+          if(typeof loadOrders === 'function'){
+            await loadOrders();
+          }
+
+          const detail =
+            document.getElementById('rxOrderDetailV2') ||
+            document.getElementById('roxthalOrderDetail');
+
+          if(detail){
+            detail.innerHTML =
+              '<div class="card">' +
+              '<h3>✅ Pedido eliminado</h3>' +
+              '<p>El pedido fue eliminado correctamente.</p>' +
+              '</div>';
+          }
+
+        }catch(error){
+
+          console.error(
+            'RoXThal eliminar pedido:',
+            error
+          );
+
+          alert(
+            'No se pudo eliminar el pedido:\n' +
+            (error?.message || error)
+          );
+
+          btn.disabled = false;
+          btn.textContent =
+            '🗑️ Eliminar pedido entregado';
+        }
+      };
+    }
+
+    btn.style.display =
+      status.value === 'delivered'
+        ? 'flex'
+        : 'none';
+  }
+
+  document.addEventListener('change',function(e){
+
+    if(
+      e.target &&
+      (
+        e.target.id === 'rxOrderStatusV2' ||
+        e.target.id === 'roxthalOrderStatus'
+      )
+    ){
+      updateDeleteButton();
+    }
+
+  });
+
+  setInterval(updateDeleteButton,1000);
+
+})();
+</script>
 </body>
 </html>
