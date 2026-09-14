@@ -32712,5 +32712,171 @@ const boot=setInterval(()=>{
 
 })();
 </script>
+   <script>
+/* ============================================================
+   ROXTHAL — RECEPCIÓN DE ACEPTACIÓN DE PEDIDOS
+   SOLO ADMINISTRADOR
+   No modifica carrito, productos ni Supabase.
+   ============================================================ */
+(function(){
+
+  if(window.__ROXTHAL_STORE_ACCEPTANCE_ADMIN_FIX__) return;
+  window.__ROXTHAL_STORE_ACCEPTANCE_ADMIN_FIX__ = true;
+
+  const TABLE = 'roxthal_store_orders';
+  let channel = null;
+  let started = false;
+
+  function isAdmin(){
+    return !!(
+      window.RoXThalAdmin &&
+      typeof window.RoXThalAdmin.isAdmin === 'function' &&
+      window.RoXThalAdmin.isAdmin()
+    );
+  }
+
+  function money(v){
+    return '$' + Number(v || 0).toLocaleString('es-AR',{
+      minimumFractionDigits:0,
+      maximumFractionDigits:2
+    });
+  }
+
+  function notify(order){
+    const ref = String(order?.id || '').slice(0,8).toUpperCase();
+
+    const text =
+      '🔔 PEDIDO ACEPTADO\n' +
+      '#' + ref +
+      '\nEl cliente aceptó el presupuesto de envío.' +
+      '\nEnvío: ' + money(order?.shipping_quote) +
+      '\nTotal: ' + money(order?.total);
+
+    console.log('RoXThal — aceptación recibida:', order);
+
+    /* Aviso visual existente */
+    try{
+      if(typeof window.toastAdmin === 'function'){
+        window.toastAdmin(text.replace(/\n/g,' · '));
+      }else if(typeof window.toast === 'function'){
+        window.toast('🔔 Pedido #' + ref + ': el cliente aceptó el presupuesto.');
+      }
+    }catch(e){}
+
+    /* Aviso del navegador */
+    try{
+      if(
+        'Notification' in window &&
+        Notification.permission === 'granted'
+      ){
+        new Notification('🔔 RoXThal — Pedido aceptado',{
+          body:
+            '#' + ref +
+            ' · El cliente aceptó el presupuesto de envío.\n' +
+            'Total: ' + money(order?.total)
+        });
+      }
+    }catch(e){}
+
+    /* Actualizar inmediatamente la lista del administrador */
+    try{
+      if(typeof window.loadOrders === 'function'){
+        window.loadOrders(true);
+      }
+    }catch(e){}
+
+    try{
+      const refresh =
+        document.querySelector(
+          '#roxthalStoreOrdersRefresh,#rxOrdersRefreshV2,#rxOrdersRefreshV2'
+        );
+
+      if(refresh) refresh.click();
+    }catch(e){}
+  }
+
+  function start(){
+
+    if(started || !isAdmin() || !window.db) return;
+    started = true;
+
+    try{
+
+      channel = window.db
+        .channel('roxthal-store-order-acceptance-admin')
+        .on(
+          'postgres_changes',
+          {
+            event:'UPDATE',
+            schema:'public',
+            table:TABLE
+          },
+          payload => {
+
+            const oldOrder = payload?.old || {};
+            const newOrder = payload?.new || {};
+
+            /*
+             * SOLO nos interesa la aceptación real del cliente.
+             * No avisamos por cualquier modificación administrativa.
+             */
+            const acceptedNow =
+              (
+                newOrder.quote_status === 'accepted' &&
+                oldOrder.quote_status !== 'accepted'
+              ) ||
+              (
+                newOrder.order_status === 'confirmed' &&
+                oldOrder.order_status !== 'confirmed' &&
+                newOrder.quote_status === 'accepted'
+              );
+
+            if(!acceptedNow) return;
+
+            notify(newOrder);
+          }
+        )
+        .subscribe(status => {
+          console.log(
+            'RoXThal recepción aceptación:',
+            status
+          );
+        });
+
+    }catch(error){
+      console.error(
+        'RoXThal — error recepción aceptación:',
+        error
+      );
+    }
+  }
+
+  /* Esperar a que el administrador esté disponible */
+  const timer = setInterval(()=>{
+
+    if(isAdmin()){
+
+      start();
+
+      clearInterval(timer);
+
+      try{
+        if(
+          'Notification' in window &&
+          Notification.permission === 'default'
+        ){
+          Notification.requestPermission().catch(()=>{});
+        }
+      }catch(e){}
+    }
+
+  },1000);
+
+  setTimeout(()=>{
+    clearInterval(timer);
+  },120000);
+
+})();
+</script>
 </body>
 </html>
