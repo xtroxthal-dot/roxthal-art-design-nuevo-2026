@@ -28164,5 +28164,975 @@ ${imagesHtml}
 </script>
 
 <!-- ==================== FIN REPARACIÓN V14.1 ==================== -->
+   <!-- =========================================================
+     ROXTHAL — PEDIDOS DE TIENDA / ADMIN
+     V1 — PANEL + AVISO + PRESUPUESTO + ESTADOS
+     NO MODIFICA EL CARRITO NI LA TIENDA PÚBLICA
+     ========================================================= -->
+<script>
+(function(){
+
+  if(window.__ROXTHAL_STORE_ADMIN_ORDERS_V1__) return;
+  window.__ROXTHAL_STORE_ADMIN_ORDERS_V1__ = true;
+
+  const TABLE = 'roxthal_store_orders';
+  const ITEMS = 'roxthal_store_order_items';
+
+  function escOrder(v=''){
+    return String(v).replace(/[&<>"']/g,c=>({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c]));
+  }
+
+  function moneyOrder(v){
+    return '$' + Number(v||0).toLocaleString('es-AR',{
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    });
+  }
+
+  function orderDate(v){
+    if(!v) return '';
+    try{
+      return new Date(v).toLocaleString('es-AR',{
+        dateStyle:'short',
+        timeStyle:'short'
+      });
+    }catch(e){
+      return v;
+    }
+  }
+
+  function orderStatusLabel(v){
+    const map={
+      pending_quote:'Pendiente de presupuesto',
+      awaiting_acceptance:'Esperando aceptación',
+      confirmed:'Confirmado',
+      preparing:'Preparando',
+      shipped:'Enviado',
+      delivered:'Entregado',
+      cancelled:'Cancelado'
+    };
+    return map[v] || v || 'Sin estado';
+  }
+
+  function quoteStatusLabel(v){
+    const map={
+      requested:'Presupuesto solicitado',
+      quoted:'Presupuesto enviado',
+      accepted:'Presupuesto aceptado',
+      rejected:'Presupuesto rechazado',
+      not_required:'No requiere presupuesto'
+    };
+    return map[v] || v || '';
+  }
+
+  function deliveryLabel(v){
+    return v === 'pickup' ? '🏠 Retiro en Atelier' : '🚚 Envío a domicilio';
+  }
+
+  function adminReady(){
+    return typeof requireAdmin === 'function' && !!adminUser;
+  }
+
+  async function ensureAdmin(){
+    if(typeof requireAdmin !== 'function') return false;
+    const u = await requireAdmin();
+    return !!u;
+  }
+
+  /* =======================================================
+     CREAR PESTAÑA PEDIDOS DENTRO DEL ADMINISTRADOR
+     ======================================================= */
+
+  function installAdminOrdersTab(){
+
+    const tabs = document.getElementById('adminTabs');
+    const panel = document.getElementById('adminPanel');
+
+    if(!tabs || !panel) return false;
+
+    if(!tabs.querySelector('[data-admin-tab="storeOrders"]')){
+
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.dataset.adminTab='storeOrders';
+      btn.id='roxthalStoreOrdersTab';
+      btn.innerHTML='🛒 Pedidos Tienda';
+      tabs.insertBefore(
+        btn,
+        document.getElementById('adminLogout') || null
+      );
+    }
+
+    if(!document.getElementById('adminStoreOrders')){
+
+      const section=document.createElement('div');
+      section.id='adminStoreOrders';
+      section.className='admin-tab-panel hidden';
+
+      section.innerHTML=`
+        <div class="grid2">
+
+          <div class="card">
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+
+              <div>
+                <div class="label">Tienda</div>
+                <h3>Pedidos recibidos</h3>
+              </div>
+
+              <button
+                type="button"
+                id="roxthalStoreOrdersRefresh"
+                class="btn btn-primary btn-small">
+                🔄 Actualizar
+              </button>
+
+            </div>
+
+            <div
+              id="roxthalStoreOrdersStatus"
+              class="status"
+              style="margin-top:15px">
+              Cargando pedidos...
+            </div>
+
+            <div
+              id="roxthalStoreOrdersList"
+              class="admin-list">
+            </div>
+
+          </div>
+
+          <div class="card">
+
+            <div class="label">Pedido seleccionado</div>
+
+            <div
+              id="roxthalStoreOrderDetail">
+              <div class="empty">
+                Selecciona un pedido para ver todos sus datos.
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+      panel.appendChild(section);
+    }
+
+    return true;
+  }
+
+  /* =======================================================
+     CARGAR PEDIDOS
+     ======================================================= */
+
+  let ordersCache=[];
+  let itemsCache=[];
+  let selectedOrderId=null;
+  let lastKnownNewestOrder=null;
+  let firstLoad=true;
+
+  async function loadStoreOrders(){
+
+    if(!await ensureAdmin()) return;
+
+    installAdminOrdersTab();
+
+    const statusBox=document.getElementById('roxthalStoreOrdersStatus');
+    const list=document.getElementById('roxthalStoreOrdersList');
+
+    if(!list) return;
+
+    if(statusBox){
+      statusBox.className='status';
+      statusBox.textContent='Cargando pedidos...';
+    }
+
+    try{
+
+      const [ordersResult,itemsResult]=await Promise.all([
+
+        db
+          .from(TABLE)
+          .select('*')
+          .order('created_at',{ascending:false})
+          .limit(200),
+
+        db
+          .from(ITEMS)
+          .select('*')
+          .order('created_at',{ascending:true})
+          .limit(1000)
+
+      ]);
+
+      if(ordersResult.error) throw ordersResult.error;
+      if(itemsResult.error) throw itemsResult.error;
+
+      ordersCache=ordersResult.data||[];
+      itemsCache=itemsResult.data||[];
+
+      renderStoreOrders();
+
+      if(statusBox){
+        statusBox.className='status ok';
+        statusBox.textContent=
+          ordersCache.length
+          ? `${ordersCache.length} pedido(s) registrado(s).`
+          : 'No hay pedidos todavía.';
+      }
+
+      detectNewOrders();
+
+    }catch(error){
+
+      console.error('RoXThal pedidos:',error);
+
+      if(statusBox){
+        statusBox.className='status err';
+        statusBox.textContent=
+          'No se pudieron cargar los pedidos: '+error.message;
+      }
+
+      if(list){
+        list.innerHTML=
+          '<div class="empty">No se pudieron cargar los pedidos.</div>';
+      }
+    }
+  }
+
+  /* =======================================================
+     DETECTAR PEDIDO NUEVO
+     ======================================================= */
+
+  function detectNewOrders(){
+
+    const newest=ordersCache[0];
+
+    if(!newest){
+      firstLoad=false;
+      return;
+    }
+
+    if(firstLoad){
+
+      lastKnownNewestOrder=newest.id;
+      firstLoad=false;
+      return;
+    }
+
+    if(newest.id !== lastKnownNewestOrder){
+
+      lastKnownNewestOrder=newest.id;
+
+      showNewOrderAlert(newest);
+
+      loadStoreOrders();
+    }
+  }
+
+  function showNewOrderAlert(order){
+
+    const message=
+      '🛒 NUEVO PEDIDO\\n'+
+      (order.customer_name||'Cliente')+
+      ' · '+moneyOrder(order.subtotal);
+
+    if(typeof toast === 'function'){
+      toast(message.replace('\\n',' — '));
+    }
+
+    try{
+
+      if(
+        'Notification' in window &&
+        Notification.permission === 'granted'
+      ){
+
+        new Notification('🛒 Nuevo pedido RoXThal',{
+          body:
+            (order.customer_name||'Cliente')+
+            ' · '+moneyOrder(order.subtotal)
+        });
+
+      }
+
+    }catch(e){}
+
+    const tab=document.getElementById('roxthalStoreOrdersTab');
+
+    if(tab){
+
+      tab.textContent='🔴 NUEVO PEDIDO';
+
+      tab.style.borderColor='var(--yellow)';
+      tab.style.color='var(--yellow)';
+
+      setTimeout(()=>{
+
+        if(tab){
+
+          tab.textContent='🛒 Pedidos Tienda';
+
+        }
+
+      },12000);
+    }
+  }
+
+  /* =======================================================
+     RENDER LISTA
+     ======================================================= */
+
+  function renderStoreOrders(){
+
+    const list=document.getElementById('roxthalStoreOrdersList');
+
+    if(!list) return;
+
+    if(!ordersCache.length){
+
+      list.innerHTML=
+        '<div class="empty">No hay pedidos recibidos.</div>';
+
+      return;
+    }
+
+    list.innerHTML=ordersCache.map(order=>{
+
+      const selected=order.id===selectedOrderId;
+
+      const pending=
+        order.order_status==='pending_quote' ||
+        order.order_status==='awaiting_acceptance';
+
+      return `
+        <button
+          type="button"
+          data-roxthal-order="${escOrder(order.id)}"
+          style="
+            width:100%;
+            text-align:left;
+            border:1px solid ${selected?'var(--yellow)':'var(--border)'};
+            background:${selected?'#211d08':'var(--surface)'};
+            color:var(--text);
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:9px;
+          ">
+
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+
+            <div>
+              <strong>
+                ${escOrder(order.customer_name||'Cliente')}
+              </strong>
+
+              <div class="small" style="margin-top:4px">
+                ${orderDate(order.created_at)}
+              </div>
+            </div>
+
+            <strong style="color:var(--yellow)">
+              ${moneyOrder(order.subtotal)}
+            </strong>
+
+          </div>
+
+          <div class="small" style="margin-top:8px">
+            ${deliveryLabel(order.delivery_method)}
+          </div>
+
+          <div style="margin-top:8px">
+
+            <span
+              style="
+                display:inline-block;
+                padding:5px 8px;
+                border-radius:7px;
+                background:${pending?'#3a3008':'#17351f'};
+                color:${pending?'var(--yellow)':'#9be6b4'};
+                font-size:11px;
+                font-weight:800;
+              ">
+              ${escOrder(orderStatusLabel(order.order_status))}
+            </span>
+
+          </div>
+
+        </button>
+      `;
+
+    }).join('');
+  }
+
+  /* =======================================================
+     DETALLE
+     ======================================================= */
+
+  function renderOrderDetail(order){
+
+    const box=document.getElementById('roxthalStoreOrderDetail');
+
+    if(!box || !order) return;
+
+    const items=itemsCache.filter(x=>x.order_id===order.id);
+
+    const addressParts=[
+      order.address_street && `${order.address_street} ${order.address_number||''}`,
+      order.address_floor && `Piso ${order.address_floor}`,
+      order.address_apartment && `Depto ${order.address_apartment}`,
+      order.address_locality,
+      order.address_postal_code && `CP ${order.address_postal_code}`,
+      order.address_reference && `Ref.: ${order.address_reference}`
+    ].filter(Boolean);
+
+    box.innerHTML=`
+
+      <div style="display:grid;gap:14px">
+
+        <div>
+          <h3>${escOrder(order.customer_name||'Cliente')}</h3>
+
+          <p class="muted" style="margin-top:5px">
+            Pedido ${escOrder(order.id.slice(0,8))}
+          </p>
+
+          <p class="muted" style="margin-top:5px">
+            ${orderDate(order.created_at)}
+          </p>
+        </div>
+
+        <div class="card" style="padding:14px">
+
+          <strong>📱 Contacto</strong>
+
+          <p style="margin-top:7px">
+            ${escOrder(order.customer_whatsapp||'Sin WhatsApp')}
+          </p>
+
+          ${
+            order.customer_email
+            ? `<p class="muted" style="margin-top:4px">${escOrder(order.customer_email)}</p>`
+            : ''
+          }
+
+          <a
+            class="btn btn-primary btn-small"
+            style="margin-top:10px"
+            target="_blank"
+            rel="noopener"
+            href="https://wa.me/${String(order.customer_whatsapp||'').replace(/[^0-9]/g,'')}">
+            💬 WhatsApp
+          </a>
+
+        </div>
+
+        <div class="card" style="padding:14px">
+
+          <strong>📦 Entrega</strong>
+
+          <p style="margin-top:7px">
+            ${deliveryLabel(order.delivery_method)}
+          </p>
+
+          ${
+            order.delivery_method==='shipping'
+            ? `
+              <div
+                style="
+                  margin-top:10px;
+                  padding:10px;
+                  border:1px solid var(--border);
+                  border-radius:10px;
+                  line-height:1.7;
+                ">
+                ${addressParts.map(escOrder).join('<br>')}
+              </div>
+            `
+            : `
+              <p class="muted" style="margin-top:7px">
+                El cliente retira en el Atelier.
+              </p>
+            `
+          }
+
+        </div>
+
+        <div class="card" style="padding:14px">
+
+          <strong>🛍️ Productos</strong>
+
+          <div style="margin-top:10px">
+
+            ${
+              items.length
+              ? items.map(item=>`
+                  <div class="row">
+                    <span>
+                      ${escOrder(item.product_name)}
+                      × ${Number(item.quantity||0)}
+                    </span>
+                    <b>${moneyOrder(item.line_total)}</b>
+                  </div>
+                `).join('')
+              : '<div class="empty">No se encontraron productos.</div>'
+            }
+
+          </div>
+
+          <div class="row" style="margin-top:8px">
+
+            <strong>Subtotal</strong>
+
+            <strong>
+              ${moneyOrder(order.subtotal)}
+            </strong>
+
+          </div>
+
+          ${
+            order.delivery_method==='shipping'
+            ? `
+              <div class="row">
+
+                <span>Envío</span>
+
+                <strong>
+                  ${
+                    order.shipping_quote==null
+                    ? 'A cotizar'
+                    : moneyOrder(order.shipping_quote)
+                  }
+                </strong>
+
+              </div>
+
+              <div class="row">
+
+                <strong>Total</strong>
+
+                <strong style="color:var(--yellow)">
+                  ${
+                    order.total==null
+                    ? 'Pendiente'
+                    : moneyOrder(order.total)
+                  }
+                </strong>
+
+              </div>
+            `
+            : `
+              <div class="row">
+
+                <strong>Total</strong>
+
+                <strong style="color:var(--yellow)">
+                  ${moneyOrder(order.total||order.subtotal)}
+                </strong>
+
+              </div>
+            `
+          }
+
+        </div>
+
+        <div class="card" style="padding:14px">
+
+          <strong>⚙️ Gestión administrativa</strong>
+
+          <div class="field" style="margin-top:12px">
+
+            <label>Estado del pedido</label>
+
+            <select id="roxthalOrderStatus">
+
+              ${[
+                ['pending_quote','Pendiente de presupuesto'],
+                ['awaiting_acceptance','Esperando aceptación'],
+                ['confirmed','Confirmado'],
+                ['preparing','Preparando'],
+                ['shipped','Enviado'],
+                ['delivered','Entregado'],
+                ['cancelled','Cancelado']
+              ].map(x=>`
+                <option
+                  value="${x[0]}"
+                  ${order.order_status===x[0]?'selected':''}>
+                  ${x[1]}
+                </option>
+              `).join('')}
+
+            </select>
+
+          </div>
+
+          ${
+            order.delivery_method==='shipping'
+            ? `
+              <div class="field">
+
+                <label>
+                  Costo de envío / presupuesto
+                </label>
+
+                <input
+                  id="roxthalShippingQuote"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  value="${order.shipping_quote==null?'':Number(order.shipping_quote)}"
+                  placeholder="Ej.: 3500">
+
+              </div>
+            `
+            : ''
+          }
+
+          <div class="field">
+
+            <label>Mensaje para el cliente</label>
+
+            <textarea
+              id="roxthalOrderAdminMessage"
+              placeholder="Información para el cliente..."
+            >${escOrder(order.admin_message||'')}</textarea>
+
+          </div>
+
+          <button
+            type="button"
+            id="roxthalSaveOrder"
+            class="btn btn-primary"
+            style="width:100%">
+            💾 Guardar pedido
+          </button>
+
+        </div>
+
+        <div class="small">
+          Estado del presupuesto:
+          <strong>${escOrder(quoteStatusLabel(order.quote_status))}</strong>
+        </div>
+
+      </div>
+    `;
+
+    const save=document.getElementById('roxthalSaveOrder');
+
+    if(save){
+
+      save.onclick=async()=>{
+
+        if(!await ensureAdmin()) return;
+
+        save.disabled=true;
+        save.textContent='Guardando...';
+
+        try{
+
+          const newStatus=
+            document.getElementById('roxthalOrderStatus')?.value ||
+            order.order_status;
+
+          const message=
+            document.getElementById('roxthalOrderAdminMessage')?.value.trim() ||
+            null;
+
+          let shippingQuote=null;
+          let total=order.total;
+          let quoteStatus=order.quote_status;
+
+          if(order.delivery_method==='shipping'){
+
+            const raw=
+              document.getElementById('roxthalShippingQuote')?.value.trim();
+
+            if(raw!==''){
+
+              shippingQuote=Number(raw);
+
+              if(!Number.isFinite(shippingQuote) || shippingQuote<0){
+                throw new Error('El costo de envío no es válido.');
+              }
+
+              shippingQuote=Math.round(shippingQuote*100)/100;
+
+              total=
+                Math.round(
+                  (Number(order.subtotal||0)+shippingQuote)*100
+                )/100;
+
+              quoteStatus='quoted';
+
+            }else{
+
+              shippingQuote=null;
+              total=null;
+
+              if(newStatus==='pending_quote'){
+                quoteStatus='requested';
+              }
+
+            }
+
+          }else{
+
+            shippingQuote=null;
+            total=Number(order.subtotal||0);
+            quoteStatus='not_required';
+
+          }
+
+          const update={
+            order_status:newStatus,
+            shipping_quote:shippingQuote,
+            total,
+            quote_status:quoteStatus,
+            admin_message:message,
+            updated_at:new Date().toISOString()
+          };
+
+          const {error}=await db
+            .from(TABLE)
+            .update(update)
+            .eq('id',order.id);
+
+          if(error) throw error;
+
+          Object.assign(order,update);
+
+          toast('Pedido actualizado.');
+
+          await loadStoreOrders();
+
+          const fresh=ordersCache.find(x=>x.id===order.id);
+
+          if(fresh){
+
+            selectedOrderId=fresh.id;
+            renderOrderDetail(fresh);
+
+          }
+
+        }catch(error){
+
+          console.error(error);
+          toast('No se pudo guardar: '+error.message);
+
+        }finally{
+
+          save.disabled=false;
+          save.textContent='💾 Guardar pedido';
+
+        }
+
+      };
+    }
+  }
+
+  /* =======================================================
+     CLICK EN PEDIDO
+     ======================================================= */
+
+  document.addEventListener('click',function(e){
+
+    const orderButton=e.target.closest('[data-roxthal-order]');
+
+    if(orderButton){
+
+      const id=orderButton.dataset.roxthalOrder;
+
+      selectedOrderId=id;
+
+      const order=ordersCache.find(x=>x.id===id);
+
+      if(order){
+
+        renderStoreOrders();
+        renderOrderDetail(order);
+
+      }
+
+      return;
+    }
+
+    const refresh=e.target.closest('#roxthalStoreOrdersRefresh');
+
+    if(refresh){
+
+      loadStoreOrders();
+      return;
+    }
+
+  });
+
+  /* =======================================================
+     ACTIVAR PESTAÑA
+     ======================================================= */
+
+  document.addEventListener('click',function(e){
+
+    const tab=e.target.closest('[data-admin-tab="storeOrders"]');
+
+    if(!tab) return;
+
+    setTimeout(()=>{
+
+      installAdminOrdersTab();
+
+      if(!adminReady()) return;
+
+      loadStoreOrders();
+
+      try{
+
+        if(
+          'Notification' in window &&
+          Notification.permission==='default'
+        ){
+          Notification.requestPermission().catch(()=>{});
+        }
+
+      }catch(err){}
+
+    },30);
+
+  });
+
+  /* =======================================================
+     AVISO EN TIEMPO REAL
+     ======================================================= */
+
+  let realtimeStarted=false;
+
+  function startRealtime(){
+
+    if(realtimeStarted || !adminReady()) return;
+
+    realtimeStarted=true;
+
+    try{
+
+      db
+        .channel('roxthal-store-orders-admin')
+        .on(
+          'postgres_changes',
+          {
+            event:'INSERT',
+            schema:'public',
+            table:TABLE
+          },
+          payload=>{
+
+            const order=payload?.new;
+
+            if(!order || !order.id) return;
+
+            if(
+              ordersCache.length &&
+              ordersCache.some(x=>x.id===order.id)
+            ){
+              return;
+            }
+
+            showNewOrderAlert(order);
+            loadStoreOrders();
+
+          }
+        )
+        .subscribe(status=>{
+
+          console.log(
+            'RoXThal pedidos Realtime:',
+            status
+          );
+
+        });
+
+    }catch(error){
+
+      console.warn(
+        'Realtime pedidos no disponible:',
+        error
+      );
+
+    }
+  }
+
+  /* =======================================================
+     RESPALDO POR COMPROBACIÓN PERIÓDICA
+     ======================================================= */
+
+  let pollStarted=false;
+
+  function startPolling(){
+
+    if(pollStarted) return;
+
+    pollStarted=true;
+
+    setInterval(()=>{
+
+      if(!adminReady()) return;
+
+      loadStoreOrders();
+
+    },15000);
+
+  }
+
+  /* =======================================================
+     ARRANQUE SEGURO
+     ======================================================= */
+
+  function boot(){
+
+    installAdminOrdersTab();
+
+    startPolling();
+
+    if(adminReady()){
+      startRealtime();
+    }
+
+  }
+
+  setTimeout(boot,1200);
+
+  if(db?.auth?.onAuthStateChange){
+
+    db.auth.onAuthStateChange((_event,session)=>{
+
+      setTimeout(()=>{
+
+        if(session?.user?.app_metadata?.role==='admin'){
+
+          adminUser=session.user;
+
+          installAdminOrdersTab();
+          startRealtime();
+
+        }
+
+      },300);
+
+    });
+
+  }
+
+})();
+</script>
 </body>
 </html>
