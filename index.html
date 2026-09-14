@@ -30428,5 +30428,109 @@ const boot=setInterval(()=>{
 
 })();
 </script>
+   <script>
+(function(){
+  if(window.__ROXTHAL_STORE_ORDERS_BOOT_FIX__) return;
+  window.__ROXTHAL_STORE_ORDERS_BOOT_FIX__=true;
+
+  function activar(){
+
+    /* El bloque original ya define esta función */
+    if(typeof installAdminOrdersTab==='function'){
+      try{
+        installAdminOrdersTab();
+      }catch(e){
+        console.error('RoXThal Pedidos:',e);
+      }
+    }
+
+    /* Si la función original no quedó disponible, creamos
+       directamente la pestaña sin tocar ningún módulo. */
+    const tabs=document.getElementById('adminTabs');
+    const panel=document.getElementById('adminPanel');
+
+    if(!tabs || !panel) return;
+
+    if(!tabs.querySelector('[data-admin-tab="storeOrders"]')){
+
+      const b=document.createElement('button');
+
+      b.type='button';
+      b.dataset.adminTab='storeOrders';
+      b.className='admin-tab';
+      b.textContent='🛒 Pedidos Tienda';
+
+      const logout=document.getElementById('adminLogout');
+
+      if(logout && logout.parentElement===tabs){
+        tabs.insertBefore(b,logout);
+      }else{
+        tabs.appendChild(b);
+      }
+    }
+
+    /* Si ya existe el panel original, no lo duplicamos. */
+    if(!document.getElementById('adminStoreOrders')){
+
+      const p=document.createElement('div');
+
+      p.id='adminStoreOrders';
+      p.className='admin-tab-panel hidden';
+
+      p.innerHTML=`
+        <div class="card">
+          <h2>🛒 Pedidos Tienda</h2>
+          <p>Panel de pedidos de la tienda.</p>
+          <div id="rxEmergencyOrdersList">
+            Cargando pedidos...
+          </div>
+        </div>
+      `;
+
+      panel.appendChild(p);
+    }
+
+    /* Activar el cargador original si existe. */
+    if(typeof loadStoreOrders==='function'){
+      try{
+        loadStoreOrders();
+      }catch(e){
+        console.error('RoXThal carga pedidos:',e);
+      }
+    }
+  }
+
+  function esperar(){
+
+    let n=0;
+
+    const timer=setInterval(function(){
+
+      n++;
+
+      activar();
+
+      if(
+        document.getElementById('adminTabs') &&
+        document.getElementById('adminPanel')
+      ){
+        clearInterval(timer);
+      }
+
+      if(n>=60){
+        clearInterval(timer);
+      }
+
+    },500);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',esperar,{once:true});
+  }else{
+    esperar();
+  }
+
+})();
+</script>
 </body>
 </html>
