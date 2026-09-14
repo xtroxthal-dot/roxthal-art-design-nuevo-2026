@@ -25671,5 +25671,1657 @@ ${imagesHtml}
 </script>
 
 <!-- ==================== FIN MÓDULO 17 ==================== -->
+     <script>
+/* ============================================================
+   ROXTHAL TIENDA — CARRITO + FORMULARIO DE COMPRA V13
+   CONECTOR ADITIVO — NO MODIFICA TIENDA V3
+   ============================================================ */
+
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_STORE_CART_V13__) return;
+  window.__ROXTHAL_STORE_CART_V13__ = true;
+
+  /* ----------------------------------------------------------
+     CONFIGURACIÓN
+     ---------------------------------------------------------- */
+
+  const RX_URL =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+
+  const RX_KEY =
+    'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const RX_PRODUCTS =
+    RX_URL + '/rest/v1/roxthal_store_products';
+
+  const RX_ORDER_FUNCTION =
+    RX_URL + '/functions/v1/roxthal-store-orders';
+
+  const RX_CART_KEY =
+    'roxthal_store_cart_v13';
+
+  let rxProducts = [];
+  let rxCart = [];
+
+  /* ----------------------------------------------------------
+     UTILIDADES
+     ---------------------------------------------------------- */
+
+  function esc(v){
+    return String(v ?? '').replace(/[&<>"']/g,function(c){
+      return {
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      }[c];
+    });
+  }
+
+  function money(v){
+    return '$' + Number(v || 0).toLocaleString('es-AR',{
+      minimumFractionDigits:0,
+      maximumFractionDigits:2
+    });
+  }
+
+  function normalize(v){
+    return String(v || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function saveCart(){
+    try{
+      localStorage.setItem(
+        RX_CART_KEY,
+        JSON.stringify(rxCart)
+      );
+    }catch(e){
+      console.warn('No se pudo guardar el carrito.',e);
+    }
+  }
+
+  function loadCart(){
+    try{
+      const raw =
+        localStorage.getItem(RX_CART_KEY);
+
+      rxCart =
+        raw ? JSON.parse(raw) : [];
+
+      if(!Array.isArray(rxCart)){
+        rxCart=[];
+      }
+
+    }catch(e){
+      rxCart=[];
+    }
+  }
+
+  function toastRx(message){
+
+    if(typeof window.toast === 'function'){
+      window.toast(message);
+      return;
+    }
+
+    const old =
+      document.getElementById('rxStoreToastV13');
+
+    if(old) old.remove();
+
+    const t=document.createElement('div');
+
+    t.id='rxStoreToastV13';
+
+    t.textContent=message;
+
+    t.style.cssText=
+      'position:fixed;' +
+      'left:50%;' +
+      'bottom:20px;' +
+      'transform:translateX(-50%);' +
+      'z-index:99999;' +
+      'background:#171717;' +
+      'border:1px solid #555;' +
+      'color:#fff;' +
+      'padding:13px 17px;' +
+      'border-radius:11px;' +
+      'box-shadow:0 10px 30px #000;' +
+      'font-weight:700;' +
+      'max-width:90vw;' +
+      'text-align:center;';
+
+    document.body.appendChild(t);
+
+    setTimeout(function(){
+      t.remove();
+    },3000);
+  }
+
+  /* ----------------------------------------------------------
+     PRODUCTOS PÚBLICOS
+     ---------------------------------------------------------- */
+
+  async function loadProducts(){
+
+    const url =
+      RX_PRODUCTS +
+      '?select=id,name,description,price,category,stock,image_url,storage_path,active,sort_order,created_at' +
+      '&active=eq.true' +
+      '&order=sort_order.asc,created_at.desc';
+
+    const response =
+      await fetch(url,{
+        method:'GET',
+        headers:{
+          'apikey':RX_KEY,
+          'Authorization':'Bearer ' + RX_KEY,
+          'Accept':'application/json'
+        }
+      });
+
+    if(!response.ok){
+      throw new Error(
+        'No se pudieron consultar los productos.'
+      );
+    }
+
+    const data=await response.json();
+
+    rxProducts =
+      Array.isArray(data) ? data : [];
+
+    return rxProducts;
+  }
+
+  /* ----------------------------------------------------------
+     RESOLVER PRODUCTO DE UNA TARJETA V3
+     ---------------------------------------------------------- */
+
+  function productForCard(card){
+
+    if(!card) return null;
+
+    const titleNode =
+      card.querySelector('h3');
+
+    if(!titleNode) return null;
+
+    const title =
+      normalize(titleNode.textContent);
+
+    if(!title) return null;
+
+    const matches =
+      rxProducts.filter(function(product){
+        return normalize(product.name) === title;
+      });
+
+    /*
+     * Seguridad:
+     * si dos productos tienen exactamente el mismo nombre,
+     * NO elegimos uno arbitrariamente.
+     */
+
+    if(matches.length !== 1){
+      return null;
+    }
+
+    return matches[0];
+  }
+
+  /* ----------------------------------------------------------
+     BOTONES AGREGAR AL CARRITO
+     ---------------------------------------------------------- */
+
+  function installButtons(){
+
+    const cards =
+      document.querySelectorAll(
+        '#storePublicList .store-product'
+      );
+
+    cards.forEach(function(card){
+
+      if(card.querySelector('.rx-store-add-v13')){
+        return;
+      }
+
+      const product =
+        productForCard(card);
+
+      if(!product){
+        return;
+      }
+
+      const stock =
+        Number(product.stock || 0);
+
+      const button =
+        document.createElement('button');
+
+      button.type='button';
+
+      button.className=
+        'btn btn-primary rx-store-add-v13';
+
+      button.textContent =
+        stock > 0
+          ? '🛒 Agregar al carrito'
+          : 'Sin stock';
+
+      button.disabled =
+        stock <= 0;
+
+      button.style.cssText =
+        'width:100%;margin-top:14px;';
+
+      button.dataset.rxProductId =
+        product.id;
+
+      button.addEventListener(
+        'click',
+        function(){
+
+          addToCart(product.id);
+
+        }
+      );
+
+      card.appendChild(button);
+
+    });
+
+  }
+
+  /* ----------------------------------------------------------
+     CARRITO
+     ---------------------------------------------------------- */
+
+  function addToCart(productId){
+
+    const product =
+      rxProducts.find(function(p){
+        return p.id === productId;
+      });
+
+    if(!product){
+      toastRx('No se encontró el producto.');
+      return;
+    }
+
+    const stock =
+      Number(product.stock || 0);
+
+    if(stock <= 0){
+      toastRx('Este producto no tiene stock.');
+      return;
+    }
+
+    const existing =
+      rxCart.find(function(item){
+        return item.product_id === productId;
+      });
+
+    if(existing){
+
+      if(existing.quantity >= stock){
+        toastRx(
+          'No podés agregar más unidades que el stock disponible.'
+        );
+        return;
+      }
+
+      existing.quantity++;
+
+    }else{
+
+      rxCart.push({
+        product_id:product.id,
+        quantity:1
+      });
+
+    }
+
+    saveCart();
+    renderCart();
+
+    toastRx(
+      product.name + ' agregado al carrito.'
+    );
+  }
+
+  function changeQuantity(productId,delta){
+
+    const product =
+      rxProducts.find(function(p){
+        return p.id === productId;
+      });
+
+    const item =
+      rxCart.find(function(i){
+        return i.product_id === productId;
+      });
+
+    if(!product || !item) return;
+
+    const stock =
+      Number(product.stock || 0);
+
+    item.quantity += delta;
+
+    if(item.quantity <= 0){
+
+      rxCart =
+        rxCart.filter(function(i){
+          return i.product_id !== productId;
+        });
+
+    }else if(item.quantity > stock){
+
+      item.quantity = stock;
+
+      toastRx(
+        'Stock máximo disponible: ' +
+        stock
+      );
+    }
+
+    saveCart();
+    renderCart();
+  }
+
+  function removeItem(productId){
+
+    rxCart =
+      rxCart.filter(function(item){
+        return item.product_id !== productId;
+      });
+
+    saveCart();
+    renderCart();
+  }
+
+  /* ----------------------------------------------------------
+     MODAL
+     ---------------------------------------------------------- */
+
+  function createModal(){
+
+    if(document.getElementById(
+      'rxStoreCartOverlayV13'
+    )){
+      return;
+    }
+
+    const overlay =
+      document.createElement('div');
+
+    overlay.id =
+      'rxStoreCartOverlayV13';
+
+    overlay.style.cssText =
+      'position:fixed;' +
+      'inset:0;' +
+      'z-index:99990;' +
+      'background:rgba(0,0,0,.82);' +
+      'display:none;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'padding:15px;';
+
+    overlay.innerHTML=`
+
+      <div id="rxStoreCartModalV13"
+           style="
+             width:min(760px,100%);
+             max-height:92vh;
+             overflow-y:auto;
+             background:#111;
+             color:#f5f5f5;
+             border:1px solid #292929;
+             border-radius:18px;
+             padding:20px;
+             box-shadow:0 20px 70px #000;
+           ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:10px;
+          margin-bottom:18px;
+        ">
+
+          <div>
+            <div style="
+              color:#f2c400;
+              font-size:11px;
+              font-weight:900;
+              letter-spacing:2px;
+            ">
+              ROXTHAL ART DESIGN
+            </div>
+
+            <h2 style="margin-top:5px">
+              🛒 Tu carrito
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            id="rxStoreCloseV13"
+            class="btn btn-small">
+            ✕
+          </button>
+
+        </div>
+
+        <div id="rxStoreCartContentV13"></div>
+
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document
+      .getElementById('rxStoreCloseV13')
+      .addEventListener(
+        'click',
+        closeCart
+      );
+
+    overlay.addEventListener(
+      'click',
+      function(e){
+
+        if(e.target === overlay){
+          closeCart();
+        }
+
+      }
+    );
+  }
+
+  function openCart(){
+
+    createModal();
+
+    document
+      .getElementById(
+        'rxStoreCartOverlayV13'
+      )
+      .style.display='flex';
+
+    renderCart();
+  }
+
+  function closeCart(){
+
+    const overlay =
+      document.getElementById(
+        'rxStoreCartOverlayV13'
+      );
+
+    if(overlay){
+      overlay.style.display='none';
+    }
+  }
+
+  /* ----------------------------------------------------------
+     RENDER CARRITO
+     ---------------------------------------------------------- */
+
+  function renderCart(){
+
+    const content =
+      document.getElementById(
+        'rxStoreCartContentV13'
+      );
+
+    if(!content) return;
+
+    let subtotal=0;
+
+    const validItems=[];
+
+    rxCart.forEach(function(item){
+
+      const product =
+        rxProducts.find(function(p){
+          return p.id === item.product_id;
+        });
+
+      if(!product) return;
+
+      const stock =
+        Number(product.stock || 0);
+
+      const quantity =
+        Math.min(
+          Math.max(
+            Number(item.quantity || 1),
+            1
+          ),
+          stock
+        );
+
+      if(stock <= 0) return;
+
+      item.quantity=quantity;
+
+      subtotal +=
+        Number(product.price || 0) *
+        quantity;
+
+      validItems.push({
+        item,
+        product,
+        quantity,
+        line:
+          Number(product.price || 0) *
+          quantity
+      });
+
+    });
+
+    rxCart =
+      rxCart.filter(function(item){
+
+        return validItems.some(function(v){
+          return v.item === item;
+        });
+
+      });
+
+    saveCart();
+
+    if(!validItems.length){
+
+      content.innerHTML=`
+
+        <div style="
+          padding:35px 15px;
+          text-align:center;
+          color:#aaa;
+          border:1px dashed #292929;
+          border-radius:14px;
+        ">
+
+          <div style="font-size:42px">
+            🛒
+          </div>
+
+          <h3 style="margin:10px 0">
+            Tu carrito está vacío
+          </h3>
+
+          <p>
+            Agregá productos desde la Tienda.
+          </p>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="rxEmptyCloseV13"
+            style="margin-top:16px">
+            Volver a la tienda
+          </button>
+
+        </div>
+      `;
+
+      document
+        .getElementById(
+          'rxEmptyCloseV13'
+        )
+        .onclick=closeCart;
+
+      updateCartButton();
+
+      return;
+    }
+
+    content.innerHTML=`
+
+      <div style="
+        display:grid;
+        gap:10px;
+      ">
+
+        ${validItems.map(function(v){
+
+          return `
+
+            <div style="
+              display:grid;
+              grid-template-columns:70px 1fr auto;
+              gap:12px;
+              align-items:center;
+              padding:11px;
+              border:1px solid #292929;
+              border-radius:13px;
+              background:#181818;
+            ">
+
+              <div style="
+                width:70px;
+                height:70px;
+                border-radius:9px;
+                overflow:hidden;
+                background:#080808;
+              ">
+
+                ${
+                  v.product.image_url
+                  ? `
+                    <img
+                      src="${esc(v.product.image_url)}"
+                      alt="${esc(v.product.name)}"
+                      style="
+                        width:100%;
+                        height:100%;
+                        object-fit:cover;
+                      ">
+                  `
+                  : `
+                    <div style="
+                      width:100%;
+                      height:100%;
+                      display:flex;
+                      align-items:center;
+                      justify-content:center;
+                      color:#777;
+                    ">
+                      🛍️
+                    </div>
+                  `
+                }
+
+              </div>
+
+              <div>
+
+                <strong>
+                  ${esc(v.product.name)}
+                </strong>
+
+                <div style="
+                  color:#f2c400;
+                  font-weight:900;
+                  margin-top:4px;
+                ">
+                  ${money(v.product.price)}
+                </div>
+
+                <div style="
+                  color:#aaa;
+                  font-size:12px;
+                  margin-top:3px;
+                ">
+                  Stock disponible:
+                  ${v.product.stock}
+                </div>
+
+                <div style="
+                  display:flex;
+                  align-items:center;
+                  gap:7px;
+                  margin-top:9px;
+                ">
+
+                  <button
+                    type="button"
+                    class="btn btn-small"
+                    data-rx-minus="${esc(v.product.id)}">
+                    −
+                  </button>
+
+                  <strong>
+                    ${v.quantity}
+                  </strong>
+
+                  <button
+                    type="button"
+                    class="btn btn-small"
+                    data-rx-plus="${esc(v.product.id)}">
+                    +
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div style="
+                text-align:right;
+              ">
+
+                <strong>
+                  ${money(v.line)}
+                </strong>
+
+                <button
+                  type="button"
+                  class="btn btn-danger btn-small"
+                  data-rx-remove="${esc(v.product.id)}"
+                  style="display:block;margin-top:8px">
+                  Quitar
+                </button>
+
+              </div>
+
+            </div>
+
+          `;
+
+        }).join('')}
+
+      </div>
+
+      <div style="
+        margin-top:18px;
+        padding:16px;
+        border:1px solid #292929;
+        border-radius:13px;
+        background:#181818;
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          gap:10px;
+        ">
+          <span>Subtotal</span>
+          <strong style="color:#f2c400">
+            ${money(subtotal)}
+          </strong>
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          gap:10px;
+          margin-top:7px;
+          color:#aaa;
+        ">
+          <span>Envío</span>
+          <span>
+            A cotizar
+          </span>
+        </div>
+
+      </div>
+
+      <div style="
+        margin-top:20px;
+      ">
+
+        <h3>
+          Datos del cliente
+        </h3>
+
+        <div class="field">
+          <label>Nombre completo *</label>
+          <input
+            id="rxCustomerNameV13"
+            type="text"
+            autocomplete="name"
+            placeholder="Tu nombre">
+        </div>
+
+        <div class="field">
+          <label>WhatsApp *</label>
+          <input
+            id="rxCustomerWhatsappV13"
+            type="tel"
+            autocomplete="tel"
+            placeholder="+54 9 ...">
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <input
+            id="rxCustomerEmailV13"
+            type="email"
+            autocomplete="email"
+            placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="field">
+
+          <label>
+            Forma de entrega *
+          </label>
+
+          <select id="rxDeliveryMethodV13">
+
+            <option value="shipping">
+              Envío — solicitar presupuesto
+            </option>
+
+            <option value="pickup">
+              Retiro en RoXThal
+            </option>
+
+          </select>
+
+        </div>
+
+        <div
+          id="rxShippingFieldsV13">
+
+          <div style="
+            margin:12px 0;
+            padding:12px;
+            border:1px solid #5a4900;
+            border-radius:11px;
+            background:#191600;
+            color:#ddd;
+            font-size:13px;
+            line-height:1.5;
+          ">
+
+            📦 <strong>Envío a cotizar</strong><br>
+
+            Necesitamos la dirección exacta para calcular
+            el costo de entrega.
+
+            <br><br>
+
+            <strong>
+              El envío no se cobra ahora.
+            </strong>
+
+            Primero RoXThal prepara el presupuesto.
+            El pedido queda pendiente hasta que el cliente
+            acepte ese presupuesto.
+
+          </div>
+
+          <div class="field">
+            <label>Calle *</label>
+            <input
+              id="rxAddressStreetV13"
+              type="text"
+              autocomplete="street-address">
+          </div>
+
+          <div class="field">
+            <label>Número *</label>
+            <input
+              id="rxAddressNumberV13"
+              type="text">
+          </div>
+
+          <div class="grid2">
+
+            <div class="field">
+              <label>Piso</label>
+              <input
+                id="rxAddressFloorV13"
+                type="text">
+            </div>
+
+            <div class="field">
+              <label>Departamento</label>
+              <input
+                id="rxAddressApartmentV13"
+                type="text">
+            </div>
+
+          </div>
+
+          <div class="field">
+            <label>Localidad / barrio *</label>
+            <input
+              id="rxAddressLocalityV13"
+              type="text"
+              autocomplete="address-level2">
+          </div>
+
+          <div class="field">
+            <label>Código postal</label>
+            <input
+              id="rxAddressPostalV13"
+              type="text"
+              autocomplete="postal-code">
+          </div>
+
+          <div class="field">
+            <label>Referencia</label>
+            <textarea
+              id="rxAddressReferenceV13"
+              placeholder="Ej.: casa interna, portón negro, esquina, etc."></textarea>
+          </div>
+
+        </div>
+
+        <div
+          id="rxOrderMessageV13"
+          class="status hidden">
+        </div>
+
+        <button
+          type="button"
+          id="rxSubmitOrderV13"
+          class="btn btn-primary"
+          style="
+            width:100%;
+            min-height:50px;
+            margin-top:8px;
+          ">
+          Solicitar presupuesto / pedido
+        </button>
+
+        <p style="
+          color:#888;
+          font-size:11px;
+          line-height:1.5;
+          margin-top:10px;
+        ">
+          No se utiliza Mercado Pago en este proceso.
+          El envío se cotiza previamente y el pedido queda
+          sujeto a la aceptación del presupuesto cuando
+          corresponda.
+        </p>
+
+      </div>
+    `;
+
+    content
+      .querySelectorAll('[data-rx-minus]')
+      .forEach(function(button){
+        button.onclick=function(){
+          changeQuantity(
+            button.dataset.rxMinus,
+            -1
+          );
+        };
+      });
+
+    content
+      .querySelectorAll('[data-rx-plus]')
+      .forEach(function(button){
+        button.onclick=function(){
+          changeQuantity(
+            button.dataset.rxPlus,
+            1
+          );
+        };
+      });
+
+    content
+      .querySelectorAll('[data-rx-remove]')
+      .forEach(function(button){
+        button.onclick=function(){
+          removeItem(
+            button.dataset.rxRemove
+          );
+        };
+      });
+
+    const method =
+      document.getElementById(
+        'rxDeliveryMethodV13'
+      );
+
+    if(method){
+
+      method.addEventListener(
+        'change',
+        updateShippingFields
+      );
+
+      updateShippingFields();
+    }
+
+    document
+      .getElementById(
+        'rxSubmitOrderV13'
+      )
+      .onclick=submitOrder;
+
+    updateCartButton();
+  }
+
+  /* ----------------------------------------------------------
+     ENTREGA
+     ---------------------------------------------------------- */
+
+  function updateShippingFields(){
+
+    const method =
+      document.getElementById(
+        'rxDeliveryMethodV13'
+      );
+
+    const fields =
+      document.getElementById(
+        'rxShippingFieldsV13'
+      );
+
+    if(!method || !fields) return;
+
+    fields.style.display =
+      method.value === 'shipping'
+        ? 'block'
+        : 'none';
+  }
+
+  /* ----------------------------------------------------------
+     ENVIAR PEDIDO
+     ---------------------------------------------------------- */
+
+  async function submitOrder(){
+
+    const button =
+      document.getElementById(
+        'rxSubmitOrderV13'
+      );
+
+    const message =
+      document.getElementById(
+        'rxOrderMessageV13'
+      );
+
+    const name =
+      document.getElementById(
+        'rxCustomerNameV13'
+      )?.value.trim();
+
+    const whatsapp =
+      document.getElementById(
+        'rxCustomerWhatsappV13'
+      )?.value.trim();
+
+    const email =
+      document.getElementById(
+        'rxCustomerEmailV13'
+      )?.value.trim() || null;
+
+    const method =
+      document.getElementById(
+        'rxDeliveryMethodV13'
+      )?.value;
+
+    if(!name){
+
+      toastRx(
+        'Completá tu nombre.'
+      );
+
+      return;
+    }
+
+    if(!whatsapp){
+
+      toastRx(
+        'Completá tu WhatsApp.'
+      );
+
+      return;
+    }
+
+    if(!['shipping','pickup'].includes(method)){
+
+      toastRx(
+        'Seleccioná una forma de entrega.'
+      );
+
+      return;
+    }
+
+    let address = {
+      address_street:null,
+      address_number:null,
+      address_floor:null,
+      address_apartment:null,
+      address_locality:null,
+      address_postal_code:null,
+      address_reference:null
+    };
+
+    if(method === 'shipping'){
+
+      address.address_street =
+        document.getElementById(
+          'rxAddressStreetV13'
+        )?.value.trim();
+
+      address.address_number =
+        document.getElementById(
+          'rxAddressNumberV13'
+        )?.value.trim();
+
+      address.address_floor =
+        document.getElementById(
+          'rxAddressFloorV13'
+        )?.value.trim() || null;
+
+      address.address_apartment =
+        document.getElementById(
+          'rxAddressApartmentV13'
+        )?.value.trim() || null;
+
+      address.address_locality =
+        document.getElementById(
+          'rxAddressLocalityV13'
+        )?.value.trim();
+
+      address.address_postal_code =
+        document.getElementById(
+          'rxAddressPostalV13'
+        )?.value.trim() || null;
+
+      address.address_reference =
+        document.getElementById(
+          'rxAddressReferenceV13'
+        )?.value.trim() || null;
+
+      if(
+        !address.address_street ||
+        !address.address_number ||
+        !address.address_locality
+      ){
+
+        toastRx(
+          'Completá calle, número y localidad.'
+        );
+
+        return;
+      }
+    }
+
+    if(!rxCart.length){
+
+      toastRx(
+        'El carrito está vacío.'
+      );
+
+      return;
+    }
+
+    /*
+     * Volvemos a consultar los productos antes de enviar.
+     * Esto evita enviar precios o stock antiguos.
+     */
+
+    try{
+
+      await loadProducts();
+
+    }catch(error){
+
+      toastRx(
+        'No se pudo verificar el stock actual.'
+      );
+
+      return;
+    }
+
+    const items =
+      rxCart.map(function(item){
+
+        const product =
+          rxProducts.find(function(p){
+            return p.id === item.product_id;
+          });
+
+        return {
+          product_id:item.product_id,
+          quantity:Number(item.quantity || 1),
+          product:product
+        };
+
+      });
+
+    for(const item of items){
+
+      if(!item.product){
+
+        toastRx(
+          'Uno de los productos ya no está disponible.'
+        );
+
+        return;
+      }
+
+      if(!item.product.active){
+
+        toastRx(
+          'Uno de los productos ya no está publicado.'
+        );
+
+        return;
+      }
+
+      if(
+        Number(item.quantity) >
+        Number(item.product.stock || 0)
+      ){
+
+        toastRx(
+          'El stock cambió para ' +
+          item.product.name +
+          '. Revisá el carrito.'
+        );
+
+        renderCart();
+
+        return;
+      }
+
+    }
+
+    button.disabled=true;
+
+    button.textContent =
+      'Enviando pedido...';
+
+    if(message){
+
+      message.className='status';
+
+      message.textContent =
+        'Enviando solicitud...';
+
+      message.classList.remove(
+        'hidden'
+      );
+
+    }
+
+    try{
+
+      const payload={
+
+        action:'create_order',
+
+        customer_name:name,
+
+        customer_whatsapp:whatsapp,
+
+        customer_email:email,
+
+        delivery_method:method,
+
+        address_street:
+          address.address_street,
+
+        address_number:
+          address.address_number,
+
+        address_floor:
+          address.address_floor,
+
+        address_apartment:
+          address.address_apartment,
+
+        address_locality:
+          address.address_locality,
+
+        address_postal_code:
+          address.address_postal_code,
+
+        address_reference:
+          address.address_reference,
+
+        items:items.map(function(item){
+
+          return {
+            product_id:item.product_id,
+            quantity:Number(item.quantity)
+          };
+
+        })
+
+      };
+
+      const response =
+        await fetch(
+          RX_ORDER_FUNCTION,
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+            body:JSON.stringify(payload)
+          }
+        );
+
+      let result=null;
+
+      try{
+        result=await response.json();
+      }catch(e){
+        result=null;
+      }
+
+      if(
+        !response.ok ||
+        !result ||
+        !result.ok
+      ){
+
+        throw new Error(
+          result?.error ||
+          'No se pudo registrar el pedido.'
+        );
+
+      }
+
+      /*
+       * El pedido fue aceptado por la función.
+       * El carrito se limpia solamente después del éxito.
+       */
+
+      rxCart=[];
+
+      saveCart();
+
+      const shortId =
+        result.order?.id
+          ? result.order.id
+              .slice(0,8)
+              .toUpperCase()
+          : 'SIN-ID';
+
+      if(message){
+
+        message.className='status ok';
+
+        message.innerHTML =
+          method === 'shipping'
+            ? `
+              <strong>
+                Solicitud enviada correctamente.
+              </strong>
+              <br><br>
+              Pedido:
+              <strong>#${esc(shortId)}</strong>
+              <br><br>
+              RoXThal recibirá los datos y
+              preparará el presupuesto del envío.
+              <br><br>
+              <strong>
+                El pedido queda pendiente hasta
+                aceptar el presupuesto.
+              </strong>
+            `
+            : `
+              <strong>
+                Pedido registrado correctamente.
+              </strong>
+              <br><br>
+              Pedido:
+              <strong>#${esc(shortId)}</strong>
+              <br><br>
+              RoXThal coordinará el retiro.
+            `;
+
+      }
+
+      renderCart();
+
+      toastRx(
+        'Solicitud registrada correctamente.'
+      );
+
+    }catch(error){
+
+      console.error(
+        'ROXTHAL STORE ORDER:',
+        error
+      );
+
+      if(message){
+
+        message.className='status err';
+
+        message.textContent =
+          error.message ||
+          'No se pudo registrar el pedido.';
+
+      }
+
+      toastRx(
+        error.message ||
+        'No se pudo registrar el pedido.'
+      );
+
+    }finally{
+
+      button.disabled=false;
+
+      button.textContent =
+        'Solicitar presupuesto / pedido';
+
+    }
+
+  }
+
+  /* ----------------------------------------------------------
+     BOTÓN FLOTANTE
+     ---------------------------------------------------------- */
+
+  function createCartButton(){
+
+    if(document.getElementById(
+      'rxStoreCartButtonV13'
+    )){
+      return;
+    }
+
+    const button =
+      document.createElement('button');
+
+    button.type='button';
+
+    button.id =
+      'rxStoreCartButtonV13';
+
+    button.className='btn btn-primary';
+
+    button.style.cssText =
+      'position:fixed;' +
+      'right:16px;' +
+      'bottom:16px;' +
+      'z-index:99980;' +
+      'min-height:50px;' +
+      'border-radius:999px;' +
+      'padding:0 18px;' +
+      'box-shadow:0 10px 30px #000;';
+
+    button.onclick=openCart;
+
+    document.body.appendChild(button);
+
+    updateCartButton();
+  }
+
+  function updateCartButton(){
+
+    const button =
+      document.getElementById(
+        'rxStoreCartButtonV13'
+      );
+
+    if(!button) return;
+
+    const count =
+      rxCart.reduce(
+        function(total,item){
+          return total +
+            Number(item.quantity || 0);
+        },
+        0
+      );
+
+    button.textContent =
+      count > 0
+        ? '🛒 Carrito (' + count + ')'
+        : '🛒 Carrito';
+
+  }
+
+  /* ----------------------------------------------------------
+     OBSERVADOR DE LA TIENDA V3
+     ---------------------------------------------------------- */
+
+  function startObserver(){
+
+    const list =
+      document.getElementById(
+        'storePublicList'
+      );
+
+    if(!list) return;
+
+    let timer=null;
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          clearTimeout(timer);
+
+          timer=setTimeout(
+            function(){
+              installButtons();
+              updateCartButton();
+            },
+            120
+          );
+
+        }
+      );
+
+    observer.observe(
+      list,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+  }
+
+  /* ----------------------------------------------------------
+     DETECTAR APERTURA DE TIENDA
+     ---------------------------------------------------------- */
+
+  function startViewWatcher(){
+
+    const store =
+      document.getElementById('store');
+
+    if(!store) return;
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          if(
+            !store.classList.contains(
+              'hidden'
+            )
+          ){
+
+            setTimeout(
+              async function(){
+
+                try{
+                  await loadProducts();
+                  installButtons();
+                  renderCart();
+                }catch(error){
+                  console.warn(
+                    'Tienda carrito:',
+                    error
+                  );
+                }
+
+              },
+              100
+            );
+
+          }
+
+        }
+      );
+
+    observer.observe(
+      store,
+      {
+        attributes:true,
+        attributeFilter:['class']
+      }
+    );
+
+  }
+
+  /* ----------------------------------------------------------
+     INICIO
+     ---------------------------------------------------------- */
+
+  async function init(){
+
+    loadCart();
+
+    createModal();
+
+    createCartButton();
+
+    startObserver();
+
+    startViewWatcher();
+
+    try{
+
+      await loadProducts();
+
+      installButtons();
+
+      updateCartButton();
+
+    }catch(error){
+
+      console.warn(
+        'ROXTHAL Tienda V13:',
+        error
+      );
+
+    }
+
+  }
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+</script>
 </body>
 </html>
