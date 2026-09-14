@@ -32878,5 +32878,212 @@ const boot=setInterval(()=>{
 
 })();
 </script>
+     <script>
+/* ============================================================
+   RoXThal — AVISO ADMINISTRADOR
+   ACEPTACIÓN DEL PRESUPUESTO DE ENVÍO
+   PARCHE AISLADO — NO MODIFICA DATOS NI SUPABASE
+   ============================================================ */
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_ADMIN_QUOTE_ACCEPTANCE__) return;
+  window.__ROXTHAL_ADMIN_QUOTE_ACCEPTANCE__ = true;
+
+  const TABLE = 'roxthal_store_orders';
+  const CHANNEL = 'roxthal-admin-quote-acceptance';
+
+  function isAdmin() {
+    try {
+      return !!(
+        window.adminUser &&
+        window.adminUser.app_metadata &&
+        window.adminUser.app_metadata.role === 'admin'
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function showNotice(order) {
+    const name = order?.customer_name || 'Cliente';
+    const message =
+      '📦 ¡PRESUPUESTO DE ENVÍO ACEPTADO!\n\n' +
+      name +
+      ' aceptó el presupuesto de envío del pedido.';
+
+    /* Aviso visible dentro de la aplicación */
+    try {
+      if (typeof window.toast === 'function') {
+        window.toast(message.replace('\n\n', ' — '));
+      } else {
+        const old = document.getElementById(
+          'roxthal-admin-quote-accepted-notice'
+        );
+        if (old) old.remove();
+
+        const box = document.createElement('div');
+
+        box.id = 'roxthal-admin-quote-accepted-notice';
+        box.textContent = message.replace('\n\n', ' — ');
+
+        box.style.cssText =
+          'position:fixed;' +
+          'left:16px;' +
+          'right:16px;' +
+          'bottom:20px;' +
+          'z-index:2147483647;' +
+          'padding:18px;' +
+          'border-radius:14px;' +
+          'background:#111;' +
+          'color:#ffd700;' +
+          'border:2px solid #ffd700;' +
+          'box-shadow:0 8px 30px rgba(0,0,0,.5);' +
+          'font-weight:800;' +
+          'text-align:center;';
+
+        document.body.appendChild(box);
+
+        setTimeout(function () {
+          box.remove();
+        }, 10000);
+      }
+    } catch (e) {
+      console.warn('Aviso administrador:', e);
+    }
+
+    /* Notificación del teléfono/navegador */
+    try {
+      if (
+        'Notification' in window &&
+        Notification.permission === 'granted'
+      ) {
+        new Notification('RoXThal — Pedido', {
+          body:
+            name +
+            ' aceptó el presupuesto de envío.',
+          tag: 'roxthal-quote-accepted-' + order.id
+        });
+      }
+    } catch (e) {}
+
+    /* Actualizar el panel de pedidos si alguno está visible */
+    try {
+      [
+        '#roxthalStoreOrdersRefresh',
+        '#rxOrdersRefreshV2'
+      ].forEach(function (selector) {
+        const button = document.querySelector(selector);
+        if (button) button.click();
+      });
+    } catch (e) {}
+  }
+
+  function alreadyNotified(orderId) {
+    if (!orderId) return true;
+
+    try {
+      return localStorage.getItem(
+        'roxthal_quote_accepted_' + orderId
+      ) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markNotified(orderId) {
+    if (!orderId) return;
+
+    try {
+      localStorage.setItem(
+        'roxthal_quote_accepted_' + orderId,
+        '1'
+      );
+    } catch (e) {}
+  }
+
+  function start() {
+    if (!window.db || typeof window.db.channel !== 'function') {
+      console.warn(
+        'RoXThal: Supabase todavía no está disponible para el aviso de aceptación.'
+      );
+      return;
+    }
+
+    if (!isAdmin()) return;
+
+    try {
+      window.__ROXTHAL_ADMIN_QUOTE_CHANNEL__ =
+        window.db
+          .channel(CHANNEL)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: TABLE
+            },
+            function (payload) {
+
+              const order = payload && payload.new;
+
+              if (!order || !order.id) return;
+
+              /*
+               * ESTE ES EL PUNTO CLAVE:
+               * solamente avisamos cuando el pedido figura
+               * como presupuesto aceptado.
+               */
+              if (order.quote_status !== 'accepted') return;
+
+              /*
+               * Evita avisos repetidos si después se modifica
+               * el mismo pedido por administración.
+               */
+              if (alreadyNotified(order.id)) return;
+
+              markNotified(order.id);
+
+              showNotice(order);
+            }
+          )
+          .subscribe(function (status) {
+            console.log(
+              'RoXThal — aviso aceptación envío:',
+              status
+            );
+          });
+
+    } catch (e) {
+      console.warn(
+        'RoXThal — no se pudo iniciar aviso de aceptación:',
+        e
+      );
+    }
+  }
+
+  /*
+   * El administrador puede autenticarse después de que
+   * este parche se haya cargado. Por eso comprobamos varias
+   * veces sin tocar ningún dato.
+   */
+  let attempts = 0;
+
+  const boot = setInterval(function () {
+    attempts++;
+
+    if (isAdmin()) {
+      clearInterval(boot);
+      start();
+      return;
+    }
+
+    if (attempts >= 120) {
+      clearInterval(boot);
+    }
+  }, 500);
+
+})();
+</script>
 </body>
 </html>
