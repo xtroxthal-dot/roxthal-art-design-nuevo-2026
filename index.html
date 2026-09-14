@@ -23763,15 +23763,6 @@ ${imagesHtml}
         } catch (e) {}
       }
 
-      // Quitar posibles vistas abiertas que tengan la clase .view
-      if (encontrado) {
-        document.querySelectorAll('.view').forEach(function (vista) {
-          if (vista !== news && vista.id !== 'roxthalNewsModule') {
-            // No tocamos vistas que ya estén visibles fuera de la navegación.
-          }
-        });
-      }
-
       // Llevar al usuario arriba
       window.scrollTo({
         top: 0,
