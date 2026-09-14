@@ -24411,65 +24411,32 @@ ${imagesHtml}
   }
 
 
-  /* ==========================================================
-     ADMINISTRADOR — DOBLE COMPROBACIÓN
-     ========================================================== */
+  
+async function storeIsAdmin(){
+  try{
+    const {
+      data,
+      error
+    } = await db.auth.getUser();
 
-  async function storeIsAdmin(){
-
-    try{
-
-      const result =
-        await db.rpc('ig_is_admin');
-
-      if(
-        !result.error &&
-        result.data === true
-      ){
-
-        return true;
-
-      }
-
-    }catch(error){
-
-      console.warn(
-        'Tienda: no se pudo comprobar ig_is_admin.',
-        error
-      );
-
-    }
-
-
-    try{
-
-      const {
-        data,
-        error
-      } = await db.auth.getUser();
-
-      if(error || !data || !data.user){
-        return false;
-      }
-
-      return (
-        data.user.app_metadata &&
-        data.user.app_metadata.role === 'admin'
-      );
-
-    }catch(error){
-
-      console.warn(
-        'Tienda: error comprobando administrador.',
-        error
-      );
-
+    if(error || !data || !data.user){
       return false;
-
     }
 
-  }
+    return (
+      data.user.app_metadata &&
+      data.user.app_metadata.role === 'admin'
+    );
 
+  }catch(error){
+    console.warn(
+      'Tienda: error comprobando administrador.',
+      error
+    );
+
+    return false;
+  }
+}
 
   async function refreshAdminVisibility(){
 
