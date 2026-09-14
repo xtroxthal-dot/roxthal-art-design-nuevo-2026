@@ -23379,7 +23379,55 @@ ${imagesHtml}
       return true;
 
     }
+    const card =
+      document.createElement('article');
 
+    card.setAttribute(
+      'data-roxthal-news-module',
+      'true'
+    );
+
+    card.className =
+      'module';
+
+    card.innerHTML = `
+
+      <div class="module-content">
+
+        <div
+          style="
+            font-size:38px;
+            margin-bottom:12px;
+          "
+        >
+          📰
+        </div>
+
+        <div class="module-num">
+          ACTUALIDAD
+        </div>
+
+        <h3>
+          RoXThal News
+        </h3>
+
+        <p>
+          Noticias automáticas de arte,
+          tatuaje, artistas, tendencias
+          y eventos.
+        </p>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-small"
+          data-go="roxthalNewsModule"
+        >
+          Entrar
+        </button>
+
+      </div>
+
+    `;
     `;
 
     grid.appendChild(card);
