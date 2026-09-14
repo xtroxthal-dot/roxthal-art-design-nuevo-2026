@@ -33085,5 +33085,537 @@ const boot=setInterval(()=>{
 
 })();
 </script>
+    <script>
+/* ============================================================
+   RoXThal — ACCIONES FINALES DE PEDIDOS ADMIN
+   SOLO COMPLETA EL ADMINISTRADOR.
+   NO MODIFICA LA ACEPTACIÓN DEL CLIENTE.
+   NO CREA OTRO MÓDULO DE PEDIDOS.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_ADMIN_ORDER_FINAL_ACTIONS_V1__) return;
+  window.__ROXTHAL_ADMIN_ORDER_FINAL_ACTIONS_V1__ = true;
+
+  const TABLE = 'roxthal_store_orders';
+  const DETAIL = 'roxthalStoreOrderDetail';
+
+  let currentOrderId = null;
+
+  function dbReady() {
+    return typeof db !== 'undefined' && db;
+  }
+
+  function adminReady() {
+    return typeof requireAdmin === 'function';
+  }
+
+  async function getOrder(id) {
+    if (!id || !dbReady()) return null;
+
+    const result = await db
+      .from(TABLE)
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (result.error) {
+      console.error(
+        '[RoXThal pedidos] Error leyendo pedido:',
+        result.error
+      );
+      return null;
+    }
+
+    return result.data || null;
+  }
+
+  function accepted(order) {
+    return !!order &&
+      order.delivery_method === 'shipping' &&
+      order.quote_status === 'accepted' &&
+      order.order_status === 'confirmed';
+  }
+
+  function detailBox() {
+    return document.getElementById(DETAIL);
+  }
+
+  function addAcceptanceNotice(order) {
+    if (!accepted(order)) return;
+
+    /* ---------- LISTA ---------- */
+    const row = document.querySelector(
+      '[data-roxthal-order="' +
+      CSS.escape(String(order.id)) +
+      '"]'
+    );
+
+    if (
+      row &&
+      !row.querySelector(
+        '[data-roxthal-admin-accepted]'
+      )
+    ) {
+      const notice = document.createElement('div');
+
+      notice.dataset.roxthalAdminAccepted = '1';
+
+      notice.textContent =
+        '✅ PRESUPUESTO DE ENVÍO ACEPTADO POR EL CLIENTE';
+
+      notice.style.cssText = [
+        'margin-top:9px',
+        'padding:9px 10px',
+        'border-radius:9px',
+        'background:rgba(34,197,94,.16)',
+        'border:1px solid rgba(34,197,94,.55)',
+        'color:#86efac',
+        'font-weight:900',
+        'font-size:12px',
+        'line-height:1.35'
+      ].join(';');
+
+      row.appendChild(notice);
+    }
+
+    /* ---------- DETALLE ---------- */
+    const detail = detailBox();
+
+    if (
+      detail &&
+      !detail.querySelector(
+        '[data-roxthal-admin-accepted-detail]'
+      )
+    ) {
+      const notice = document.createElement('div');
+
+      notice.dataset.roxthalAdminAcceptedDetail = '1';
+
+      notice.innerHTML =
+        '✅ <strong>PRESUPUESTO DE ENVÍO ACEPTADO POR EL CLIENTE</strong>';
+
+      notice.style.cssText = [
+        'margin:12px 0',
+        'padding:12px',
+        'border-radius:10px',
+        'background:rgba(34,197,94,.16)',
+        'border:1px solid rgba(34,197,94,.55)',
+        'color:#86efac',
+        'font-weight:900',
+        'line-height:1.4'
+      ].join(';');
+
+      detail.insertBefore(
+        notice,
+        detail.firstChild
+      );
+    }
+  }
+
+  function addAdminActions(order) {
+    const detail = detailBox();
+
+    if (!detail || !order) return;
+
+    let actions = detail.querySelector(
+      '[data-roxthal-admin-final-actions]'
+    );
+
+    if (!actions) {
+      actions = document.createElement('div');
+
+      actions.dataset.roxthalAdminFinalActions = '1';
+
+      actions.style.cssText = [
+        'margin-top:16px',
+        'padding:14px',
+        'border-radius:12px',
+        'border:1px solid rgba(212,175,55,.35)',
+        'background:rgba(255,255,255,.035)'
+      ].join(';');
+
+      detail.appendChild(actions);
+    }
+
+    actions.innerHTML = '';
+
+    /*
+     * ==========================================================
+     * CONFIRMADO
+     * ==========================================================
+     */
+    if (
+      order.order_status !== 'delivered'
+    ) {
+      const deliver = document.createElement('button');
+
+      deliver.type = 'button';
+      deliver.textContent =
+        '📦 Marcar como entregado';
+
+      deliver.style.cssText = [
+        'width:100%',
+        'padding:13px',
+        'border:0',
+        'border-radius:10px',
+        'background:var(--yellow,#d4af37)',
+        'color:#111',
+        'font-weight:900',
+        'font-size:14px',
+        'cursor:pointer'
+      ].join(';');
+
+      deliver.addEventListener(
+        'click',
+        async function () {
+
+          if (
+            adminReady() &&
+            !(await requireAdmin())
+          ) {
+            return;
+          }
+
+          const ok = confirm(
+            '¿Confirmar que este pedido fue entregado al cliente?'
+          );
+
+          if (!ok) return;
+
+          deliver.disabled = true;
+          deliver.textContent =
+            '⏳ Marcando como entregado…';
+
+          try {
+            if (!dbReady()) {
+              throw new Error(
+                'Supabase no está disponible.'
+              );
+            }
+
+            const result = await db
+              .from(TABLE)
+              .update({
+                order_status: 'delivered',
+                updated_at:
+                  new Date().toISOString()
+              })
+              .eq('id', order.id)
+              .neq('order_status', 'delivered');
+
+            if (result.error) {
+              throw result.error;
+            }
+
+            if (typeof toast === 'function') {
+              toast('✅ PEDIDO ENTREGADO');
+            } else {
+              alert('✅ PEDIDO ENTREGADO');
+            }
+
+            /*
+             * Actualizamos la vista utilizando el sistema
+             * de pedidos que YA existe.
+             */
+            if (
+              typeof loadStoreOrders === 'function'
+            ) {
+              await loadStoreOrders();
+            }
+
+            /*
+             * Volvemos a abrir el mismo pedido.
+             */
+            setTimeout(function () {
+              const row =
+                document.querySelector(
+                  '[data-roxthal-order="' +
+                  CSS.escape(String(order.id)) +
+                  '"]'
+                );
+
+              if (row) {
+                row.click();
+              }
+            }, 250);
+
+          } catch (error) {
+
+            console.error(
+              '[RoXThal pedidos] Entrega:',
+              error
+            );
+
+            alert(
+              '❌ No se pudo marcar el pedido como entregado.\n\n' +
+              (error.message || error)
+            );
+
+            deliver.disabled = false;
+            deliver.textContent =
+              '📦 Marcar como entregado';
+          }
+        }
+      );
+
+      actions.appendChild(deliver);
+
+      return;
+    }
+
+    /*
+     * ==========================================================
+     * ENTREGADO
+     * ==========================================================
+     */
+    const delivered = document.createElement('div');
+
+    delivered.textContent =
+      '✅ PEDIDO ENTREGADO';
+
+    delivered.style.cssText = [
+      'padding:12px',
+      'border-radius:10px',
+      'background:rgba(34,197,94,.16)',
+      'border:1px solid rgba(34,197,94,.55)',
+      'color:#86efac',
+      'font-weight:900',
+      'text-align:center',
+      'margin-bottom:10px'
+    ].join(';');
+
+    actions.appendChild(delivered);
+
+    /*
+     * ==========================================================
+     * BORRAR — SOLO delivered
+     * ==========================================================
+     */
+    const remove = document.createElement('button');
+
+    remove.type = 'button';
+    remove.textContent =
+      '🗑️ Borrar pedido terminado';
+
+    remove.style.cssText = [
+      'width:100%',
+      'padding:12px',
+      'border:0',
+      'border-radius:10px',
+      'background:#8b1e1e',
+      'color:#fff',
+      'font-weight:900',
+      'font-size:14px',
+      'cursor:pointer'
+    ].join(';');
+
+    remove.addEventListener(
+      'click',
+      async function () {
+
+        if (
+          adminReady() &&
+          !(await requireAdmin())
+        ) {
+          return;
+        }
+
+        const ok = confirm(
+          '¿Borrar definitivamente este pedido terminado?'
+        );
+
+        if (!ok) return;
+
+        remove.disabled = true;
+        remove.textContent =
+          '⏳ Borrando pedido…';
+
+        try {
+
+          if (!dbReady()) {
+            throw new Error(
+              'Supabase no está disponible.'
+            );
+          }
+
+          const sessionResult =
+            await db.auth.getSession();
+
+          const session =
+            sessionResult &&
+            sessionResult.data &&
+            sessionResult.data.session;
+
+          if (
+            !session ||
+            !session.access_token
+          ) {
+            throw new Error(
+              'No hay sesión administrativa activa.'
+            );
+          }
+
+          const response = await fetch(
+            'https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-store-orders',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type':
+                  'application/json',
+                'Authorization':
+                  'Bearer ' +
+                  session.access_token
+              },
+              body: JSON.stringify({
+                action: 'delete_order',
+                order_id: order.id
+              })
+            }
+          );
+
+          let data = {};
+
+          try {
+            data = await response.json();
+          } catch (e) {}
+
+          if (
+            !response.ok ||
+            data.error
+          ) {
+            throw new Error(
+              data.error ||
+              'El servidor rechazó el borrado.'
+            );
+          }
+
+          if (typeof toast === 'function') {
+            toast(
+              '🗑️ Pedido terminado eliminado.'
+            );
+          } else {
+            alert(
+              '🗑️ Pedido terminado eliminado.'
+            );
+          }
+
+          currentOrderId = null;
+
+          if (
+            typeof loadStoreOrders === 'function'
+          ) {
+            await loadStoreOrders();
+          }
+
+          const detail =
+            detailBox();
+
+          if (detail) {
+            detail.innerHTML =
+              '<div class="empty">' +
+              'Selecciona un pedido para ver todos sus datos.' +
+              '</div>';
+          }
+
+        } catch (error) {
+
+          console.error(
+            '[RoXThal pedidos] Borrado:',
+            error
+          );
+
+          alert(
+            '❌ No se pudo borrar el pedido.\n\n' +
+            (error.message || error)
+          );
+
+          remove.disabled = false;
+          remove.textContent =
+            '🗑️ Borrar pedido terminado';
+        }
+      }
+    );
+
+    actions.appendChild(remove);
+  }
+
+  async function decorate(id) {
+    if (!id) return;
+
+    currentOrderId = id;
+
+    const order =
+      await getOrder(id);
+
+    if (!order) return;
+
+    /*
+     * Solo añade nuestra capa.
+     * No reemplaza renderOrderDetail().
+     */
+    addAcceptanceNotice(order);
+    addAdminActions(order);
+  }
+
+  /*
+   * El sistema existente ya abre el pedido.
+   * Nosotros solamente capturamos el mismo ID y esperamos
+   * a que renderOrderDetail() termine.
+   */
+  document.addEventListener(
+    'click',
+    function (event) {
+
+      const row =
+        event.target.closest &&
+        event.target.closest(
+          '[data-roxthal-order]'
+        );
+
+      if (!row) return;
+
+      const id =
+        row.getAttribute(
+          'data-roxthal-order'
+        );
+
+      if (!id) return;
+
+      currentOrderId = id;
+
+      setTimeout(
+        function () {
+          decorate(id);
+        },
+        100
+      );
+
+      setTimeout(
+        function () {
+          decorate(id);
+        },
+        450
+      );
+    },
+    true
+  );
+
+  /*
+   * Si el pedido ya estaba abierto cuando se carga el parche,
+   * intentamos decorarlo después.
+   */
+  setTimeout(
+    function () {
+      if (currentOrderId) {
+        decorate(currentOrderId);
+      }
+    },
+    800
+  );
+
+})();
+</script>     
 </body>
 </html>
