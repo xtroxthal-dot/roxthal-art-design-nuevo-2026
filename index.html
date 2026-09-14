@@ -23816,5 +23816,1860 @@ ${imagesHtml}
   transform:translateX(calc(-50% - 2mm)) !important;
 }
 </style>
+   <!-- ============================================================
+     ROXTHAL ART DESIGN — MÓDULO 17 · TIENDA
+     INTEGRACIÓN AISLADA
+     ============================================================ -->
+
+<section id="store" class="view hidden">
+
+  <div class="container">
+
+    <div class="section-head">
+      <div class="label">Módulo 17</div>
+      <h2 class="section-title">Tienda</h2>
+      <p class="section-desc">
+        Insumos de arte, dibujo, pintura y tatuaje.
+      </p>
+    </div>
+
+    <!-- CATÁLOGO PÚBLICO -->
+    <div class="toolbar" id="storeFilters">
+      <button class="filter active" data-store-category="all">
+        Todo
+      </button>
+
+      <button class="filter" data-store-category="arte">
+        Arte
+      </button>
+
+      <button class="filter" data-store-category="dibujo">
+        Dibujo
+      </button>
+
+      <button class="filter" data-store-category="pintura">
+        Pintura
+      </button>
+
+      <button class="filter" data-store-category="tatuaje">
+        Tatuaje
+      </button>
+
+      <button class="filter" data-store-category="insumos">
+        Insumos
+      </button>
+    </div>
+
+    <div id="storePublicList" class="grid3">
+      <div class="empty">
+        Cargando tienda...
+      </div>
+    </div>
+
+
+    <!-- ADMINISTRACIÓN -->
+    <div id="storeAdminArea" class="hidden" style="margin-top:35px">
+
+      <div class="section-head">
+        <div class="label">Administración</div>
+        <h3 class="section-title" style="font-size:30px">
+          Gestionar tienda
+        </h3>
+        <p class="section-desc">
+          Puedes crear, editar, publicar, ocultar y eliminar
+          productos directamente desde tu teléfono.
+        </p>
+      </div>
+
+
+      <div id="storeAdminStatus" class="status hidden"></div>
+
+
+      <div class="grid2">
+
+        <!-- FORMULARIO -->
+        <div class="card">
+
+          <h3 id="storeFormTitle">
+            Nuevo producto
+          </h3>
+
+          <input
+            id="storeProductId"
+            type="hidden"
+          >
+
+          <input
+            id="storeOldStoragePath"
+            type="hidden"
+          >
+
+
+          <div class="field">
+            <label>Título del producto</label>
+            <input
+              id="storeName"
+              type="text"
+              maxlength="160"
+              placeholder="Ej.: Set de agujas RL"
+            >
+          </div>
+
+
+          <div class="field">
+            <label>Descripción</label>
+            <textarea
+              id="storeDescription"
+              maxlength="1200"
+              placeholder="Descripción del producto"
+            ></textarea>
+          </div>
+
+
+          <div class="grid2">
+
+            <div class="field">
+              <label>Precio</label>
+              <input
+                id="storePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="0"
+              >
+            </div>
+
+            <div class="field">
+              <label>Stock</label>
+              <input
+                id="storeStock"
+                type="number"
+                min="0"
+                step="1"
+                inputmode="numeric"
+                placeholder="0"
+              >
+            </div>
+
+          </div>
+
+
+          <div class="field">
+            <label>Categoría</label>
+
+            <select id="storeCategory">
+
+              <option value="arte">
+                Arte
+              </option>
+
+              <option value="dibujo">
+                Dibujo
+              </option>
+
+              <option value="pintura">
+                Pintura
+              </option>
+
+              <option value="tatuaje">
+                Tatuaje
+              </option>
+
+              <option value="insumos">
+                Insumos
+              </option>
+
+              <option value="otros">
+                Otros
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+            <label>Fotografía</label>
+
+            <input
+              id="storeImage"
+              type="file"
+              accept="image/*"
+            >
+
+            <div class="small">
+              JPG, PNG, WEBP u otra imagen compatible.
+              Máximo 8 MB.
+            </div>
+          </div>
+
+
+          <div
+            id="storePreview"
+            class="hidden"
+            style="margin-bottom:14px"
+          >
+            <img
+              id="storePreviewImage"
+              alt="Vista previa"
+              style="
+                width:100%;
+                max-height:240px;
+                object-fit:cover;
+                border-radius:12px;
+                border:1px solid var(--border);
+              "
+            >
+          </div>
+
+
+          <label
+            style="
+              display:flex;
+              align-items:center;
+              gap:9px;
+              margin:12px 0 17px;
+              font-weight:800;
+            "
+          >
+
+            <input
+              id="storeActive"
+              type="checkbox"
+              checked
+            >
+
+            Producto publicado
+
+          </label>
+
+
+          <div
+            style="
+              display:flex;
+              flex-wrap:wrap;
+              gap:8px;
+            "
+          >
+
+            <button
+              id="storeSave"
+              type="button"
+              class="btn btn-primary"
+            >
+              Guardar producto
+            </button>
+
+            <button
+              id="storeCancel"
+              type="button"
+              class="btn"
+            >
+              Limpiar
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- LISTA ADMIN -->
+        <div class="card">
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:10px;
+              margin-bottom:15px;
+            "
+          >
+
+            <h3>
+              Productos
+            </h3>
+
+            <button
+              id="storeRefresh"
+              type="button"
+              class="btn btn-small"
+            >
+              Actualizar
+            </button>
+
+          </div>
+
+          <div
+            id="storeAdminList"
+            class="admin-list"
+          ></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<style>
+/* ============================================================
+   TIENDA — ESTILOS AISLADOS
+   ============================================================ */
+
+#store .store-product{
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+#store .store-photo{
+  width:100%;
+  aspect-ratio:1/1;
+  background:#050505;
+  overflow:hidden;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+#store .store-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+#store .store-no-photo{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  font-size:40px;
+}
+
+#store .store-category{
+  display:inline-block;
+  color:var(--yellow);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+
+#store .store-product h3{
+  font-size:20px;
+  margin-bottom:7px;
+}
+
+#store .store-description{
+  color:var(--muted);
+  line-height:1.5;
+  font-size:13px;
+  min-height:40px;
+}
+
+#store .store-price{
+  margin-top:15px;
+  font-size:23px;
+  font-weight:900;
+  color:var(--yellow);
+}
+
+#store .store-stock{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+#store .store-stock.out{
+  color:#ff8b8f;
+}
+
+#store .store-admin-item{
+  display:grid;
+  grid-template-columns:72px 1fr;
+  gap:11px;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--surface);
+}
+
+#store .store-admin-item img{
+  width:72px;
+  height:68px;
+  object-fit:cover;
+  border-radius:9px;
+}
+
+#store .store-admin-item-info{
+  min-width:0;
+}
+
+#store .store-admin-item-title{
+  font-weight:900;
+  margin-bottom:4px;
+  overflow-wrap:anywhere;
+}
+
+#store .store-admin-meta{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+#store .store-admin-actions{
+  grid-column:1/-1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+#store .store-unpublished{
+  opacity:.62;
+}
+
+#store .store-admin-badge{
+  display:inline-block;
+  margin-left:5px;
+  padding:3px 7px;
+  border-radius:7px;
+  font-size:9px;
+  font-weight:900;
+  background:#222;
+  color:var(--muted);
+}
+
+#store .store-admin-badge.live{
+  color:#8de2ae;
+  border:1px solid #215f3c;
+}
+
+#store .store-admin-badge.off{
+  color:#ff8b8f;
+  border:1px solid #6d1b1f;
+}
+
+@media(max-width:700px){
+
+  #store .store-product{
+    padding:15px;
+  }
+
+  #store .store-admin-item{
+    grid-template-columns:62px 1fr;
+  }
+
+  #store .store-admin-item img{
+    width:62px;
+    height:60px;
+  }
+
+}
+</style>
+
+
+<script>
+/* ============================================================
+   ROXTHAL — TIENDA 3
+   INTEGRACIÓN AISLADA
+   ============================================================ */
+
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_STORE_V3__) return;
+  window.__ROXTHAL_STORE_V3__ = true;
+
+
+  const TABLE = 'roxthal_store_products';
+  const BUCKET = 'images';
+  const FOLDER = 'tienda';
+  const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+
+
+  let storeCategory = 'all';
+  let storeProducts = [];
+  let storeBusy = false;
+
+
+  const el = id => document.getElementById(id);
+
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+
+  function storeSetStatus(message,type){
+
+    const box = el('storeAdminStatus');
+
+    if(!box) return;
+
+    box.textContent = message || '';
+
+    box.classList.remove(
+      'hidden',
+      'ok',
+      'err'
+    );
+
+    if(type){
+      box.classList.add(type);
+    }
+
+  }
+
+
+  function storeClearStatus(){
+
+    const box = el('storeAdminStatus');
+
+    if(!box) return;
+
+    box.textContent = '';
+    box.classList.add('hidden');
+    box.classList.remove('ok','err');
+
+  }
+
+
+  function money(value){
+
+    return Number(value || 0)
+      .toLocaleString(
+        'es-AR',
+        {
+          style:'currency',
+          currency:'ARS',
+          maximumFractionDigits:2
+        }
+      );
+
+  }
+
+
+  function safeImagePath(name){
+
+    const original =
+      String(name || 'imagen')
+        .toLowerCase()
+        .replace(/\.[^.]+$/,'');
+
+    const clean =
+      original
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9]+/g,'-')
+        .replace(/^-+|-+$/g,'')
+        .slice(0,50) || 'producto';
+
+    const ext =
+      String(name || '')
+        .toLowerCase()
+        .match(/\.(jpg|jpeg|png|webp|gif|avif)$/);
+
+    return (
+      FOLDER +
+      '/' +
+      clean +
+      '-' +
+      Date.now() +
+      '-' +
+      Math.random()
+        .toString(36)
+        .slice(2,8) +
+      (ext ? '.' + ext[1] : '.jpg')
+    );
+
+  }
+
+
+  function categoryLabel(value){
+
+    const labels = {
+      arte:'Arte',
+      dibujo:'Dibujo',
+      pintura:'Pintura',
+      tatuaje:'Tatuaje',
+      insumos:'Insumos',
+      otros:'Otros'
+    };
+
+    return labels[value] || value || 'Otros';
+
+  }
+
+
+  /* ==========================================================
+     ADMINISTRADOR — DOBLE COMPROBACIÓN
+     ========================================================== */
+
+  async function storeIsAdmin(){
+
+    try{
+
+      const result =
+        await db.rpc('ig_is_admin');
+
+      if(
+        !result.error &&
+        result.data === true
+      ){
+
+        return true;
+
+      }
+
+    }catch(error){
+
+      console.warn(
+        'Tienda: no se pudo comprobar ig_is_admin.',
+        error
+      );
+
+    }
+
+
+    try{
+
+      const {
+        data,
+        error
+      } = await db.auth.getUser();
+
+      if(error || !data || !data.user){
+        return false;
+      }
+
+      return (
+        data.user.app_metadata &&
+        data.user.app_metadata.role === 'admin'
+      );
+
+    }catch(error){
+
+      console.warn(
+        'Tienda: error comprobando administrador.',
+        error
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  async function refreshAdminVisibility(){
+
+    const area = el('storeAdminArea');
+
+    if(!area) return false;
+
+    const admin = await storeIsAdmin();
+
+    area.classList.toggle(
+      'hidden',
+      !admin
+    );
+
+    if(admin){
+
+      await loadAdminProducts();
+
+    }
+
+    return admin;
+
+  }
+
+
+  /* ==========================================================
+     CATÁLOGO PÚBLICO
+     ========================================================== */
+
+  async function loadPublicProducts(){
+
+    const box = el('storePublicList');
+
+    if(!box) return;
+
+    box.innerHTML =
+      '<div class="empty">Cargando tienda...</div>';
+
+
+    let query =
+      db
+        .from(TABLE)
+        .select(
+          'id,name,description,price,category,stock,image_url,storage_path,active,sort_order,created_at'
+        )
+        .eq('active',true)
+        .order('sort_order',{ascending:true})
+        .order('created_at',{ascending:false});
+
+
+    if(storeCategory !== 'all'){
+
+      query =
+        query.eq(
+          'category',
+          storeCategory
+        );
+
+    }
+
+
+    const {
+      data,
+      error
+    } = await query;
+
+
+    if(error){
+
+      console.error(
+        'Tienda pública:',
+        error
+      );
+
+      box.innerHTML =
+        '<div class="empty">No se pudo cargar la tienda.</div>';
+
+      return;
+
+    }
+
+
+    storeProducts = data || [];
+
+
+    if(!storeProducts.length){
+
+      box.innerHTML =
+        '<div class="empty">No hay productos publicados en esta categoría.</div>';
+
+      return;
+
+    }
+
+
+    box.innerHTML =
+      storeProducts
+        .map(product => {
+
+          const stock =
+            Number(product.stock || 0);
+
+          const image =
+            product.image_url
+              ? `
+                <img
+                  loading="lazy"
+                  src="${esc(product.image_url)}"
+                  alt="${esc(product.name)}"
+                >
+              `
+              : `
+                <div class="store-no-photo">
+                  🛒
+                </div>
+              `;
+
+
+          return `
+            <article class="card store-product">
+
+              <div class="store-photo">
+                ${image}
+              </div>
+
+              <span class="store-category">
+                ${esc(categoryLabel(product.category))}
+              </span>
+
+              <h3>
+                ${esc(product.name)}
+              </h3>
+
+              <p class="store-description">
+                ${esc(product.description || '')}
+              </p>
+
+              <div class="store-price">
+                ${money(product.price)}
+              </div>
+
+              <div class="store-stock ${stock <= 0 ? 'out' : ''}">
+                ${
+                  stock > 0
+                    ? 'Stock disponible: ' + stock
+                    : 'Sin stock'
+                }
+              </div>
+
+            </article>
+          `;
+
+        })
+        .join('');
+
+  }
+
+
+  /* ==========================================================
+     LISTA ADMIN
+     ========================================================== */
+
+  async function loadAdminProducts(){
+
+    const box = el('storeAdminList');
+
+    if(!box) return;
+
+    box.innerHTML =
+      '<div class="empty">Cargando productos...</div>';
+
+
+    const admin =
+      await storeIsAdmin();
+
+    if(!admin){
+
+      box.innerHTML =
+        '<div class="empty">Acceso restringido al administrador.</div>';
+
+      return;
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await db
+        .from(TABLE)
+        .select('*')
+        .order('sort_order',{ascending:true})
+        .order('created_at',{ascending:false});
+
+
+    if(error){
+
+      console.error(
+        'Tienda admin:',
+        error
+      );
+
+      box.innerHTML =
+        '<div class="empty">No se pudieron cargar los productos.</div>';
+
+      return;
+
+    }
+
+
+    if(!data || !data.length){
+
+      box.innerHTML =
+        '<div class="empty">Todavía no hay productos.</div>';
+
+      return;
+
+    }
+
+
+    box.innerHTML =
+      data
+        .map(product => {
+
+          const live =
+            product.active === true;
+
+          const image =
+            product.image_url
+              ? `
+                <img
+                  src="${esc(product.image_url)}"
+                  alt="${esc(product.name)}"
+                >
+              `
+              : `
+                <div
+                  style="
+                    width:100%;
+                    height:68px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:#080808;
+                    border-radius:9px;
+                    font-size:25px;
+                  "
+                >
+                  🛒
+                </div>
+              `;
+
+
+          return `
+            <div
+              class="
+                store-admin-item
+                ${live ? '' : 'store-unpublished'}
+              "
+            >
+
+              ${image}
+
+              <div class="store-admin-item-info">
+
+                <div class="store-admin-item-title">
+
+                  ${esc(product.name)}
+
+                  <span
+                    class="
+                      store-admin-badge
+                      ${live ? 'live' : 'off'}
+                    "
+                  >
+                    ${live ? 'PUBLICADO' : 'OCULTO'}
+                  </span>
+
+                </div>
+
+                <div class="store-admin-meta">
+                  ${esc(categoryLabel(product.category))}
+                  · ${money(product.price)}
+                  · Stock: ${Number(product.stock || 0)}
+                </div>
+
+              </div>
+
+
+              <div class="store-admin-actions">
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-store-edit="${esc(product.id)}"
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-store-toggle="${esc(product.id)}"
+                >
+                  ${live ? 'Ocultar' : 'Publicar'}
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-danger btn-small"
+                  data-store-delete="${esc(product.id)}"
+                >
+                  Eliminar
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        })
+        .join('');
+
+  }
+
+
+  /* ==========================================================
+     LIMPIAR FORMULARIO
+     ========================================================== */
+
+  function resetForm(){
+
+    el('storeProductId').value = '';
+    el('storeOldStoragePath').value = '';
+
+    el('storeName').value = '';
+    el('storeDescription').value = '';
+    el('storePrice').value = '';
+    el('storeStock').value = '0';
+    el('storeCategory').value = 'arte';
+    el('storeActive').checked = true;
+
+    el('storeImage').value = '';
+
+    el('storePreview').classList.add('hidden');
+    el('storePreviewImage').removeAttribute('src');
+
+    el('storeFormTitle').textContent =
+      'Nuevo producto';
+
+    storeClearStatus();
+
+  }
+
+
+  /* ==========================================================
+     EDITAR
+     ========================================================== */
+
+  async function editProduct(id){
+
+    const admin =
+      await storeIsAdmin();
+
+    if(!admin){
+
+      toast('Acceso restringido.');
+      return;
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await db
+        .from(TABLE)
+        .select('*')
+        .eq('id',id)
+        .maybeSingle();
+
+
+    if(error || !data){
+
+      toast('No se pudo cargar el producto.');
+      return;
+
+    }
+
+
+    el('storeProductId').value =
+      data.id || '';
+
+    el('storeOldStoragePath').value =
+      data.storage_path || '';
+
+    el('storeName').value =
+      data.name || '';
+
+    el('storeDescription').value =
+      data.description || '';
+
+    el('storePrice').value =
+      data.price ?? 0;
+
+    el('storeStock').value =
+      data.stock ?? 0;
+
+    el('storeCategory').value =
+      data.category || 'arte';
+
+    el('storeActive').checked =
+      data.active !== false;
+
+
+    el('storeFormTitle').textContent =
+      'Editar producto';
+
+
+    if(data.image_url){
+
+      el('storePreviewImage').src =
+        data.image_url;
+
+      el('storePreview').classList.remove(
+        'hidden'
+      );
+
+    }else{
+
+      el('storePreview').classList.add(
+        'hidden'
+      );
+
+    }
+
+
+    storeSetStatus(
+      'Editando: ' + (data.name || 'producto'),
+      'ok'
+    );
+
+    el('storeName').focus();
+
+  }
+
+
+  /* ==========================================================
+     SUBIR IMAGEN
+     ========================================================== */
+
+  async function uploadProductImage(file){
+
+    if(!file){
+      return {
+        image_url:null,
+        storage_path:null
+      };
+    }
+
+
+    if(
+      !file.type ||
+      !file.type.startsWith('image/')
+    ){
+
+      throw new Error(
+        'El archivo seleccionado no es una imagen.'
+      );
+
+    }
+
+
+    if(file.size > MAX_IMAGE_SIZE){
+
+      throw new Error(
+        'La imagen supera el límite de 8 MB.'
+      );
+
+    }
+
+
+    const path =
+      safeImagePath(file.name);
+
+
+    const {
+      error
+    } =
+      await db
+        .storage
+        .from(BUCKET)
+        .upload(
+          path,
+          file,
+          {
+            cacheControl:'3600',
+            upsert:false,
+            contentType:file.type
+          }
+        );
+
+
+    if(error){
+
+      throw error;
+
+    }
+
+
+    const {
+      data
+    } =
+      db
+        .storage
+        .from(BUCKET)
+        .getPublicUrl(path);
+
+
+    return {
+      image_url:data.publicUrl,
+      storage_path:path
+    };
+
+  }
+
+
+  /* ==========================================================
+     GUARDAR
+     ========================================================== */
+
+  async function saveProduct(){
+
+    if(storeBusy) return;
+
+    storeBusy = true;
+
+    const button =
+      el('storeSave');
+
+    button.disabled = true;
+
+    storeClearStatus();
+
+
+    try{
+
+      const admin =
+        await storeIsAdmin();
+
+      if(!admin){
+
+        throw new Error(
+          'No tienes permisos de administrador.'
+        );
+
+      }
+
+
+      const id =
+        el('storeProductId').value.trim();
+
+      const name =
+        el('storeName').value.trim();
+
+      const description =
+        el('storeDescription').value.trim();
+
+      const price =
+        Number(el('storePrice').value);
+
+      const stock =
+        Number(el('storeStock').value);
+
+      const category =
+        el('storeCategory').value;
+
+      const active =
+        el('storeActive').checked;
+
+      const file =
+        el('storeImage').files[0] || null;
+
+
+      if(!name){
+
+        throw new Error(
+          'Escribe el título del producto.'
+        );
+
+      }
+
+
+      if(!Number.isFinite(price) || price < 0){
+
+        throw new Error(
+          'El precio no es válido.'
+        );
+
+      }
+
+
+      if(!Number.isInteger(stock) || stock < 0){
+
+        throw new Error(
+          'El stock no es válido.'
+        );
+
+      }
+
+
+      let newImage = null;
+
+
+      if(file){
+
+        storeSetStatus(
+          'Subiendo fotografía...',
+          'ok'
+        );
+
+        newImage =
+          await uploadProductImage(file);
+
+      }
+
+
+      const payload = {
+        name,
+        description:description || null,
+        price,
+        category,
+        stock,
+        active
+      };
+
+
+      if(newImage){
+
+        payload.image_url =
+          newImage.image_url;
+
+        payload.storage_path =
+          newImage.storage_path;
+
+      }
+
+
+      let result;
+
+
+      if(id){
+
+        result =
+          await db
+            .from(TABLE)
+            .update(payload)
+            .eq('id',id);
+
+      }else{
+
+        result =
+          await db
+            .from(TABLE)
+            .insert(payload);
+
+      }
+
+
+      if(result.error){
+
+        if(
+          newImage &&
+          newImage.storage_path
+        ){
+
+          await db
+            .storage
+            .from(BUCKET)
+            .remove([
+              newImage.storage_path
+            ]);
+
+        }
+
+        throw result.error;
+
+      }
+
+
+      /*
+       * Solo después de confirmar el cambio
+       * en la base de datos eliminamos la
+       * fotografía antigua.
+       */
+
+      if(
+        id &&
+        newImage &&
+        el('storeOldStoragePath').value
+      ){
+
+        await db
+          .storage
+          .from(BUCKET)
+          .remove([
+            el('storeOldStoragePath').value
+          ]);
+
+      }
+
+
+      storeSetStatus(
+        id
+          ? 'Producto actualizado correctamente.'
+          : 'Producto creado correctamente.',
+        'ok'
+      );
+
+
+      resetForm();
+
+      toast(
+        id
+          ? 'Producto actualizado.'
+          : 'Producto creado.'
+      );
+
+
+      await loadPublicProducts();
+      await loadAdminProducts();
+
+
+    }catch(error){
+
+      console.error(
+        'Tienda guardar:',
+        error
+      );
+
+      storeSetStatus(
+        error && error.message
+          ? error.message
+          : 'No se pudo guardar el producto.',
+        'err'
+      );
+
+      toast('No se pudo guardar el producto.');
+
+    }finally{
+
+      storeBusy = false;
+      button.disabled = false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     PUBLICAR / OCULTAR
+     ========================================================== */
+
+  async function toggleProduct(id){
+
+    const admin =
+      await storeIsAdmin();
+
+    if(!admin){
+
+      toast('Acceso restringido.');
+      return;
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await db
+        .from(TABLE)
+        .select('id,active,name')
+        .eq('id',id)
+        .maybeSingle();
+
+
+    if(error || !data){
+
+      toast('No se pudo localizar el producto.');
+      return;
+
+    }
+
+
+    const {
+      error:updateError
+    } =
+      await db
+        .from(TABLE)
+        .update({
+          active:!data.active
+        })
+        .eq('id',id);
+
+
+    if(updateError){
+
+      console.error(
+        updateError
+      );
+
+      toast('No se pudo cambiar el estado.');
+      return;
+
+    }
+
+
+    toast(
+      data.active
+        ? 'Producto ocultado.'
+        : 'Producto publicado.'
+    );
+
+
+    await loadPublicProducts();
+    await loadAdminProducts();
+
+  }
+
+
+  /* ==========================================================
+     ELIMINAR
+     ========================================================== */
+
+  async function deleteProduct(id){
+
+    const admin =
+      await storeIsAdmin();
+
+    if(!admin){
+
+      toast('Acceso restringido.');
+      return;
+
+    }
+
+
+    const product =
+      storeProducts.find(
+        item => item.id === id
+      );
+
+
+    let target = product;
+
+
+    if(!target){
+
+      const {
+        data
+      } =
+      await db
+        .from(TABLE)
+        .select('*')
+        .eq('id',id)
+        .maybeSingle();
+
+      target = data;
+
+    }
+
+
+    if(!target){
+
+      toast('Producto no encontrado.');
+      return;
+
+    }
+
+
+    const confirmed =
+      window.confirm(
+        '¿Eliminar definitivamente "' +
+        target.name +
+        '"?'
+      );
+
+
+    if(!confirmed) return;
+
+
+    const {
+      error
+    } =
+      await db
+        .from(TABLE)
+        .delete()
+        .eq('id',id);
+
+
+    if(error){
+
+      console.error(
+        error
+      );
+
+      toast('No se pudo eliminar el producto.');
+      return;
+
+    }
+
+
+    /*
+     * La fila ya fue eliminada correctamente.
+     * Ahora podemos eliminar exclusivamente
+     * su archivo asociado.
+     */
+
+    if(target.storage_path){
+
+      await db
+        .storage
+        .from(BUCKET)
+        .remove([
+          target.storage_path
+        ]);
+
+    }
+
+
+    toast('Producto eliminado.');
+
+    await loadPublicProducts();
+    await loadAdminProducts();
+
+  }
+
+
+  /* ==========================================================
+     EVENTOS
+     ========================================================== */
+
+  el('storeSave').addEventListener(
+    'click',
+    saveProduct
+  );
+
+
+  el('storeCancel').addEventListener(
+    'click',
+    resetForm
+  );
+
+
+  el('storeRefresh').addEventListener(
+    'click',
+    async function(){
+
+      await loadPublicProducts();
+      await loadAdminProducts();
+
+    }
+  );
+
+
+  el('storeImage').addEventListener(
+    'change',
+    function(){
+
+      const file =
+        this.files[0];
+
+      if(!file){
+
+        el('storePreview')
+          .classList.add('hidden');
+
+        return;
+
+      }
+
+
+      if(
+        !file.type ||
+        !file.type.startsWith('image/')
+      ){
+
+        toast('Selecciona una imagen válida.');
+        this.value = '';
+        return;
+
+      }
+
+
+      if(file.size > MAX_IMAGE_SIZE){
+
+        toast('La imagen supera los 8 MB.');
+        this.value = '';
+        return;
+
+      }
+
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        function(event){
+
+          el('storePreviewImage').src =
+            event.target.result;
+
+          el('storePreview')
+            .classList.remove('hidden');
+
+        };
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const category =
+        event.target.closest(
+          '[data-store-category]'
+        );
+
+
+      if(category){
+
+        storeCategory =
+          category.dataset.storeCategory ||
+          'all';
+
+
+        document
+          .querySelectorAll(
+            '[data-store-category]'
+          )
+          .forEach(button => {
+
+            button.classList.toggle(
+              'active',
+              button === category
+            );
+
+          });
+
+
+        loadPublicProducts();
+
+        return;
+
+      }
+
+
+      const edit =
+        event.target.closest(
+          '[data-store-edit]'
+        );
+
+
+      if(edit){
+
+        editProduct(
+          edit.dataset.storeEdit
+        );
+
+        return;
+
+      }
+
+
+      const toggle =
+        event.target.closest(
+          '[data-store-toggle]'
+        );
+
+
+      if(toggle){
+
+        toggleProduct(
+          toggle.dataset.storeToggle
+        );
+
+        return;
+
+      }
+
+
+      const remove =
+        event.target.closest(
+          '[data-store-delete]'
+        );
+
+
+      if(remove){
+
+        deleteProduct(
+          remove.dataset.storeDelete
+        );
+
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     REGISTRO DEL MÓDULO 17
+     ========================================================== */
+
+  if(
+    Array.isArray(moduleDefinitions) &&
+    !moduleDefinitions.some(
+      item => item[1] === 'store'
+    )
+  ){
+
+    moduleDefinitions.push([
+      '17',
+      'store',
+      'Tienda',
+      'Insumos de arte y tatuaje'
+    ]);
+
+  }
+
+
+  if(
+    Array.isArray(publicViews) &&
+    !publicViews.includes('store')
+  ){
+
+    publicViews.push('store');
+
+  }
+
+
+  /*
+   * Actualizamos solamente la cuadrícula.
+   * No reemplazamos showView().
+   */
+
+  if(typeof renderModuleGrid === 'function'){
+
+    renderModuleGrid();
+
+  }
+
+
+  /* ==========================================================
+     DETECTAR CUANDO TIENDA SE ABRE
+     ========================================================== */
+
+  const storeView =
+    el('store');
+
+
+  if(storeView){
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          if(
+            !storeView.classList.contains('hidden')
+          ){
+
+            loadPublicProducts();
+            refreshAdminVisibility();
+
+          }
+
+        }
+      );
+
+
+    observer.observe(
+      storeView,
+      {
+        attributes:true,
+        attributeFilter:['class']
+      }
+    );
+
+  }
+
+
+})();
+</script>
+
+<!-- ==================== FIN MÓDULO 17 ==================== -->
 </body>
 </html>
