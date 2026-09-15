@@ -36779,5 +36779,50 @@ import { createClient } from
 
 })();
 </script>
+   <script id="roxthal-machine-close-repair">
+(function () {
+  function repararCierreMaquina() {
+    const overlays = document.querySelectorAll(
+      '#rxm-overlay, #roxthal-machine-overlay'
+    );
+
+    overlays.forEach(function (overlay) {
+      const closeButtons = overlay.querySelectorAll(
+        '#rxm-close, .rxm-close, [data-rxm-close]'
+      );
+
+      closeButtons.forEach(function (btn) {
+        if (btn.dataset.rxmCloseRepair === '1') return;
+
+        btn.dataset.rxmCloseRepair = '1';
+
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          overlay.classList.remove('rxm-open');
+
+          overlay.style.display = 'none';
+
+          overlay.setAttribute('aria-hidden', 'true');
+
+          document.body.style.overflow = '';
+
+          document.body.classList.remove('view-open');
+        }, true);
+      });
+    });
+  }
+
+  repararCierreMaquina();
+
+  const observer = new MutationObserver(repararCierreMaquina);
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();
+</script>
 </body>
 </html>
