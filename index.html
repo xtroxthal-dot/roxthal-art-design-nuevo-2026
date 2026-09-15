@@ -36107,6 +36107,37 @@ import { createClient } from
   }
 
 })();
-</script>              
+</script>    
+<script id="roxthal-machine-left-fix">
+(function () {
+  "use strict";
+
+  function moverMaquina() {
+    document.querySelectorAll("button").forEach(function (btn) {
+      if ((btn.textContent || "").trim() === "🎰 Máquina RoXThal") {
+        btn.style.setProperty("position", "fixed", "important");
+        btn.style.setProperty("left", "14px", "important");
+        btn.style.setProperty("right", "auto", "important");
+        btn.style.setProperty("bottom", "14px", "important");
+        btn.style.setProperty("z-index", "9998", "important");
+      }
+    });
+  }
+
+  moverMaquina();
+
+  setTimeout(moverMaquina, 300);
+  setTimeout(moverMaquina, 1000);
+  setTimeout(moverMaquina, 2000);
+
+  new MutationObserver(moverMaquina).observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  window.addEventListener("resize", moverMaquina);
+  window.addEventListener("orientationchange", moverMaquina);
+})();
+</script>
 </body>
 </html>
