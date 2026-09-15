@@ -36324,5 +36324,106 @@ import { createClient } from
 
 })();
 </script>
+    <!-- ============================================================
+     ROXTHAL — POSICIÓN DEFINITIVA MÁQUINA
+     Máquina a la izquierda / Carrito intacto
+     ============================================================ -->
+<style id="roxthal-machine-left-final">
+  #rxm-module-card {
+    position: absolute !important;
+    left: 8px !important;
+    right: auto !important;
+    float: none !important;
+    clear: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+  }
+
+  #moduleGrid {
+    position: relative !important;
+  }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  function colocarMaquina() {
+    const maquina = document.getElementById("rxm-module-card");
+    if (!maquina) return;
+
+    const grid =
+      document.getElementById("moduleGrid") ||
+      maquina.closest(".modules");
+
+    if (!grid) return;
+
+    /* El contenedor sirve solamente como referencia.
+       NO modificamos ninguna posición del Carrito. */
+    if (getComputedStyle(grid).position === "static") {
+      grid.style.setProperty("position", "relative", "important");
+    }
+
+    /*
+     * Buscamos el Carrito solamente para copiar su ALTURA vertical.
+     * No cambiamos absolutamente nada del Carrito.
+     */
+    const candidatos = Array.from(grid.children || []);
+
+    const carrito = candidatos.find(el => {
+      const texto = (el.textContent || "").trim().toLowerCase();
+      return texto.includes("carrito");
+    });
+
+    let top = 0;
+
+    if (carrito) {
+      const gr = grid.getBoundingClientRect();
+      const cr = carrito.getBoundingClientRect();
+
+      top = cr.top - gr.top;
+    }
+
+    /*
+     * Máquina:
+     * - izquierda total
+     * - misma altura que Carrito
+     * - fuera del flujo normal del grid
+     *
+     * Por eso NO empuja ni mueve al Carrito.
+     */
+    maquina.style.setProperty("position", "absolute", "important");
+    maquina.style.setProperty("left", "8px", "important");
+    maquina.style.setProperty("right", "auto", "important");
+    maquina.style.setProperty("top", Math.max(0, top) + "px", "important");
+    maquina.style.setProperty("float", "none", "important");
+    maquina.style.setProperty("clear", "none", "important");
+    maquina.style.setProperty("transform", "none", "important");
+    maquina.style.setProperty("z-index", "9999", "important");
+  }
+
+  /* Esperamos a que la Máquina sea creada por el código original */
+  const observador = new MutationObserver(function () {
+    if (document.getElementById("rxm-module-card")) {
+      colocarMaquina();
+    }
+  });
+
+  observador.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  /* Reajustes por carga, cambio de pantalla y rotación */
+  setTimeout(colocarMaquina, 300);
+  setTimeout(colocarMaquina, 1000);
+  setTimeout(colocarMaquina, 2000);
+
+  window.addEventListener("resize", colocarMaquina);
+  window.addEventListener("orientationchange", colocarMaquina);
+
+})();
+</script>                                 
 </body>
 </html>
