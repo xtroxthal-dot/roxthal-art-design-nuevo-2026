@@ -36107,56 +36107,6 @@ import { createClient } from
   }
 
 })();
-</script>
-      <!-- ============================================================
-     ROXTHAL — REPARADOR MÁQUINA
-     SOLO CAMBIA: Máquina derecha → izquierda
-     NO MODIFICA: Carrito ni otros módulos
-     ============================================================ -->
-
-<style id="roxthal-machine-left-only">
-  #rxm-module-card{
-    left:10px !important;
-    right:auto !important;
-  }
-</style>
-
-<script id="roxthal-machine-left-only-script">
-(function(){
-  "use strict";
-
-  function moverMaquina(){
-    const maquina = document.getElementById("rxm-module-card");
-
-    if(!maquina) return;
-
-    maquina.style.setProperty("left","10px","important");
-    maquina.style.setProperty("right","auto","important");
-  }
-
-  moverMaquina();
-
-  setTimeout(moverMaquina,300);
-  setTimeout(moverMaquina,1000);
-  setTimeout(moverMaquina,2000);
-
-  const observer = new MutationObserver(function(){
-    const maquina = document.getElementById("rxm-module-card");
-
-    if(maquina){
-      moverMaquina();
-    }
-  });
-
-  observer.observe(document.body,{
-    childList:true,
-    subtree:true
-  });
-
-  window.addEventListener("resize",moverMaquina);
-  window.addEventListener("orientationchange",moverMaquina);
-
-})();
-</script>                    
+</script>              
 </body>
 </html>
