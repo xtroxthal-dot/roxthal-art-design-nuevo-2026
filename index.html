@@ -35282,5 +35282,831 @@ import { createClient } from
 
 })();
 </script>
+   <!-- ============================================================
+     RoXThal Máquina — Módulo de juego/premio
+     No reemplaza ni modifica módulos existentes
+     ============================================================ -->
+<style>
+#rxm-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:rgba(0,0,0,.96);
+  overflow:auto;
+  padding:18px;
+  box-sizing:border-box;
+}
+#rxm-overlay.rxm-open{display:block}
+
+#rxm-box{
+  width:min(620px,100%);
+  margin:20px auto;
+  border:2px solid #c9a227;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(201,162,39,.14),transparent 42%),
+    #090909;
+  color:#fff;
+  box-shadow:0 0 35px rgba(201,162,39,.22);
+  overflow:hidden;
+}
+
+#rxm-head{
+  padding:18px;
+  text-align:center;
+  border-bottom:1px solid rgba(201,162,39,.35);
+}
+
+#rxm-head h2{
+  margin:0;
+  color:#d4af37;
+  font-size:25px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+#rxm-head p{
+  margin:7px 0 0;
+  color:#bbb;
+  font-size:13px;
+}
+
+#rxm-body{
+  padding:18px;
+}
+
+.rxm-machine-art{
+  position:relative;
+  min-height:190px;
+  margin-bottom:18px;
+  border:1px solid rgba(201,162,39,.25);
+  border-radius:15px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at center,rgba(201,162,39,.13),transparent 45%),
+    linear-gradient(145deg,#050505,#17110a,#050505);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.rxm-machine-art .rxm-icon{
+  font-size:90px;
+  filter:drop-shadow(0 0 12px rgba(201,162,39,.35));
+}
+
+.rxm-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.rxm-stat{
+  background:#111;
+  border:1px solid #292929;
+  border-radius:12px;
+  padding:11px 6px;
+  text-align:center;
+}
+
+.rxm-stat strong{
+  display:block;
+  color:#d4af37;
+  font-size:18px;
+}
+
+.rxm-stat span{
+  display:block;
+  color:#999;
+  font-size:10px;
+  margin-top:3px;
+}
+
+#rxm-status{
+  padding:12px;
+  border-radius:10px;
+  background:#111;
+  border:1px solid #292929;
+  color:#ccc;
+  text-align:center;
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+#rxm-progress{
+  height:10px;
+  background:#191919;
+  border-radius:20px;
+  overflow:hidden;
+  margin:10px 0 18px;
+  border:1px solid #292929;
+}
+
+#rxm-progress-bar{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,#8d6d18,#d4af37,#f0d875);
+  transition:width .4s ease;
+}
+
+.rxm-btn{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:14px;
+  font-weight:800;
+  font-size:15px;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+#rxm-pay{
+  background:#d4af37;
+  color:#050505;
+}
+
+#rxm-play{
+  background:#171717;
+  color:#d4af37;
+  border:1px solid #d4af37;
+}
+
+.rxm-btn:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+#rxm-close{
+  background:#101010;
+  color:#aaa;
+  border:1px solid #333;
+}
+
+#rxm-result{
+  display:none;
+  margin-top:15px;
+  padding:18px;
+  text-align:center;
+  border-radius:14px;
+  border:1px solid #d4af37;
+  background:rgba(212,175,55,.08);
+}
+
+#rxm-result h3{
+  color:#d4af37;
+  margin:0 0 8px;
+}
+
+#rxm-result p{
+  margin:5px 0;
+  color:#ddd;
+}
+
+#rxm-plays{
+  text-align:center;
+  color:#ccc;
+  font-size:14px;
+  margin:12px 0;
+}
+
+#rxm-module-card{
+  position:relative;
+}
+
+.rxm-card-btn{
+  width:100%;
+  cursor:pointer;
+  text-align:left;
+  border-radius:14px;
+  border:1px solid rgba(201,162,39,.45);
+  background:linear-gradient(145deg,#111,#080808);
+  color:#fff;
+  padding:15px;
+}
+
+.rxm-card-btn strong{
+  display:block;
+  color:#d4af37;
+  font-size:17px;
+}
+
+.rxm-card-btn small{
+  display:block;
+  margin-top:5px;
+  color:#aaa;
+}
+</style>
+
+<div id="rxm-overlay" aria-hidden="true">
+  <div id="rxm-box">
+
+    <div id="rxm-head">
+      <h2>⚙️ Máquina RoXThal</h2>
+      <p>Premio: tatuaje lineal mini de hasta 5 cm</p>
+    </div>
+
+    <div id="rxm-body">
+
+      <div class="rxm-machine-art">
+        <div class="rxm-icon">⚙️</div>
+      </div>
+
+      <div class="rxm-stats">
+        <div class="rxm-stat">
+          <strong>$1.500</strong>
+          <span>POR ENTRADA</span>
+        </div>
+
+        <div class="rxm-stat">
+          <strong>3</strong>
+          <span>JUGADAS</span>
+        </div>
+
+        <div class="rxm-stat">
+          <strong>300</strong>
+          <span>JUGADAS / CICLO</span>
+        </div>
+      </div>
+
+      <div id="rxm-status">
+        Consultando estado de la máquina…
+      </div>
+
+      <div id="rxm-progress">
+        <div id="rxm-progress-bar"></div>
+      </div>
+
+      <div id="rxm-plays">
+        Jugadas disponibles: <strong id="rxm-play-count">0</strong>
+      </div>
+
+      <button id="rxm-pay" class="rxm-btn">
+        💳 PAGAR $1.500 — OBTENER 3 JUGADAS
+      </button>
+
+      <button id="rxm-play" class="rxm-btn" disabled>
+        🎯 JUGAR
+      </button>
+
+      <div id="rxm-result">
+        <h3 id="rxm-result-title">Resultado</h3>
+        <p id="rxm-result-text"></p>
+      </div>
+
+      <button id="rxm-close" class="rxm-btn">
+        CERRAR
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  "use strict";
+
+  if(window.RoXThalMachineMounted) return;
+  window.RoXThalMachineMounted = true;
+
+  const SUPABASE_URL =
+    "https://hxtzlrsmjwrpqgjgbzyl.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+  const PLAYER_KEY =
+    "roxthal_machine_player_token_v2";
+
+  const overlay = document.getElementById("rxm-overlay");
+  const statusEl = document.getElementById("rxm-status");
+  const playCountEl = document.getElementById("rxm-play-count");
+  const progressBar = document.getElementById("rxm-progress-bar");
+  const payBtn = document.getElementById("rxm-pay");
+  const playBtn = document.getElementById("rxm-play");
+  const closeBtn = document.getElementById("rxm-close");
+  const resultBox = document.getElementById("rxm-result");
+  const resultTitle = document.getElementById("rxm-result-title");
+  const resultText = document.getElementById("rxm-result-text");
+
+  let playerToken =
+    localStorage.getItem(PLAYER_KEY);
+
+  if(!playerToken){
+    playerToken =
+      (crypto.randomUUID ?
+       crypto.randomUUID() :
+       "rxm-" + Date.now() + "-" +
+       Math.random().toString(36).slice(2));
+
+    localStorage.setItem(
+      PLAYER_KEY,
+      playerToken
+    );
+  }
+
+  function setStatus(text){
+    if(statusEl) statusEl.textContent = text;
+  }
+
+  function setResult(title,text){
+    resultBox.style.display = "block";
+    resultTitle.textContent = title;
+    resultText.textContent = text;
+  }
+
+  function getSupabaseClient(){
+
+    if(window.supabase &&
+       typeof window.supabase.createClient === "function"){
+
+      if(!window.__roxthalMachineSupabase){
+
+        window.__roxthalMachineSupabase =
+          window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+          );
+      }
+
+      return window.__roxthalMachineSupabase;
+    }
+
+    return null;
+  }
+
+  async function callRpc(name,args){
+
+    const sb = getSupabaseClient();
+
+    if(!sb){
+      throw new Error(
+        "Supabase JS no está disponible."
+      );
+    }
+
+    const {data,error} =
+      await sb.rpc(name,args || {});
+
+    if(error) throw error;
+
+    return data;
+  }
+
+  async function refresh(){
+
+    try{
+
+      const data =
+        await callRpc(
+          "roxthal_machine_status",
+          {}
+        );
+
+      let status = data;
+
+      if(Array.isArray(data))
+        status = data[0] || {};
+
+      const plays =
+        Number(
+          status.total_plays ??
+          status.plays ??
+          0
+        );
+
+      const available =
+        Number(
+          status.available_plays ??
+          status.player_plays ??
+          status.plays_available ??
+          0
+        );
+
+      const target =
+        Number(
+          status.target_play ??
+          300
+        );
+
+      const percent =
+        Math.max(
+          0,
+          Math.min(
+            100,
+            (plays / target) * 100
+          )
+        );
+
+      progressBar.style.width =
+        percent + "%";
+
+      playCountEl.textContent =
+        available;
+
+      if(available > 0){
+
+        playBtn.disabled = false;
+
+        setStatus(
+          "Tenés " +
+          available +
+          " jugada" +
+          (available === 1 ? "" : "s") +
+          " disponible" +
+          "."
+        );
+
+      }else{
+
+        playBtn.disabled = true;
+
+        setStatus(
+          "Entrada de $1.500 = 3 jugadas. " +
+          "Pagá para participar."
+        );
+      }
+
+      return status;
+
+    }catch(error){
+
+      console.error(
+        "RoXThal Máquina:",
+        error
+      );
+
+      setStatus(
+        "No se pudo consultar el estado. " +
+        "Intentá nuevamente."
+      );
+
+      return null;
+    }
+  }
+
+  async function pay(){
+
+    payBtn.disabled = true;
+
+    setStatus(
+      "Preparando el pago seguro…"
+    );
+
+    try{
+
+      const response =
+        await fetch(
+          SUPABASE_URL +
+          "/functions/v1/roxthal-machine-create-payment",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":
+                "application/json",
+              "apikey":
+                SUPABASE_KEY,
+              "Authorization":
+                "Bearer " + SUPABASE_KEY
+            },
+            body:JSON.stringify({
+              player_token:playerToken
+            })
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if(!response.ok ||
+         !data ||
+         !data.ok){
+
+        throw new Error(
+          data?.error ||
+          "No se pudo crear el pago."
+        );
+      }
+
+      if(!data.init_point){
+
+        throw new Error(
+          "Mercado Pago no devolvió el enlace de pago."
+        );
+      }
+
+      if(data.reference){
+
+        sessionStorage.setItem(
+          "roxthal_machine_reference",
+          data.reference
+        );
+      }
+
+      setStatus(
+        "Redirigiendo a Mercado Pago…"
+      );
+
+      window.location.href =
+        data.init_point;
+
+    }catch(error){
+
+      console.error(
+        "RoXThal Máquina pago:",
+        error
+      );
+
+      setStatus(
+        error.message ||
+        "No se pudo iniciar el pago."
+      );
+
+      payBtn.disabled = false;
+    }
+  }
+
+  async function play(){
+
+    playBtn.disabled = true;
+
+    setStatus(
+      "Procesando jugada…"
+    );
+
+    resultBox.style.display =
+      "none";
+
+    try{
+
+      const data =
+        await callRpc(
+          "roxthal_machine_play",
+          {
+            p_player_token:
+              playerToken
+          }
+        );
+
+      let result = data;
+
+      if(Array.isArray(data))
+        result = data[0] || {};
+
+      const won =
+        result.won === true ||
+        result.is_winner === true ||
+        result.ganador === true;
+
+      if(won){
+
+        setResult(
+          "🎉 ¡GANASTE!",
+          "Tu jugada fue la ganadora. " +
+          "Premio: tatuaje lineal mini " +
+          "de hasta 5 cm."
+        );
+
+      }else{
+
+        setResult(
+          "Jugada realizada",
+          "Esta vez no fue la ganadora. " +
+          "Todavía podés participar " +
+          "comprando otra entrada."
+        );
+      }
+
+      await refresh();
+
+    }catch(error){
+
+      console.error(
+        "RoXThal Máquina jugada:",
+        error
+      );
+
+      setStatus(
+        error.message ||
+        "No se pudo realizar la jugada."
+      );
+
+      await refresh();
+    }
+  }
+
+  function open(){
+
+    overlay.classList.add(
+      "rxm-open"
+    );
+
+    overlay.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+    refresh();
+  }
+
+  function close(){
+
+    overlay.classList.remove(
+      "rxm-open"
+    );
+
+    overlay.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+  }
+
+  payBtn.addEventListener(
+    "click",
+    pay
+  );
+
+  playBtn.addEventListener(
+    "click",
+    play
+  );
+
+  closeBtn.addEventListener(
+    "click",
+    close
+  );
+
+  overlay.addEventListener(
+    "click",
+    function(e){
+
+      if(e.target === overlay)
+        close();
+
+    }
+  );
+
+  /*
+   * Detecta el regreso desde Mercado Pago.
+   * No acredita nada en el navegador:
+   * la confirmación real depende del webhook.
+   */
+  async function checkReturn(){
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const machine =
+      params.get(
+        "roxthal_machine"
+      );
+
+    const reference =
+      params.get(
+        "ref"
+      );
+
+    if(machine !== "return")
+      return;
+
+    open();
+
+    setStatus(
+      "Verificando el pago recibido…"
+    );
+
+    let attempts = 0;
+
+    const timer =
+      setInterval(
+        async function(){
+
+          attempts++;
+
+          await refresh();
+
+          const count =
+            Number(
+              playCountEl.textContent ||
+              0
+            );
+
+          if(count > 0){
+
+            clearInterval(timer);
+
+            setStatus(
+              "Pago confirmado. " +
+              "Tus 3 jugadas están disponibles."
+            );
+
+            playBtn.disabled = false;
+
+            return;
+          }
+
+          if(attempts >= 20){
+
+            clearInterval(timer);
+
+            setStatus(
+              "El pago todavía está siendo " +
+              "verificado. Volvé a consultar " +
+              "en unos segundos."
+            );
+          }
+
+        },
+        2500
+      );
+  }
+
+  /*
+   * Crea el acceso visible sin alterar
+   * los módulos existentes.
+   */
+  function mountCard(){
+
+    if(
+      document.getElementById(
+        "rxm-module-card"
+      )
+    ) return;
+
+    const modules =
+      document.querySelector(
+        "#modulos .modules, .modules"
+      );
+
+    if(!modules) return;
+
+    const card =
+      document.createElement(
+        "div"
+      );
+
+    card.id =
+      "rxm-module-card";
+
+    card.className =
+      "module";
+
+    card.innerHTML = `
+      <button
+        type="button"
+        class="rxm-card-btn"
+        aria-label="Abrir Máquina RoXThal">
+        <strong>⚙️ Máquina RoXThal</strong>
+        <small>
+          $1.500 · 3 jugadas · premio tatuaje mini
+        </small>
+      </button>
+    `;
+
+    card.querySelector(
+      "button"
+    ).addEventListener(
+      "click",
+      open
+    );
+
+    modules.appendChild(card);
+  }
+
+  window.RoXThalMachine = {
+    open,
+    close,
+    refresh
+  };
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function(){
+
+        mountCard();
+        checkReturn();
+
+      },
+      {once:true}
+    );
+
+  }else{
+
+    mountCard();
+    checkReturn();
+
+  }
+
+})();
+</script>
 </body>
 </html>
