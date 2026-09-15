@@ -36108,5 +36108,88 @@ import { createClient } from
 
 })();
 </script>
+     <!-- ============================================================
+     REPARADOR — POSICIÓN MÁQUINA ROXTHAL
+     No modifica Carrito ni otros módulos
+     ============================================================ -->
+<style id="rxm-position-repair">
+  #rxm-module-card{
+    position:relative !important;
+    display:block !important;
+    float:none !important;
+    clear:both !important;
+    width:100% !important;
+    max-width:100% !important;
+    margin:12px 0 0 0 !important;
+    transform:none !important;
+    z-index:1 !important;
+  }
+
+  #rxm-module-card .rxm-card-btn{
+    position:relative !important;
+    display:block !important;
+    width:100% !important;
+    margin:0 !important;
+    transform:none !important;
+  }
+</style>
+
+<script id="rxm-position-repair-script">
+(function(){
+
+  "use strict";
+
+  function repararMaquina(){
+
+    const card =
+      document.getElementById("rxm-module-card");
+
+    if(!card) return;
+
+    /*
+     * La máquina queda en su propia línea.
+     * No se modifica ni se elimina ningún otro módulo.
+     */
+    card.style.position = "relative";
+    card.style.display = "block";
+    card.style.float = "none";
+    card.style.clear = "both";
+    card.style.width = "100%";
+    card.style.maxWidth = "100%";
+    card.style.margin = "12px 0 0 0";
+    card.style.transform = "none";
+    card.style.zIndex = "1";
+
+    const boton =
+      card.querySelector(".rxm-card-btn");
+
+    if(boton){
+      boton.style.position = "relative";
+      boton.style.display = "block";
+      boton.style.width = "100%";
+      boton.style.margin = "0";
+      boton.style.transform = "none";
+    }
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener(
+      "DOMContentLoaded",
+      repararMaquina,
+      {once:true}
+    );
+  }else{
+    repararMaquina();
+  }
+
+  /*
+   * Segundo ajuste por si la aplicación
+   * termina de construir los módulos después.
+   */
+  setTimeout(repararMaquina, 500);
+  setTimeout(repararMaquina, 1500);
+
+})();
+</script>
 </body>
 </html>
