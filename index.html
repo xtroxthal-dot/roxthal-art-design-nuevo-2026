@@ -36139,5 +36139,645 @@ import { createClient } from
   window.addEventListener("orientationchange", moverMaquina);
 })();
 </script>
+   <!-- =========================================================
+     REPARACIÓN FINAL — MÁQUINA ROXTHAL
+     - Reconoce correctamente winner
+     - Informa claramente el premio
+     - Agrega panel ganador exclusivo para administrador
+     - NO modifica la mecánica del sorteo
+     - NO modifica Mercado Pago
+     ========================================================= -->
+<script id="roxthal-machine-final-repair">
+(function () {
+  "use strict";
+
+  var STARTED = false;
+
+  function waitForApp() {
+    if (STARTED) return;
+
+    var db = window.db;
+
+    if (!db) {
+      setTimeout(waitForApp, 500);
+      return;
+    }
+
+    STARTED = true;
+
+    /* =====================================================
+       1. REPARAR LECTURA DEL GANADOR
+       ===================================================== */
+
+    try {
+      if (
+        typeof db.rpc === "function" &&
+        !db.__roxthalMachineRpcRepair
+      ) {
+
+        var originalRpc = db.rpc.bind(db);
+
+        db.rpc = async function () {
+
+          var args = arguments;
+          var fn = args[0];
+
+          var response =
+            await originalRpc.apply(null, args);
+
+          if (
+            fn === "roxthal_machine_play" &&
+            response &&
+            response.data &&
+            typeof response.data === "object"
+          ) {
+
+            var data = response.data;
+
+            /*
+             * La base devuelve:
+             * result = "winner"
+             *
+             * El frontend antiguo buscaba:
+             * won / is_winner / ganador
+             *
+             * Normalizamos los tres.
+             */
+
+            if (data.result === "winner") {
+              data.won = true;
+              data.is_winner = true;
+              data.ganador = true;
+              data.winner = true;
+            }
+
+            if (data.winner === true) {
+              data.won = true;
+              data.is_winner = true;
+              data.ganador = true;
+            }
+          }
+
+          return response;
+        };
+
+        db.__roxthalMachineRpcRepair = true;
+      }
+    } catch (e) {
+      console.warn(
+        "RoXThal Máquina: no se pudo instalar reparación RPC",
+        e
+      );
+    }
+
+
+    /* =====================================================
+       2. INFORMACIÓN PÚBLICA DEL PREMIO
+       ===================================================== */
+
+    function installPrizeInfo() {
+
+      var prize =
+        document.getElementById("rxm-prize");
+
+      if (!prize) return false;
+
+      if (
+        document.getElementById(
+          "roxthal-machine-prize-info"
+        )
+      ) {
+        return true;
+      }
+
+      var box =
+        document.createElement("div");
+
+      box.id =
+        "roxthal-machine-prize-info";
+
+      box.style.cssText = [
+        "margin:12px 0",
+        "padding:14px",
+        "border:1px solid rgba(201,162,39,.55)",
+        "border-radius:14px",
+        "background:linear-gradient(145deg,#151515,#090909)",
+        "color:#fff",
+        "line-height:1.5"
+      ].join(";");
+
+      box.innerHTML =
+
+        "<strong style='display:block;color:#d4af37;font-size:17px'>" +
+        "🏆 PREMIO DE LA MÁQUINA ROXTHAL" +
+        "</strong>" +
+
+        "<span style='display:block;margin-top:6px'>" +
+        "Tatuaje lineal de hasta <strong>5 cm</strong>." +
+        "</span>" +
+
+        "<span style='display:block;margin-top:5px'>" +
+        "💰 Entrada: <strong>$1.500</strong>" +
+        "</span>" +
+
+        "<span style='display:block;margin-top:5px'>" +
+        "🎟️ Cada entrada aprobada incluye <strong>3 jugadas</strong>." +
+        "</span>" +
+
+        "<span style='display:block;margin-top:5px'>" +
+        "🏆 Hay un ganador por ciclo." +
+        "</span>";
+
+      prize.parentNode.insertBefore(
+        box,
+        prize
+      );
+
+      return true;
+    }
+
+
+    /* =====================================================
+       3. PANEL DE GANADOR PARA ADMINISTRADOR
+       ===================================================== */
+
+    function isAdmin() {
+
+      try {
+
+        return !!(
+          window.RoXThalAdmin &&
+          typeof window.RoXThalAdmin.isAdmin ===
+            "function" &&
+          window.RoXThalAdmin.isAdmin()
+        );
+
+      } catch (e) {
+        return false;
+      }
+    }
+
+
+    async function loadMachineWinners() {
+
+      var panel =
+        document.getElementById(
+          "rxMachineWinnerList"
+        );
+
+      if (!panel) return;
+
+      if (!isAdmin()) {
+        panel.innerHTML = "";
+        return;
+      }
+
+      panel.innerHTML =
+        "<div style='padding:12px'>⏳ Consultando resultados...</div>";
+
+      try {
+
+        var cyclesResponse =
+          await db
+            .from("roxthal_machine_cycles")
+            .select(
+              "id,cycle_number,total_plays,target_play,status,winner_play_id,created_at,completed_at"
+            )
+            .order(
+              "cycle_number",
+              { ascending:false }
+            )
+            .limit(20);
+
+        if (cyclesResponse.error) {
+          throw cyclesResponse.error;
+        }
+
+        var cycles =
+          cyclesResponse.data || [];
+
+        if (!cycles.length) {
+
+          panel.innerHTML =
+            "<div class='empty'>" +
+            "Todavía no hay ciclos registrados." +
+            "</div>";
+
+          return;
+        }
+
+        var html = "";
+
+        for (
+          var i = 0;
+          i < cycles.length;
+          i++
+        ) {
+
+          var c = cycles[i];
+
+          var winnerPlay = null;
+          var entry = null;
+          var payment = null;
+
+          if (c.winner_play_id) {
+
+            var wp =
+              await db
+                .from("roxthal_machine_plays")
+                .select(
+                  "id,entry_id,play_number,result,played_at"
+                )
+                .eq(
+                  "id",
+                  c.winner_play_id
+                )
+                .maybeSingle();
+
+            if (wp.error) {
+              console.warn(wp.error);
+            } else {
+              winnerPlay = wp.data;
+            }
+          }
+
+          if (winnerPlay && winnerPlay.entry_id) {
+
+            var en =
+              await db
+                .from("roxthal_machine_entries")
+                .select(
+                  "id,payment_id,player_key,player_token,first_play_number,plays_count,created_at"
+                )
+                .eq(
+                  "id",
+                  winnerPlay.entry_id
+                )
+                .maybeSingle();
+
+            if (!en.error) {
+              entry = en.data;
+            }
+          }
+
+          if (entry && entry.payment_id) {
+
+            var pay =
+              await db
+                .from("roxthal_machine_payments")
+                .select(
+                  "id,provider_payment_id,amount,status,payer_email,checkout_reference,approved_at,created_at"
+                )
+                .eq(
+                  "id",
+                  entry.payment_id
+                )
+                .maybeSingle();
+
+            if (!pay.error) {
+              payment = pay.data;
+            }
+          }
+
+          var statusText =
+            c.status === "completed"
+              ? "✅ Ciclo completado"
+              : "🟡 Ciclo abierto";
+
+          html +=
+            "<div style='" +
+            "margin-bottom:14px;" +
+            "padding:15px;" +
+            "border:1px solid rgba(201,162,39,.45);" +
+            "border-radius:14px;" +
+            "background:#101010;" +
+            "color:#fff;" +
+            "'>" +
+
+            "<strong style='font-size:18px;color:#d4af37'>" +
+            "🏆 Ciclo " +
+            String(c.cycle_number) +
+            "</strong>" +
+
+            "<div style='margin-top:7px'>" +
+            statusText +
+            "</div>" +
+
+            "<div style='margin-top:5px'>" +
+            "Jugadas: " +
+            String(c.total_plays || 0) +
+            "/300" +
+            "</div>";
+
+          if (winnerPlay) {
+
+            html +=
+              "<hr style='border:0;border-top:1px solid #333;margin:12px 0'>" +
+
+              "<div>" +
+              "<strong>🎯 Jugada ganadora:</strong> " +
+              String(
+                winnerPlay.play_number
+              ) +
+              "</div>" +
+
+              "<div style='margin-top:5px'>" +
+              "<strong>🎁 Premio:</strong> " +
+              "Tatuaje lineal de hasta 5 cm" +
+              "</div>";
+
+            if (payment) {
+
+              html +=
+                "<div style='margin-top:5px'>" +
+                "<strong>💳 Pago:</strong> " +
+                String(
+                  payment.status || "—"
+                ) +
+                "</div>";
+
+              if (payment.payer_email) {
+
+                html +=
+                  "<div style='margin-top:5px'>" +
+                  "<strong>📧 Email del comprador:</strong> " +
+                  String(
+                    payment.payer_email
+                  ) +
+                  "</div>";
+              }
+
+              if (
+                payment.checkout_reference
+              ) {
+
+                html +=
+                  "<div style='margin-top:5px;font-size:12px;opacity:.75'>" +
+                  "Referencia: " +
+                  String(
+                    payment.checkout_reference
+                  ) +
+                  "</div>";
+              }
+            }
+
+            if (entry && entry.player_token) {
+
+              html +=
+                "<div style='margin-top:7px;font-size:12px;opacity:.65'>" +
+                "Identificador interno del participante: " +
+                String(
+                  entry.player_token
+                ) +
+                "</div>";
+            }
+
+          } else {
+
+            html +=
+              "<div style='margin-top:12px;color:#aaa'>" +
+              "Todavía no hay ganador registrado para este ciclo." +
+              "</div>";
+          }
+
+          html += "</div>";
+        }
+
+        panel.innerHTML = html;
+
+      } catch (error) {
+
+        console.error(
+          "RoXThal Máquina — ganador:",
+          error
+        );
+
+        panel.innerHTML =
+          "<div class='status err'>" +
+          "No se pudo consultar el ganador desde este navegador." +
+          "<br><small>" +
+          String(
+            error && error.message
+              ? error.message
+              : error
+          ) +
+          "</small></div>";
+      }
+    }
+
+
+    function installAdminTab() {
+
+      var tabs =
+        document.getElementById(
+          "adminTabs"
+        );
+
+      var adminPanel =
+        document.getElementById(
+          "adminPanel"
+        );
+
+      if (!tabs || !adminPanel) {
+        return false;
+      }
+
+      if (
+        !tabs.querySelector(
+          '[data-admin-tab="machineWinner"]'
+        )
+      ) {
+
+        var button =
+          document.createElement("button");
+
+        button.type = "button";
+
+        button.setAttribute(
+          "data-admin-tab",
+          "machineWinner"
+        );
+
+        button.textContent =
+          "🎰 Máquina — Ganador";
+
+        tabs.insertBefore(
+          button,
+          document.getElementById(
+            "adminLogout"
+          )
+        );
+      }
+
+
+      if (
+        !document.getElementById(
+          "adminMachineWinner"
+        )
+      ) {
+
+        var panel =
+          document.createElement("div");
+
+        panel.id =
+          "adminMachineWinner";
+
+        panel.className =
+          "admin-tab-panel hidden";
+
+        panel.innerHTML =
+          "<div class='card'>" +
+
+          "<h3>🏆 Máquina RoXThal — Ganador</h3>" +
+
+          "<p class='small'>" +
+          "Información exclusiva del administrador. " +
+          "Aquí se registra la jugada ganadora de cada ciclo y, " +
+          "cuando Mercado Pago entrega el dato, el email asociado al pago." +
+          "</p>" +
+
+          "<div id='rxMachineWinnerList'>" +
+          "<div class='empty'>Cargando...</div>" +
+          "</div>" +
+
+          "<button " +
+          "type='button' " +
+          "id='rxMachineWinnerRefresh' " +
+          "class='btn btn-primary' " +
+          "style='margin-top:12px'>" +
+          "🔄 Actualizar ganadores" +
+          "</button>" +
+
+          "</div>";
+
+        adminPanel.appendChild(
+          panel
+        );
+
+        var refresh =
+          document.getElementById(
+            "rxMachineWinnerRefresh"
+          );
+
+        if (refresh) {
+
+          refresh.addEventListener(
+            "click",
+            loadMachineWinners
+          );
+        }
+      }
+
+      return true;
+    }
+
+
+    function startAdminRepair() {
+
+      if (!installAdminTab()) {
+        setTimeout(
+          startAdminRepair,
+          700
+        );
+
+        return;
+      }
+
+      var panel =
+        document.getElementById(
+          "adminMachineWinner"
+        );
+
+      if (!panel) return;
+
+      var observer =
+        new MutationObserver(
+          function () {
+
+            if (
+              isAdmin() &&
+              !panel.classList.contains(
+                "hidden"
+              )
+            ) {
+
+              loadMachineWinners();
+            }
+
+          }
+        );
+
+      observer.observe(
+        panel,
+        {
+          attributes:true,
+          attributeFilter:[
+            "class"
+          ]
+        }
+      );
+
+      setInterval(
+        function () {
+
+          if (
+            isAdmin() &&
+            !panel.classList.contains(
+              "hidden"
+            )
+          ) {
+
+            loadMachineWinners();
+          }
+
+        },
+        15000
+      );
+    }
+
+
+    /* =====================================================
+       4. ESPERAR A QUE APAREZCAN LOS ELEMENTOS
+       ===================================================== */
+
+    var attempts = 0;
+
+    var timer =
+      setInterval(
+        function () {
+
+          attempts++;
+
+          installPrizeInfo();
+          installAdminTab();
+
+          if (
+            document.getElementById(
+              "rxm-prize"
+            ) &&
+            document.getElementById(
+              "adminPanel"
+            )
+          ) {
+
+            clearInterval(timer);
+
+            startAdminRepair();
+          }
+
+          if (attempts > 120) {
+            clearInterval(timer);
+          }
+
+        },
+        500
+      );
+
+  }
+
+  waitForApp();
+
+})();
+</script>
 </body>
 </html>
