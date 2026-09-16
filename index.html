@@ -36068,5 +36068,25 @@ import { createClient } from
   reparar();
 })();
 </script>
+   <script>
+/* RoXThal — mover botón Máquina a la izquierda */
+(function () {
+  function moverMaquina() {
+    const botones = document.querySelectorAll("button");
+
+    for (const boton of botones) {
+      if (boton.textContent.trim() === "🎰 Máquina RoXThal") {
+        boton.style.setProperty("right", "auto", "important");
+        boton.style.setProperty("left", "14px", "important");
+        return;
+      }
+    }
+
+    setTimeout(moverMaquina, 300);
+  }
+
+  moverMaquina();
+})();
+</script>
 </body>
 </html>
