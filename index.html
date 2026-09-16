@@ -36039,5 +36039,34 @@ import { createClient } from
   }
 })();
 </script>
+<script>
+/* FIX: permite volver a abrir la Máquina RoXThal */
+(function () {
+  function reparar() {
+    const overlay = document.getElementById("rxm-overlay");
+    if (!overlay) {
+      setTimeout(reparar, 300);
+      return;
+    }
+
+    const observer = new MutationObserver(function () {
+      if (overlay.classList.contains("rxm-open")) {
+        overlay.style.removeProperty("display");
+      }
+    });
+
+    observer.observe(overlay, {
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+
+    if (overlay.classList.contains("rxm-open")) {
+      overlay.style.removeProperty("display");
+    }
+  }
+
+  reparar();
+})();
+</script>
 </body>
 </html>
