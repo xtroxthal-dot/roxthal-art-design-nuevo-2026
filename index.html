@@ -36824,31 +36824,6 @@ import { createClient } from
   });
 })();
 </script>
-   <script id="roxthal-machine-reopen-repair">
-(function () {
-  function repararReaperturaMaquina() {
-    const overlay = document.querySelector('#rxm-overlay');
-    if (!overlay) return;
-
-    // Cuando la máquina se vuelve a abrir,
-    // quitar el display:none que puso el reparador de cierre.
-    if (overlay.classList.contains('rxm-open')) {
-      overlay.style.removeProperty('display');
-      overlay.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  repararReaperturaMaquina();
-
-  const observer = new MutationObserver(repararReaperturaMaquina);
-
-  observer.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['class'],
-    subtree: true
-  });
-})();
-</script>
+   
 </body>
 </html>
