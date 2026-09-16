@@ -36668,6 +36668,1653 @@ import { createClient } from
           </div>
         `;
 
-     
+     <!-- =========================================================
+     ROXTHAL ART DESIGN
+     MEJORA FINAL DE MÁQUINA ROXTHAL
+     - Mantiene la máquina existente
+     - 3 rodillos
+     - Old School Tattoo
+     - Sonidos
+     - Efectos
+     - DEMO ADMINISTRADOR
+     - DEMO SIN SUPABASE / SIN JUGADAS REALES
+     ========================================================= -->
+
+<style id="roxthal-machine-upgrade-style">
+
+/* ===== MÁQUINA MÁS ESPECTACULAR ===== */
+
+#roxthalSlotMachine .rx-slot-box{
+  border:3px solid #3b3000 !important;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(242,196,0,.20),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      #242424 0%,
+      #090909 55%,
+      #171717 100%
+    ) !important;
+
+  box-shadow:
+    0 0 0 1px #000,
+    0 24px 70px rgba(0,0,0,.72),
+    inset 0 0 55px rgba(242,196,0,.05) !important;
+}
+
+
+/* ===== TÍTULO ===== */
+
+#roxthalSlotMachine .rx-slot-title h3{
+  text-shadow:
+    0 2px 0 #000,
+    0 0 10px rgba(242,196,0,.20);
+}
+
+
+/* ===== LUCES ===== */
+
+#roxthalSlotMachine .rx-slot-light{
+  box-shadow:
+    0 0 8px rgba(242,196,0,.9),
+    0 0 20px rgba(242,196,0,.35) !important;
+}
+
+
+/* ===== CUERPO DE LOS RODILLOS ===== */
+
+#roxthalSlotMachine .rx-slot-machine{
+  border:3px solid #4b4b4b !important;
+
+  background:
+    linear-gradient(#171717,#050505) !important;
+
+  box-shadow:
+    inset 0 0 35px #000,
+    0 0 0 3px #080808,
+    0 14px 35px rgba(0,0,0,.65) !important;
+}
+
+
+/* ===== RODILLOS ===== */
+
+#roxthalSlotMachine .rx-slot-reel{
+  border:3px solid #666 !important;
+
+  background:
+    radial-gradient(
+      circle,
+      #202020 0,
+      #0a0a0a 78%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 0 2px #050505,
+    0 0 18px rgba(242,196,0,.08) !important;
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    filter .15s ease;
+}
+
+
+/* ===== RODILLO GIRANDO ===== */
+
+#roxthalSlotMachine .rx-slot-reel.is-spinning{
+
+  filter:
+    brightness(1.18)
+    saturate(1.25);
+
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 24px rgba(242,196,0,.28) !important;
+}
+
+
+/* ===== RODILLO FRENANDO ===== */
+
+#roxthalSlotMachine .rx-slot-reel.is-stopping{
+
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 30px rgba(242,196,0,.48) !important;
+
+  transform:
+    scale(1.025);
+}
+
+
+/* ===== SÍMBOLOS ===== */
+
+#roxthalSlotMachine .rx-slot-symbol{
+
+  font-size:
+    clamp(48px,8vw,68px) !important;
+
+  text-shadow:
+    0 3px 0 #000,
+    0 0 10px rgba(242,196,0,.18);
+
+  transform-origin:center;
+}
+
+
+/* ===== LÍNEA GANADORA ===== */
+
+#roxthalSlotMachine .rx-slot-window{
+
+  border-top:
+    3px solid #f2c400 !important;
+
+  border-bottom:
+    3px solid #f2c400 !important;
+
+  box-shadow:
+    0 0 24px rgba(242,196,0,.30),
+    inset 0 0 25px rgba(242,196,0,.07) !important;
+}
+
+
+/* ===== BOTÓN GIRAR ===== */
+
+#roxthalSlotMachine .rx-slot-spin{
+
+  position:relative;
+  overflow:hidden;
+
+  border:
+    2px solid #f2c400 !important;
+
+  box-shadow:
+    0 0 0 2px #111,
+    0 10px 30px rgba(0,0,0,.5),
+    0 0 22px rgba(242,196,0,.18) !important;
+}
+
+
+/* brillo que pasa por el botón */
+
+#roxthalSlotMachine .rx-slot-spin::after{
+
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  bottom:0;
+
+  width:55%;
+
+  background:
+    linear-gradient(
+      110deg,
+      transparent,
+      rgba(255,255,255,.35),
+      transparent
+    );
+
+  transform:
+    translateX(-180%);
+
+  animation:
+    rxMachineButtonShine 3.2s infinite;
+
+  pointer-events:none;
+}
+
+
+@keyframes rxMachineButtonShine{
+
+  0%,
+  55%{
+    transform:
+      translateX(-180%);
+  }
+
+  75%,
+  100%{
+    transform:
+      translateX(180%);
+  }
+
+}
+
+
+/* ===== JACKPOT ===== */
+
+#roxthalSlotMachine.rx-slot-winner
+.rx-slot-reel{
+
+  animation:
+    rxJackpotReel .45s ease-in-out 4;
+}
+
+
+@keyframes rxJackpotReel{
+
+  50%{
+
+    transform:
+      scale(1.045);
+
+    filter:
+      brightness(1.55)
+      saturate(1.35);
+
+  }
+
+}
+
+
+/* ===== MÁQUINA GANADORA ===== */
+
+#roxthalSlotMachine.rx-slot-winner
+.rx-slot-box{
+
+  animation:
+    rxJackpotMachine 1s ease;
+
+}
+
+
+@keyframes rxJackpotMachine{
+
+  0%{
+    filter:brightness(1);
+  }
+
+  30%{
+    filter:brightness(1.55);
+  }
+
+  60%{
+    filter:brightness(1.2);
+  }
+
+  100%{
+    filter:brightness(1);
+  }
+
+}
+
+
+/* ===== DEMO ADMIN ===== */
+
+#roxthalSlotMachine .rx-slot-admin-demo{
+
+  border-color:
+    rgba(242,196,0,.45) !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      #171300,
+      #090909
+    ) !important;
+
+}
+
+
+.rx-roxthal-demo-admin{
+
+  margin-top:16px;
+
+  padding:16px;
+
+  border:
+    1px dashed rgba(242,196,0,.55);
+
+  border-radius:14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #171300,
+      #090909
+    );
+
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,.5);
+
+}
+
+
+.rx-roxthal-demo-admin strong{
+
+  display:block;
+
+  color:#f2c400;
+
+  font-size:16px;
+
+}
+
+
+.rx-roxthal-demo-admin p{
+
+  margin:
+    7px 0 0;
+
+  color:#aaa;
+
+  font-size:13px;
+
+  line-height:1.5;
+
+}
+
+
+#rxMachineDemoButton{
+
+  margin-top:12px;
+
+  min-height:44px;
+
+  padding:
+    0 18px;
+
+  border:
+    1px solid #f2c400;
+
+  border-radius:11px;
+
+  background:
+    #171717;
+
+  color:#fff;
+
+  font-weight:1000;
+
+  cursor:pointer;
+
+  transition:
+    .18s ease;
+
+}
+
+
+#rxMachineDemoButton:hover{
+
+  color:#f2c400;
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 0 20px rgba(242,196,0,.18);
+
+}
+
+
+#rxMachineDemoButton:active{
+
+  transform:
+    translateY(1px);
+
+}
+
+
+/* ===== AVISO DEMO ===== */
+
+.rx-roxthal-demo-badge{
+
+  display:inline-block;
+
+  margin-left:6px;
+
+  padding:
+    3px 7px;
+
+  border:
+    1px solid #f2c400;
+
+  border-radius:6px;
+
+  color:#f2c400;
+
+  font-size:10px;
+
+  font-weight:1000;
+
+}
+
+
+/* ===== MÓVIL ===== */
+
+@media(max-width:520px){
+
+  #roxthalSlotMachine .rx-slot-machine{
+
+    gap:6px;
+
+    padding:9px;
+
+  }
+
+  #roxthalSlotMachine .rx-slot-reel{
+
+    min-width:0;
+
+  }
+
+  #roxthalSlotMachine .rx-slot-symbol{
+
+    font-size:42px !important;
+
+  }
+
+}
+
+</style>
+
+
+<script id="roxthal-machine-upgrade-v1">
+
+(function(){
+
+  "use strict";
+
+
+  /* =========================================================
+     PROTECCIÓN CONTRA DUPLICADOS
+     ========================================================= */
+
+  if(window.__ROXTHAL_MACHINE_UPGRADE_V1__){
+
+    return;
+
+  }
+
+  window.__ROXTHAL_MACHINE_UPGRADE_V1__ = true;
+
+
+  /* =========================================================
+     SÍMBOLOS OLD SCHOOL
+     ========================================================= */
+
+  const RX_SYMBOLS = [
+
+    {
+      id:"anchor",
+      icon:"⚓",
+      name:"Ancla"
+    },
+
+    {
+      id:"heart",
+      icon:"❤️",
+      name:"Corazón"
+    },
+
+    {
+      id:"rose",
+      icon:"🌹",
+      name:"Rosa"
+    },
+
+    {
+      id:"snake",
+      icon:"🐍",
+      name:"Serpiente"
+    },
+
+    {
+      id:"eagle",
+      icon:"🦅",
+      name:"Águila"
+    },
+
+    {
+      id:"swallow",
+      icon:"🕊️",
+      name:"Golondrina"
+    },
+
+    {
+      id:"skull",
+      icon:"💀",
+      name:"Calavera"
+    },
+
+    {
+      id:"dagger",
+      icon:"🗡️",
+      name:"Daga"
+    },
+
+    {
+      id:"cherries",
+      icon:"🍒",
+      name:"Cerezas"
+    },
+
+    {
+      id:"star",
+      icon:"⭐",
+      name:"Estrella"
+    },
+
+    {
+      id:"fire",
+      icon:"🔥",
+      name:"Fuego"
+    }
+
+  ];
+
+
+  /* =========================================================
+     AUDIO
+     ========================================================= */
+
+  let rxAudio = null;
+
+  let rxMaster = null;
+
+  let rxLastStop = 0;
+
+
+  function rxEnsureAudio(){
+
+    try{
+
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if(!AudioContext){
+
+        return null;
+
+      }
+
+
+      if(!rxAudio){
+
+        rxAudio =
+          new AudioContext();
+
+        rxMaster =
+          rxAudio.createGain();
+
+        rxMaster.gain.value =
+          0.16;
+
+        rxMaster.connect(
+          rxAudio.destination
+        );
+
+      }
+
+
+      if(
+        rxAudio.state ===
+        "suspended"
+      ){
+
+        rxAudio.resume();
+
+      }
+
+
+      return rxAudio;
+
+    }
+    catch(error){
+
+      console.warn(
+        "Audio RoXThal:",
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  function rxTone(
+    frequency,
+    duration,
+    type,
+    volume,
+    delay
+  ){
+
+    const audio =
+      rxEnsureAudio();
+
+    if(
+      !audio ||
+      !rxMaster
+    ){
+
+      return;
+
+    }
+
+
+    const now =
+      audio.currentTime +
+      (delay || 0);
+
+
+    const oscillator =
+      audio.createOscillator();
+
+    const gain =
+      audio.createGain();
+
+
+    oscillator.type =
+      type || "square";
+
+
+    oscillator.frequency.setValueAtTime(
+      frequency,
+      now
+    );
+
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      now
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      volume || 0.18,
+      now + 0.008
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + duration
+    );
+
+
+    oscillator
+      .connect(gain)
+      .connect(rxMaster);
+
+
+    oscillator.start(now);
+
+    oscillator.stop(
+      now +
+      duration +
+      0.03
+    );
+
+  }
+
+
+  /* =========================================================
+     SONIDO DE RODILLOS
+     ========================================================= */
+
+  function rxSpinSound(){
+
+    rxEnsureAudio();
+
+    for(
+      let i=0;
+      i<9;
+      i++
+    ){
+
+      rxTone(
+        170 + i * 24,
+        0.055,
+        "sawtooth",
+        0.10,
+        i * 0.055
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SONIDO AL PARAR RODILLO
+     ========================================================= */
+
+  function rxStopSound(index){
+
+    const base =
+      400 +
+      index * 115;
+
+
+    rxTone(
+      base,
+      0.11,
+      "square",
+      0.20,
+      0
+    );
+
+
+    rxTone(
+      base * 1.5,
+      0.07,
+      "triangle",
+      0.11,
+      0.045
+    );
+
+  }
+
+
+  /* =========================================================
+     SONIDO JACKPOT
+     ========================================================= */
+
+  function rxJackpotSound(){
+
+    const notes = [
+
+      523,
+      659,
+      784,
+      1047,
+      1319,
+      1568
+
+    ];
+
+
+    notes.forEach(
+      function(
+        frequency,
+        index
+      ){
+
+        rxTone(
+          frequency,
+          0.22,
+          "square",
+          0.20,
+          index * 0.10
+        );
+
+      }
+    );
+
+
+    rxTone(
+      2093,
+      0.38,
+      "triangle",
+      0.16,
+      0.62
+    );
+
+  }
+
+
+  /* =========================================================
+     ENCONTRAR MÁQUINA EXISTENTE
+     ========================================================= */
+
+  function getMachine(){
+
+    return document.getElementById(
+      "roxthalSlotMachine"
+    );
+
+  }
+
+
+  /* =========================================================
+     SONIDO DEL BOTÓN REAL
+     ========================================================= */
+
+  function hookRealButton(){
+
+    const button =
+      document.getElementById(
+        "rxRealSpinButton"
+      );
+
+
+    if(
+      !button ||
+      button.dataset.rxSoundHook === "1"
+    ){
+
+      return;
+
+    }
+
+
+    button.dataset.rxSoundHook =
+      "1";
+
+
+    button.addEventListener(
+      "click",
+      function(){
+
+        rxSpinSound();
+
+      },
+      true
+    );
+
+  }
+
+
+  /* =========================================================
+     VIGILAR LOS RODILLOS EXISTENTES
+     ========================================================= */
+
+  function hookReels(){
+
+    const machine =
+      getMachine();
+
+
+    if(!machine){
+
+      return;
+
+    }
+
+
+    if(
+      machine.dataset.rxAudioObserver === "1"
+    ){
+
+      return;
+
+    }
+
+
+    machine.dataset.rxAudioObserver =
+      "1";
+
+
+    const reels =
+      Array.from(
+        machine.querySelectorAll(
+          ".rx-slot-reel"
+        )
+      );
+
+
+    if(
+      reels.length !== 3
+    ){
+
+      return;
+
+    }
+
+
+    const observer =
+      new MutationObserver(
+        function(
+          mutations
+        ){
+
+          mutations.forEach(
+            function(
+              mutation
+            ){
+
+              if(
+                mutation.type !==
+                "attributes"
+              ){
+
+                return;
+
+              }
+
+
+              if(
+                mutation.attributeName !==
+                "class"
+              ){
+
+                return;
+
+              }
+
+
+              const reel =
+                mutation.target;
+
+
+              const index =
+                Number(
+                  reel.dataset.reel ||
+                  0
+                );
+
+
+              const now =
+                Date.now();
+
+
+              if(
+                reel.classList.contains(
+                  "is-stopping"
+                ) &&
+                now - rxLastStop >
+                70
+              ){
+
+                rxLastStop =
+                  now;
+
+                rxStopSound(
+                  index
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+    reels.forEach(
+      function(reel){
+
+        observer.observe(
+          reel,
+          {
+            attributes:true,
+            attributeFilter:[
+              "class"
+            ]
+          }
+        );
+
+      }
+    );
+
+
+    /* ===============================
+       DETECTAR GANADOR REAL
+       =============================== */
+
+    const winnerObserver =
+      new MutationObserver(
+        function(){
+
+          if(
+            machine.classList.contains(
+              "rx-slot-winner"
+            )
+          ){
+
+            if(
+              machine.dataset.rxJackpotPlayed !==
+              "1"
+            ){
+
+              machine.dataset.rxJackpotPlayed =
+                "1";
+
+              rxJackpotSound();
+
+
+              setTimeout(
+                function(){
+
+                  delete machine.dataset.rxJackpotPlayed;
+
+                },
+                2000
+              );
+
+            }
+
+          }
+
+        }
+      );
+
+
+    winnerObserver.observe(
+      machine,
+      {
+        attributes:true,
+        attributeFilter:[
+          "class"
+        ]
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     SÍMBOLO ALEATORIO PARA DEMO
+     ========================================================= */
+
+  function randomSymbol(){
+
+    return RX_SYMBOLS[
+      Math.floor(
+        Math.random() *
+        RX_SYMBOLS.length
+      )
+    ];
+
+  }
+
+
+  /* =========================================================
+     CREAR TIRA DEMO
+     ========================================================= */
+
+  function prepareDemoReel(
+    reel,
+    finalSymbol
+  ){
+
+    const strip =
+      reel.querySelector(
+        ".rx-slot-strip"
+      );
+
+
+    if(!strip){
+
+      return;
+
+    }
+
+
+    let html = "";
+
+
+    const items = [];
+
+
+    for(
+      let i=0;
+      i<30;
+      i++
+    ){
+
+      items.push(
+        randomSymbol()
+      );
+
+    }
+
+
+    /*
+       El último símbolo es el que
+       quedará en la posición final.
+    */
+
+    items.push(
+      finalSymbol
+    );
+
+
+    items.forEach(
+      function(symbol){
+
+        html +=
+
+          '<div class="rx-slot-symbol" ' +
+          'data-symbol="' +
+          symbol.id +
+          '">' +
+          symbol.icon +
+          '</div>';
+
+      }
+    );
+
+
+    strip.innerHTML =
+      html;
+
+
+    strip.style.transition =
+      "none";
+
+
+    strip.style.transform =
+      "translate3d(0,0,0)";
+
+  }
+
+
+  /* =========================================================
+     DEMO ADMINISTRADOR
+     ========================================================= */
+
+  let demoBusy = false;
+
+
+  function runDemo(){
+
+    if(demoBusy){
+
+      return;
+
+    }
+
+
+    const machine =
+      getMachine();
+
+
+    if(!machine){
+
+      return;
+
+    }
+
+
+    const reels =
+      Array.from(
+        machine.querySelectorAll(
+          ".rx-slot-reel"
+        )
+      );
+
+
+    if(
+      reels.length !== 3
+    ){
+
+      return;
+
+    }
+
+
+    demoBusy =
+      true;
+
+
+    machine.classList.remove(
+      "rx-slot-winner"
+    );
+
+
+    const result =
+      machine.querySelector(
+        "#rxSlotResult"
+      );
+
+
+    if(result){
+
+      result.innerHTML =
+        "🎰 <strong>DEMO EN MARCHA...</strong>";
+
+    }
+
+
+    rxSpinSound();
+
+
+    /*
+       Creamos una combinación
+       exclusivamente visual.
+
+       IMPORTANTE:
+       esto NO es el sorteo real.
+    */
+
+    const finals = [
+
+      randomSymbol(),
+      randomSymbol(),
+      randomSymbol()
+
+    ];
+
+
+    /*
+       De vez en cuando mostramos
+       una combinación ganadora
+       SOLO para comprobar los efectos.
+    */
+
+    const demoWinner =
+      Math.random() < 0.25;
+
+
+    if(demoWinner){
+
+      finals[1] =
+        finals[0];
+
+      finals[2] =
+        finals[0];
+
+    }
+
+
+    reels.forEach(
+      function(
+        reel,
+        index
+      ){
+
+        prepareDemoReel(
+          reel,
+          finals[index]
+        );
+
+
+        reel.classList.add(
+          "is-spinning"
+        );
+
+
+        const strip =
+          reel.querySelector(
+            ".rx-slot-strip"
+          );
+
+
+        if(!strip){
+
+          return;
+
+        }
+
+
+        const symbolHeight =
+          window.innerWidth <= 520
+            ? 72
+            : 92;
+
+
+        /*
+           30 símbolos + desplazamiento
+        */
+
+        const distance =
+          (
+            30 +
+            3 +
+            Math.floor(
+              Math.random() * 4
+            )
+          ) *
+          symbolHeight;
+
+
+        const duration =
+          1.45 +
+          index * 0.38;
+
+
+        strip.style.transition =
+          "transform " +
+          duration +
+          "s cubic-bezier(.12,.78,.18,1)";
+
+
+        requestAnimationFrame(
+          function(){
+
+            strip.style.transform =
+              "translate3d(0,-" +
+              distance +
+              "px,0)";
+
+          }
+        );
+
+
+        setTimeout(
+          function(){
+
+            reel.classList.remove(
+              "is-spinning"
+            );
+
+
+            reel.classList.add(
+              "is-stopping"
+            );
+
+
+            rxStopSound(
+              index
+            );
+
+
+            setTimeout(
+              function(){
+
+                reel.classList.remove(
+                  "is-stopping"
+                );
+
+              },
+              240
+            );
+
+          },
+          duration * 1000
+        );
+
+      }
+    );
+
+
+    /*
+       Fin de DEMO
+    */
+
+    setTimeout(
+      function(){
+
+        machine.classList.toggle(
+          "rx-slot-winner",
+          demoWinner
+        );
+
+
+        if(result){
+
+          if(demoWinner){
+
+            result.innerHTML =
+
+              "🏆 <strong>" +
+              "DEMO: COMBINACIÓN GANADORA" +
+              "</strong><br>" +
+
+              "<span style='color:#aaa'>" +
+              "Prueba visual del jackpot. " +
+              "No participa en el sorteo real." +
+              "</span>";
+
+            rxJackpotSound();
+
+          }
+          else{
+
+            result.innerHTML =
+
+              "🎰 <strong>" +
+              "DEMO COMPLETADA" +
+              "</strong><br>" +
+
+              "<span style='color:#aaa'>" +
+              "Prueba visual. " +
+              "No se registró ninguna jugada." +
+              "</span>";
+
+          }
+
+        }
+
+
+        demoBusy =
+          false;
+
+
+      },
+      2600
+    );
+
+  }
+
+
+  /* =========================================================
+     INSTALAR DEMO EN ADMIN
+     ========================================================= */
+
+  function installAdminDemo(){
+
+    const adminPanel =
+      document.getElementById(
+        "adminRafflesAdmin"
+      );
+
+
+    if(!adminPanel){
+
+      return;
+
+    }
+
+
+    /*
+       Solo aparece dentro del panel
+       administrativo de sorteos.
+    */
+
+    if(
+      adminPanel.classList.contains(
+        "hidden"
+      )
+    ){
+
+      return;
+
+    }
+
+
+    if(
+      document.getElementById(
+        "rxRaffleMachineDemo"
+      )
+    ){
+
+      return;
+
+    }
+
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+
+    box.id =
+      "rxRaffleMachineDemo";
+
+
+    box.className =
+      "card rx-roxthal-demo-admin";
+
+
+    box.innerHTML =
+
+      "<strong>" +
+      "🎰 DEMO GRATIS — MÁQUINA ROXTHAL" +
+      "</strong>" +
+
+      "<p>" +
+
+      "Probá la máquina exactamente " +
+      "como la verá el participante: " +
+
+      "<b>3 rodillos</b>, símbolos " +
+      "Old School, animaciones, luces " +
+      "y sonidos de tragamonedas." +
+
+      "<br><br>" +
+
+      "🔒 Esta DEMO es exclusivamente visual: " +
+
+      "<b>no toca Supabase, no registra " +
+      "participantes, no consume jugadas, " +
+      "no modifica premios, no genera " +
+      "pagos y no realiza el sorteo real.</b>" +
+
+      "</p>" +
+
+      "<button " +
+      "type='button' " +
+      "id='rxMachineDemoButton'>" +
+
+      "🎰 PROBAR DEMO GRATIS" +
+
+      "</button>";
+
+
+    adminPanel.appendChild(
+      box
+    );
+
+
+    const button =
+      document.getElementById(
+        "rxMachineDemoButton"
+      );
+
+
+    if(button){
+
+      button.addEventListener(
+        "click",
+        function(){
+
+          /*
+             La DEMO busca la máquina existente.
+          */
+
+          const machine =
+            getMachine();
+
+
+          if(machine){
+
+            runDemo();
+
+            return;
+
+          }
+
+
+          /*
+             Si la máquina todavía no
+             está abierta, la abrimos.
+          */
+
+          if(
+            window.RoXThalMachine &&
+            typeof
+            window.RoXThalMachine.open ===
+            "function"
+          ){
+
+            window.RoXThalMachine.open();
+
+
+            setTimeout(
+              function(){
+
+                runDemo();
+
+              },
+              600
+            );
+
+          }
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ARRANQUE
+     ========================================================= */
+
+  function install(){
+
+    hookRealButton();
+
+    hookReels();
+
+    installAdminDemo();
+
+  }
+
+
+  /*
+     La app crea algunos elementos
+     dinámicamente, por eso vigilamos
+     el DOM.
+  */
+
+  const observer =
+    new MutationObserver(
+      function(){
+
+        install();
+
+      }
+    );
+
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+
+  /*
+     Segundo seguro para los paneles
+     que aparecen después del login.
+  */
+
+  setInterval(
+    install,
+    1000
+  );
+
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      install,
+      {
+        once:true
+      }
+    );
+
+  }
+  else{
+
+    install();
+
+  }
+
+})();
+
+</script>
 </body>
 </html>
