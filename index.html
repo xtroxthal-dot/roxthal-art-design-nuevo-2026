@@ -36088,102 +36088,132 @@ import { createClient } from
   moverMaquina();
 })();
 </script>
-   <!-- =========================================================
-     ROXTHAL — RULETA DE 3 RODILLOS
-     VERSIÓN SEGURA PARA EL INDEX ACTUAL
-     
-     PUBLICO:
-       - Los participantes ven las 3 ruletas.
-       - Animación real tipo máquina tragamonedas.
-       - No modifica Supabase.
-     
-     ADMIN:
-       - Demo independiente.
-       - Solo aparece cuando el administrador está autenticado.
-       - No registra giros.
-       - No modifica premios.
-       - No modifica participantes.
-       - No modifica contadores.
+<!-- =========================================================
+     ROXTHAL ART DESIGN
+     MÁQUINA DE SORTEO — OLD SCHOOL TATTOO
+     REEMPLAZO DEL BLOQUE ANTERIOR
      ========================================================= -->
 
 <style>
-/* =========================================================
-   RULETA ROXTHAL
-   ========================================================= */
+/* ---------- CONTENEDOR ---------- */
 
 #roxthalSlotMachine{
-  margin:25px 0 5px;
-  padding:20px;
-  border:1px solid var(--border,#292929);
-  border-radius:20px;
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(242,196,0,.12),
-      transparent 48%
-    ),
-    linear-gradient(145deg,#171717,#0b0b0b);
-  box-shadow:
-    0 15px 45px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.04);
+  width:min(100%,900px);
+  margin:25px auto;
+  position:relative;
+  isolation:isolate;
 }
+
+.rx-slot-box{
+  position:relative;
+  overflow:hidden;
+  border:2px solid #292929;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(242,196,0,.12),transparent 45%),
+    linear-gradient(145deg,#181818,#070707);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.025);
+  padding:25px 18px 22px;
+}
+
+/* ---------- CABECERA ---------- */
 
 .rx-slot-title{
   text-align:center;
-  margin-bottom:17px;
+  margin-bottom:18px;
 }
 
-.rx-slot-title .label{
+.rx-slot-title .rx-kicker{
+  display:block;
+  color:#f2c400;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:3px;
+  text-transform:uppercase;
   margin-bottom:5px;
 }
 
 .rx-slot-title h3{
-  font-size:25px;
   margin:0;
+  font-size:clamp(23px,5vw,36px);
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-1px;
 }
 
 .rx-slot-title p{
-  color:var(--muted,#aaa);
+  margin:8px auto 0;
+  max-width:600px;
+  color:#aaa;
   font-size:13px;
-  margin-top:7px;
+  line-height:1.45;
 }
+
+/* ---------- LUCES ---------- */
+
+.rx-slot-lights{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+.rx-slot-light{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#f2c400;
+  box-shadow:0 0 12px rgba(242,196,0,.65);
+  animation:rxLight 1.1s infinite alternate;
+}
+
+.rx-slot-light:nth-child(2){animation-delay:.15s}
+.rx-slot-light:nth-child(3){animation-delay:.3s}
+.rx-slot-light:nth-child(4){animation-delay:.45s}
+.rx-slot-light:nth-child(5){animation-delay:.6s}
+.rx-slot-light:nth-child(6){animation-delay:.75s}
+.rx-slot-light:nth-child(7){animation-delay:.9s}
+
+@keyframes rxLight{
+  from{opacity:.3;transform:scale(.75)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* ---------- MÁQUINA ---------- */
 
 .rx-slot-machine{
-  position:relative;
-  width:min(520px,100%);
-  margin:0 auto;
-  padding:18px 14px;
-  border-radius:18px;
-  border:2px solid #444;
-  background:
-    linear-gradient(
-      180deg,
-      #242424 0%,
-      #101010 45%,
-      #080808 100%
-    );
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.6),
-    inset 0 2px 0 rgba(255,255,255,.06),
-    inset 0 -3px 0 rgba(0,0,0,.7);
-}
-
-.rx-slot-reels{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
+  width:min(100%,700px);
+  margin:auto;
+  padding:15px;
+  border:2px solid #333;
+  border-radius:20px;
+  background:#050505;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,.9),
+    0 8px 30px rgba(0,0,0,.45);
 }
 
 .rx-slot-reel{
   position:relative;
-  height:116px;
+  height:185px;
   overflow:hidden;
-  border-radius:13px;
-  border:2px solid #4b4b4b;
-  background:#050505;
+  border-radius:14px;
+  border:2px solid #3b3b3b;
+  background:
+    linear-gradient(90deg,
+      rgba(0,0,0,.55),
+      transparent 20%,
+      transparent 80%,
+      rgba(0,0,0,.55)),
+    #101010;
   box-shadow:
-    inset 0 0 18px rgba(0,0,0,.9),
-    0 4px 10px rgba(0,0,0,.35);
+    inset 0 0 25px rgba(0,0,0,.8),
+    0 0 0 1px #000;
 }
 
 .rx-slot-reel:before,
@@ -36192,43 +36222,40 @@ import { createClient } from
   position:absolute;
   left:0;
   right:0;
+  height:38px;
   z-index:4;
   pointer-events:none;
 }
 
 .rx-slot-reel:before{
   top:0;
-  height:28px;
-  background:linear-gradient(
-    180deg,
-    rgba(0,0,0,.9),
-    transparent
-  );
+  background:linear-gradient(#050505,transparent);
 }
 
 .rx-slot-reel:after{
   bottom:0;
-  height:28px;
-  background:linear-gradient(
-    0deg,
-    rgba(0,0,0,.9),
-    transparent
-  );
+  background:linear-gradient(transparent,#050505);
 }
+
+/* línea central */
 
 .rx-slot-window{
   position:absolute;
-  left:5px;
-  right:5px;
-  top:31px;
-  height:50px;
   z-index:5;
-  pointer-events:none;
-  border-top:1px solid rgba(242,196,0,.55);
-  border-bottom:1px solid rgba(242,196,0,.55);
+  left:0;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:94px;
+  border-top:2px solid rgba(242,196,0,.65);
+  border-bottom:2px solid rgba(242,196,0,.65);
   box-shadow:
-    0 0 15px rgba(242,196,0,.12);
+    0 0 18px rgba(242,196,0,.12),
+    inset 0 0 20px rgba(242,196,0,.035);
+  pointer-events:none;
 }
+
+/* ---------- TIRA ---------- */
 
 .rx-slot-strip{
   position:absolute;
@@ -36236,157 +36263,187 @@ import { createClient } from
   right:0;
   top:0;
   will-change:transform;
+  transform:translate3d(0,0,0);
 }
 
-.rx-slot-number{
-  height:50px;
+.rx-slot-symbol{
+  height:92px;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#fff;
-  font-size:38px;
+  font-size:57px;
   line-height:1;
-  font-weight:950;
-  letter-spacing:1px;
-  text-shadow:
-    0 2px 5px #000,
-    0 0 12px rgba(242,196,0,.25);
+  user-select:none;
+  filter:
+    drop-shadow(0 3px 0 #000)
+    drop-shadow(0 0 5px rgba(242,196,0,.08));
 }
 
-.rx-slot-number.rx-current{
-  color:var(--yellow,#f2c400);
+/* ---------- RODILLO GIRANDO ---------- */
+
+.rx-slot-reel.is-spinning .rx-slot-strip{
+  filter:blur(1.5px);
 }
 
-.rx-slot-lights{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin:14px 0 3px;
+.rx-slot-reel.is-stopping{
+  box-shadow:
+    inset 0 0 25px rgba(0,0,0,.8),
+    0 0 22px rgba(242,196,0,.18);
 }
 
-.rx-slot-light{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#333;
-  box-shadow:0 0 0 rgba(242,196,0,0);
-}
-
-.rx-slot-machine.rx-spinning .rx-slot-light{
-  animation:rxSlotLight .45s infinite alternate;
-}
-
-@keyframes rxSlotLight{
-  from{
-    background:#444;
-    box-shadow:0 0 2px transparent;
-  }
-  to{
-    background:var(--yellow,#f2c400);
-    box-shadow:0 0 13px rgba(242,196,0,.9);
-  }
-}
+/* ---------- PALANCA / BOTÓN ---------- */
 
 .rx-slot-controls{
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
-  gap:9px;
-  margin-top:15px;
+  gap:10px;
+  margin-top:18px;
 }
+
+.rx-slot-spin{
+  min-width:220px;
+  min-height:52px;
+  padding:0 24px;
+  border:1px solid #f2c400;
+  border-radius:13px;
+  background:#f2c400;
+  color:#080808;
+  font-weight:1000;
+  letter-spacing:.5px;
+  box-shadow:0 8px 25px rgba(0,0,0,.35);
+  transition:.18s ease;
+}
+
+.rx-slot-spin:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 30px rgba(242,196,0,.2);
+}
+
+.rx-slot-spin:active{
+  transform:translateY(1px);
+}
+
+.rx-slot-spin:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* ---------- RESULTADO ---------- */
 
 .rx-slot-result{
-  min-height:25px;
-  margin-top:13px;
+  min-height:62px;
+  margin:18px auto 0;
+  width:min(100%,700px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   text-align:center;
+  padding:13px 16px;
+  border:1px solid #292929;
+  border-radius:13px;
+  background:#0d0d0d;
+  color:#aaa;
   font-size:14px;
-  font-weight:850;
+  line-height:1.4;
 }
 
-.rx-slot-result.rx-win{
-  color:var(--yellow,#f2c400);
+.rx-slot-result strong{
+  color:#f2c400;
 }
 
-.rx-slot-result.rx-demo{
-  color:#8de2ae;
+/* ---------- DESTELLO FINAL ---------- */
+
+#roxthalSlotMachine.rx-slot-winner .rx-slot-box{
+  animation:rxWinner .8s ease;
 }
 
-.rx-slot-machine.rx-finished{
-  animation:rxSlotFinished .5s ease;
+@keyframes rxWinner{
+  0%{
+    box-shadow:
+      0 20px 60px rgba(0,0,0,.55),
+      inset 0 0 0 1px rgba(255,255,255,.025);
+  }
+  35%{
+    box-shadow:
+      0 0 45px rgba(242,196,0,.45),
+      0 20px 60px rgba(0,0,0,.55);
+  }
+  100%{
+    box-shadow:
+      0 20px 60px rgba(0,0,0,.55),
+      inset 0 0 0 1px rgba(255,255,255,.025);
+  }
 }
 
-@keyframes rxSlotFinished{
-  0%{transform:scale(1)}
-  45%{transform:scale(1.018)}
-  100%{transform:scale(1)}
+/* ---------- DEMO ADMIN ---------- */
+
+.rx-slot-admin-demo{
+  margin-top:16px;
+  padding:13px;
+  border:1px dashed #3b3b3b;
+  border-radius:12px;
+  background:#0b0b0b;
+  color:#aaa;
+  font-size:12px;
+  line-height:1.45;
 }
 
-@media(max-width:430px){
-  #roxthalSlotMachine{
-    padding:15px 10px;
+.rx-slot-admin-demo strong{
+  color:#f2c400;
+}
+
+.rx-slot-demo-btn{
+  margin-top:10px;
+  min-height:40px;
+  padding:0 14px;
+  border:1px solid #555;
+  border-radius:10px;
+  background:#181818;
+  color:#fff;
+  font-weight:900;
+}
+
+.rx-slot-demo-btn:hover{
+  border-color:#f2c400;
+  color:#f2c400;
+}
+
+/* ---------- MÓVIL ---------- */
+
+@media(max-width:520px){
+
+  .rx-slot-box{
+    padding:20px 10px 18px;
+    border-radius:19px;
   }
 
   .rx-slot-machine{
-    padding:13px 8px;
-  }
-
-  .rx-slot-reels{
     gap:6px;
+    padding:9px;
+    border-radius:15px;
   }
 
   .rx-slot-reel{
-    height:98px;
+    height:145px;
+    border-radius:10px;
   }
 
-  .rx-slot-number{
-    height:42px;
-    font-size:31px;
+  .rx-slot-symbol{
+    height:72px;
+    font-size:42px;
   }
 
   .rx-slot-window{
-    top:28px;
-    height:42px;
+    height:74px;
+  }
+
+  .rx-slot-spin{
+    width:100%;
   }
 }
-
-
-/* =========================================================
-   DEMO ADMIN
-   ========================================================= */
-
-#roxthalSlotAdminDemo{
-  margin-top:18px;
-  padding:18px;
-  border:1px dashed rgba(242,196,0,.5);
-  border-radius:16px;
-  background:rgba(242,196,0,.035);
-}
-
-#roxthalSlotAdminDemo h3{
-  margin-bottom:5px;
-}
-
-#roxthalSlotAdminDemo p{
-  color:var(--muted,#aaa);
-  font-size:13px;
-  line-height:1.5;
-  margin-bottom:13px;
-}
-
-#roxthalSlotAdminDemo .rx-demo-badge{
-  display:inline-flex;
-  align-items:center;
-  padding:5px 9px;
-  border-radius:999px;
-  border:1px solid rgba(242,196,0,.4);
-  color:var(--yellow,#f2c400);
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:1px;
-  margin-bottom:9px;
-}
 </style>
-
 
 <script>
 (function(){
@@ -36397,837 +36454,220 @@ import { createClient } from
      CONFIGURACIÓN
      ========================================================= */
 
-  const SLOT_DIGITS = 3;
+  const ROOT_ID = "roxthalSlotMachine";
 
   /*
-   * Velocidad visual de cada rodillo.
-   * El resultado es SIEMPRE local.
-   */
-  const REEL_DURATION = [
-    1500,
-    2050,
-    2600
+     FIGURAS OLD SCHOOL
+
+     Se usan emojis/símbolos como representación visual
+     autónoma para no depender de imágenes externas.
+  */
+
+  const SYMBOLS = [
+    { id:"anchor",    icon:"⚓", name:"Ancla" },
+    { id:"heart",     icon:"❤️", name:"Corazón" },
+    { id:"rose",      icon:"🌹", name:"Rosa" },
+    { id:"snake",     icon:"🐍", name:"Serpiente" },
+    { id:"eagle",     icon:"🦅", name:"Águila" },
+    { id:"swallow",   icon:"🕊️", name:"Golondrina" },
+    { id:"skull",     icon:"💀", name:"Calavera" },
+    { id:"dagger",    icon:"🗡️", name:"Daga" },
+    { id:"cherries",  icon:"🍒", name:"Cerezas" },
+    { id:"star",      icon:"⭐", name:"Estrella" },
+    { id:"fire",      icon:"🔥", name:"Fuego" }
   ];
 
-  let slotBusy = false;
+  const SYMBOL_HEIGHT = 92;
 
-
-  /* =========================================================
-     UTILIDADES
-     ========================================================= */
-
-  function rxRandomDigit(){
-    return Math.floor(Math.random() * 10);
-  }
-
-  function rxRandomNumber(){
-    return String(
-      Math.floor(Math.random() * 1000)
-    ).padStart(3,"0");
-  }
-
-  function rxEl(id){
-    return document.getElementById(id);
-  }
-
+  let spinning = false;
 
   /* =========================================================
-     CREAR UNA MÁQUINA
+     LIMPIAR MÁQUINA ANTERIOR
      ========================================================= */
 
-  function createSlotMachine(){
+  function removeOldMachine(){
 
-    const root =
-      document.createElement("div");
+    const old = document.getElementById(ROOT_ID);
 
-    root.id =
-      "roxthalSlotMachine";
+    if(old){
+      old.remove();
+    }
+
+  }
+
+  /* =========================================================
+     HTML
+     ========================================================= */
+
+  function createMachine(){
+
+    const root = document.createElement("div");
+
+    root.id = ROOT_ID;
 
     root.innerHTML = `
+      <div class="rx-slot-box">
 
-      <div class="rx-slot-title">
+        <div class="rx-slot-title">
 
-        <div class="label">
-          RULETA ROXTHAL
-        </div>
+          <span class="rx-kicker">
+            ROXTHAL ART DESIGN
+          </span>
 
-        <h3>
-          Máquina de sorteo
-        </h3>
+          <h3>
+            🎰 SORTEO OLD SCHOOL
+          </h3>
 
-        <p>
-          Tres rodillos · giro secuencial · efecto tragamonedas
-        </p>
-
-      </div>
-
-
-      <div class="rx-slot-machine">
-
-        <div class="rx-slot-reels">
-
-          <div class="rx-slot-reel"
-               data-rx-reel="0">
-
-            <div class="rx-slot-strip"></div>
-
-            <div class="rx-slot-window"></div>
-
-          </div>
-
-
-          <div class="rx-slot-reel"
-               data-rx-reel="1">
-
-            <div class="rx-slot-strip"></div>
-
-            <div class="rx-slot-window"></div>
-
-          </div>
-
-
-          <div class="rx-slot-reel"
-               data-rx-reel="2">
-
-            <div class="rx-slot-strip"></div>
-
-            <div class="rx-slot-window"></div>
-
-          </div>
+          <p>
+            Tres rodillos. Tres figuras. Una combinación ganadora.
+          </p>
 
         </div>
-
 
         <div class="rx-slot-lights">
-
-          <span class="rx-slot-light"></span>
-          <span class="rx-slot-light"></span>
-          <span class="rx-slot-light"></span>
-          <span class="rx-slot-light"></span>
-          <span class="rx-slot-light"></span>
-
+          ${Array.from({length:7},()=>`
+            <span class="rx-slot-light"></span>
+          `).join("")}
         </div>
 
+        <div class="rx-slot-machine">
 
-        <div
-          class="rx-slot-result"
-          data-rx-slot-result
-        >
-          Lista para girar
+          <div class="rx-slot-reel" data-reel="0">
+            <div class="rx-slot-strip"></div>
+            <div class="rx-slot-window"></div>
+          </div>
+
+          <div class="rx-slot-reel" data-reel="1">
+            <div class="rx-slot-strip"></div>
+            <div class="rx-slot-window"></div>
+          </div>
+
+          <div class="rx-slot-reel" data-reel="2">
+            <div class="rx-slot-strip"></div>
+            <div class="rx-slot-window"></div>
+          </div>
+
         </div>
-
 
         <div class="rx-slot-controls">
 
           <button
             type="button"
-            class="btn btn-primary"
-            data-rx-spin
-          >
-            🎰 GIRAR RULETA
+            class="rx-slot-spin"
+            id="rxRealSpinButton">
+            🎰 GIRAR SORTEO
           </button>
 
         </div>
 
-      </div>
+        <div
+          class="rx-slot-result"
+          id="rxSlotResult">
+          Preparado para el sorteo.
+        </div>
 
+      </div>
     `;
 
     return root;
   }
 
-
   /* =========================================================
-     PREPARAR RODILLOS
+     ENCONTRAR ZONA DEL SORTEO
      ========================================================= */
 
-  function prepareReels(root){
+  function findRaffleContainer(){
 
-    const reels =
-      root.querySelectorAll(
-        "[data-rx-reel]"
-      );
-
-    reels.forEach(function(reel){
-
-      const strip =
-        reel.querySelector(
-          ".rx-slot-strip"
-        );
-
-      if(!strip)return;
-
-      /*
-       * Generamos muchos números para que
-       * exista recorrido visual suficiente.
-       */
-      const values = [];
-
-      for(let i=0;i<34;i++){
-
-        values.push(
-          rxRandomDigit()
-        );
-
-      }
-
-      values.push(
-        rxRandomDigit()
-      );
-
-      strip.innerHTML =
-        values.map(function(value){
-
-          return `
-            <div class="rx-slot-number">
-              ${value}
-            </div>
-          `;
-
-        }).join("");
-
-      strip.style.transform =
-        "translateY(0px)";
-
-    });
+    return (
+      document.getElementById("raffle") ||
+      document.querySelector('[id*="raffle"]') ||
+      document.querySelector('[class*="raffle"]')
+    );
 
   }
 
-
   /* =========================================================
-     GIRAR UN RODILLO
+     INSERTAR
      ========================================================= */
 
-  function spinReel(
-    reel,
-    finalDigit,
-    duration
-  ){
+  function install(){
 
-    return new Promise(function(resolve){
+    removeOldMachine();
 
-      const strip =
-        reel.querySelector(
-          ".rx-slot-strip"
-        );
+    const container = findRaffleContainer();
 
-      const items =
-        strip.querySelectorAll(
-          ".rx-slot-number"
-        );
-
-      const itemHeight =
-        items[0]?.getBoundingClientRect()
-          .height || 50;
-
-      /*
-       * Buscamos una posición bastante
-       * avanzada que termine en el
-       * dígito elegido.
-       */
-      let targetIndex =
-        items.length - 1;
-
-      for(
-        let i=items.length-1;
-        i>=0;
-        i--
-      ){
-
-        if(
-          Number(items[i].textContent.trim()) ===
-          finalDigit
-        ){
-
-          targetIndex=i;
-          break;
-
-        }
-
-      }
-
-      const targetY =
-        -(targetIndex * itemHeight);
-
-
-      /*
-       * Animación con easing fuerte,
-       * simulando desaceleración mecánica.
-       */
-      strip.style.transition =
-        "transform " +
-        duration +
-        "ms cubic-bezier(.08,.82,.12,1)";
-
-      requestAnimationFrame(function(){
-
-        strip.style.transform =
-          "translateY(" +
-          targetY +
-          "px)";
-
-      });
-
-
-      setTimeout(function(){
-
-        strip.style.transition =
-          "none";
-
-        strip.style.transform =
-          "translateY(" +
-          targetY +
-          "px)";
-
-        resolve();
-
-      },duration + 60);
-
-    });
-
-  }
-
-
-  /* =========================================================
-     GIRAR LAS TRES RULETAS
-     ========================================================= */
-
-  async function spinSlotMachine(
-    root,
-    forcedNumber,
-    mode
-  ){
-
-    if(slotBusy)return;
-
-    slotBusy=true;
-
-    const machine =
-      root.querySelector(
-        ".rx-slot-machine"
-      );
-
-    const button =
-      root.querySelector(
-        "[data-rx-spin]"
-      );
-
-    const result =
-      root.querySelector(
-        "[data-rx-slot-result]"
-      );
-
-    const reels =
-      [
-        ...root.querySelectorAll(
-          "[data-rx-reel]"
-        )
-      ];
-
-    if(
-      !machine ||
-      reels.length !== 3
-    ){
-
-      slotBusy=false;
-      return;
-
+    if(!container){
+      return false;
     }
 
-    machine.classList.add(
-      "rx-spinning"
-    );
-
-    machine.classList.remove(
-      "rx-finished"
-    );
-
-    if(button){
-
-      button.disabled=true;
-
-      button.textContent =
-        "🎰 GIRANDO...";
-
-    }
-
-    if(result){
-
-      result.className =
-        "rx-slot-result";
-
-      result.textContent =
-        "La máquina está girando...";
-
-    }
-
+    const machine = createMachine();
 
     /*
-     * Resultado:
-     *
-     * DEMO:
-     * número aleatorio local.
-     *
-     * PUBLICO:
-     * si se proporciona un número,
-     * únicamente se utiliza para
-     * la animación visual.
-     */
-    let number;
+      Intentamos colocarla antes de la lista del sorteo.
+      Si no existe, se coloca al principio.
+    */
 
-    if(
-      typeof forcedNumber === "string" &&
-      /^\d{3}$/.test(forcedNumber)
-    ){
+    const list =
+      container.querySelector("#raffleList") ||
+      container.querySelector('[id*="raffleList"]');
 
-      number=forcedNumber;
+    if(list){
+
+      list.parentNode.insertBefore(machine,list);
 
     }else{
 
-      number=rxRandomNumber();
+      container.insertBefore(machine,container.firstChild);
 
     }
 
-
-    const digits =
-      number
-        .split("")
-        .map(Number);
-
-
-    /*
-     * Los tres rodillos arrancan juntos
-     * pero terminan uno detrás de otro.
-     */
-    for(
-      let i=0;
-      i<reels.length;
-      i++
-    ){
-
-      /*
-       * Lanzamos el siguiente después
-       * de un pequeño retraso.
-       */
-      if(i>0){
-
-        await new Promise(
-          resolve =>
-            setTimeout(
-              resolve,
-              180
-            )
-        );
-
-      }
-
-      await spinReel(
-        reels[i],
-        digits[i],
-        REEL_DURATION[i]
-      );
-
-    }
-
-
-    machine.classList.remove(
-      "rx-spinning"
-    );
-
-    machine.classList.add(
-      "rx-finished"
-    );
-
-
-    if(button){
-
-      button.disabled=false;
-
-      button.textContent =
-        "🎰 GIRAR DE NUEVO";
-
-    }
-
-
-    if(result){
-
-      result.className =
-        "rx-slot-result " +
-        (
-          mode === "demo"
-            ? "rx-demo"
-            : "rx-win"
-        );
-
-      result.textContent =
-        mode === "demo"
-          ? "DEMO · Resultado visual: " + number
-          : "Resultado: " + number;
-
-    }
-
-
-    setTimeout(function(){
-
-      machine.classList.remove(
-        "rx-finished"
-      );
-
-    },550);
-
-    slotBusy=false;
-
-    return number;
-  }
-
-
-  /* =========================================================
-     INSTALAR MÁQUINA PÚBLICA
-     ========================================================= */
-
-  function installPublicSlot(){
-
-    /*
-     * Buscamos el módulo real del sorteo.
-     */
-    const raffle =
-      rxEl("raffle");
-
-    if(!raffle)return;
-
-
-    /*
-     * Evitamos duplicarla.
-     */
-    if(
-      rxEl("roxthalSlotMachine")
-    )return;
-
-
-    const raffleList =
-      rxEl("raffleList");
-
-    if(!raffleList)return;
-
-
-    const slot =
-      createSlotMachine();
-
-    /*
-     * Lo colocamos al principio del
-     * contenido del sorteo, sin borrar
-     * absolutamente nada de lo existente.
-     */
-    raffleList.parentNode.insertBefore(
-      slot,
-      raffleList
-    );
-
-
-    prepareReels(slot);
-
+    prepareReels();
 
     const button =
-      slot.querySelector(
-        "[data-rx-spin]"
-      );
+      document.getElementById("rxRealSpinButton");
 
     if(button){
 
-      button.addEventListener(
-        "click",
-        function(){
+      button.addEventListener("click",function(){
 
-          /*
-           * IMPORTANTE:
-           * El modo público solo anima.
-           *
-           * NO llama a Supabase.
-           * NO registra participación.
-           * NO cambia números.
-           * NO cambia premios.
-           */
-          spinSlotMachine(
-            slot,
-            null,
-            "public"
-          );
+        runRealVisual();
 
-        }
-      );
+      });
 
     }
 
+    return true;
   }
-
 
   /* =========================================================
-     DEMO DEL ADMINISTRADOR
+     CREAR TIRAS
      ========================================================= */
 
-  function installAdminDemo(){
+  function createStrip(reel){
 
-    const adminPanel =
-      rxEl("adminPanel");
-
-    if(!adminPanel)return;
-
+    const strip = reel.querySelector(".rx-slot-strip");
 
     /*
-     * Solo si el usuario actual es
-     * realmente administrador según
-     * el sistema existente.
-     */
-    let isAdmin=false;
+      Muchas repeticiones para que el movimiento sea
+      continuo y suficientemente largo.
+    */
 
-    try{
+    const repetitions = 12;
 
-      isAdmin =
-        !!window.RoXThalAdmin &&
-        typeof window.RoXThalAdmin.isAdmin ===
-          "function" &&
-        window.RoXThalAdmin.isAdmin();
+    let html = "";
 
-    }catch(error){
+    for(let r=0;r<repetitions;r++){
 
-      isAdmin=false;
+      SYMBOLS.forEach(symbol=>{
 
-    }
+        html += `
+          <div
+            class="rx-slot-symbol"
+            data-symbol="${symbol.id}">
+            ${symbol.icon}
+          </div>
+        `;
 
-
-    if(!isAdmin)return;
-
-
-    if(
-      rxEl("roxthalSlotAdminDemo")
-    )return;
-
-
-    const demo =
-      document.createElement("div");
-
-    demo.id =
-      "roxthalSlotAdminDemo";
-
-    demo.innerHTML = `
-
-      <div class="rx-demo-badge">
-        MODO ADMINISTRADOR · DEMO
-      </div>
-
-      <h3>
-        🎰 Probar máquina del sorteo
-      </h3>
-
-      <p>
-        Esta prueba reproduce exactamente la animación
-        de las tres ruletas, pero funciona solamente
-        en el navegador. No utiliza Supabase, no consume
-        números, no modifica participantes y no registra
-        ningún giro ni premio.
-      </p>
-
-      <div data-rx-admin-slot></div>
-
-    `;
-
-
-    /*
-     * Lo ponemos al comienzo del panel
-     * sin tocar los módulos existentes.
-     */
-    adminPanel.prepend(
-      demo
-    );
-
-
-    const container =
-      demo.querySelector(
-        "[data-rx-admin-slot]"
-      );
-
-    const machine =
-      createSlotMachine();
-
-    container.appendChild(
-      machine
-    );
-
-    prepareReels(machine);
-
-
-    const button =
-      machine.querySelector(
-        "[data-rx-spin]"
-      );
-
-    if(button){
-
-      button.addEventListener(
-        "click",
-        function(){
-
-          /*
-           * DEMO 100% LOCAL.
-           */
-          spinSlotMachine(
-            machine,
-            null,
-            "demo"
-          );
-
-        }
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     ACTUALIZACIÓN DEL ADMIN
-     ========================================================= */
-
-  function watchAdmin(){
-
-    /*
-     * El panel puede aparecer después
-     * del login, por lo que comprobamos
-     * periódicamente solo durante un
-     * período corto.
-     */
-    let attempts=0;
-
-    const timer =
-      setInterval(function(){
-
-        attempts++;
-
-        installAdminDemo();
-
-        if(
-          rxEl("roxthalSlotAdminDemo") ||
-          attempts>=30
-        ){
-
-          clearInterval(timer);
-
-        }
-
-      },500);
-
-  }
-
-
-  /* =========================================================
-     INICIO
-     ========================================================= */
-
-  function init(){
-
-    /*
-     * La parte pública no necesita
-     * Supabase para funcionar.
-     */
-    installPublicSlot();
-
-    /*
-     * El administrador se instala
-     * cuando #adminPanel aparece.
-     */
-    watchAdmin();
-
-  }
-
-
-  if(
-    document.readyState ===
-    "loading"
-  ){
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      init,
-      {once:true}
-    );
-
-  }else{
-
-    init();
-
-  }
-
-
-  /*
-   * Si el usuario entra al módulo
-   * Sorteo después de cargar la app,
-   * volvemos a comprobar que exista.
-   */
-  document.addEventListener(
-    "click",
-    function(event){
-
-      const go =
-        event.target.closest(
-          '[data-go="raffle"]'
-        );
-
-      if(!go)return;
-
-      setTimeout(
-        installPublicSlot,
-        150
-      );
-
-    }
-  );
-
-
-  /*
-   * API interna opcional.
-   */
-  window.RoXThalSlotMachine = {
-
-    spin:function(){
-
-      const slot =
-        rxEl("roxthalSlotMachine");
-
-      if(!slot)return null;
-
-      return spinSlotMachine(
-        slot,
-        null,
-        "public"
-      );
-
-    },
-
-    demo:function(){
-
-      const demo =
-        rxEl("roxthalSlotAdminDemo");
-
-      if(!demo)return null;
-
-      const slot =
-        demo.querySelector(
-          ".rx-slot-machine"
-        );
-
-      if(!slot)return null;
-
-      return spinSlotMachine(
-        slot,
-        null,
-        "demo"
-      );
-
-    }
-
-  };
-
-})();
-</script>
+     
 </body>
 </html>
