@@ -36779,6 +36779,121 @@ import { createClient } from
 
 })();
 </script>
-   
+   <script id="roxthal-machine-close-final">
+(function () {
+  "use strict";
+
+  function cerrarMaquinaRoXThal(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+    }
+
+    var overlay = document.getElementById("rxm-overlay");
+
+    if (!overlay) return;
+
+    /* Cierre visual forzado */
+    overlay.classList.remove("rxm-open");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.style.setProperty("display", "none", "important");
+
+    /* Restaurar desplazamiento de la app */
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+
+    /* Detener cualquier estado de apertura */
+    try {
+      if (
+        window.RoXThalMachine &&
+        typeof window.RoXThalMachine.close === "function"
+      ) {
+        window.RoXThalMachine.close();
+      }
+    } catch (e) {}
+
+    /* Volver a imponer el cierre después de cualquier handler */
+    setTimeout(function () {
+      var o = document.getElementById("rxm-overlay");
+
+      if (!o) return;
+
+      o.classList.remove("rxm-open");
+      o.setAttribute("aria-hidden", "true");
+      o.style.setProperty("display", "none", "important");
+
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }, 0);
+  }
+
+  function instalar() {
+    var overlay = document.getElementById("rxm-overlay");
+
+    if (!overlay) {
+      setTimeout(instalar, 300);
+      return;
+    }
+
+    if (overlay.dataset.roxthalCloseFinal === "1") {
+      return;
+    }
+
+    overlay.dataset.roxthalCloseFinal = "1";
+
+    /* Captura el clic antes que los demás manejadores */
+    overlay.addEventListener(
+      "click",
+      function (event) {
+        var close = event.target.closest &&
+          event.target.closest("#rxm-close");
+
+        if (!close) return;
+
+        cerrarMaquinaRoXThal(event);
+      },
+      true
+    );
+
+    /* También permite cerrar tocando el fondo */
+    overlay.addEventListener(
+      "click",
+      function (event) {
+        if (event.target === overlay) {
+          cerrarMaquinaRoXThal(event);
+        }
+      },
+      true
+    );
+
+    /* Botón físico/tecla atrás del navegador */
+    document.addEventListener(
+      "keydown",
+      function (event) {
+        if (
+          event.key === "Escape" &&
+          overlay.classList.contains("rxm-open")
+        ) {
+          cerrarMaquinaRoXThal(event);
+        }
+      },
+      true
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      instalar,
+      { once: true }
+    );
+  } else {
+    instalar();
+  }
+})();
+</script>
 </body>
 </html>
