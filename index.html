@@ -37547,5 +37547,121 @@ import { createClient } from
 </script>
 
 <!-- ===================== FIN SÚPER MÁQUINA ===================== -->
+     <!-- RoXThal · Información del premio en la portada de la máquina -->
+<style id="rx-premio-portada-style">
+  #rx-premio-portada{
+    width:100%;
+    box-sizing:border-box;
+    margin:14px 0 18px;
+    padding:18px 16px;
+    border:2px solid rgba(255,255,255,.22);
+    border-radius:18px;
+    background:linear-gradient(145deg,rgba(20,20,20,.96),rgba(55,25,20,.96));
+    text-align:center;
+    color:#fff;
+    box-shadow:0 8px 28px rgba(0,0,0,.28);
+  }
+
+  #rx-premio-portada .rx-premio-icon{
+    font-size:42px;
+    line-height:1;
+    margin-bottom:8px;
+  }
+
+  #rx-premio-portada .rx-premio-titulo{
+    font-size:clamp(20px,5vw,30px);
+    font-weight:900;
+    letter-spacing:.5px;
+    line-height:1.1;
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+
+  #rx-premio-portada .rx-premio-principal{
+    font-size:clamp(18px,4.5vw,25px);
+    font-weight:900;
+    line-height:1.2;
+    margin-bottom:10px;
+  }
+
+  #rx-premio-portada .rx-premio-detalle{
+    font-size:15px;
+    line-height:1.45;
+    opacity:.9;
+    max-width:520px;
+    margin:0 auto;
+  }
+
+  #rx-premio-portada .rx-premio-precio{
+    display:inline-block;
+    margin-top:12px;
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    font-weight:800;
+    font-size:15px;
+  }
+</style>
+
+<script id="rx-premio-portada-script">
+(function(){
+  'use strict';
+
+  if(window.__RX_PREMIO_PORTADA__) return;
+  window.__RX_PREMIO_PORTADA__ = true;
+
+  function instalar(){
+    /*
+      Buscamos la tarjeta de acceso de la nueva máquina.
+      No modificamos la máquina ni sus funciones.
+    */
+    var card = document.getElementById('rxsd-card');
+
+    if(!card){
+      /*
+        Compatibilidad por si la tarjeta utiliza otro contenedor
+        conocido de la nueva máquina.
+      */
+      card = document.getElementById('rxd-floating') ||
+             document.querySelector('[data-roxthal-machine-access]') ||
+             document.querySelector('.roxthal-machine-access');
+    }
+
+    if(!card || document.getElementById('rx-premio-portada')) return;
+
+    var bloque = document.createElement('div');
+    bloque.id = 'rx-premio-portada';
+
+    bloque.innerHTML =
+      '<div class="rx-premio-icon">🎰</div>' +
+      '<div class="rx-premio-titulo">MÁQUINA ROXTHAL</div>' +
+      '<div class="rx-premio-principal">🏆 JUEGA POR UN TATUAJE GRATIS DE 5 CM LINEALES</div>' +
+      '<div class="rx-premio-detalle">' +
+        'Realiza tus 3 tiradas y descubre si consigues la combinación ganadora.' +
+        '<br>¡La suerte puede convertir tus tiradas en un tatuaje!' +
+      '</div>' +
+      '<div class="rx-premio-precio">3 TIRADAS · $1.500</div>';
+
+    /*
+      Lo colocamos al principio de la portada,
+      antes del botón de entrar.
+    */
+    card.insertBefore(bloque, card.firstChild);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', instalar, {once:true});
+  }else{
+    instalar();
+  }
+
+  /*
+    Por si la app construye los módulos dinámicamente.
+  */
+  setTimeout(instalar, 800);
+  setTimeout(instalar, 1800);
+})();
+</script>
 </body>
 </html>
