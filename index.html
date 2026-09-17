@@ -37663,5 +37663,150 @@ import { createClient } from
   setTimeout(instalar, 1800);
 })();
 </script>
+   <script>
+/* ============================================================
+   ROXTHAL — CAMBIO DE ACCESO A LA NUEVA SÚPER MÁQUINA
+   ------------------------------------------------------------
+   • Mantiene el botón actual "🎰 Máquina RoXThal"
+   • Abre la nueva máquina
+   • Oculta visualmente la máquina antigua
+   • NO elimina el código antiguo
+   • NO modifica Supabase
+   • NO modifica Mercado Pago
+   • Si la nueva máquina no está disponible, recupera
+     automáticamente la máquina antigua como respaldo
+   ============================================================ */
+
+(function () {
+
+  if (window.__RoXThalMachineAccessV2) return;
+  window.__RoXThalMachineAccessV2 = true;
+
+  const OLD_OVERLAY_ID = "rxm-overlay";
+  const BUTTON_TEXT = "🎰 Máquina RoXThal";
+
+  /* Ocultar solamente la máquina antigua */
+  function hideOldMachine() {
+    const oldMachine = document.getElementById(OLD_OVERLAY_ID);
+
+    if (oldMachine) {
+      oldMachine.dataset.roxthalOldHidden = "true";
+      oldMachine.style.setProperty(
+        "display",
+        "none",
+        "important"
+      );
+    }
+  }
+
+  /* Recuperar la máquina antigua si fuese necesario */
+  function restoreOldMachine() {
+    const oldMachine = document.getElementById(OLD_OVERLAY_ID);
+
+    if (oldMachine) {
+      oldMachine.style.removeProperty("display");
+      delete oldMachine.dataset.roxthalOldHidden;
+    }
+  }
+
+  /* Abrir exclusivamente la nueva máquina */
+  async function openNewMachine() {
+
+    try {
+
+      if (
+        window.RoXThalSuperDefinitive &&
+        typeof window.RoXThalSuperDefinitive.open === "function"
+      ) {
+
+        hideOldMachine();
+
+        await window.RoXThalSuperDefinitive.open();
+
+        return true;
+      }
+
+      throw new Error(
+        "La nueva Máquina RoXThal no está disponible."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "RoXThal: error al abrir la nueva máquina",
+        error
+      );
+
+      /*
+       * RESPALDO AUTOMÁTICO:
+       * si la nueva máquina no está disponible,
+       * recuperamos la antigua.
+       */
+
+      restoreOldMachine();
+
+      if (
+        window.RoXThalMachine &&
+        typeof window.RoXThalMachine.open === "function"
+      ) {
+
+        window.RoXThalMachine.open();
+
+        return false;
+      }
+
+      if (typeof window.toast === "function") {
+        window.toast(
+          "No se pudo abrir la Máquina RoXThal."
+        );
+      }
+
+      return false;
+    }
+  }
+
+  /*
+   * Capturamos SOLO los botones cuyo texto sea exactamente
+   * "🎰 Máquina RoXThal".
+   *
+   * Esto permite conservar el botón actual en su sitio,
+   * sin crear botones nuevos ni moverlo.
+   */
+
+  document.addEventListener(
+    "click",
+    function (event) {
+
+      const button = event.target.closest("button");
+
+      if (!button) return;
+
+      if (
+        button.textContent.trim() !== BUTTON_TEXT
+      ) {
+        return;
+      }
+
+      /*
+       * Evita que el antiguo evento abra la máquina vieja.
+       */
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      openNewMachine();
+
+    },
+    true
+  );
+
+  /*
+   * La máquina antigua queda oculta visualmente,
+   * pero su código permanece intacto.
+   */
+  hideOldMachine();
+
+})();
+</script>
 </body>
 </html>
