@@ -37810,5 +37810,1639 @@ import { createClient } from
 </script>
      <!-- =========================================================
 ROXTHAL — MÓDULO INDEPENDIENTE DE INSTALACIÓN Y COMPARTIR
+   <!-- =========================================================
+     RoXThal Art Design — MÓDULO 17 · QUIZ DEL ARTE
+     Pegar este bloque justo antes de </body>
+     ========================================================= -->
+<style>
+#rxqQuiz{
+  --rxq-bg:#0b0d12;
+  --rxq-card:#151923;
+  --rxq-card2:#1c2130;
+  --rxq-text:#f5f7fb;
+  --rxq-muted:#aeb6c7;
+  --rxq-accent:#d7a84b;
+  --rxq-accent2:#f0c96a;
+  --rxq-good:#36c98f;
+  --rxq-bad:#ef6262;
+  width:100%;
+  min-height:100vh;
+  box-sizing:border-box;
+  padding:20px 14px 50px;
+  color:var(--rxq-text);
+  background:
+    radial-gradient(circle at 50% 0%,rgba(215,168,75,.16),transparent 38%),
+    linear-gradient(180deg,#090b10 0%,#10131b 100%);
+  font-family:inherit;
+}
+
+#rxqQuiz *{box-sizing:border-box}
+
+.rxq-wrap{
+  width:min(920px,100%);
+  margin:0 auto;
+}
+
+.rxq-hero{
+  position:relative;
+  overflow:hidden;
+  padding:30px 22px;
+  border:1px solid rgba(215,168,75,.28);
+  border-radius:26px;
+  background:
+    linear-gradient(135deg,rgba(215,168,75,.13),transparent 45%),
+    linear-gradient(180deg,#181d28,#10131a);
+  box-shadow:0 18px 55px rgba(0,0,0,.35);
+  text-align:center;
+}
+
+.rxq-hero:before{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  right:-80px;
+  top:-90px;
+  background:rgba(215,168,75,.12);
+  filter:blur(4px);
+}
+
+.rxq-kicker{
+  color:var(--rxq-accent2);
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+.rxq-title{
+  margin:8px 0 8px;
+  font-size:clamp(2rem,7vw,4rem);
+  line-height:.95;
+  font-weight:1000;
+  letter-spacing:-.04em;
+}
+
+.rxq-subtitle{
+  max-width:700px;
+  margin:12px auto 0;
+  color:var(--rxq-muted);
+  line-height:1.55;
+}
+
+.rxq-panel{
+  margin-top:16px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  background:rgba(21,25,35,.94);
+  box-shadow:0 14px 40px rgba(0,0,0,.24);
+}
+
+.rxq-panel h3{
+  margin:0 0 15px;
+  font-size:1.15rem;
+}
+
+.rxq-options{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.rxq-choice{
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:15px;
+  padding:14px 12px;
+  background:#1b202c;
+  color:#fff;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.rxq-choice:hover{
+  transform:translateY(-2px);
+  border-color:rgba(215,168,75,.6);
+}
+
+.rxq-choice.active{
+  border-color:var(--rxq-accent);
+  background:rgba(215,168,75,.16);
+  box-shadow:0 0 0 2px rgba(215,168,75,.1);
+}
+
+.rxq-primary,
+.rxq-secondary{
+  width:100%;
+  border:0;
+  border-radius:16px;
+  padding:15px 18px;
+  margin-top:14px;
+  font:inherit;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.rxq-primary{
+  background:linear-gradient(135deg,var(--rxq-accent),var(--rxq-accent2));
+  color:#111;
+}
+
+.rxq-secondary{
+  background:#202633;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.rxq-info{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.rxq-stat{
+  padding:13px 8px;
+  border-radius:15px;
+  background:#11151e;
+  border:1px solid rgba(255,255,255,.07);
+  text-align:center;
+}
+
+.rxq-stat strong{
+  display:block;
+  font-size:1.25rem;
+  color:var(--rxq-accent2);
+}
+
+.rxq-stat span{
+  display:block;
+  margin-top:3px;
+  color:var(--rxq-muted);
+  font-size:.78rem;
+}
+
+.rxq-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.rxq-progress{
+  flex:1;
+  height:10px;
+  overflow:hidden;
+  border-radius:99px;
+  background:#252b38;
+}
+
+.rxq-progress > div{
+  height:100%;
+  width:0;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--rxq-accent),var(--rxq-accent2));
+  transition:width .3s ease;
+}
+
+.rxq-counter{
+  min-width:max-content;
+  color:var(--rxq-muted);
+  font-size:.86rem;
+  font-weight:800;
+}
+
+.rxq-timer{
+  min-width:70px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:#11151d;
+  color:var(--rxq-accent2);
+  text-align:center;
+  font-weight:950;
+}
+
+.rxq-category{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(215,168,75,.13);
+  color:var(--rxq-accent2);
+  font-size:.74rem;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+.rxq-question{
+  margin:18px 0;
+  font-size:clamp(1.25rem,4vw,2rem);
+  line-height:1.3;
+  font-weight:900;
+}
+
+.rxq-answers{
+  display:grid;
+  gap:10px;
+}
+
+.rxq-answer{
+  width:100%;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
+  background:#1a1f2b;
+  color:#fff;
+  text-align:left;
+  font:inherit;
+  font-weight:750;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.rxq-answer:hover:not(:disabled){
+  transform:translateX(3px);
+  border-color:rgba(215,168,75,.55);
+}
+
+.rxq-answer.correct{
+  border-color:var(--rxq-good);
+  background:rgba(54,201,143,.16);
+}
+
+.rxq-answer.wrong{
+  border-color:var(--rxq-bad);
+  background:rgba(239,98,98,.15);
+}
+
+.rxq-answer:disabled{
+  cursor:default;
+}
+
+.rxq-feedback{
+  min-height:24px;
+  margin-top:15px;
+  font-weight:850;
+}
+
+.rxq-feedback.good{color:var(--rxq-good)}
+.rxq-feedback.bad{color:var(--rxq-bad)}
+
+.rxq-result{
+  text-align:center;
+}
+
+.rxq-score{
+  font-size:clamp(3.5rem,15vw,7rem);
+  line-height:1;
+  font-weight:1000;
+  color:var(--rxq-accent2);
+}
+
+.rxq-result h2{
+  margin:12px 0 8px;
+  font-size:2rem;
+}
+
+.rxq-result p{
+  color:var(--rxq-muted);
+}
+
+.rxq-result-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:20px;
+}
+
+.rxq-result-item{
+  padding:15px 8px;
+  border-radius:15px;
+  background:#11151e;
+  border:1px solid rgba(255,255,255,.07);
+}
+
+.rxq-result-item strong{
+  display:block;
+  font-size:1.3rem;
+}
+
+.rxq-result-item span{
+  display:block;
+  margin-top:4px;
+  color:var(--rxq-muted);
+  font-size:.75rem;
+}
+
+.rxq-back{
+  margin-bottom:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#161b25;
+  color:#fff;
+  border-radius:13px;
+  padding:10px 14px;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.rxq-hidden{
+  display:none!important;
+}
+
+#rxqModuleCard{
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+#rxqModuleCard:after{
+  content:"17";
+  position:absolute;
+  right:12px;
+  top:10px;
+  font-size:2.2rem;
+  font-weight:1000;
+  color:rgba(215,168,75,.13);
+}
+
+.rxq-module-icon{
+  font-size:2.5rem;
+  margin-bottom:8px;
+}
+
+@media(max-width:650px){
+  #rxqQuiz{
+    padding:12px 10px 35px;
+  }
+
+  .rxq-hero{
+    padding:25px 16px;
+    border-radius:21px;
+  }
+
+  .rxq-panel{
+    padding:15px;
+    border-radius:18px;
+  }
+
+  .rxq-options{
+    grid-template-columns:1fr;
+  }
+
+  .rxq-info{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .rxq-result-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .rxq-question{
+    font-size:1.35rem;
+  }
+}
+</style>
+
+<script>
+(function(){
+
+"use strict";
+
+/* =========================================================
+   60 PREGUNTAS — ARTE, PINTURA Y TATUAJE
+   ========================================================= */
+
+const RXQ_QUESTIONS = [
+
+/* =========================
+   ARTE Y PINTURA — 30
+   ========================= */
+
+{
+ category:"Arte y pintura",
+ question:"¿Qué técnica pictórica se realiza sobre yeso húmedo?",
+ answers:["Fresco","Óleo","Acuarela","Pastel"],
+ correct:"Fresco"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué movimiento artístico desarrollaron Picasso y Braque?",
+ answers:["Cubismo","Barroco","Romanticismo","Impresionismo"],
+ correct:"Cubismo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué término describe el fuerte contraste entre luces y sombras?",
+ answers:["Claroscuro","Collage","Perspectiva aérea","Puntillismo"],
+ correct:"Claroscuro"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué técnica consiste en incorporar materiales u objetos a una obra?",
+ answers:["Collage","Fresco","Grabado","Temple"],
+ correct:"Collage"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué movimiento se asocia con Monet, Renoir y Degas?",
+ answers:["Impresionismo","Cubismo","Surrealismo","Neoclasicismo"],
+ correct:"Impresionismo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Cómo se denomina una representación artística del propio artista?",
+ answers:["Autorretrato","Bodegón","Paisaje","Retablo"],
+ correct:"Autorretrato"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué movimiento estuvo relacionado con Salvador Dalí?",
+ answers:["Surrealismo","Impresionismo","Fauvismo","Realismo"],
+ correct:"Surrealismo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué técnica utiliza pequeños puntos de color para formar la imagen?",
+ answers:["Puntillismo","Fresco","Xilografía","Temple"],
+ correct:"Puntillismo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Cuál es uno de los aglutinantes característicos de la pintura al óleo?",
+ answers:["Aceite","Agua solamente","Cera exclusivamente","Arena"],
+ correct:"Aceite"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué estudia la distribución de elementos dentro de una obra?",
+ answers:["Composición","Anatomía","Pigmentación","Iconografía exclusivamente"],
+ correct:"Composición"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué movimiento buscó inspiración en el arte clásico grecorromano?",
+ answers:["Neoclasicismo","Dadaísmo","Expresionismo","Impresionismo"],
+ correct:"Neoclasicismo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué recurso permite representar profundidad en una superficie plana?",
+ answers:["Perspectiva","Textura","Pigmento","Simetría"],
+ correct:"Perspectiva"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó la Mona Lisa?",
+ answers:["Leonardo da Vinci","Miguel Ángel","Rafael","Caravaggio"],
+ correct:"Leonardo da Vinci"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó La noche estrellada?",
+ answers:["Vincent van Gogh","Claude Monet","Pablo Picasso","Edvard Munch"],
+ correct:"Vincent van Gogh"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó Las Meninas?",
+ answers:["Diego Velázquez","Francisco de Goya","El Greco","Murillo"],
+ correct:"Diego Velázquez"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué artista pintó Guernica?",
+ answers:["Pablo Picasso","Salvador Dalí","Joan Miró","Henri Matisse"],
+ correct:"Pablo Picasso"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó La persistencia de la memoria?",
+ answers:["Salvador Dalí","René Magritte","Pablo Picasso","Paul Klee"],
+ correct:"Salvador Dalí"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué pintor realizó Impresión, sol naciente?",
+ answers:["Claude Monet","Édouard Manet","Renoir","Degas"],
+ correct:"Claude Monet"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó El nacimiento de Venus?",
+ answers:["Sandro Botticelli","Rafael","Leonardo da Vinci","Tiziano"],
+ correct:"Sandro Botticelli"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó gran parte del techo de la Capilla Sixtina?",
+ answers:["Miguel Ángel","Leonardo da Vinci","Rafael","Donatello"],
+ correct:"Miguel Ángel"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién creó El grito?",
+ answers:["Edvard Munch","Gustav Klimt","Egon Schiele","Paul Gauguin"],
+ correct:"Edvard Munch"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó La joven de la perla?",
+ answers:["Johannes Vermeer","Rembrandt","Rubens","Van Dyck"],
+ correct:"Johannes Vermeer"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué pintor realizó La ronda de noche?",
+ answers:["Rembrandt","Vermeer","Rubens","Hals"],
+ correct:"Rembrandt"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién pintó El beso?",
+ answers:["Gustav Klimt","Egon Schiele","Munch","Kandinsky"],
+ correct:"Gustav Klimt"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué artista mexicana es conocida por numerosos autorretratos?",
+ answers:["Frida Kahlo","Tamara de Lempicka","Leonora Carrington","Remedios Varo"],
+ correct:"Frida Kahlo"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué muralista mexicano pintó numerosos murales de temática social?",
+ answers:["Diego Rivera","David Hockney","Andy Warhol","Roy Lichtenstein"],
+ correct:"Diego Rivera"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué artista es conocido por sus composiciones geométricas con líneas y colores primarios?",
+ answers:["Piet Mondrian","Jackson Pollock","Francis Bacon","Edvard Munch"],
+ correct:"Piet Mondrian"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Quién creó las famosas Pinturas Negras?",
+ answers:["Francisco de Goya","Diego Velázquez","El Greco","Zurbarán"],
+ correct:"Francisco de Goya"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué obra de Leonardo da Vinci representa una escena de Cristo con sus apóstoles?",
+ answers:["La última cena","La escuela de Atenas","El jardín de las delicias","Las Meninas"],
+ correct:"La última cena"
+},
+{
+ category:"Arte y pintura",
+ question:"¿Qué material permite realizar una acuarela tradicional?",
+ answers:["Pigmento mezclado con agua","Óleo puro","Yeso húmedo","Cera caliente"],
+ correct:"Pigmento mezclado con agua"
+},
+
+/* =========================
+   TATUAJE E HISTORIA — 30
+   ========================= */
+
+{
+ category:"Tatuaje e historia",
+ question:"¿Quién es Ötzi?",
+ answers:["Una momia prehistórica con tatuajes","Un pintor romano","Un escultor egipcio","Un tatuador japonés"],
+ correct:"Una momia prehistórica con tatuajes"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Dónde fue encontrado Ötzi?",
+ answers:["En los Alpes","En Egipto","En Perú","En Japón"],
+ correct:"En los Alpes"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Hace aproximadamente cuántos años vivió Ötzi?",
+ answers:["Más de 5.000 años","500 años","1.000 años","20.000 años"],
+ correct:"Más de 5.000 años"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué característica destaca especialmente en los tatuajes de Ötzi?",
+ answers:["Líneas y marcas simples realizadas mediante incisiones","Retratos realistas","Colores brillantes","Grandes figuras geométricas de tinta azul"],
+ correct:"Líneas y marcas simples realizadas mediante incisiones"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Quién fue la Dama de Cao?",
+ answers:["Una importante mujer de la cultura Moche","Una reina egipcia","Una artista renacentista","Una sacerdotisa japonesa medieval"],
+ correct:"Una importante mujer de la cultura Moche"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Dónde fue descubierta la Dama de Cao?",
+ answers:["El Brujo, Perú","Machu Picchu, Perú","Cusco, Perú","Nazca, Perú"],
+ correct:"El Brujo, Perú"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿A qué cultura pertenece la Dama de Cao?",
+ answers:["Moche","Inca","Maya","Azteca"],
+ correct:"Moche"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué importancia tiene la Dama de Cao para la historia del tatuaje?",
+ answers:["Su cuerpo presenta evidencias de tatuajes","Fue una famosa tatuadora","Inventó la máquina eléctrica","Es la primera persona tatuada de la historia"],
+ correct:"Su cuerpo presenta evidencias de tatuajes"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Cómo se denomina tradicionalmente el tatuaje japonés?",
+ answers:["Irezumi","Mehndi","Tatau","Henna"],
+ correct:"Irezumi"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué término polinesio está relacionado con la palabra tatuaje?",
+ answers:["Tatau","Irezumi","Sumi-e","Mandala"],
+ correct:"Tatau"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué pueblo desarrolló importantes tradiciones de tatuaje en Polinesia?",
+ answers:["Diversos pueblos polinesios","Vikingos exclusivamente","Romanos exclusivamente","Celtas exclusivamente"],
+ correct:"Diversos pueblos polinesios"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué función podía tener un tatuaje en distintas sociedades tradicionales?",
+ answers:["Identidad, pertenencia, estatus o ritual","Solo decoración","Solo castigo","Solo medicina"],
+ correct:"Identidad, pertenencia, estatus o ritual"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿En qué capa de la piel se deposita principalmente el pigmento permanente del tatuaje?",
+ answers:["Dermis","Epidermis superficial","Uña","Cabello"],
+ correct:"Dermis"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué método tradicional consiste en introducir pigmento mediante golpes o punciones repetidas?",
+ answers:["Punción o percusión manual","Aerografía","Pintura al fresco","Grabado láser"],
+ correct:"Punción o percusión manual"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Quién patentó una máquina eléctrica para tatuar en 1891?",
+ answers:["Samuel O'Reilly","Norman Keith Collins","Thomas Edison","George Burchett"],
+ correct:"Samuel O'Reilly"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿En qué año patentó Samuel O'Reilly su máquina de tatuar?",
+ answers:["1891","1791","1911","1961"],
+ correct:"1891"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Cuál era el nombre real de Sailor Jerry?",
+ answers:["Norman Keith Collins","Samuel O'Reilly","Ed Hardy","Amund Dietzel"],
+ correct:"Norman Keith Collins"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Con qué estilo se relaciona especialmente Sailor Jerry?",
+ answers:["American Traditional","Realismo hiperrealista","Blackwork geométrico moderno","Minimalismo"],
+ correct:"American Traditional"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué característica visual es habitual en el American Traditional?",
+ answers:["Líneas fuertes y colores sólidos","Solo líneas ultrafinas","Ausencia total de contorno","Pintura al óleo"],
+ correct:"Líneas fuertes y colores sólidos"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué función tuvo históricamente el tatuaje en algunas sociedades polinesias?",
+ answers:["Identidad social y cultural","Solo moda occidental","Solo decoración temporal","Solo entretenimiento"],
+ correct:"Identidad social y cultural"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Por qué son importantes los tatuajes arqueológicos para los investigadores?",
+ answers:["Pueden aportar información sobre identidad, cultura y prácticas antiguas","Permiten conocer exactamente el pensamiento de una persona","Demuestran siempre una única función","Solo sirven para conocer pigmentos"],
+ correct:"Pueden aportar información sobre identidad, cultura y prácticas antiguas"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué material natural se utilizó históricamente como pigmento en diversas culturas?",
+ answers:["Carbón u hollín","Plástico","Acrílico industrial","Tinta de impresora"],
+ correct:"Carbón u hollín"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué relación existe entre tatuaje y antropología?",
+ answers:["El tatuaje puede estudiarse como práctica cultural y social","Ninguna","Solo estudia las máquinas","Solo estudia pigmentos"],
+ correct:"El tatuaje puede estudiarse como práctica cultural y social"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué es el tatuaje permanente?",
+ answers:["Una modificación corporal en la que el pigmento queda introducido en la piel","Un dibujo superficial que desaparece en horas","Una pintura sobre la ropa","Un maquillaje temporal"],
+ correct:"Una modificación corporal en la que el pigmento queda introducido en la piel"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué diferencia básica existe entre henna y un tatuaje permanente?",
+ answers:["La henna tiñe principalmente las capas superficiales y desaparece con el tiempo","La henna se deposita permanentemente en la dermis","No existe ninguna diferencia","La henna necesita una máquina eléctrica"],
+ correct:"La henna tiñe principalmente las capas superficiales y desaparece con el tiempo"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué evidencia demuestra que el tatuaje es una práctica muy antigua?",
+ answers:["Se han encontrado cuerpos humanos antiguos con marcas pigmentadas en la piel","Solo existen documentos del siglo XX","Fue inventado con la electricidad","Solo aparece en fotografías modernas"],
+ correct:"Se han encontrado cuerpos humanos antiguos con marcas pigmentadas en la piel"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué región es especialmente conocida por la tradición del tatau?",
+ answers:["Polinesia","Escandinavia","Europa central","Mesopotamia"],
+ correct:"Polinesia"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué elemento puede influir en el significado de un tatuaje tradicional?",
+ answers:["La cultura y el contexto social","Solo el color","Solo el tamaño","Solo la edad del tatuador"],
+ correct:"La cultura y el contexto social"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué representa la evolución del tatuaje moderno?",
+ answers:["Una combinación de tradiciones antiguas, innovación técnica y nuevas expresiones artísticas","El abandono completo de las tradiciones antiguas","Una práctica creada exclusivamente en 2000","Una técnica exclusivamente médica"],
+ correct:"Una combinación de tradiciones antiguas, innovación técnica y nuevas expresiones artísticas"
+},
+{
+ category:"Tatuaje e historia",
+ question:"¿Qué disciplina ayuda a estudiar los tatuajes encontrados en restos humanos antiguos?",
+ answers:["Arqueología","Astronomía","Meteorología","Cartografía"],
+ correct:"Arqueología"
+}
+
+];
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+
+let rxqCategory="Todo";
+let rxqCount=10;
+let rxqTimerEnabled=false;
+
+let rxqQuestions=[];
+let rxqIndex=0;
+let rxqScore=0;
+let rxqCorrect=0;
+let rxqWrong=0;
+let rxqStreak=0;
+let rxqBestStreak=0;
+let rxqAnswered=false;
+let rxqSeconds=0;
+let rxqTimer=null;
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+function rxqShuffle(arr){
+  const a=arr.slice();
+
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+
+  return a;
+}
+
+function rxqEl(id){
+  return document.getElementById(id);
+}
+
+/* =========================================================
+   CREAR MÓDULO 17
+   ========================================================= */
+
+function rxqCreateView(){
+
+  if(rxqEl("rxqQuiz")) return;
+
+  const section=document.createElement("section");
+
+  section.id="rxqQuiz";
+  section.className="view hidden";
+
+  section.innerHTML=`
+
+    <div class="rxq-wrap">
+
+      <button class="rxq-back" data-go="home">
+        ← Volver a Todo RoXThal
+      </button>
+
+      <div class="rxq-hero">
+
+        <div class="rxq-kicker">
+          RoXThal Art Design · Módulo 17
+        </div>
+
+        <div class="rxq-title">
+          QUIZ DEL ARTE
+        </div>
+
+        <div class="rxq-subtitle">
+          Pon a prueba tus conocimientos sobre arte, pintura,
+          grandes maestros, historia del tatuaje y culturas que
+          dejaron huella en esta disciplina.
+        </div>
+
+      </div>
+
+      <div id="rxqSetup" class="rxq-panel">
+
+        <h3>🎨 Elige tu desafío</h3>
+
+        <strong>Categoría</strong>
+
+        <div class="rxq-options" id="rxqCategories">
+
+          <button class="rxq-choice active" data-rxq-category="Todo">
+            Todo
+          </button>
+
+          <button class="rxq-choice" data-rxq-category="Arte y pintura">
+            Arte y pintura
+          </button>
+
+          <button class="rxq-choice" data-rxq-category="Tatuaje e historia">
+            Tatuaje e historia
+          </button>
+
+        </div>
+
+        <br>
+
+        <strong>Número de preguntas</strong>
+
+        <div class="rxq-options" id="rxqCounts">
+
+          <button class="rxq-choice active" data-rxq-count="10">
+            10 preguntas
+          </button>
+
+          <button class="rxq-choice" data-rxq-count="20">
+            20 preguntas
+          </button>
+
+          <button class="rxq-choice" data-rxq-count="30">
+            30 preguntas
+          </button>
+
+        </div>
+
+        <br>
+
+        <strong>Temporizador</strong>
+
+        <div class="rxq-options">
+
+          <button
+            id="rxqTimerToggle"
+            class="rxq-choice"
+            type="button">
+            ⏱️ Sin límite de tiempo
+          </button>
+
+        </div>
+
+        <button id="rxqStart" class="rxq-primary">
+          🚀 COMENZAR QUIZ
+        </button>
+
+        <div class="rxq-info">
+
+          <div class="rxq-stat">
+            <strong>60</strong>
+            <span>preguntas</span>
+          </div>
+
+          <div class="rxq-stat">
+            <strong>3</strong>
+            <span>niveles de cantidad</span>
+          </div>
+
+          <div class="rxq-stat">
+            <strong>∞</strong>
+            <span>intentos</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div id="rxqGame" class="rxq-panel rxq-hidden">
+
+        <div class="rxq-top">
+
+          <div class="rxq-progress">
+            <div id="rxqProgressBar"></div>
+          </div>
+
+          <div id="rxqCounter" class="rxq-counter">
+            1 / 10
+          </div>
+
+          <div id="rxqTimer" class="rxq-timer rxq-hidden">
+            00:00
+          </div>
+
+        </div>
+
+        <div id="rxqCategory" class="rxq-category">
+          ARTE
+        </div>
+
+        <div id="rxqQuestion" class="rxq-question">
+          Pregunta
+        </div>
+
+        <div id="rxqAnswers" class="rxq-answers"></div>
+
+        <div id="rxqFeedback" class="rxq-feedback"></div>
+
+        <button id="rxqNext" class="rxq-primary rxq-hidden">
+          Siguiente →
+        </button>
+
+      </div>
+
+      <div id="rxqResult" class="rxq-panel rxq-result rxq-hidden">
+
+        <div class="rxq-kicker">
+          Resultado final
+        </div>
+
+        <div id="rxqScore" class="rxq-score">
+          0%
+        </div>
+
+        <h2 id="rxqResultTitle">
+          ¡Quiz terminado!
+        </h2>
+
+        <p id="rxqResultText">
+          Has completado el desafío.
+        </p>
+
+        <div class="rxq-result-grid">
+
+          <div class="rxq-result-item">
+            <strong id="rxqCorrect">0</strong>
+            <span>Correctas</span>
+          </div>
+
+          <div class="rxq-result-item">
+            <strong id="rxqWrong">0</strong>
+            <span>Incorrectas</span>
+          </div>
+
+          <div class="rxq-result-item">
+            <strong id="rxqBest">0</strong>
+            <span>Mejor racha</span>
+          </div>
+
+          <div class="rxq-result-item">
+            <strong id="rxqTotal">0</strong>
+            <span>Preguntas</span>
+          </div>
+
+        </div>
+
+        <button id="rxqAgain" class="rxq-primary">
+          🔄 Jugar otra vez
+        </button>
+
+        <button id="rxqHome" class="rxq-secondary" data-go="home">
+          ← Volver a Todo RoXThal
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(section);
+}
+
+/* =========================================================
+   CREAR TARJETA MÓDULO 17
+   ========================================================= */
+
+function rxqCreateModuleCard(){
+
+  const grid=rxqEl("moduleGrid");
+
+  if(!grid || rxqEl("rxqModuleCard")) return;
+
+  const card=document.createElement("div");
+
+  card.id="rxqModuleCard";
+
+  /*
+   * Intentamos copiar las clases de las tarjetas existentes
+   * para que el módulo adopte automáticamente el diseño
+   * de RoXThal.
+   */
+  card.className="module-card";
+
+  card.setAttribute("data-go","rxqQuiz");
+
+  card.innerHTML=`
+
+    <div class="rxq-module-icon">🎨</div>
+
+    <div>
+      <strong>MÓDULO 17</strong>
+    </div>
+
+    <div style="font-weight:900;font-size:1.15rem;margin-top:4px;">
+      QUIZ DEL ARTE
+    </div>
+
+    <div style="opacity:.72;margin-top:5px;font-size:.86rem;">
+      Arte · Pintura · Tatuaje
+    </div>
+
+  `;
+
+  grid.appendChild(card);
+}
+
+/* =========================================================
+   ABRIR / CERRAR QUIZ
+   ========================================================= */
+
+function rxqOpenQuiz(){
+
+  rxqCreateView();
+
+  const quiz=rxqEl("rxqQuiz");
+
+  if(!quiz) return;
+
+  /*
+   * Ocultamos todas las vistas y mostramos exclusivamente
+   * el Quiz del Arte.
+   */
+  document.querySelectorAll(".view").forEach(v=>{
+    v.classList.add("hidden");
+  });
+
+  quiz.classList.remove("hidden");
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+function rxqBackHome(){
+
+  const quiz=rxqEl("rxqQuiz");
+
+  if(quiz){
+    quiz.classList.add("hidden");
+  }
+
+  const home=rxqEl("home");
+
+  if(home){
+    document.querySelectorAll(".view").forEach(v=>{
+      v.classList.add("hidden");
+    });
+
+    home.classList.remove("hidden");
+  }
+}
+
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
+
+function rxqSetCategory(category){
+
+  rxqCategory=category;
+
+  document.querySelectorAll("[data-rxq-category]").forEach(btn=>{
+    btn.classList.toggle(
+      "active",
+      btn.getAttribute("data-rxq-category")===category
+    );
+  });
+}
+
+function rxqSetCount(count){
+
+  rxqCount=Number(count);
+
+  document.querySelectorAll("[data-rxq-count]").forEach(btn=>{
+    btn.classList.toggle(
+      "active",
+      Number(btn.getAttribute("data-rxq-count"))===rxqCount
+    );
+  });
+}
+
+/* =========================================================
+   INICIAR
+   ========================================================= */
+
+function rxqStart(){
+
+  let pool=RXQ_QUESTIONS.slice();
+
+  if(rxqCategory!=="Todo"){
+    pool=pool.filter(q=>q.category===rxqCategory);
+  }
+
+  pool=rxqShuffle(pool);
+
+  rxqQuestions=pool.slice(
+    0,
+    Math.min(rxqCount,pool.length)
+  );
+
+  rxqIndex=0;
+  rxqScore=0;
+  rxqCorrect=0;
+  rxqWrong=0;
+  rxqStreak=0;
+  rxqBestStreak=0;
+  rxqAnswered=false;
+
+  rxqEl("rxqSetup").classList.add("rxq-hidden");
+  rxqEl("rxqResult").classList.add("rxq-hidden");
+  rxqEl("rxqGame").classList.remove("rxq-hidden");
+
+  if(rxqTimerEnabled){
+    rxqSeconds=0;
+    rxqEl("rxqTimer").classList.remove("rxq-hidden");
+    rxqStartTimer();
+  }else{
+    rxqEl("rxqTimer").classList.add("rxq-hidden");
+    rxqStopTimer();
+  }
+
+  rxqRenderQuestion();
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+function rxqStartTimer(){
+
+  rxqStopTimer();
+
+  rxqTimer=setInterval(()=>{
+
+    rxqSeconds++;
+
+    const min=String(
+      Math.floor(rxqSeconds/60)
+    ).padStart(2,"0");
+
+    const sec=String(
+      rxqSeconds%60
+    ).padStart(2,"0");
+
+    rxqEl("rxqTimer").textContent=
+      min+":"+sec;
+
+  },1000);
+}
+
+function rxqStopTimer(){
+
+  if(rxqTimer){
+    clearInterval(rxqTimer);
+    rxqTimer=null;
+  }
+}
+
+/* =========================================================
+   MOSTRAR PREGUNTA
+   ========================================================= */
+
+function rxqRenderQuestion(){
+
+  const q=rxqQuestions[rxqIndex];
+
+  if(!q){
+    rxqFinish();
+    return;
+  }
+
+  rxqAnswered=false;
+
+  const total=rxqQuestions.length;
+
+  rxqEl("rxqCounter").textContent=
+    (rxqIndex+1)+" / "+total;
+
+  rxqEl("rxqProgressBar").style.width=
+    (((rxqIndex)/total)*100)+"%";
+
+  rxqEl("rxqCategory").textContent=
+    q.category;
+
+  rxqEl("rxqQuestion").textContent=
+    q.question;
+
+  rxqEl("rxqFeedback").textContent="";
+  rxqEl("rxqFeedback").className=
+    "rxq-feedback";
+
+  rxqEl("rxqNext").classList.add("rxq-hidden");
+
+  const answers=rxqShuffle(
+    q.answers.map(text=>({
+      text:text,
+      correct:text===q.correct
+    }))
+  );
+
+  const container=rxqEl("rxqAnswers");
+
+  container.innerHTML="";
+
+  answers.forEach(answer=>{
+
+    const button=document.createElement("button");
+
+    button.type="button";
+    button.className="rxq-answer";
+    button.textContent=answer.text;
+
+    button.addEventListener("click",()=>{
+      rxqAnswer(button,answer,q);
+    });
+
+    container.appendChild(button);
+  });
+}
+
+/* =========================================================
+   RESPONDER
+   ========================================================= */
+
+function rxqAnswer(button,answer,q){
+
+  if(rxqAnswered) return;
+
+  rxqAnswered=true;
+
+  const buttons=[
+    ...rxqEl("rxqAnswers").querySelectorAll(".rxq-answer")
+  ];
+
+  buttons.forEach(b=>b.disabled=true);
+
+  if(answer.correct){
+
+    button.classList.add("correct");
+
+    rxqCorrect++;
+
+    rxqStreak++;
+
+    rxqBestStreak=Math.max(
+      rxqBestStreak,
+      rxqStreak
+    );
+
+    /*
+     * Puntuación base + bonus por racha.
+     */
+    rxqScore += 100 + Math.max(0,(rxqStreak-1)*10);
+
+    const feedback=rxqEl("rxqFeedback");
+
+    feedback.className=
+      "rxq-feedback good";
+
+    feedback.textContent=
+      "✓ ¡Correcto!";
+
+  }else{
+
+    button.classList.add("wrong");
+
+    rxqWrong++;
+    rxqStreak=0;
+
+    buttons.forEach(b=>{
+
+      if(b.textContent===q.correct){
+        b.classList.add("correct");
+      }
+
+    });
+
+    const feedback=rxqEl("rxqFeedback");
+
+    feedback.className=
+      "rxq-feedback bad";
+
+    feedback.textContent=
+      "✕ Incorrecto. La respuesta correcta era: "+
+      q.correct;
+  }
+
+  const next=rxqEl("rxqNext");
+
+  next.textContent=
+    rxqIndex===rxqQuestions.length-1
+      ? "Ver resultado →"
+      : "Siguiente →";
+
+  next.classList.remove("rxq-hidden");
+}
+
+/* =========================================================
+   SIGUIENTE
+   ========================================================= */
+
+function rxqNext(){
+
+  if(!rxqAnswered) return;
+
+  rxqIndex++;
+
+  if(rxqIndex>=rxqQuestions.length){
+    rxqFinish();
+    return;
+  }
+
+  rxqRenderQuestion();
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+/* =========================================================
+   RESULTADO
+   ========================================================= */
+
+function rxqFinish(){
+
+  rxqStopTimer();
+
+  rxqEl("rxqGame").classList.add("rxq-hidden");
+  rxqEl("rxqResult").classList.remove("rxq-hidden");
+
+  const total=rxqQuestions.length;
+
+  const percentage=
+    total
+      ? Math.round((rxqCorrect/total)*100)
+      : 0;
+
+  rxqEl("rxqScore").textContent=
+    percentage+"%";
+
+  rxqEl("rxqCorrect").textContent=
+    rxqCorrect;
+
+  rxqEl("rxqWrong").textContent=
+    rxqWrong;
+
+  rxqEl("rxqBest").textContent=
+    rxqBestStreak;
+
+  rxqEl("rxqTotal").textContent=
+    total;
+
+  let title="";
+
+  if(percentage===100){
+    title="🏆 ¡PERFECTO!";
+  }else if(percentage>=80){
+    title="🔥 ¡Excelente dominio!";
+  }else if(percentage>=60){
+    title="👏 ¡Muy buen trabajo!";
+  }else if(percentage>=40){
+    title="🎨 ¡Buen comienzo!";
+  }else{
+    title="📚 ¡A seguir aprendiendo!";
+  }
+
+  rxqEl("rxqResultTitle").textContent=title;
+
+  rxqEl("rxqResultText").textContent=
+    "Has conseguido "+
+    rxqScore+
+    " puntos con una mejor racha de "+
+    rxqBestStreak+
+    " respuesta"+
+    (rxqBestStreak===1?"":"s")+
+    " consecutiva"+
+    (rxqBestStreak===1?"":"s")+".";
+
+  rxqEl("rxqProgressBar").style.width="100%";
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+/* =========================================================
+   EVENTOS
+   ========================================================= */
+
+function rxqBind(){
+
+  document.addEventListener("click",function(event){
+
+    const category=event.target.closest(
+      "[data-rxq-category]"
+    );
+
+    if(category){
+      rxqSetCategory(
+        category.getAttribute("data-rxq-category")
+      );
+      return;
+    }
+
+    const count=event.target.closest(
+      "[data-rxq-count]"
+    );
+
+    if(count){
+      rxqSetCount(
+        count.getAttribute("data-rxq-count")
+      );
+      return;
+    }
+
+    const go=event.target.closest(
+      "[data-go]"
+    );
+
+    if(go){
+
+      const destination=
+        go.getAttribute("data-go");
+
+      if(destination==="rxqQuiz"){
+
+        /*
+         * Solo interceptamos nuestro módulo.
+         * El resto de la navegación de RoXThal
+         * permanece intacta.
+         */
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        rxqOpenQuiz();
+
+        return;
+      }
+
+      if(destination==="home" &&
+         event.target.closest("#rxqQuiz")){
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        rxqBackHome();
+
+        return;
+      }
+    }
+
+  },true);
+
+  document.addEventListener("click",function(event){
+
+    if(event.target.closest("#rxqStart")){
+      rxqStart();
+      return;
+    }
+
+    if(event.target.closest("#rxqNext")){
+      rxqNext();
+      return;
+    }
+
+    if(event.target.closest("#rxqAgain")){
+
+      rxqEl("rxqResult").classList.add("rxq-hidden");
+      rxqEl("rxqSetup").classList.remove("rxq-hidden");
+
+      return;
+    }
+
+    if(event.target.closest("#rxqHome")){
+      rxqBackHome();
+      return;
+    }
+
+    if(event.target.closest("#rxqTimerToggle")){
+
+      rxqTimerEnabled=!rxqTimerEnabled;
+
+      const btn=rxqEl("rxqTimerToggle");
+
+      btn.classList.toggle(
+        "active",
+        rxqTimerEnabled
+      );
+
+      btn.textContent=
+        rxqTimerEnabled
+          ? "⏱️ Temporizador activado"
+          : "⏱️ Sin límite de tiempo";
+    }
+
+  });
+
+}
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+function rxqInit(){
+
+  rxqCreateView();
+
+  rxqCreateModuleCard();
+
+  rxqBind();
+
+  /*
+   * Si RoXThal vuelve a reconstruir moduleGrid,
+   * comprobamos periódicamente que el módulo siga presente.
+   */
+  const grid=rxqEl("moduleGrid");
+
+  if(grid){
+
+    const observer=new MutationObserver(()=>{
+
+      if(!rxqEl("rxqModuleCard")){
+        rxqCreateModuleCard();
+      }
+
+    });
+
+    observer.observe(grid,{
+      childList:true
+    });
+  }
+}
+
+/*
+ * Esperamos a que exista moduleGrid.
+ */
+if(document.readyState==="loading"){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    rxqInit,
+    {once:true}
+  );
+
+}else{
+
+  rxqInit();
+
+}
+
+})();
+</script>
+<!-- =========================================================
+     FIN MÓDULO 17 — QUIZ DEL ARTE
+     ========================================================= -->
 </body>
 </html>
