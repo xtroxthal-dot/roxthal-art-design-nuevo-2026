@@ -38051,5 +38051,58 @@ import { createClient } from
 
 })();
 </script>
+     <!-- ROXTHAL — CORRECCIÓN BOTÓN NUEVO -->
+<style id="rxd-button-fix">
+  #rxd-module-card,
+  #rxd-floating {
+    position: relative !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+  }
+
+  #rxd-floating {
+    position: fixed !important;
+    right: 16px !important;
+    bottom: 90px !important;
+    z-index: 2147483646 !important;
+  }
+
+  #rxd-module-card {
+    cursor: pointer !important;
+  }
+</style>
+
+<script id="rxd-button-fix-script">
+(function () {
+  "use strict";
+
+  function fixRoXThalButton() {
+    const card = document.getElementById("rxd-module-card");
+    const floating = document.getElementById("rxd-floating");
+
+    if (card) {
+      card.style.setProperty("position", "relative", "important");
+      card.style.setProperty("z-index", "999999", "important");
+      card.style.setProperty("pointer-events", "auto", "important");
+    }
+
+    if (floating) {
+      floating.style.setProperty("position", "fixed", "important");
+      floating.style.setProperty("right", "16px", "important");
+      floating.style.setProperty("bottom", "90px", "important");
+      floating.style.setProperty("z-index", "2147483646", "important");
+      floating.style.setProperty("pointer-events", "auto", "important");
+    }
+  }
+
+  fixRoXThalButton();
+
+  const observer = new MutationObserver(fixRoXThalButton);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();
+</script>
 </body>
 </html>
