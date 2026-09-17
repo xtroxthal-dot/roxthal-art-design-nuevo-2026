@@ -38316,5 +38316,1199 @@ import { createClient } from
 })();
 
 </script>
+   <!-- =========================================================
+     ROXTHAL — REPARADOR FINAL DE MÁQUINA
+     Pegar UNA SOLA VEZ inmediatamente antes de </body>
+
+     OBJETIVOS:
+     - NO crear una segunda máquina
+     - NO tocar Supabase
+     - NO tocar la jugada real
+     - NO tocar pagos
+     - NO tocar ciclos
+     - NO tocar participantes
+     - Reparar DEMO
+     - Corregir animación de los 3 rodillos
+     - Evitar resultados falsos en el sorteo real
+     ========================================================= -->
+
+<style id="roxthal-machine-final-repair-style">
+
+/* =========================================================
+   ASPECTO FINAL
+   ========================================================= */
+
+#roxthalSlotMachine{
+  width:min(100%,900px);
+  margin:25px auto;
+  position:relative;
+  isolation:isolate;
+}
+
+#roxthalSlotMachine .rx-slot-box{
+  position:relative;
+  overflow:hidden;
+  border:3px solid #4a3b08 !important;
+  border-radius:24px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(242,196,0,.18),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      #242424,
+      #080808 55%,
+      #171717
+    ) !important;
+
+  box-shadow:
+    0 0 0 1px #000,
+    0 22px 65px rgba(0,0,0,.72),
+    inset 0 0 55px rgba(242,196,0,.055) !important;
+}
+
+
+/* =========================================================
+   TRES RODILLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-machine{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:10px !important;
+  width:min(100%,700px) !important;
+  margin:auto !important;
+  padding:15px !important;
+
+  border:3px solid #454545 !important;
+  border-radius:20px !important;
+
+  background:
+    linear-gradient(#171717,#050505) !important;
+
+  box-shadow:
+    inset 0 0 35px #000,
+    0 0 0 3px #080808,
+    0 14px 35px rgba(0,0,0,.65) !important;
+}
+
+
+/* =========================================================
+   RODILLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-reel{
+  position:relative;
+  min-width:0;
+  overflow:hidden;
+
+  border:3px solid #686868 !important;
+  border-radius:14px !important;
+
+  background:
+    radial-gradient(
+      circle,
+      #202020 0,
+      #080808 78%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 0 2px #050505 !important;
+
+  transition:
+    box-shadow .15s ease,
+    filter .15s ease,
+    transform .15s ease;
+}
+
+
+/* =========================================================
+   RODILLO GIRANDO
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-reel.is-spinning{
+  filter:
+    brightness(1.2)
+    saturate(1.25);
+
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 25px rgba(242,196,0,.30) !important;
+}
+
+
+/* =========================================================
+   RODILLO FRENANDO
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-reel.is-stopping{
+  box-shadow:
+    inset 0 0 28px #000,
+    0 0 30px rgba(242,196,0,.50) !important;
+
+  transform:scale(1.025);
+}
+
+
+/* =========================================================
+   TIRA
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-strip{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+
+  will-change:transform;
+}
+
+
+/* =========================================================
+   SÍMBOLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-symbol{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  user-select:none;
+
+  font-size:clamp(42px,8vw,68px) !important;
+  line-height:1 !important;
+
+  text-shadow:
+    0 3px 0 #000,
+    0 0 10px rgba(242,196,0,.20);
+
+  transform-origin:center;
+}
+
+
+/* =========================================================
+   VENTANA CENTRAL
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-window{
+  z-index:5 !important;
+
+  border-top:3px solid #f2c400 !important;
+  border-bottom:3px solid #f2c400 !important;
+
+  box-shadow:
+    0 0 24px rgba(242,196,0,.30),
+    inset 0 0 25px rgba(242,196,0,.07) !important;
+
+  pointer-events:none !important;
+}
+
+
+/* =========================================================
+   BOTÓN REAL
+   ========================================================= */
+
+#roxthalSlotMachine #rxRealSpinButton{
+  position:relative;
+  overflow:hidden;
+
+  border:2px solid #f2c400 !important;
+
+  box-shadow:
+    0 0 0 2px #111,
+    0 10px 30px rgba(0,0,0,.5),
+    0 0 22px rgba(242,196,0,.18) !important;
+}
+
+
+/* =========================================================
+   DEMO
+   ========================================================= */
+
+#roxthalSlotMachine .rx-final-demo-active{
+  outline:2px solid rgba(242,196,0,.25);
+}
+
+#roxthalSlotMachine .rx-final-demo-winner{
+  animation:rxFinalDemoMachine .85s ease;
+}
+
+@keyframes rxFinalDemoMachine{
+
+  0%{
+    filter:brightness(1);
+  }
+
+  30%{
+    filter:brightness(1.55);
+  }
+
+  60%{
+    filter:brightness(1.20);
+  }
+
+  100%{
+    filter:brightness(1);
+  }
+
+}
+
+
+/* =========================================================
+   PANEL DEMO ADMIN
+   ========================================================= */
+
+#rxRaffleMachineDemo{
+  margin-top:16px !important;
+  padding:16px !important;
+
+  border:1px dashed rgba(242,196,0,.55) !important;
+  border-radius:14px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      #171300,
+      #090909
+    ) !important;
+
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,.5);
+}
+
+#rxRaffleMachineDemo strong{
+  display:block;
+  color:#f2c400;
+  font-size:16px;
+}
+
+#rxRaffleMachineDemo p{
+  margin:8px 0 0;
+  color:#aaa;
+  font-size:13px;
+  line-height:1.5;
+}
+
+#rxFinalDemoButton{
+  margin-top:12px;
+
+  min-height:44px;
+  padding:0 18px;
+
+  border:1px solid #f2c400;
+  border-radius:11px;
+
+  background:#171717;
+  color:#fff;
+
+  font-weight:1000;
+  cursor:pointer;
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    color .15s ease;
+}
+
+#rxFinalDemoButton:hover{
+  color:#f2c400;
+  transform:translateY(-1px);
+
+  box-shadow:
+    0 0 20px rgba(242,196,0,.18);
+}
+
+#rxFinalDemoButton:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media(max-width:520px){
+
+  #roxthalSlotMachine .rx-slot-machine{
+    gap:6px !important;
+    padding:9px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-reel{
+    border-radius:10px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-symbol{
+    font-size:42px !important;
+  }
+
+}
+
+</style>
+
+
+<script id="roxthal-machine-final-repair">
+
+(function(){
+
+  "use strict";
+
+
+  /* =========================================================
+     PROTECCIÓN
+     ========================================================= */
+
+  if(window.__ROXTHAL_MACHINE_FINAL_REPAIR__){
+    return;
+  }
+
+  window.__ROXTHAL_MACHINE_FINAL_REPAIR__ = true;
+
+
+  /* =========================================================
+     CONFIGURACIÓN
+     ========================================================= */
+
+  var MACHINE_ID = "roxthalSlotMachine";
+
+  var DEMO_PANEL_ID = "rxRaffleMachineDemo";
+
+  var DEMO_BUTTON_ID = "rxFinalDemoButton";
+
+  var demoBusy = false;
+
+
+  var SYMBOLS = [
+    {id:"anchor",   icon:"⚓",  name:"Ancla"},
+    {id:"heart",    icon:"❤️", name:"Corazón"},
+    {id:"rose",     icon:"🌹", name:"Rosa"},
+    {id:"snake",    icon:"🐍", name:"Serpiente"},
+    {id:"eagle",    icon:"🦅", name:"Águila"},
+    {id:"swallow",  icon:"🕊️",name:"Golondrina"},
+    {id:"skull",    icon:"💀", name:"Calavera"},
+    {id:"dagger",   icon:"🗡️",name:"Daga"},
+    {id:"cherries", icon:"🍒", name:"Cerezas"},
+    {id:"star",     icon:"⭐", name:"Estrella"},
+    {id:"fire",     icon:"🔥", name:"Fuego"}
+  ];
+
+
+  /* =========================================================
+     OBTENER MÁQUINA EXISTENTE
+     ========================================================= */
+
+  function getMachine(){
+
+    return document.getElementById(MACHINE_ID);
+
+  }
+
+
+  /* =========================================================
+     OBTENER RODILLOS
+     ========================================================= */
+
+  function getReels(){
+
+    var machine = getMachine();
+
+    if(!machine){
+      return [];
+    }
+
+    return Array.prototype.slice.call(
+      machine.querySelectorAll(".rx-slot-reel")
+    );
+
+  }
+
+
+  /* =========================================================
+     ELEGIR SÍMBOLO
+     ========================================================= */
+
+  function randomSymbol(){
+
+    return SYMBOLS[
+      Math.floor(
+        Math.random() * SYMBOLS.length
+      )
+    ];
+
+  }
+
+
+  /* =========================================================
+     ALTURA REAL DEL SÍMBOLO
+     
+     NO se utilizan 72/92 píxeles fijos.
+     ========================================================= */
+
+  function getSymbolHeight(reel){
+
+    var item =
+      reel.querySelector(".rx-slot-symbol");
+
+    if(!item){
+      return 0;
+    }
+
+    var rect =
+      item.getBoundingClientRect();
+
+    return rect.height || 0;
+
+  }
+
+
+  /* =========================================================
+     CONSTRUIR DEMO
+     
+     IMPORTANTE:
+     Solo modifica temporalmente las tiras existentes.
+     ========================================================= */
+
+  function prepareDemoReel(
+    reel,
+    finalSymbol
+  ){
+
+    var strip =
+      reel.querySelector(
+        ".rx-slot-strip"
+      );
+
+    if(!strip){
+      return null;
+    }
+
+
+    var oldTransform =
+      strip.style.transform;
+
+    var oldTransition =
+      strip.style.transition;
+
+    var oldWillChange =
+      strip.style.willChange;
+
+
+    var html = "";
+
+    var count = 42;
+
+
+    for(
+      var i=0;
+      i<count;
+      i++
+    ){
+
+      var symbol =
+        randomSymbol();
+
+      html +=
+        '<div class="rx-slot-symbol" ' +
+        'data-symbol="' +
+        symbol.id +
+        '">' +
+        symbol.icon +
+        '</div>';
+
+    }
+
+
+    /* Símbolo final */
+    html +=
+      '<div class="rx-slot-symbol" ' +
+      'data-symbol="' +
+      finalSymbol.id +
+      '">' +
+      finalSymbol.icon +
+      '</div>';
+
+
+    strip.innerHTML = html;
+
+    strip.style.transition = "none";
+
+    strip.style.transform =
+      "translate3d(0,0,0)";
+
+    strip.style.willChange =
+      "transform";
+
+
+    return {
+      strip:strip,
+      oldTransform:oldTransform,
+      oldTransition:oldTransition,
+      oldWillChange:oldWillChange
+    };
+
+  }
+
+
+  /* =========================================================
+     RESTAURAR TIRA
+     ========================================================= */
+
+  function restoreDemoReel(data){
+
+    if(!data || !data.strip){
+      return;
+    }
+
+    data.strip.style.transform =
+      data.oldTransform;
+
+    data.strip.style.transition =
+      data.oldTransition;
+
+    data.strip.style.willChange =
+      data.oldWillChange;
+
+  }
+
+
+  /* =========================================================
+     EJECUTAR DEMO
+     ========================================================= */
+
+  function runDemo(){
+
+    if(demoBusy){
+      return;
+    }
+
+
+    var machine =
+      getMachine();
+
+    if(!machine){
+
+      if(
+        window.RoXThalMachine &&
+        typeof window.RoXThalMachine.open ===
+        "function"
+      ){
+
+        try{
+          window.RoXThalMachine.open();
+        }catch(e){}
+
+      }
+
+      setTimeout(
+        runDemo,
+        700
+      );
+
+      return;
+
+    }
+
+
+    var reels =
+      getReels();
+
+
+    /* EXACTAMENTE TRES */
+
+    if(reels.length !== 3){
+
+      console.warn(
+        "RoXThal DEMO: se esperaban 3 rodillos."
+      );
+
+      return;
+
+    }
+
+
+    demoBusy = true;
+
+
+    var button =
+      document.getElementById(
+        DEMO_BUTTON_ID
+      );
+
+    if(button){
+      button.disabled = true;
+      button.textContent =
+        "🎰 DEMO EN MARCHA...";
+    }
+
+
+    var result =
+      machine.querySelector(
+        "#rxSlotResult"
+      );
+
+    if(result){
+
+      result.innerHTML =
+        "🎰 <strong>DEMO EN MARCHA...</strong>";
+
+    }
+
+
+    machine.classList.remove(
+      "rx-slot-winner"
+    );
+
+    machine.classList.add(
+      "rx-final-demo-active"
+    );
+
+
+    /*
+       La combinación DEMO es exclusivamente
+       visual.
+    */
+
+    var finals = [
+      randomSymbol(),
+      randomSymbol(),
+      randomSymbol()
+    ];
+
+
+    /*
+       25 % de las DEMOS muestran jackpot
+       exclusivamente para comprobar la animación.
+    */
+
+    var demoWinner =
+      Math.random() < 0.25;
+
+
+    if(demoWinner){
+
+      finals[1] = finals[0];
+      finals[2] = finals[0];
+
+    }
+
+
+    var saved = [];
+
+
+    /* =======================================================
+       PREPARAR LOS TRES RODILLOS
+       ======================================================= */
+
+    reels.forEach(
+      function(reel,index){
+
+        var data =
+          prepareDemoReel(
+            reel,
+            finals[index]
+          );
+
+        if(!data){
+          return;
+        }
+
+        saved[index] = data;
+
+
+        var strip =
+          data.strip;
+
+
+        var height =
+          getSymbolHeight(reel);
+
+
+        if(!height){
+
+          restoreDemoReel(data);
+
+          return;
+
+        }
+
+
+        /*
+           El último símbolo está en la posición
+           count.
+
+           Calculamos su centro real dentro de
+           la ventana central.
+        */
+
+        var items =
+          strip.querySelectorAll(
+            ".rx-slot-symbol"
+          );
+
+
+        var target =
+          items[items.length - 1];
+
+
+        if(!target){
+          return;
+        }
+
+
+        var reelRect =
+          reel.getBoundingClientRect();
+
+        var targetRect =
+          target.getBoundingClientRect();
+
+
+        var reelCenter =
+          reelRect.height / 2;
+
+
+        var targetCenter =
+          targetRect.top -
+          reelRect.top +
+          targetRect.height / 2;
+
+
+        var baseDistance =
+          targetCenter -
+          reelCenter;
+
+
+        /*
+           Añadimos vueltas completas.
+           Como usamos la altura real, funciona
+           tanto en móvil como escritorio.
+        */
+
+        var extraTurns =
+          (10 + index * 4) *
+          height;
+
+
+        var distance =
+          baseDistance +
+          extraTurns;
+
+
+        var duration =
+          1.55 +
+          index * 0.42;
+
+
+        reel.classList.add(
+          "is-spinning"
+        );
+
+
+        strip.style.transition =
+          "transform " +
+          duration +
+          "s cubic-bezier(.12,.78,.18,1)";
+
+
+        requestAnimationFrame(
+          function(){
+
+            requestAnimationFrame(
+              function(){
+
+                strip.style.transform =
+                  "translate3d(0,-" +
+                  distance +
+                  "px,0)";
+
+              }
+            );
+
+          }
+        );
+
+
+        setTimeout(
+          function(){
+
+            reel.classList.remove(
+              "is-spinning"
+            );
+
+            reel.classList.add(
+              "is-stopping"
+            );
+
+
+            /*
+               El sonido de parada lo proporciona
+               el sistema de audio existente.
+            */
+
+
+            setTimeout(
+              function(){
+
+                reel.classList.remove(
+                  "is-stopping"
+                );
+
+              },
+              260
+            );
+
+          },
+          duration * 1000
+        );
+
+      }
+    );
+
+
+    /* =======================================================
+       FINAL
+       ======================================================= */
+
+    setTimeout(
+      function(){
+
+        machine.classList.remove(
+          "rx-final-demo-active"
+        );
+
+
+        if(demoWinner){
+
+          machine.classList.add(
+            "rx-final-demo-winner"
+          );
+
+
+          if(result){
+
+            result.innerHTML =
+              "🏆 <strong>DEMO: COMBINACIÓN GANADORA</strong><br>" +
+              "<span style='color:#aaa'>" +
+              "Prueba visual del jackpot. " +
+              "No participa en el sorteo real." +
+              "</span>";
+
+          }
+
+
+          /*
+             NO se añade:
+             .rx-slot-winner
+
+             porque esa clase pertenece al
+             resultado real.
+          */
+
+          setTimeout(
+            function(){
+
+              machine.classList.remove(
+                "rx-final-demo-winner"
+              );
+
+            },
+            1000
+          );
+
+        }
+        else{
+
+          if(result){
+
+            result.innerHTML =
+              "🎰 <strong>DEMO COMPLETADA</strong><br>" +
+              "<span style='color:#aaa'>" +
+              "Prueba visual. " +
+              "No se registró ninguna jugada." +
+              "</span>";
+
+          }
+
+        }
+
+
+        /*
+           Restaurar después de que termine
+           toda la animación.
+        */
+
+        setTimeout(
+          function(){
+
+            for(
+              var i=0;
+              i<saved.length;
+              i++
+            ){
+
+              restoreDemoReel(
+                saved[i]
+              );
+
+            }
+
+
+            if(button){
+
+              button.disabled = false;
+
+              button.textContent =
+                "🎰 PROBAR DEMO GRATIS";
+
+            }
+
+            demoBusy = false;
+
+          },
+          700
+        );
+
+      },
+      3100
+    );
+
+  }
+
+
+  /* =========================================================
+     INSTALAR / REUTILIZAR PANEL DEMO
+     
+     NO CREAMOS OTRO PANEL.
+     Si V1 ya creó #rxRaffleMachineDemo,
+     reutilizamos ese mismo elemento.
+     ========================================================= */
+
+  function installDemoPanel(){
+
+    var adminPanel =
+      document.getElementById(
+        "adminRafflesAdmin"
+      );
+
+    if(!adminPanel){
+      return;
+    }
+
+
+    /*
+       Solo trabajamos cuando el administrador
+       está viendo el panel.
+    */
+
+    if(
+      adminPanel.classList.contains(
+        "hidden"
+      )
+    ){
+
+      return;
+
+    }
+
+
+    var box =
+      document.getElementById(
+        DEMO_PANEL_ID
+      );
+
+
+    /*
+       Si ya existe el panel V1,
+       lo reutilizamos.
+    */
+
+    if(!box){
+
+      box =
+        document.createElement(
+          "div"
+        );
+
+      box.id =
+        DEMO_PANEL_ID;
+
+      box.className =
+        "card rx-roxthal-demo-admin";
+
+      adminPanel.appendChild(
+        box
+      );
+
+    }
+
+
+    /*
+       Reemplazamos únicamente el contenido
+       del panel.
+
+       Esto elimina el antiguo botón V1
+       y, por tanto, su listener.
+    */
+
+    box.innerHTML =
+      "<strong>" +
+      "🎰 DEMO GRATIS — MÁQUINA ROXTHAL" +
+      "</strong>" +
+
+      "<p>" +
+      "Probá la misma experiencia visual " +
+      "de la máquina: tres rodillos, símbolos " +
+      "Old School, luces, animaciones y sonido." +
+
+      "<br><br>" +
+
+      "🔒 <b>Modo exclusivamente DEMO.</b> " +
+      "No realiza jugadas reales, no llama al " +
+      "RPC del sorteo, no registra participantes, " +
+      "no consume jugadas, no modifica premios " +
+      "y no genera pagos." +
+
+      "</p>" +
+
+      "<button " +
+      "type='button' " +
+      "id='" +
+      DEMO_BUTTON_ID +
+      "'>" +
+
+      "🎰 PROBAR DEMO GRATIS" +
+
+      "</button>";
+
+
+    var button =
+      document.getElementById(
+        DEMO_BUTTON_ID
+      );
+
+
+    if(button){
+
+      /*
+         Evitar registrar dos veces.
+      */
+
+      if(
+        button.dataset.roxthalFinalDemo !==
+        "1"
+      ){
+
+        button.dataset.roxthalFinalDemo =
+          "1";
+
+        button.addEventListener(
+          "click",
+          function(event){
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            runDemo();
+
+          }
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* =========================================================
+     VIGILAR ADMIN
+     ========================================================= */
+
+  function install(){
+
+    installDemoPanel();
+
+  }
+
+
+  /*
+     No modificamos la máquina real.
+     No registramos ningún listener sobre
+     rxRealSpinButton.
+     
+     El sistema de sonido existente continúa
+     siendo el encargado del sonido real.
+  */
+
+
+  /* =========================================================
+     OBSERVADOR SUAVE
+     ========================================================= */
+
+  var observer =
+    new MutationObserver(
+      function(){
+
+        /*
+           Solo intentamos instalar el panel
+           cuando el panel administrativo
+           ya existe.
+
+           No tocamos el resto del DOM.
+        */
+
+        install();
+
+      }
+    );
+
+
+  function start(){
+
+    if(document.body){
+
+      observer.observe(
+        document.body,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+
+      install();
+
+    }
+
+  }
+
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      start,
+      {once:true}
+    );
+
+  }
+  else{
+
+    start();
+
+  }
+
+
+})();
+
+</script>
 </body>
 </html>
