@@ -39279,6 +39279,595 @@ import { createClient } from
 
   }
 
+<!-- =========================================================
+     ROXTHAL — ACABADO VISUAL FINAL MÁQUINA REAL
+     SOLO VISUAL
+     NO TOCA SUPABASE
+     NO TOCA EL SORTEO
+     NO CREA OTRA MÁQUINA
+     NO CREA OTRO BOTÓN
+     NO CREA OTRO SISTEMA DE SONIDO
+     ========================================================= -->
 
+<style id="roxthal-real-machine-final-visual">
+
+/* =========================================================
+   CUERPO PRINCIPAL — OLD SCHOOL TATTOO
+   ========================================================= */
+
+#roxthalSlotMachine{
+  width:100%;
+  max-width:920px;
+  margin:22px auto;
+  box-sizing:border-box;
+}
+
+#roxthalSlotMachine .rx-slot-box{
+  position:relative;
+  overflow:hidden;
+
+  padding:24px 20px 22px;
+
+  border:4px solid #151515 !important;
+  border-radius:22px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(242,196,0,.18),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      #292929 0%,
+      #101010 45%,
+      #050505 100%
+    ) !important;
+
+  box-shadow:
+    0 0 0 2px #f2c400,
+    0 0 0 5px #111,
+    0 20px 60px rgba(0,0,0,.75),
+    inset 0 0 45px rgba(0,0,0,.9) !important;
+}
+
+/* marco interior */
+
+#roxthalSlotMachine .rx-slot-box::before{
+  content:"";
+  position:absolute;
+  inset:9px;
+
+  border:1px solid rgba(242,196,0,.35);
+  border-radius:15px;
+
+  pointer-events:none;
+}
+
+/* brillo superior */
+
+#roxthalSlotMachine .rx-slot-box::after{
+  content:"";
+  position:absolute;
+
+  top:0;
+  left:12%;
+  right:12%;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #f2c400,
+      transparent
+    );
+
+  box-shadow:
+    0 0 15px rgba(242,196,0,.65);
+
+  pointer-events:none;
+}
+
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-title{
+  position:relative;
+  z-index:2;
+
+  text-align:center;
+}
+
+#roxthalSlotMachine .rx-slot-title .rx-kicker{
+  display:block;
+
+  margin-bottom:5px;
+
+  color:#f2c400 !important;
+
+  font-size:11px !important;
+  font-weight:900 !important;
+  letter-spacing:4px !important;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 1px 0 #000,
+    0 0 10px rgba(242,196,0,.3);
+}
+
+#roxthalSlotMachine .rx-slot-title h3{
+  margin:3px 0 7px !important;
+
+  color:#fff !important;
+
+  font-size:
+    clamp(25px,5vw,42px) !important;
+
+  font-weight:1000 !important;
+  letter-spacing:1px;
+
+  text-transform:uppercase;
+
+  text-shadow:
+    0 3px 0 #000,
+    0 0 15px rgba(242,196,0,.22);
+}
+
+#roxthalSlotMachine .rx-slot-title p{
+  margin:0 auto 18px !important;
+
+  max-width:650px;
+
+  color:#aaa !important;
+
+  font-size:13px !important;
+}
+
+
+/* =========================================================
+   LUCES SUPERIORES
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-lights{
+  position:relative;
+  z-index:2;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  gap:10px;
+
+  margin:5px 0 17px;
+}
+
+#roxthalSlotMachine .rx-slot-light{
+  width:11px !important;
+  height:11px !important;
+
+  border-radius:50% !important;
+
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #fff,
+      #f2c400 30%,
+      #9b7800 75%,
+      #4b3a00
+    ) !important;
+
+  border:1px solid #111 !important;
+
+  box-shadow:
+    0 0 7px rgba(242,196,0,.95),
+    0 0 18px rgba(242,196,0,.45) !important;
+
+  animation:
+    rxRealMachineLight 1.6s infinite alternate;
+}
+
+#roxthalSlotMachine .rx-slot-light:nth-child(2n){
+  animation-delay:.18s;
+}
+
+#roxthalSlotMachine .rx-slot-light:nth-child(3n){
+  animation-delay:.36s;
+}
+
+@keyframes rxRealMachineLight{
+  from{
+    opacity:.58;
+    transform:scale(.88);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+
+/* =========================================================
+   BLOQUE DE LOS TRES RODILLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-machine{
+  position:relative;
+  z-index:2;
+
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+
+  gap:10px !important;
+
+  padding:12px !important;
+
+  border:4px solid #090909 !important;
+  border-radius:17px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #252525,
+      #080808
+    ) !important;
+
+  box-shadow:
+    inset 0 0 30px #000,
+    0 0 0 2px #555,
+    0 10px 25px rgba(0,0,0,.7) !important;
+}
+
+
+/* =========================================================
+   RODILLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-reel{
+  position:relative !important;
+
+  min-width:0;
+
+  overflow:hidden !important;
+
+  border:4px solid #555 !important;
+  border-radius:12px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      #2a2a2a 0,
+      #111 58%,
+      #030303 100%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 25px #000,
+    inset 0 0 4px rgba(255,255,255,.22),
+    0 0 0 2px #080808,
+    0 0 16px rgba(242,196,0,.08) !important;
+
+  transition:
+    box-shadow .18s ease,
+    filter .18s ease,
+    transform .18s ease !important;
+}
+
+/* efecto metálico */
+
+#roxthalSlotMachine .rx-slot-reel::before{
+  content:"";
+  position:absolute;
+  z-index:5;
+
+  top:0;
+  left:0;
+  right:0;
+
+  height:24%;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.13),
+      transparent
+    );
+
+  pointer-events:none;
+}
+
+/* rodillo girando */
+
+#roxthalSlotMachine .rx-slot-reel.is-spinning{
+  filter:
+    brightness(1.18)
+    saturate(1.25) !important;
+
+  box-shadow:
+    inset 0 0 30px #000,
+    0 0 0 2px #111,
+    0 0 26px rgba(242,196,0,.34) !important;
+}
+
+/* rodillo frenando */
+
+#roxthalSlotMachine .rx-slot-reel.is-stopping{
+  transform:scale(1.025) !important;
+
+  box-shadow:
+    inset 0 0 30px #000,
+    0 0 0 2px #f2c400,
+    0 0 32px rgba(242,196,0,.55) !important;
+}
+
+
+/* =========================================================
+   SÍMBOLOS
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-symbol{
+  display:flex !important;
+
+  align-items:center !important;
+  justify-content:center !important;
+
+  height:92px !important;
+
+  font-size:
+    clamp(50px,8vw,72px) !important;
+
+  line-height:1 !important;
+
+  text-shadow:
+    0 3px 0 #000,
+    0 5px 12px rgba(0,0,0,.9),
+    0 0 10px rgba(242,196,0,.16);
+
+  filter:
+    drop-shadow(0 2px 1px #000);
+}
+
+
+/* =========================================================
+   LINEA CENTRAL GANADORA
+   ========================================================= */
+
+#roxthalSlotMachine .rx-slot-window{
+  position:absolute !important;
+
+  left:0 !important;
+  right:0 !important;
+
+  top:50% !important;
+
+  height:92px !important;
+
+  transform:translateY(-50%) !important;
+
+  border-top:
+    3px solid #f2c400 !important;
+
+  border-bottom:
+    3px solid #f2c400 !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(242,196,0,.07),
+      transparent 45%,
+      rgba(242,196,0,.07)
+    ) !important;
+
+  box-shadow:
+    0 0 22px rgba(242,196,0,.28),
+    inset 0 0 22px rgba(242,196,0,.08) !important;
+
+  pointer-events:none !important;
+}
+
+
+/* =========================================================
+   BOTÓN REAL
+   ========================================================= */
+
+#roxthalSlotMachine #rxRealSpinButton{
+  position:relative !important;
+  z-index:3;
+
+  display:block;
+
+  width:min(100%,430px);
+
+  margin:20px auto 12px !important;
+
+  min-height:58px !important;
+
+  border:
+    3px solid #f2c400 !important;
+
+  border-radius:13px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #303030,
+      #111
+    ) !important;
+
+  color:#fff !important;
+
+  font-size:
+    clamp(16px,4vw,21px) !important;
+
+  font-weight:1000 !important;
+
+  letter-spacing:1px;
+
+  text-transform:uppercase;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 0 0 2px #050505,
+    0 10px 28px rgba(0,0,0,.6),
+    0 0 20px rgba(242,196,0,.2) !important;
+
+  transition:
+    transform .12s ease,
+    box-shadow .12s ease,
+    filter .12s ease !important;
+}
+
+#roxthalSlotMachine #rxRealSpinButton:hover{
+  filter:brightness(1.15);
+
+  box-shadow:
+    0 0 0 2px #050505,
+    0 10px 30px rgba(0,0,0,.65),
+    0 0 30px rgba(242,196,0,.35) !important;
+}
+
+#roxthalSlotMachine #rxRealSpinButton:active{
+  transform:translateY(2px) scale(.985) !important;
+}
+
+
+/* =========================================================
+   RESULTADO
+   ========================================================= */
+
+#roxthalSlotMachine #rxSlotResult{
+  position:relative;
+  z-index:2;
+
+  min-height:46px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:10px 14px;
+
+  margin-top:8px;
+
+  border:
+    1px solid rgba(242,196,0,.25);
+
+  border-radius:10px;
+
+  background:
+    rgba(0,0,0,.35);
+
+  color:#aaa;
+
+  text-align:center;
+
+  font-size:13px;
+}
+
+#roxthalSlotMachine #rxSlotResult strong{
+  color:#f2c400 !important;
+}
+
+
+/* =========================================================
+   JACKPOT REAL
+   ========================================================= */
+
+#roxthalSlotMachine.rx-slot-winner .rx-slot-box{
+  animation:
+    rxRealJackpotMachine 1s ease !important;
+}
+
+#roxthalSlotMachine.rx-slot-winner .rx-slot-reel{
+  animation:
+    rxRealJackpotReel .45s ease-in-out 4 !important;
+}
+
+@keyframes rxRealJackpotReel{
+  50%{
+    transform:scale(1.045);
+    filter:
+      brightness(1.55)
+      saturate(1.35);
+  }
+}
+
+@keyframes rxRealJackpotMachine{
+  0%{
+    filter:brightness(1);
+  }
+
+  25%{
+    filter:brightness(1.55);
+  }
+
+  55%{
+    filter:brightness(1.2);
+  }
+
+  100%{
+    filter:brightness(1);
+  }
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media(max-width:600px){
+
+  #roxthalSlotMachine{
+    margin:16px auto;
+  }
+
+  #roxthalSlotMachine .rx-slot-box{
+    padding:19px 11px 17px;
+    border-radius:17px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-title h3{
+    font-size:24px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-title .rx-kicker{
+    font-size:9px !important;
+    letter-spacing:2.5px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-machine{
+    gap:6px !important;
+    padding:8px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-reel{
+    border-width:3px !important;
+    border-radius:9px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-symbol{
+    height:72px !important;
+    font-size:40px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-window{
+    height:72px !important;
+  }
+
+  #roxthalSlotMachine .rx-slot-light{
+    width:8px !important;
+    height:8px !important;
+  }
+
+  #roxthalSlotMachine #rxRealSpinButton{
+    min-height:54px !important;
+    font-size:16px !important;
+  }
+}
+
+</style>
 </body>
 </html>
