@@ -39869,5 +39869,713 @@ import { createClient } from
 }
 
 </style>
+   <!-- =========================================================
+     ROXTHAL — DEMO MÁQUINA SORTEO V2
+     REPARACIÓN FINAL
+     ---------------------------------------------------------
+     • SOLO DEMO VISUAL
+     • NO USA SUPABASE
+     • NO MODIFICA EL SORTEO REAL
+     • NO ELIMINA LA MÁQUINA REAL
+     • SE INSTALA AUTOMÁTICAMENTE EN ADMIN > SORTEOS
+     ========================================================= -->
+
+<style id="roxthal-admin-raffle-demo-v2">
+
+#rxAdminRaffleDemoV2{
+  width:100%;
+  margin:22px 0 28px;
+  box-sizing:border-box;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-card{
+  position:relative;
+  overflow:hidden;
+  padding:24px 18px 22px;
+  border:4px solid #111;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(242,196,0,.16),transparent 40%),
+    linear-gradient(145deg,#292929,#101010 48%,#050505);
+  box-shadow:
+    0 0 0 2px #f2c400,
+    0 0 0 5px #111,
+    0 15px 45px rgba(0,0,0,.55),
+    inset 0 0 35px rgba(0,0,0,.85);
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-card:before{
+  content:"";
+  position:absolute;
+  inset:9px;
+  border:1px solid rgba(242,196,0,.35);
+  border-radius:14px;
+  pointer-events:none;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-head{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  margin-bottom:16px;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-kicker{
+  display:block;
+  color:#f2c400;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+
+#rxAdminRaffleDemoV2 h3{
+  margin:0 0 7px;
+  color:#fff;
+  font-size:clamp(24px,5vw,38px);
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  text-shadow:0 3px 0 #000;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-sub{
+  margin:0;
+  color:#aaa;
+  font-size:13px;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-lights{
+  display:flex;
+  justify-content:center;
+  gap:9px;
+  margin:12px 0 17px;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-light{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,#f2c400 32%,#8b6b00 72%,#332700);
+  box-shadow:0 0 8px rgba(242,196,0,.9);
+  animation:rxDemoBlinkV2 1.25s infinite alternate;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-light:nth-child(2){animation-delay:.18s}
+#rxAdminRaffleDemoV2 .rx-demo-light:nth-child(3){animation-delay:.36s}
+#rxAdminRaffleDemoV2 .rx-demo-light:nth-child(4){animation-delay:.54s}
+#rxAdminRaffleDemoV2 .rx-demo-light:nth-child(5){animation-delay:.72s}
+
+@keyframes rxDemoBlinkV2{
+  from{opacity:.45;transform:scale(.88)}
+  to{opacity:1;transform:scale(1)}
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-machine{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  padding:11px;
+  border:4px solid #080808;
+  border-radius:16px;
+  background:linear-gradient(#262626,#090909);
+  box-shadow:
+    inset 0 0 20px #000,
+    0 5px 15px rgba(0,0,0,.65);
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-reel{
+  position:relative;
+  height:94px;
+  overflow:hidden;
+  border:4px solid #111;
+  border-radius:10px;
+  background:#f4f0e4;
+  box-shadow:
+    inset 0 0 14px rgba(0,0,0,.5),
+    0 2px 0 #555;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-reel:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,.32),
+    transparent 28%,
+    transparent 72%,
+    rgba(0,0,0,.32)
+  );
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-symbol{
+  height:94px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:55px;
+  line-height:1;
+  user-select:none;
+  filter:drop-shadow(0 3px 1px rgba(0,0,0,.3));
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-symbol.rx-spin{
+  animation:rxDemoSpinV2 .095s linear infinite;
+}
+
+@keyframes rxDemoSpinV2{
+  0%{transform:translateY(-7px);filter:blur(1px)}
+  50%{transform:translateY(7px);filter:blur(2px)}
+  100%{transform:translateY(-7px);filter:blur(1px)}
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-machine.rx-win{
+  animation:rxDemoWinV2 .25s ease-in-out 4;
+}
+
+@keyframes rxDemoWinV2{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.018)}
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-controls{
+  position:relative;
+  z-index:2;
+  display:flex;
+  justify-content:center;
+  margin-top:18px;
+}
+
+#rxAdminRaffleDemoV2 #rxAdminDemoSpinV2{
+  appearance:none;
+  border:3px solid #111;
+  border-radius:999px;
+  padding:13px 24px;
+  min-width:230px;
+  cursor:pointer;
+  color:#111;
+  background:linear-gradient(#ffe76a,#f2c400 55%,#b98d00);
+  font-size:15px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  box-shadow:
+    0 4px 0 #111,
+    0 7px 18px rgba(0,0,0,.45);
+  transition:transform .12s ease,filter .12s ease;
+}
+
+#rxAdminRaffleDemoV2 #rxAdminDemoSpinV2:hover{
+  filter:brightness(1.08);
+}
+
+#rxAdminRaffleDemoV2 #rxAdminDemoSpinV2:active{
+  transform:translateY(3px);
+  box-shadow:0 1px 0 #111;
+}
+
+#rxAdminRaffleDemoV2 #rxAdminDemoSpinV2:disabled{
+  opacity:.65;
+  cursor:not-allowed;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-result{
+  position:relative;
+  z-index:2;
+  min-height:42px;
+  margin-top:16px;
+  text-align:center;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+}
+
+#rxAdminRaffleDemoV2 .rx-demo-note{
+  position:relative;
+  z-index:2;
+  margin-top:8px;
+  text-align:center;
+  color:#777;
+  font-size:11px;
+}
+
+@media(max-width:560px){
+  #rxAdminRaffleDemoV2 .rx-demo-card{
+    padding:19px 10px 18px;
+  }
+
+  #rxAdminRaffleDemoV2 .rx-demo-machine{
+    gap:6px;
+    padding:7px;
+  }
+
+  #rxAdminRaffleDemoV2 .rx-demo-reel,
+  #rxAdminRaffleDemoV2 .rx-demo-symbol{
+    height:76px;
+  }
+
+  #rxAdminRaffleDemoV2 .rx-demo-symbol{
+    font-size:42px;
+  }
+
+  #rxAdminRaffleDemoV2 #rxAdminDemoSpinV2{
+    width:100%;
+    min-width:0;
+  }
+}
+
+</style>
+
+<script id="roxthal-admin-raffle-demo-v2-script">
+(function(){
+
+  "use strict";
+
+  var DEMO_ID = "rxAdminRaffleDemoV2";
+  var BUTTON_ID = "rxAdminDemoSpinV2";
+
+  var SYMBOLS = [
+    "⚓",
+    "❤️",
+    "🌹",
+    "🐍",
+    "🦅",
+    "🕊️",
+    "💀",
+    "🗡️",
+    "🍒",
+    "⭐",
+    "🔥"
+  ];
+
+  var spinning = false;
+  var audioContext = null;
+
+  function get(id){
+    return document.getElementById(id);
+  }
+
+  function ensureAudio(){
+
+    try{
+
+      if(!audioContext){
+        var AC =
+          window.AudioContext ||
+          window.webkitAudioContext;
+
+        if(!AC)return null;
+
+        audioContext = new AC();
+      }
+
+      if(audioContext.state === "suspended"){
+        audioContext.resume();
+      }
+
+      return audioContext;
+
+    }catch(e){
+
+      return null;
+
+    }
+
+  }
+
+  function tone(freq,duration,type,volume,delay){
+
+    var ctx = ensureAudio();
+
+    if(!ctx)return;
+
+    try{
+
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+
+      osc.type = type || "square";
+
+      osc.frequency.setValueAtTime(
+        freq,
+        ctx.currentTime + (delay || 0)
+      );
+
+      gain.gain.setValueAtTime(
+        0.0001,
+        ctx.currentTime + (delay || 0)
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        volume || .035,
+        ctx.currentTime + (delay || 0) + .008
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + (delay || 0) + duration
+      );
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + (delay || 0));
+      osc.stop(ctx.currentTime + (delay || 0) + duration + .02);
+
+    }catch(e){}
+
+  }
+
+  function spinSound(){
+
+    for(var i=0;i<18;i++){
+
+      (function(n){
+
+        setTimeout(function(){
+
+          tone(
+            95 + ((n % 4) * 25),
+            .055,
+            "square",
+            .025,
+            0
+          );
+
+        },n*75);
+
+      })(i);
+
+    }
+
+  }
+
+  function stopSound(reel){
+
+    var base = 230 + (reel * 70);
+
+    tone(base,.12,"square",.045,0);
+    tone(base * 1.5,.08,"square",.025,.04);
+
+  }
+
+  function winSound(){
+
+    var notes = [392,494,587,784];
+
+    notes.forEach(function(freq,i){
+
+      tone(
+        freq,
+        .22,
+        "square",
+        .045,
+        i*.105
+      );
+
+    });
+
+  }
+
+  function randomSymbol(){
+
+    return SYMBOLS[
+      Math.floor(Math.random()*SYMBOLS.length)
+    ];
+
+  }
+
+  function createDemo(){
+
+    if(get(DEMO_ID))return;
+
+    var panel = get("adminRafflesAdmin");
+
+    if(!panel)return;
+
+    var wrapper = document.createElement("div");
+
+    wrapper.id = DEMO_ID;
+
+    wrapper.innerHTML =
+
+      '<div class="rx-demo-card">' +
+
+        '<div class="rx-demo-head">' +
+
+          '<span class="rx-demo-kicker">ROXTHAL ART DESIGN</span>' +
+
+          '<h3>🎰 MÁQUINA DE SORTEO</h3>' +
+
+          '<p class="rx-demo-sub">' +
+            'DEMO VISUAL · ESTILO OLD SCHOOL TATTOO' +
+          '</p>' +
+
+        '</div>' +
+
+        '<div class="rx-demo-lights">' +
+          '<span class="rx-demo-light"></span>' +
+          '<span class="rx-demo-light"></span>' +
+          '<span class="rx-demo-light"></span>' +
+          '<span class="rx-demo-light"></span>' +
+          '<span class="rx-demo-light"></span>' +
+        '</div>' +
+
+        '<div class="rx-demo-machine" id="rxAdminDemoMachineV2">' +
+
+          '<div class="rx-demo-reel">' +
+            '<div class="rx-demo-symbol" id="rxAdminDemoReel0">⚓</div>' +
+          '</div>' +
+
+          '<div class="rx-demo-reel">' +
+            '<div class="rx-demo-symbol" id="rxAdminDemoReel1">🌹</div>' +
+          '</div>' +
+
+          '<div class="rx-demo-reel">' +
+            '<div class="rx-demo-symbol" id="rxAdminDemoReel2">💀</div>' +
+          '</div>' +
+
+        '</div>' +
+
+        '<div class="rx-demo-controls">' +
+          '<button type="button" id="' +
+            BUTTON_ID +
+          '">' +
+            '🎰 PROBAR DEMO GRATIS' +
+          '</button>' +
+        '</div>' +
+
+        '<div class="rx-demo-result" id="rxAdminDemoResultV2">' +
+          'Pulsa el botón para ver funcionar los tres rodillos.' +
+        '</div>' +
+
+        '<div class="rx-demo-note">' +
+          'Esta demostración es únicamente visual. ' +
+          'No registra participantes, no modifica sorteos ' +
+          'y no realiza ninguna operación en Supabase.' +
+        '</div>' +
+
+      '</div>';
+
+    /*
+       Lo añadimos al principio del panel para que sea visible
+       aunque el resto del contenido del administrador sea largo.
+    */
+
+    panel.insertBefore(
+      wrapper,
+      panel.firstChild
+    );
+
+    hookButton();
+
+  }
+
+  function hookButton(){
+
+    var button = get(BUTTON_ID);
+
+    if(!button)return;
+
+    if(button.dataset.rxDemoHooked === "1")return;
+
+    button.dataset.rxDemoHooked = "1";
+
+    button.addEventListener("click",runDemo);
+
+  }
+
+  function runDemo(){
+
+    if(spinning)return;
+
+    var machine = get("rxAdminDemoMachineV2");
+    var result = get("rxAdminDemoResultV2");
+    var button = get(BUTTON_ID);
+
+    var reels = [
+      get("rxAdminDemoReel0"),
+      get("rxAdminDemoReel1"),
+      get("rxAdminDemoReel2")
+    ];
+
+    if(
+      !machine ||
+      !result ||
+      !button ||
+      reels.some(function(x){return !x;})
+    ){
+      return;
+    }
+
+    spinning = true;
+
+    button.disabled = true;
+    button.textContent = "🎰 GIRANDO...";
+
+    result.textContent = "La máquina está girando...";
+
+    machine.classList.remove("rx-win");
+
+    reels.forEach(function(reel){
+
+      reel.classList.add("rx-spin");
+
+    });
+
+    spinSound();
+
+    /*
+       Los tres rodillos se detienen escalonadamente,
+       como una máquina real.
+    */
+
+    [900,1350,1800].forEach(function(delay,index){
+
+      setTimeout(function(){
+
+        var finalSymbol = randomSymbol();
+
+        reels[index].textContent = finalSymbol;
+        reels[index].classList.remove("rx-spin");
+
+        stopSound(index);
+
+        if(index === 2){
+
+          setTimeout(function(){
+
+            var same =
+              reels[0].textContent === reels[1].textContent &&
+              reels[1].textContent === reels[2].textContent;
+
+            if(same){
+
+              machine.classList.add("rx-win");
+
+              result.innerHTML =
+                "🏆 <strong>¡COMBINACIÓN!</strong><br>" +
+                "<span style=\"color:#f2c400\">" +
+                reels[0].textContent +
+                " &nbsp; " +
+                reels[1].textContent +
+                " &nbsp; " +
+                reels[2].textContent +
+                "</span>";
+
+              winSound();
+
+            }else{
+
+              result.innerHTML =
+                "🎰 <strong>DEMO COMPLETADA</strong><br>" +
+                "<span style=\"color:#aaa\">" +
+                "Prueba visual · no se registró ninguna jugada." +
+                "</span>";
+
+            }
+
+            setTimeout(function(){
+
+              button.disabled = false;
+              button.textContent = "🎰 PROBAR DEMO GRATIS";
+              spinning = false;
+
+            },900);
+
+          },180);
+
+        }
+
+      },delay);
+
+    });
+
+  }
+
+  function install(){
+
+    /*
+       No dependemos de que el panel esté abierto.
+       Si existe, lo instalamos aunque tenga la clase hidden.
+    */
+
+    createDemo();
+    hookButton();
+
+  }
+
+  /*
+     Instalación inicial.
+  */
+
+  if(
+    document.readyState === "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      install
+    );
+
+  }else{
+
+    install();
+
+  }
+
+  /*
+     Cuando el administrador cambia de pestaña,
+     volvemos a comprobar que el DEMO exista.
+  */
+
+  document.addEventListener("click",function(e){
+
+    var tab =
+      e.target.closest &&
+      e.target.closest(
+        '[data-admin-tab="rafflesAdmin"]'
+      );
+
+    if(!tab)return;
+
+    setTimeout(
+      install,
+      0
+    );
+
+  });
+
+  /*
+     Si otro código reconstruye el panel,
+     lo volvemos a instalar automáticamente.
+     No modificamos sus contenidos existentes.
+  */
+
+  var observer = new MutationObserver(function(){
+
+    if(!get(DEMO_ID)){
+      install();
+    }else{
+      hookButton();
+    }
+
+  });
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+})();
+</script>
 </body>
 </html>
