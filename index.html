@@ -36088,5 +36088,1968 @@ import { createClient } from
   moverMaquina();
 })();
 </script>
+     <!-- ============================================================
+     ROXTHAL DELUXE SLOT — NUEVA MÁQUINA INDEPENDIENTE
+     ------------------------------------------------------------
+     IMPORTANTE:
+     - NO modifica la máquina antigua.
+     - NO modifica Supabase.
+     - NO modifica RPCs.
+     - NO modifica Mercado Pago.
+     - Las jugadas reales utilizan la máquina existente como puente.
+     - El DEMO ADMINISTRADOR es completamente local.
+     ============================================================ -->
+<style id="rxd-slot-deluxe-style">
+#rxd-slot-root{
+  --gold:#d6ad45;
+  --gold2:#ffdf75;
+  --red:#8b1717;
+  --red2:#c52b24;
+  --ink:#090909;
+  --panel:#111;
+  --panel2:#181818;
+  --cream:#f4e8c5;
+  --muted:#a9a9a9;
+  position:relative;
+  z-index:1;
+}
+
+#rxd-slot-root *{box-sizing:border-box}
+
+#rxd-module-card{
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  user-select:none;
+}
+
+#rxd-module-card::before{
+  content:"";
+  position:absolute;
+  inset:-60%;
+  background:conic-gradient(
+    transparent,
+    rgba(214,173,69,.20),
+    transparent 20%
+  );
+  animation:rxdCardSpin 8s linear infinite;
+  pointer-events:none;
+}
+
+@keyframes rxdCardSpin{
+  to{transform:rotate(360deg)}
+}
+
+#rxd-module-card .rxd-card-inner{
+  position:relative;
+  z-index:2;
+}
+
+#rxd-overlay{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  background:
+    radial-gradient(circle at 50% 25%,rgba(130,20,20,.25),transparent 35%),
+    rgba(0,0,0,.90);
+  overflow:auto;
+}
+
+#rxd-overlay.rxd-open{
+  display:flex;
+  animation:rxdFadeIn .22s ease-out;
+}
+
+@keyframes rxdFadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+#rxd-panel{
+  position:relative;
+  width:min(680px,100%);
+  max-height:calc(100vh - 24px);
+  overflow:auto;
+  border:2px solid var(--gold);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(130,20,20,.28),transparent 34%),
+    linear-gradient(145deg,#1b1b1b,#080808 65%);
+  box-shadow:
+    0 0 0 4px #050505,
+    0 0 0 6px rgba(214,173,69,.25),
+    0 25px 80px #000;
+  color:white;
+}
+
+#rxd-panel::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(214,173,69,.25);
+  border-radius:18px;
+  pointer-events:none;
+}
+
+#rxd-header{
+  position:relative;
+  padding:17px 18px 10px;
+  text-align:center;
+}
+
+#rxd-brand{
+  color:var(--gold2);
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:4px;
+  text-transform:uppercase;
+}
+
+#rxd-title{
+  margin:4px 0 0;
+  font-size:clamp(27px,7vw,43px);
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:1px;
+  text-shadow:3px 3px 0 #000;
+}
+
+#rxd-subtitle{
+  margin-top:8px;
+  color:#cfcfcf;
+  font-size:13px;
+}
+
+#rxd-close{
+  position:absolute;
+  top:9px;
+  right:9px;
+  width:44px;
+  height:44px;
+  border:1px solid #555;
+  border-radius:50%;
+  background:#111;
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+
+#rxd-lights{
+  display:flex;
+  justify-content:center;
+  gap:7px;
+  padding:6px 20px 12px;
+}
+
+.rxd-light{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#3a3a3a;
+  box-shadow:0 0 0 2px #080808;
+}
+
+.rxd-light.rxd-on{
+  background:var(--gold2);
+  box-shadow:
+    0 0 7px var(--gold2),
+    0 0 15px rgba(255,220,100,.7);
+}
+
+#rxd-machine{
+  position:relative;
+  margin:0 14px;
+  padding:16px 13px 18px;
+  border:3px solid #8e6c24;
+  border-radius:20px;
+  background:
+    linear-gradient(90deg,#090909,#202020,#090909);
+  box-shadow:
+    inset 0 0 25px #000,
+    0 10px 30px #000;
+}
+
+#rxd-machine::before{
+  content:"ROXTHAL";
+  display:block;
+  margin-bottom:10px;
+  text-align:center;
+  color:var(--gold2);
+  font-weight:1000;
+  font-size:14px;
+  letter-spacing:6px;
+  text-shadow:2px 2px 0 #000;
+}
+
+#rxd-reel-window{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  padding:10px;
+  border:2px solid #4f4f4f;
+  border-radius:15px;
+  background:#050505;
+  box-shadow:inset 0 0 22px #000;
+}
+
+.rxd-reel{
+  position:relative;
+  min-width:0;
+  height:158px;
+  overflow:hidden;
+  border:3px solid #7d6021;
+  border-radius:12px;
+  background:
+    linear-gradient(90deg,#aaa,#fff 8%,#f2f2f2 90%,#8d8d8d);
+  box-shadow:
+    inset 7px 0 12px rgba(0,0,0,.25),
+    inset -7px 0 12px rgba(0,0,0,.3);
+}
+
+.rxd-reel::before,
+.rxd-reel::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  height:35%;
+  z-index:4;
+  pointer-events:none;
+}
+
+.rxd-reel::before{
+  top:0;
+  background:linear-gradient(#0008,transparent);
+}
+
+.rxd-reel::after{
+  bottom:0;
+  background:linear-gradient(transparent,#0008);
+}
+
+.rxd-symbols{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  transform:translateY(0);
+  transition:transform .12s linear;
+}
+
+.rxd-symbol{
+  height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:47px;
+  line-height:1;
+  filter:drop-shadow(2px 3px 1px #555);
+}
+
+.rxd-center-line{
+  position:absolute;
+  left:-2px;
+  right:-2px;
+  top:50%;
+  height:3px;
+  z-index:7;
+  background:var(--red2);
+  box-shadow:0 0 8px #d33;
+  pointer-events:none;
+}
+
+.rxd-reel.rxd-spinning .rxd-symbols{
+  filter:blur(2px);
+}
+
+.rxd-reel.rxd-win{
+  animation:rxdWinReel .65s ease-in-out infinite alternate;
+}
+
+@keyframes rxdWinReel{
+  from{
+    box-shadow:
+      inset 7px 0 12px rgba(0,0,0,.25),
+      inset -7px 0 12px rgba(0,0,0,.3);
+  }
+  to{
+    box-shadow:
+      0 0 18px var(--gold2),
+      0 0 35px rgba(255,210,80,.7),
+      inset 7px 0 12px rgba(0,0,0,.25);
+  }
+}
+
+#rxd-jackpot{
+  margin:13px auto 0;
+  width:max-content;
+  max-width:100%;
+  padding:6px 17px;
+  border:1px solid #9d2424;
+  border-radius:999px;
+  background:#210707;
+  color:#ffcbcb;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:2px;
+  text-align:center;
+}
+
+#rxd-machine-name{
+  margin-top:9px;
+  text-align:center;
+  color:#bbb;
+  font-size:10px;
+  letter-spacing:2px;
+}
+
+#rxd-status{
+  min-height:39px;
+  margin:12px 14px 5px;
+  padding:10px 12px;
+  border-radius:11px;
+  background:#151515;
+  border:1px solid #303030;
+  color:#ddd;
+  text-align:center;
+  font-size:13px;
+  font-weight:800;
+}
+
+#rxd-status.rxd-win-status{
+  color:#ffe18b;
+  border-color:var(--gold);
+  background:#241c08;
+  animation:rxdStatusPulse .7s ease-in-out infinite alternate;
+}
+
+@keyframes rxdStatusPulse{
+  to{box-shadow:0 0 22px rgba(214,173,69,.4)}
+}
+
+#rxd-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin:9px 14px;
+}
+
+.rxd-stat{
+  padding:9px 5px;
+  text-align:center;
+  border:1px solid #303030;
+  border-radius:10px;
+  background:#101010;
+}
+
+.rxd-stat b{
+  display:block;
+  color:var(--gold2);
+  font-size:18px;
+}
+
+.rxd-stat span{
+  display:block;
+  margin-top:2px;
+  color:#999;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+
+#rxd-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin:12px 14px;
+}
+
+.rxd-btn{
+  min-height:50px;
+  border-radius:13px;
+  border:1px solid #555;
+  padding:10px 12px;
+  font-weight:1000;
+  cursor:pointer;
+  font-size:14px;
+}
+
+#rxd-real-play{
+  background:linear-gradient(#d9b64e,#9c7520);
+  color:#080808;
+  border-color:#ffe38a;
+}
+
+#rxd-buy{
+  background:linear-gradient(#a51e1e,#641010);
+  color:white;
+  border-color:#e15b5b;
+}
+
+.rxd-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+#rxd-play-selector{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin:9px 14px;
+}
+
+.rxd-play{
+  min-height:44px;
+  border:1px solid #454545;
+  border-radius:10px;
+  background:#151515;
+  color:#eee;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.rxd-play.rxd-selected{
+  border-color:var(--gold2);
+  background:#2b220d;
+  color:#ffe49a;
+}
+
+#rxd-demo{
+  margin:15px 14px 18px;
+  padding:13px;
+  border:1px dashed #8f712e;
+  border-radius:14px;
+  background:
+    linear-gradient(145deg,#171309,#0d0d0d);
+}
+
+#rxd-demo-title{
+  color:#ffe28b;
+  font-size:13px;
+  font-weight:1000;
+}
+
+#rxd-demo-warning{
+  margin-top:4px;
+  color:#aaa;
+  font-size:11px;
+  line-height:1.4;
+}
+
+#rxd-demo-actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+#rxd-demo-spin{
+  flex:1;
+  min-height:46px;
+  border:1px solid var(--gold);
+  border-radius:11px;
+  background:#201a0b;
+  color:#ffe28b;
+  font-weight:1000;
+  cursor:pointer;
+}
+
+#rxd-demo-label{
+  display:none;
+  margin-top:9px;
+  padding:8px;
+  border-radius:8px;
+  background:#241c08;
+  color:#ffe28b;
+  font-size:11px;
+  text-align:center;
+  font-weight:1000;
+}
+
+#rxd-foot{
+  padding:0 14px 17px;
+  text-align:center;
+  color:#777;
+  font-size:9px;
+  line-height:1.4;
+}
+
+#rxd-confetti{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:30;
+}
+
+.rxd-confetti-piece{
+  position:absolute;
+  top:-15px;
+  width:7px;
+  height:13px;
+  background:var(--gold2);
+  animation:rxdConfetti 1.5s linear forwards;
+}
+
+@keyframes rxdConfetti{
+  to{
+    transform:translateY(520px) rotate(680deg);
+    opacity:0;
+  }
+}
+
+@media(max-width:470px){
+  #rxd-panel{
+    border-radius:18px;
+  }
+
+  #rxd-reel-window{
+    gap:5px;
+    padding:6px;
+  }
+
+  .rxd-reel{
+    height:132px;
+  }
+
+  .rxd-symbol{
+    height:66px;
+    font-size:39px;
+  }
+
+  #rxd-actions{
+    grid-template-columns:1fr;
+  }
+
+  #rxd-stats{
+    gap:5px;
+  }
+
+  .rxd-stat b{
+    font-size:16px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+  }
+}
+</style>
+
+<div id="rxd-slot-root"></div>
+
+<script id="rxd-slot-deluxe">
+(function(){
+  "use strict";
+
+  if(window.__RoXThalDeluxeInstalled) return;
+  window.__RoXThalDeluxeInstalled = true;
+
+  var SYMBOLS = [
+    "🌹",
+    "💀",
+    "🗡️",
+    "⚓",
+    "🐍",
+    "🦅",
+    "❤️",
+    "⭐",
+    "🔥"
+  ];
+
+  var state = {
+    open:false,
+    busy:false,
+    selectedPlay:1,
+    demoBusy:false,
+    audio:null,
+    audioMaster:null,
+    oldOpened:false
+  };
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+  function safeText(value){
+    return String(value == null ? "" : value);
+  }
+
+  function wait(ms){
+    return new Promise(function(resolve){
+      setTimeout(resolve,ms);
+    });
+  }
+
+  function hasRealMachine(){
+    return !!(
+      window.RoXThalMachine &&
+      typeof window.RoXThalMachine.refresh === "function"
+    );
+  }
+
+  function isAdmin(){
+    try{
+      return !!(
+        window.RoXThalAdmin &&
+        typeof window.RoXThalAdmin.isAdmin === "function" &&
+        window.RoXThalAdmin.isAdmin()
+      );
+    }catch(e){
+      return false;
+    }
+  }
+
+  /* ============================================================
+     AUDIO
+     ============================================================ */
+
+  function initAudio(){
+    if(state.audio) return;
+
+    try{
+      var AC =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if(!AC) return;
+
+      state.audio = new AC();
+      state.audioMaster =
+        state.audio.createGain();
+
+      state.audioMaster.gain.value = .055;
+      state.audioMaster.connect(
+        state.audio.destination
+      );
+    }catch(e){
+      state.audio = null;
+    }
+  }
+
+  function tone(freq,duration,type,volume,delay){
+    if(!state.audio || !state.audioMaster) return;
+
+    try{
+      var ctx = state.audio;
+
+      if(ctx.state === "suspended"){
+        ctx.resume().catch(function(){});
+      }
+
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+
+      osc.type = type || "square";
+
+      var start =
+        ctx.currentTime +
+        (delay || 0);
+
+      var end =
+        start +
+        Math.max(.025,duration || .08);
+
+      osc.frequency.setValueAtTime(
+        freq,
+        start
+      );
+
+      gain.gain.setValueAtTime(
+        0,
+        start
+      );
+
+      gain.gain.linearRampToValueAtTime(
+        volume == null ? .5 : volume,
+        start + .008
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .001,
+        end
+      );
+
+      osc.connect(gain);
+      gain.connect(state.audioMaster);
+
+      osc.start(start);
+      osc.stop(end + .01);
+    }catch(e){}
+  }
+
+  function soundClick(){
+    initAudio();
+    tone(520,.045,"square",.35);
+  }
+
+  function soundSpin(){
+    initAudio();
+
+    for(var i=0;i<7;i++){
+      tone(
+        150 + i*23,
+        .045,
+        "sawtooth",
+        .18,
+        i*.055
+      );
+    }
+  }
+
+  function soundStop(index){
+    initAudio();
+
+    tone(
+      180 + index*75,
+      .075,
+      "square",
+      .4
+    );
+  }
+
+  function soundWin(){
+    initAudio();
+
+    [523,659,784,1046,1318].forEach(
+      function(freq,index){
+        tone(
+          freq,
+          .18,
+          "triangle",
+          .5,
+          index*.095
+        );
+      }
+    );
+  }
+
+  /* ============================================================
+     HTML
+     ============================================================ */
+
+  function build(){
+    var root = $("rxd-slot-root");
+    if(!root) return;
+
+    root.innerHTML = `
+      <div id="rxd-overlay" aria-hidden="true">
+        <div id="rxd-panel" role="dialog" aria-modal="true"
+             aria-label="Máquina RoXThal Deluxe">
+
+          <div id="rxd-confetti"></div>
+
+          <header id="rxd-header">
+            <button id="rxd-close"
+                    type="button"
+                    aria-label="Cerrar">×</button>
+
+            <div id="rxd-brand">
+              ROXTHAL ART DESIGN
+            </div>
+
+            <div id="rxd-title">
+              OLD SCHOOL SLOT
+            </div>
+
+            <div id="rxd-subtitle">
+              Tatuaje · Suerte · 3 tiradas
+            </div>
+          </header>
+
+          <div id="rxd-lights">
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+            <i class="rxd-light"></i>
+          </div>
+
+          <section id="rxd-machine">
+
+            <div id="rxd-reel-window">
+
+              <div class="rxd-reel" data-reel="0">
+                <div class="rxd-symbols"></div>
+                <div class="rxd-center-line"></div>
+              </div>
+
+              <div class="rxd-reel" data-reel="1">
+                <div class="rxd-symbols"></div>
+                <div class="rxd-center-line"></div>
+              </div>
+
+              <div class="rxd-reel" data-reel="2">
+                <div class="rxd-symbols"></div>
+                <div class="rxd-center-line"></div>
+              </div>
+
+            </div>
+
+            <div id="rxd-jackpot">
+              🏆 1 PREMIO POR CICLO
+            </div>
+
+            <div id="rxd-machine-name">
+              ROXTHAL TATTOO JACKPOT
+            </div>
+
+          </section>
+
+          <div id="rxd-status" aria-live="polite">
+            Preparada para jugar
+          </div>
+
+          <div id="rxd-stats">
+
+            <div class="rxd-stat">
+              <b id="rxd-cycle">—</b>
+              <span>Ciclo</span>
+            </div>
+
+            <div class="rxd-stat">
+              <b id="rxd-total">—</b>
+              <span>Jugadas</span>
+            </div>
+
+            <div class="rxd-stat">
+              <b id="rxd-remaining">—</b>
+              <span>Restantes</span>
+            </div>
+
+          </div>
+
+          <div id="rxd-play-selector">
+
+            <button class="rxd-play rxd-selected"
+                    data-play="1"
+                    type="button">
+              TIRADA 1
+            </button>
+
+            <button class="rxd-play"
+                    data-play="2"
+                    type="button">
+              TIRADA 2
+            </button>
+
+            <button class="rxd-play"
+                    data-play="3"
+                    type="button">
+              TIRADA 3
+            </button>
+
+          </div>
+
+          <div id="rxd-actions">
+
+            <button id="rxd-real-play"
+                    class="rxd-btn"
+                    type="button">
+              🎰 JUGAR TIRADA 1
+            </button>
+
+            <button id="rxd-buy"
+                    class="rxd-btn"
+                    type="button">
+              💳 COMPRAR 3 TIRADAS · $1.500
+            </button>
+
+          </div>
+
+          <section id="rxd-demo" style="display:none">
+
+            <div id="rxd-demo-title">
+              🛠️ DEMO GRATUITA — ADMINISTRADOR
+            </div>
+
+            <div id="rxd-demo-warning">
+              Esta demostración es únicamente visual.
+              No consume jugadas, no crea pagos,
+              no modifica ciclos y no escribe nada en Supabase.
+            </div>
+
+            <div id="rxd-demo-actions">
+              <button id="rxd-demo-spin"
+                      type="button">
+                ▶ PROBAR DEMO
+              </button>
+            </div>
+
+            <div id="rxd-demo-label"></div>
+
+          </section>
+
+          <div id="rxd-foot">
+            Entrada: $1.500 ARS · 3 tiradas por entrada ·
+            300 tiradas por ciclo · 1 premio
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    setupReels();
+    setupEvents();
+    installCard();
+    refreshAdminVisibility();
+  }
+
+  /* ============================================================
+     RODILLOS
+     ============================================================ */
+
+  function setupReels(){
+    var reels =
+      document.querySelectorAll(
+        "#rxd-machine .rxd-reel"
+      );
+
+    reels.forEach(function(reel){
+      var track =
+        reel.querySelector(".rxd-symbols");
+
+      var html = "";
+
+      for(var i=0;i<18;i++){
+        html +=
+          '<div class="rxd-symbol">' +
+          SYMBOLS[
+            Math.floor(Math.random()*SYMBOLS.length)
+          ] +
+          "</div>";
+      }
+
+      track.innerHTML = html;
+      track.style.transform =
+        "translateY(-" +
+        (Math.floor(Math.random()*9)*78) +
+        "px)";
+    });
+  }
+
+  function setReelSymbol(index,symbol){
+    var reels =
+      document.querySelectorAll(
+        "#rxd-machine .rxd-reel"
+      );
+
+    var reel = reels[index];
+    if(!reel) return;
+
+    var track =
+      reel.querySelector(".rxd-symbols");
+
+    var html = "";
+
+    for(var i=0;i<10;i++){
+      html +=
+        '<div class="rxd-symbol">' +
+        symbol +
+        "</div>";
+    }
+
+    track.innerHTML = html;
+
+    track.style.transition =
+      "none";
+
+    track.style.transform =
+      "translateY(-" +
+      (3*78) +
+      "px)";
+  }
+
+  function clearWin(){
+    document.querySelectorAll(
+      "#rxd-machine .rxd-reel"
+    ).forEach(function(reel){
+      reel.classList.remove("rxd-win");
+    });
+
+    $("rxd-status").classList.remove(
+      "rxd-win-status"
+    );
+
+    $("rxd-confetti").innerHTML = "";
+  }
+
+  function setLights(on){
+    document.querySelectorAll(
+      "#rxd-lights .rxd-light"
+    ).forEach(function(light,index){
+      light.classList.toggle(
+        "rxd-on",
+        on ? index % 2 === 0 : false
+      );
+    });
+  }
+
+  function animateLights(){
+    var lights =
+      document.querySelectorAll(
+        "#rxd-lights .rxd-light"
+      );
+
+    var step = 0;
+
+    var timer =
+      setInterval(function(){
+
+        if(!state.busy && !state.demoBusy){
+          clearInterval(timer);
+          setLights(false);
+          return;
+        }
+
+        lights.forEach(function(light,index){
+          light.classList.toggle(
+            "rxd-on",
+            (index + step) % 3 === 0
+          );
+        });
+
+        step++;
+
+      },90);
+
+    return timer;
+  }
+
+  async function spinVisual(result){
+    var reels =
+      Array.from(
+        document.querySelectorAll(
+          "#rxd-machine .rxd-reel"
+        )
+      );
+
+    clearWin();
+    setLights(true);
+    soundSpin();
+
+    reels.forEach(function(reel){
+      reel.classList.add("rxd-spinning");
+    });
+
+    var lightTimer = animateLights();
+
+    var finalSymbols =
+      result === "win"
+        ? ["🌹","🌹","🌹"]
+        : [
+            SYMBOLS[
+              Math.floor(Math.random()*SYMBOLS.length)
+            ],
+            SYMBOLS[
+              Math.floor(Math.random()*SYMBOLS.length)
+            ],
+            SYMBOLS[
+              Math.floor(Math.random()*SYMBOLS.length)
+            ]
+          ];
+
+    for(var i=0;i<reels.length;i++){
+
+      await wait(650 + i*430);
+
+      reels[i].classList.remove(
+        "rxd-spinning"
+      );
+
+      setReelSymbol(
+        i,
+        finalSymbols[i]
+      );
+
+      soundStop(i);
+    }
+
+    clearInterval(lightTimer);
+    setLights(false);
+
+    if(result === "win"){
+      reels.forEach(function(reel){
+        reel.classList.add("rxd-win");
+      });
+
+      $("rxd-status").classList.add(
+        "rxd-win-status"
+      );
+
+      soundWin();
+      confetti();
+    }
+  }
+
+  function confetti(){
+    var box = $("rxd-confetti");
+    if(!box) return;
+
+    box.innerHTML = "";
+
+    for(var i=0;i<38;i++){
+      var piece =
+        document.createElement("span");
+
+      piece.className =
+        "rxd-confetti-piece";
+
+      piece.style.left =
+        (Math.random()*100) + "%";
+
+      piece.style.animationDelay =
+        (Math.random()*.45) + "s";
+
+      piece.style.transform =
+        "rotate(" +
+        Math.floor(Math.random()*360) +
+        "deg)";
+
+      box.appendChild(piece);
+    }
+
+    setTimeout(function(){
+      box.innerHTML = "";
+    },2300);
+  }
+
+  /* ============================================================
+     ESTADO DE LA MÁQUINA REAL
+     ============================================================ */
+
+  async function refreshRealStatus(){
+    if(!hasRealMachine()) return;
+
+    try{
+      await window.RoXThalMachine.refresh();
+    }catch(e){
+      return;
+    }
+
+    await wait(180);
+
+    var cycle =
+      document.getElementById("rxm-cycle");
+
+    var total =
+      document.getElementById("rxm-total");
+
+    if(cycle){
+      $("rxd-cycle").textContent =
+        cycle.textContent.trim() || "—";
+    }
+
+    if(total){
+      var text =
+        total.textContent.trim();
+
+      $("rxd-total").textContent =
+        text || "—";
+
+      var match =
+        text.match(/(\d+)\s*\/\s*300/);
+
+      if(match){
+        var used =
+          Number(match[1]);
+
+        $("rxd-remaining").textContent =
+          Math.max(0,300-used);
+      }else{
+        $("rxd-remaining").textContent =
+          "—";
+      }
+    }
+  }
+
+  /* ============================================================
+     PUENTE SEGURO CON LA MÁQUINA EXISTENTE
+     ============================================================ */
+
+  async function openOldBridge(){
+    if(!hasRealMachine()){
+      return false;
+    }
+
+    try{
+      await window.RoXThalMachine.open();
+      state.oldOpened = true;
+
+      var oldOverlay =
+        $("rxm-overlay");
+
+      if(oldOverlay){
+        oldOverlay.setAttribute(
+          "data-rxd-bridge",
+          "1"
+        );
+
+        oldOverlay.style.setProperty(
+          "display",
+          "none",
+          "important"
+        );
+      }
+
+      return true;
+
+    }catch(e){
+      return false;
+    }
+  }
+
+  function hideOldBridge(){
+    var oldOverlay =
+      $("rxm-overlay");
+
+    if(oldOverlay){
+      oldOverlay.style.setProperty(
+        "display",
+        "none",
+        "important"
+      );
+    }
+  }
+
+  function closeOldBridge(){
+    try{
+      if(
+        state.oldOpened &&
+        window.RoXThalMachine &&
+        typeof window.RoXThalMachine.close ===
+          "function"
+      ){
+        window.RoXThalMachine.close();
+      }
+    }catch(e){}
+
+    state.oldOpened = false;
+
+    var oldOverlay =
+      $("rxm-overlay");
+
+    if(oldOverlay){
+      oldOverlay.removeAttribute(
+        "data-rxd-bridge"
+      );
+
+      oldOverlay.style.removeProperty(
+        "display"
+      );
+    }
+  }
+
+  async function clickRealPlay(playNumber){
+    var opened =
+      await openOldBridge();
+
+    if(!opened){
+      $("rxd-status").textContent =
+        "La máquina real todavía no está disponible.";
+      return false;
+    }
+
+    await wait(250);
+
+    var buttons =
+      document.querySelectorAll(
+        "#rxm-plays .rxm-play"
+      );
+
+    var target = null;
+
+    buttons.forEach(function(button){
+      var number =
+        Number(
+          button.getAttribute("data-play-number") ||
+          button.dataset.playNumber ||
+          (
+            button.textContent.match(/\d+/) || []
+          )[0]
+        );
+
+      if(number === Number(playNumber)){
+        target = button;
+      }
+    });
+
+    if(!target){
+      buttons.forEach(function(button){
+        if(
+          !target &&
+          !button.disabled
+        ){
+          var txt =
+            button.textContent || "";
+
+          if(
+            txt.includes(
+              String(playNumber)
+            )
+          ){
+            target = button;
+          }
+        }
+      });
+    }
+
+    if(!target){
+      hideOldBridge();
+
+      $("rxd-status").textContent =
+        "No hay una tirada disponible para jugar.";
+
+      return false;
+    }
+
+    target.click();
+
+    return true;
+  }
+
+  async function waitRealResult(){
+    await wait(700);
+
+    var status =
+      document.getElementById("rxm-status");
+
+    var prize =
+      document.getElementById("rxm-prize");
+
+    var text =
+      (
+        status ? status.textContent : ""
+      ) +
+      " " +
+      (
+        prize ? prize.textContent : ""
+      );
+
+    var winner =
+      /ganad|winner|premio|felicidades/i
+        .test(text);
+
+    return winner;
+  }
+
+  /* ============================================================
+     JUGADA REAL
+     ============================================================ */
+
+  async function playReal(){
+    if(state.busy) return;
+
+    state.busy = true;
+
+    var selected =
+      state.selectedPlay;
+
+    $("rxd-real-play").disabled = true;
+    $("rxd-buy").disabled = true;
+
+    $("rxd-status").textContent =
+      "🎰 Preparando tirada " +
+      selected +
+      "...";
+
+    soundClick();
+
+    try{
+      var bridge =
+        await clickRealPlay(selected);
+
+      if(!bridge){
+        return;
+      }
+
+      $("rxd-status").textContent =
+        "🎰 ¡GIRANDO LOS RODILLOS!";
+
+      /*
+       * La animación visual NO decide el resultado.
+       * Esperamos la respuesta de la máquina real.
+       */
+
+      var resultPromise =
+        waitRealResult();
+
+      /*
+       * Mientras el backend procesa,
+       * hacemos la animación visual.
+       */
+      await spinVisual(
+        "loss"
+      );
+
+      var winner =
+        await resultPromise;
+
+      clearWin();
+
+      if(winner){
+        await showVisualWin();
+      }else{
+        $("rxd-status").textContent =
+          "Tirada realizada. ¡Suerte en la próxima!";
+      }
+
+      await refreshRealStatus();
+
+    }catch(error){
+
+      console.warn(
+        "RoXThal Deluxe:",
+        error
+      );
+
+      $("rxd-status").textContent =
+        "No se pudo completar la tirada.";
+
+    }finally{
+
+      hideOldBridge();
+
+      state.busy = false;
+
+      $("rxd-real-play").disabled =
+        false;
+
+      $("rxd-buy").disabled =
+        false;
+    }
+  }
+
+  async function showVisualWin(){
+    var reels =
+      document.querySelectorAll(
+        "#rxd-machine .rxd-reel"
+      );
+
+    reels.forEach(function(reel,index){
+      setReelSymbol(
+        index,
+        "🌹"
+      );
+
+      reel.classList.add(
+        "rxd-win"
+      );
+    });
+
+    $("rxd-status").textContent =
+      "🏆 ¡GANADOR! — ¡FELICIDADES!";
+
+    $("rxd-status").classList.add(
+      "rxd-win-status"
+    );
+
+    setLights(true);
+    soundWin();
+    confetti();
+
+    await wait(2200);
+
+    setLights(false);
+  }
+
+  /* ============================================================
+     COMPRA REAL
+     ============================================================ */
+
+  async function buyReal(){
+    if(state.busy) return;
+
+    state.busy = true;
+
+    $("rxd-buy").disabled = true;
+    $("rxd-real-play").disabled = true;
+
+    soundClick();
+
+    $("rxd-status").textContent =
+      "💳 Abriendo pago seguro...";
+
+    try{
+
+      var opened =
+        await openOldBridge();
+
+      if(!opened){
+        throw new Error(
+          "Máquina real no disponible"
+        );
+      }
+
+      await wait(250);
+
+      var oldBuy =
+        document.getElementById("rxm-buy");
+
+      if(!oldBuy){
+
+        var candidates =
+          document.querySelectorAll(
+            "#rxm-overlay button"
+          );
+
+        candidates.forEach(function(button){
+
+          if(oldBuy) return;
+
+          var text =
+            (
+              button.textContent || ""
+            ).toLowerCase();
+
+          if(
+            text.includes("comprar") ||
+            text.includes("mercado") ||
+            text.includes("1.500")
+          ){
+            oldBuy = button;
+          }
+        });
+      }
+
+      if(!oldBuy){
+        throw new Error(
+          "Botón de compra no encontrado"
+        );
+      }
+
+      /*
+       * Se pulsa el botón de compra existente.
+       * No se crea otro pago.
+       * No se duplica la integración de Mercado Pago.
+       */
+      oldBuy.click();
+
+    }catch(error){
+
+      console.warn(
+        "RoXThal Deluxe payment:",
+        error
+      );
+
+      closeOldBridge();
+
+      $("rxd-status").textContent =
+        "No se pudo abrir el proceso de pago.";
+
+      state.busy = false;
+
+      $("rxd-buy").disabled = false;
+      $("rxd-real-play").disabled = false;
+    }
+  }
+
+  /* ============================================================
+     DEMO ADMINISTRADOR
+     ============================================================ */
+
+  function refreshAdminVisibility(){
+    var demo = $("rxd-demo");
+
+    if(!demo) return;
+
+    demo.style.display =
+      isAdmin() ? "block" : "none";
+  }
+
+  async function demoSpin(){
+    if(state.demoBusy) return;
+
+    if(!isAdmin()){
+      $("rxd-demo-label").textContent =
+        "Acceso exclusivo para administrador.";
+
+      $("rxd-demo-label").style.display =
+        "block";
+
+      return;
+    }
+
+    state.demoBusy = true;
+
+    $("rxd-demo-spin").disabled = true;
+
+    clearWin();
+
+    $("rxd-demo-label").style.display =
+      "block";
+
+    $("rxd-demo-label").textContent =
+      "DEMO ADMIN — NO AFECTA JUGADAS REALES";
+
+    $("rxd-status").textContent =
+      "🛠️ DEMO: girando...";
+
+    soundClick();
+
+    /*
+     * El resultado de la DEMO es local.
+     * No llama a Supabase.
+     * No llama a Mercado Pago.
+     * No llama a roxthal_machine_play.
+     */
+    var win =
+      Math.random() < .18;
+
+    await spinVisual(
+      win ? "win" : "loss"
+    );
+
+    if(win){
+
+      $("rxd-status").textContent =
+        "🏆 DEMO ADMIN: COMBINACIÓN GANADORA";
+
+      $("rxd-demo-label").textContent =
+        "🏆 DEMO GANADORA — SIN EFECTO REAL";
+
+    }else{
+
+      $("rxd-status").textContent =
+        "🎰 DEMO ADMIN: SIN PREMIO";
+
+      $("rxd-demo-label").textContent =
+        "DEMO SIN PREMIO — NINGÚN DATO REAL FUE MODIFICADO";
+    }
+
+    $("rxd-demo-spin").disabled = false;
+    state.demoBusy = false;
+  }
+
+  /* ============================================================
+     SELECTOR DE TIRADA
+     ============================================================ */
+
+  function selectPlay(number){
+    if(state.busy) return;
+
+    state.selectedPlay =
+      Math.max(
+        1,
+        Math.min(
+          3,
+          Number(number) || 1
+        )
+      );
+
+    document.querySelectorAll(
+      "#rxd-play-selector .rxd-play"
+    ).forEach(function(button){
+
+      var n =
+        Number(
+          button.dataset.play
+        );
+
+      button.classList.toggle(
+        "rxd-selected",
+        n === state.selectedPlay
+      );
+    });
+
+    $("rxd-real-play").textContent =
+      "🎰 JUGAR TIRADA " +
+      state.selectedPlay;
+
+    soundClick();
+  }
+
+  /* ============================================================
+     ABRIR / CERRAR
+     ============================================================ */
+
+  async function open(){
+    if(state.open) return;
+
+    state.open = true;
+
+    initAudio();
+
+    var overlay =
+      $("rxd-overlay");
+
+    overlay.classList.add(
+      "rxd-open"
+    );
+
+    overlay.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+    document.body.style.overflow =
+      "hidden";
+
+    refreshAdminVisibility();
+
+    $("rxd-status").textContent =
+      "⏳ Consultando máquina...";
+
+    await refreshRealStatus();
+
+    $("rxd-status").textContent =
+      "🎰 Máquina preparada";
+
+    setupLightsIdle();
+  }
+
+  function close(){
+    state.open = false;
+
+    $("rxd-overlay").classList.remove(
+      "rxd-open"
+    );
+
+    $("rxd-overlay").setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    closeOldBridge();
+
+    if(
+      !state.busy &&
+      !state.demoBusy
+    ){
+      document.body.style.overflow =
+        "";
+    }
+
+    setLights(false);
+  }
+
+  function setupLightsIdle(){
+    var lights =
+      document.querySelectorAll(
+        "#rxd-lights .rxd-light"
+      );
+
+    lights.forEach(function(light,index){
+      light.classList.toggle(
+        "rxd-on",
+        index === 0 || index === 4 || index === 8
+      );
+    });
+  }
+
+  /* ============================================================
+     TARJETA DEL NUEVO MÓDULO
+     ============================================================ */
+
+  function installCard(){
+    var modules =
+      document.querySelector(
+        "#modulos .modules"
+      );
+
+    if(!modules){
+      installFloatingButton();
+      return;
+    }
+
+    if($("rxd-module-card")) return;
+
+    var card =
+      document.createElement("a");
+
+    card.id =
+      "rxd-module-card";
+
+    card.href =
+      "#";
+
+    card.className =
+      "module";
+
+    card.innerHTML = `
+      <div class="rxd-card-inner">
+
+        <div class="module-number">
+          09+
+        </div>
+
+        <div class="module-icon">
+          🎰🌹💀
+        </div>
+
+        <h3>
+          RoXThal Old School Slot
+        </h3>
+
+        <p>
+          Máquina Deluxe · 3 rodillos ·
+          3 tiradas por $1.500 ·
+          300 jugadas por ciclo ·
+          1 premio.
+        </p>
+
+      </div>
+    `;
+
+    card.addEventListener(
+      "click",
+      function(event){
+        event.preventDefault();
+        open();
+      }
+    );
+
+    modules.appendChild(card);
+  }
+
+  function installFloatingButton(){
+    if($("rxd-floating")) return;
+
+    var button =
+      document.createElement("button");
+
+    button.id =
+      "rxd-floating";
+
+    button.type =
+      "button";
+
+    button.textContent =
+      "🎰 RoXThal Deluxe";
+
+    button.style.cssText = `
+      position:fixed;
+      left:14px;
+      bottom:14px;
+      z-index:9998;
+      min-height:50px;
+      padding:0 17px;
+      border-radius:14px;
+      border:2px solid #d6ad45;
+      background:#111;
+      color:#ffe18b;
+      font-weight:1000;
+      box-shadow:0 8px 30px #000;
+    `;
+
+    button.addEventListener(
+      "click",
+      open
+    );
+
+    document.body.appendChild(
+      button
+    );
+  }
+
+  /* ============================================================
+     EVENTOS
+     ============================================================ */
+
+  function setupEvents(){
+
+    $("rxd-close").addEventListener(
+      "click",
+      function(){
+        soundClick();
+        close();
+      }
+    );
+
+    $("rxd-overlay").addEventListener(
+      "click",
+      function(event){
+        if(
+          event.target ===
+          $("rxd-overlay")
+        ){
+          close();
+        }
+      }
+    );
+
+    $("rxd-real-play").addEventListener(
+      "click",
+      playReal
+    );
+
+    $("rxd-buy").addEventListener(
+      "click",
+      buyReal
+    );
+
+    $("rxd-demo-spin").addEventListener(
+      "click",
+      demoSpin
+    );
+
+    document.querySelectorAll(
+      "#rxd-play-selector .rxd-play"
+    ).forEach(function(button){
+
+      button.addEventListener(
+        "click",
+        function(){
+          selectPlay(
+            button.dataset.play
+          );
+        }
+      );
+
+    });
+
+    document.addEventListener(
+      "keydown",
+      function(event){
+
+        if(
+          event.key === "Escape" &&
+          state.open
+        ){
+          close();
+        }
+
+      }
+    );
+  }
+
+  /* ============================================================
+     INICIO
+     ============================================================ */
+
+  build();
+
+  /*
+   * Si el administrador entra después de iniciar sesión,
+   * comprobamos periódicamente sin tocar Supabase.
+   */
+  setInterval(
+    refreshAdminVisibility,
+    2500
+  );
+
+  window.RoXThalDeluxeMachine = {
+    open:open,
+    close:close,
+    refresh:refreshRealStatus,
+    demo:demoSpin
+  };
+
+})();
+</script>
 </body>
 </html>
