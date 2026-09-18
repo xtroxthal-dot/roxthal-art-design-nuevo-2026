@@ -1,4 +1,4 @@
-const CACHE_NAME = "roxthal-art-design-v4";
+const CACHE_NAME = "roxthal-art-design-v5";
 
 const APP_SHELL = [
   "./",
@@ -29,6 +29,43 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
+  const url = new URL(event.request.url);
+
+  /*
+   * INDEX.HTML Y LA PÁGINA PRINCIPAL:
+   * Siempre intentamos obtener la versión actual
+   * desde GitHub Pages antes de usar la caché.
+   */
+  if (
+    url.pathname.endsWith("/index.html") ||
+    url.pathname.endsWith("/")
+  ) {
+    event.respondWith(
+      fetch(event.request, {
+        cache: "no-store"
+      })
+        .then(response => {
+          const copy = response.clone();
+
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, copy);
+          });
+
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+
+    return;
+  }
+
+  /*
+   * RESTO DE ARCHIVOS:
+   * Primero red, y si no hay conexión,
+   * utiliza la copia almacenada.
+   */
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -40,6 +77,8 @@ self.addEventListener("fetch", event => {
 
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
