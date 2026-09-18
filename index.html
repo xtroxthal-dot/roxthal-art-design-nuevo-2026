@@ -2758,7 +2758,10 @@ $('submitReview').onclick=async()=>{const name=$('reviewName').value.trim(),comm
               number,
 
             p_share_count:
-              shareCount
+              shareCount,
+
+            p_participant_key:
+              raffleState.participantKey
           }
         );
 
@@ -2767,6 +2770,14 @@ $('submitReview').onclick=async()=>{const name=$('reviewName').value.trim(),comm
         throw result.error;
       }
 
+
+      /*
+       * Las 10 acciones ya fueron consumidas
+       * por esta participación. El servidor eliminó
+       * el progreso de este participante.
+       */
+      raffleState.shareCount = 0;
+      updateRaffleShareUI();
 
       document
         .getElementById(
@@ -17120,17 +17131,21 @@ window.RoXThalStudio={
        * Nunca reducimos un contador local.
        * El máximo entre servidor y dispositivo es la fuente segura.
        */
-      const localCount = rxGetLocalCount();
-      const merged = Math.max(localCount, serverCount);
+      /*
+       * El servidor es la fuente de verdad.
+       * Después de una participación válida el progreso
+       * puede volver a 0 para este sorteo.
+       */
+      const finalCount = serverCount;
 
-      rxSetLocalCount(merged);
+      rxSetLocalCount(finalCount);
 
       return {
         participantKey,
         serverCount,
-        localCount,
-        count: merged,
-        completed: merged >= RX_REQUIRED
+        localCount: finalCount,
+        count: finalCount,
+        completed: finalCount >= RX_REQUIRED
       };
 
     } catch (error) {
@@ -17230,23 +17245,16 @@ window.RoXThalStudio={
 
       if (!server) return;
 
-      const localCount = rxGetLocalCount();
+      /*
+       * No restaurar un 10/10 antiguo desde localStorage.
+       * El servidor determina el estado actual del sorteo.
+       */
+      const serverCount = rxNumber(server.serverCount);
 
-      const merged = Math.max(
-        localCount,
-        server.serverCount
-      );
+      rxSetLocalCount(serverCount);
+      rxLastSyncedCount = serverCount;
 
-      rxSetLocalCount(merged);
-
-      if (
-        server.serverCount < merged ||
-        rxLastSyncedCount === null
-      ) {
-        await rxWriteServer(merged);
-      }
-
-      rxUpdateUI(merged);
+      rxUpdateUI(serverCount);
 
     } finally {
 
@@ -17336,9 +17344,10 @@ window.RoXThalStudio={
     ) {
       rxUpdateUI(count);
 
-      if (rxGetParticipantKey()) {
-        rxWriteServer(count);
-      }
+      /*
+       * No escribimos automáticamente el valor local al servidor.
+       * El contador solo avanza mediante el compartir oficial.
+       */
     }
   }
 
