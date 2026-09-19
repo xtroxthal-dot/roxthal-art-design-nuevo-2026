@@ -39921,5 +39921,1149 @@ setTimeout(instalarCompartirPremios,3000);
 
 })();
 </script> 
+
+   <!-- =========================================================
+     ROXTHAL — SISTEMA DE ENLACES DIRECTOS Y COMPARTIR MÓDULOS
+     V1
+     
+     PEGAR INMEDIATAMENTE ANTES DE </body>
+     
+     NO reemplaza la navegación existente.
+     NO modifica Supabase.
+     NO modifica sorteos.
+     NO modifica administración.
+     ========================================================= -->
+
+<style id="roxthal-module-share-v1-style">
+
+  /* Botón de compartir módulos */
+  .rx-module-share-btn{
+    width:100%;
+    max-width:520px;
+    margin:16px auto 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:13px 18px;
+    border:1px solid rgba(215,173,85,.55);
+    border-radius:14px;
+    background:
+      linear-gradient(
+        135deg,
+        rgba(215,173,85,.16),
+        rgba(215,173,85,.06)
+      );
+    color:var(--yellow,#d7ad55);
+    font:inherit;
+    font-weight:800;
+    cursor:pointer;
+    transition:
+      transform .18s ease,
+      background .18s ease,
+      border-color .18s ease,
+      box-shadow .18s ease;
+    box-sizing:border-box;
+  }
+
+  .rx-module-share-btn:hover{
+    background:rgba(215,173,85,.20);
+    border-color:rgba(215,173,85,.80);
+    box-shadow:0 8px 24px rgba(0,0,0,.20);
+  }
+
+  .rx-module-share-btn:active{
+    transform:scale(.98);
+  }
+
+  .rx-module-share-btn:focus-visible{
+    outline:2px solid var(--yellow,#d7ad55);
+    outline-offset:3px;
+  }
+
+  .rx-module-share-note{
+    width:100%;
+    max-width:520px;
+    margin:8px auto 0;
+    text-align:center;
+    font-size:12px;
+    line-height:1.45;
+    opacity:.65;
+  }
+
+  /* Pequeño aviso visual */
+  #rxModuleShareToast{
+    position:fixed;
+    left:50%;
+    bottom:22px;
+    transform:translateX(-50%) translateY(20px);
+    z-index:2147483647;
+    max-width:calc(100vw - 30px);
+    padding:12px 16px;
+    border:1px solid rgba(215,173,85,.45);
+    border-radius:12px;
+    background:rgba(15,15,15,.96);
+    color:#fff;
+    box-shadow:0 12px 35px rgba(0,0,0,.35);
+    font-size:14px;
+    font-weight:700;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:
+      opacity .20s ease,
+      transform .20s ease;
+    box-sizing:border-box;
+  }
+
+  #rxModuleShareToast.rx-visible{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+</style>
+
+
+<script id="roxthal-module-share-v1-script">
+
+(function(){
+
+  'use strict';
+
+  /* ---------------------------------------------------------
+     PROTECCIÓN CONTRA DUPLICADOS
+     --------------------------------------------------------- */
+
+  if(window.__ROXTHAL_MODULE_SHARE_V1__){
+    return;
+  }
+
+  window.__ROXTHAL_MODULE_SHARE_V1__ = true;
+
+
+  /* ---------------------------------------------------------
+     CONFIGURACIÓN
+     --------------------------------------------------------- */
+
+  const APP_URL =
+    'https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/';
+
+
+  /*
+   * Nombres amigables y títulos de cada módulo.
+   *
+   * Los IDs son los identificadores REALES comprobados
+   * en el index.html actual.
+   */
+
+  const MODULES = {
+
+    home:{
+      id:'home',
+      name:'Inicio',
+      title:'RoXThal Art Design'
+    },
+
+    services:{
+      id:'services',
+      name:'Servicios',
+      title:'RoXThal Art Design — Servicios'
+    },
+
+    gallery:{
+      id:'gallery',
+      name:'Galería',
+      title:'RoXThal Art Design — Galería'
+    },
+
+    school:{
+      id:'school',
+      name:'Cursos y Talleres',
+      title:'RoXThal Art Design — Cursos y Talleres'
+    },
+
+    radio:{
+      id:'radio',
+      name:'Radio',
+      title:'RoXThal Art Design — Radio'
+    },
+
+    media:{
+      id:'media',
+      name:'Fotos y Vídeos',
+      title:'RoXThal Art Design — Fotos y Vídeos'
+    },
+
+    reviews:{
+      id:'reviews',
+      name:'Reseñas',
+      title:'RoXThal Art Design — Reseñas'
+    },
+
+    raffle:{
+      id:'raffle',
+      name:'Sorteo',
+      title:'RoXThal Art Design — Sorteo'
+    },
+
+    payments:{
+      id:'payments',
+      name:'Pagos',
+      title:'RoXThal Art Design — Pagos'
+    },
+
+    search:{
+      id:'search',
+      name:'Buscadores',
+      title:'RoXThal Art Design — Buscadores'
+    },
+
+    contact:{
+      id:'contact',
+      name:'Ubicación y Contacto',
+      title:'RoXThal Art Design — Ubicación y Contacto'
+    },
+
+    visits:{
+      id:'visits',
+      name:'Visitas',
+      title:'RoXThal Art Design — Visitas'
+    },
+
+    about:{
+      id:'about',
+      name:'Sobre RoXThal',
+      title:'RoXThal Art Design — Sobre RoXThal'
+    },
+
+    ai:{
+      id:'ai',
+      name:'RoXThal IA',
+      title:'RoXThal Art Design — RoXThal IA'
+    },
+
+    admin:{
+      id:'admin',
+      name:'Administrador',
+      title:'RoXThal Art Design — Administrador'
+    },
+
+    students:{
+      id:'students',
+      name:'Control de Alumnos',
+      title:'RoXThal Art Design — Control de Alumnos'
+    }
+
+  };
+
+
+  /* ---------------------------------------------------------
+     ALIAS
+     
+     Permite usar nombres en español en los enlaces sin
+     perder compatibilidad con los IDs reales.
+     --------------------------------------------------------- */
+
+  const ALIASES = {
+
+    inicio:'home',
+
+    servicios:'services',
+    service:'services',
+
+    galeria:'gallery',
+    galería:'gallery',
+
+    cursos:'school',
+    talleres:'school',
+    escuela:'school',
+
+    radio:'radio',
+
+    fotos:'media',
+    videos:'media',
+    vídeos:'media',
+    multimedia:'media',
+    media:'media',
+
+    resenas:'reviews',
+    reseñas:'reviews',
+
+    sorteo:'raffle',
+
+    pagos:'payments',
+    pago:'payments',
+
+    buscadores:'search',
+    buscar:'search',
+
+    contacto:'contact',
+    ubicacion:'contact',
+    ubicación:'contact',
+
+    visitas:'visits',
+
+    sobre:'about',
+
+    ia:'ai',
+
+    administrador:'admin',
+    admin:'admin',
+
+    alumnos:'students',
+    estudiantes:'students'
+
+  };
+
+
+  /* ---------------------------------------------------------
+     NORMALIZAR NOMBRE DEL MÓDULO
+     --------------------------------------------------------- */
+
+  function normalizeModule(value){
+
+    if(!value){
+      return null;
+    }
+
+    let key = String(value)
+      .trim()
+      .toLowerCase();
+
+    /*
+     * Decodificación segura.
+     */
+    try{
+      key = decodeURIComponent(key);
+    }catch(e){}
+
+    /*
+     * Si ya es un ID válido.
+     */
+    if(MODULES[key]){
+      return key;
+    }
+
+    /*
+     * Si es un alias.
+     */
+    if(ALIASES[key]){
+      return ALIASES[key];
+    }
+
+    return null;
+  }
+
+
+  /* ---------------------------------------------------------
+     CREAR URL DE UN MÓDULO
+     --------------------------------------------------------- */
+
+  function moduleUrl(moduleKey){
+
+    const normalized = normalizeModule(moduleKey);
+
+    if(!normalized){
+      return APP_URL;
+    }
+
+    const url = new URL(APP_URL);
+
+    /*
+     * Usamos el ID técnico real.
+     *
+     * Ejemplo:
+     * ?modulo=services
+     */
+    url.searchParams.set(
+      'modulo',
+      MODULES[normalized].id
+    );
+
+    return url.href;
+  }
+
+
+  /* ---------------------------------------------------------
+     MOSTRAR AVISO
+     --------------------------------------------------------- */
+
+  function showToast(message){
+
+    let toast =
+      document.getElementById('rxModuleShareToast');
+
+    if(!toast){
+
+      toast = document.createElement('div');
+
+      toast.id = 'rxModuleShareToast';
+
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+
+    toast.classList.add('rx-visible');
+
+    clearTimeout(
+      toast.__rxTimer
+    );
+
+    toast.__rxTimer = setTimeout(function(){
+
+      toast.classList.remove('rx-visible');
+
+    },2600);
+
+  }
+
+
+  /* ---------------------------------------------------------
+     COPIAR ENLACE
+     --------------------------------------------------------- */
+
+  async function copyLink(url){
+
+    /*
+     * Método moderno.
+     */
+    try{
+
+      if(
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ){
+
+        await navigator.clipboard.writeText(url);
+
+        showToast(
+          '🔗 Enlace copiado. Ya podés compartirlo.'
+        );
+
+        return true;
+      }
+
+    }catch(error){
+
+      console.warn(
+        'RoXThal: Clipboard API no disponible.',
+        error
+      );
+
+    }
+
+
+    /*
+     * Respaldo para navegadores antiguos.
+     */
+    try{
+
+      const textarea =
+        document.createElement('textarea');
+
+      textarea.value = url;
+
+      textarea.setAttribute(
+        'readonly',
+        ''
+      );
+
+      textarea.style.position =
+        'fixed';
+
+      textarea.style.left =
+        '-9999px';
+
+      textarea.style.top =
+        '0';
+
+      document.body.appendChild(
+        textarea
+      );
+
+      textarea.select();
+
+      textarea.setSelectionRange(
+        0,
+        textarea.value.length
+      );
+
+      const success =
+        document.execCommand('copy');
+
+      textarea.remove();
+
+      if(success){
+
+        showToast(
+          '🔗 Enlace copiado. Ya podés compartirlo.'
+        );
+
+        return true;
+      }
+
+    }catch(error){
+
+      console.error(
+        'RoXThal: no se pudo copiar el enlace.',
+        error
+      );
+
+    }
+
+
+    /*
+     * Último recurso.
+     */
+    window.prompt(
+      'Copiá este enlace:',
+      url
+    );
+
+    return false;
+  }
+
+
+  /* ---------------------------------------------------------
+     COMPARTIR MÓDULO
+     --------------------------------------------------------- */
+
+  async function shareModule(moduleKey){
+
+    const normalized =
+      normalizeModule(moduleKey);
+
+    if(!normalized){
+      console.warn(
+        'RoXThal: módulo no reconocido:',
+        moduleKey
+      );
+
+      return;
+    }
+
+    const moduleData =
+      MODULES[normalized];
+
+    const url =
+      moduleUrl(normalized);
+
+    const shareData = {
+
+      title:
+        moduleData.title,
+
+      text:
+        '🎨 Conocé ' +
+        moduleData.name +
+        ' de RoXThal Art Design.',
+
+      url:url
+
+    };
+
+
+    /*
+     * Web Share API.
+     *
+     * Se ejecuta directamente desde el toque del botón.
+     */
+    if(
+      navigator.share &&
+      typeof navigator.share === 'function'
+    ){
+
+      try{
+
+        /*
+         * canShare existe en navegadores que permiten
+         * comprobar previamente los datos.
+         */
+        if(
+          navigator.canShare &&
+          !navigator.canShare(shareData)
+        ){
+
+          throw new Error(
+            'Los datos no pueden compartirse mediante Web Share.'
+          );
+        }
+
+        await navigator.share(
+          shareData
+        );
+
+        return;
+
+      }catch(error){
+
+        /*
+         * Si el usuario simplemente cerró la ventana
+         * de compartir, NO mostramos error.
+         */
+        if(
+          error &&
+          error.name === 'AbortError'
+        ){
+
+          return;
+        }
+
+        console.warn(
+          'RoXThal: Web Share no disponible.',
+          error
+        );
+
+      }
+
+    }
+
+
+    /*
+     * Respaldo.
+     */
+    await copyLink(url);
+
+  }
+
+
+  /* ---------------------------------------------------------
+     API PÚBLICA
+     
+     Esto permitirá posteriormente crear botones para
+     cualquier módulo sin duplicar todo el código.
+     
+     Ejemplo:
+     window.RoXThalCompartirModulo('gallery');
+     --------------------------------------------------------- */
+
+  window.RoXThalCompartirModulo =
+    shareModule;
+
+
+  window.RoXThalEnlaceModulo =
+    moduleUrl;
+
+
+  window.RoXThalModuloNormalizado =
+    normalizeModule;
+
+
+  /* ---------------------------------------------------------
+     ABRIR MÓDULO
+     --------------------------------------------------------- */
+
+  function openModule(moduleKey){
+
+    const normalized =
+      normalizeModule(moduleKey);
+
+    if(!normalized){
+      return false;
+    }
+
+    const moduleData =
+      MODULES[normalized];
+
+    const targetId =
+      moduleData.id;
+
+
+    /*
+     * PRIORIDAD 1:
+     * utilizar la función de navegación existente.
+     */
+    if(
+      typeof window.showView === 'function'
+    ){
+
+      try{
+
+        window.showView(
+          targetId
+        );
+
+        return true;
+
+      }catch(error){
+
+        console.warn(
+          'RoXThal: showView() no pudo abrir el módulo.',
+          error
+        );
+
+      }
+
+    }
+
+
+    /*
+     * PRIORIDAD 2:
+     * utilizar el botón data-go existente.
+     */
+    const navigationButton =
+      document.querySelector(
+        '[data-go="' +
+        CSS.escape(targetId) +
+        '"]'
+      );
+
+    if(navigationButton){
+
+      try{
+
+        navigationButton.click();
+
+        return true;
+
+      }catch(error){
+
+        console.warn(
+          'RoXThal: no se pudo utilizar data-go.',
+          error
+        );
+
+      }
+
+    }
+
+
+    /*
+     * PRIORIDAD 3:
+     * fallback directo.
+     *
+     * Solamente se utiliza si las dos opciones anteriores
+     * no están disponibles.
+     */
+    const section =
+      document.getElementById(
+        targetId
+      );
+
+    if(section){
+
+      document
+        .querySelectorAll('.view')
+        .forEach(function(view){
+
+          view.classList.add(
+            'hidden'
+          );
+
+        });
+
+      section.classList.remove(
+        'hidden'
+      );
+
+      window.scrollTo({
+        top:0,
+        behavior:'smooth'
+      });
+
+      return true;
+    }
+
+
+    return false;
+  }
+
+
+  /* ---------------------------------------------------------
+     OBTENER MÓDULO DESDE LA URL
+     --------------------------------------------------------- */
+
+  function getRequestedModule(){
+
+    try{
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const value =
+        params.get('modulo');
+
+      return normalizeModule(
+        value
+      );
+
+    }catch(error){
+
+      console.warn(
+        'RoXThal: error leyendo ?modulo=',
+        error
+      );
+
+      return null;
+    }
+
+  }
+
+
+  /* ---------------------------------------------------------
+     ABRIR MÓDULO DESDE ?modulo=
+     
+     Esperamos a que el sistema principal de RoXThal esté
+     cargado antes de intentar navegar.
+     --------------------------------------------------------- */
+
+  function openRequestedModule(){
+
+    const requested =
+      getRequestedModule();
+
+    if(!requested){
+      return;
+    }
+
+    let attempts = 0;
+
+    const maxAttempts = 30;
+
+    const tryOpen = function(){
+
+      attempts++;
+
+      const opened =
+        openModule(
+          requested
+        );
+
+      if(opened){
+
+        /*
+         * Una vez abierto correctamente, quitamos el
+         * parámetro de la barra del navegador.
+         *
+         * IMPORTANTE:
+         * esto NO cambia el enlace que ya fue compartido.
+         * Solamente evita que, después de navegar normalmente
+         * por la app y recargar, vuelva obligatoriamente al
+         * módulo original.
+         */
+        try{
+
+          const cleanUrl =
+            new URL(
+              window.location.href
+            );
+
+          cleanUrl.searchParams.delete(
+            'modulo'
+          );
+
+          window.history.replaceState(
+            {},
+            document.title,
+            cleanUrl.href
+          );
+
+        }catch(error){}
+
+        return;
+      }
+
+      if(attempts < maxAttempts){
+
+        setTimeout(
+          tryOpen,
+          250
+        );
+
+      }else{
+
+        console.warn(
+          'RoXThal: no se pudo abrir el módulo solicitado:',
+          requested
+        );
+
+      }
+
+    };
+
+
+    /*
+     * Primer intento después de que el DOM esté listo.
+     */
+    if(
+      document.readyState === 'loading'
+    ){
+
+      document.addEventListener(
+        'DOMContentLoaded',
+        function(){
+
+          setTimeout(
+            tryOpen,
+            150
+          );
+
+        },
+        {
+          once:true
+        }
+      );
+
+    }else{
+
+      setTimeout(
+        tryOpen,
+        150
+      );
+
+    }
+
+  }
+
+
+  /* ---------------------------------------------------------
+     CREAR BOTÓN DE SERVICIOS
+     --------------------------------------------------------- */
+
+  function installServicesShareButton(){
+
+    /*
+     * Evitar duplicados.
+     */
+    if(
+      document.getElementById(
+        'rxShareServicesButton'
+      )
+    ){
+
+      return true;
+    }
+
+
+    const services =
+      document.getElementById(
+        'services'
+      );
+
+    if(!services){
+
+      return false;
+    }
+
+
+    /*
+     * Buscamos el encabezado real del módulo.
+     */
+    const sectionHead =
+      services.querySelector(
+        '.section-head'
+      );
+
+
+    /*
+     * Si existe el encabezado, colocamos el botón
+     * inmediatamente después de la descripción.
+     */
+    const button =
+      document.createElement(
+        'button'
+      );
+
+    button.type =
+      'button';
+
+    button.id =
+      'rxShareServicesButton';
+
+    button.className =
+      'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'services'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Servicios de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Servicios</span>';
+
+
+    const note =
+      document.createElement(
+        'div'
+      );
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente el enlace de Servicios de RoXThal.';
+
+
+    /*
+     * Colocación segura.
+     */
+    if(sectionHead){
+
+      sectionHead.appendChild(
+        button
+      );
+
+      sectionHead.appendChild(
+        note
+      );
+
+    }else{
+
+      const container =
+        services.querySelector(
+          '.container'
+        );
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        services.insertBefore(
+          button,
+          services.firstChild
+        );
+
+        services.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }
+
+    }
+
+
+    return true;
+  }
+
+
+  /* ---------------------------------------------------------
+     EVENTOS DE COMPARTIR
+     
+     Delegación para que en el futuro podamos añadir:
+     
+     data-roxthal-share-module="gallery"
+     data-roxthal-share-module="school"
+     etc.
+     
+     sin modificar este sistema.
+     --------------------------------------------------------- */
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const button =
+        event.target.closest(
+          '[data-roxthal-share-module]'
+        );
+
+      if(!button){
+        return;
+      }
+
+      const moduleKey =
+        button.getAttribute(
+          'data-roxthal-share-module'
+        );
+
+      if(!moduleKey){
+        return;
+      }
+
+      event.preventDefault();
+
+      shareModule(
+        moduleKey
+      );
+
+    },
+    false
+  );
+
+
+  /* ---------------------------------------------------------
+     INSTALACIÓN RESISTENTE
+     --------------------------------------------------------- */
+
+  function install(){
+
+    installServicesShareButton();
+
+    openRequestedModule();
+
+  }
+
+
+  /*
+   * DOM listo.
+   */
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      install,
+      {
+        once:true
+      }
+    );
+
+  }else{
+
+    install();
+
+  }
+
+
+  /*
+   * Segundo intento por si los módulos son preparados
+   * por scripts posteriores.
+   */
+  setTimeout(
+    installServicesShareButton,
+    700
+  );
+
+
+  setTimeout(
+    installServicesShareButton,
+    1500
+  );
+
+
+  setTimeout(
+    installServicesShareButton,
+    3000
+  );
+
+
+  console.log(
+    'RoXThal: sistema de enlaces directos y compartir módulos V1 activo.'
+  );
+
+
+})();
+
+</script>
 </body>
 </html>
