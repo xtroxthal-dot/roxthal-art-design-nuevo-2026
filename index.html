@@ -41788,5 +41788,124 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR PAGOS
+     ========================================================= -->
+
+<script id="roxthal-share-payments-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonPagos(){
+
+    if(document.getElementById('rxSharePaymentsButton')){
+      return true;
+    }
+
+    const payments =
+      document.getElementById('payments');
+
+    if(!payments){
+      return false;
+    }
+
+    const sectionHead =
+      payments.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxSharePaymentsButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'payments'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Pagos de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Pagos</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente el enlace de Pagos de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        payments.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        payments.insertBefore(
+          button,
+          payments.firstChild
+        );
+
+        payments.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonPagos();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonPagos,700);
+  setTimeout(instalarBotonPagos,1500);
+  setTimeout(instalarBotonPagos,3000);
+
+})();
+
+</script>
 </body>
 </html>
