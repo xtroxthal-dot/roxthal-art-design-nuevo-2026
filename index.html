@@ -41669,5 +41669,124 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR SORTEO
+     ========================================================= -->
+
+<script id="roxthal-share-raffle-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonSorteo(){
+
+    if(document.getElementById('rxShareRaffleButton')){
+      return true;
+    }
+
+    const raffle =
+      document.getElementById('raffle');
+
+    if(!raffle){
+      return false;
+    }
+
+    const sectionHead =
+      raffle.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareRaffleButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'raffle'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Sorteo de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Sorteo</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente el Sorteo de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        raffle.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        raffle.insertBefore(
+          button,
+          raffle.firstChild
+        );
+
+        raffle.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonSorteo();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonSorteo,700);
+  setTimeout(instalarBotonSorteo,1500);
+  setTimeout(instalarBotonSorteo,3000);
+
+})();
+
+</script>
 </body>
 </html>
