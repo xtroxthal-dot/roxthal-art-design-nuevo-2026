@@ -41551,5 +41551,123 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR RESEÑAS
+     ========================================================= -->
+
+<script id="roxthal-share-reviews-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonResenas(){
+
+    if(document.getElementById('rxShareReviewsButton')){
+      return true;
+    }
+
+    const reviews =
+      document.getElementById('reviews');
+
+    if(!reviews){
+      return false;
+    }
+
+    const sectionHead =
+      reviews.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareReviewsButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'reviews'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Reseñas de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Reseñas</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente las Reseñas de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        reviews.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        reviews.insertBefore(
+          button,
+          reviews.firstChild
+        );
+
+        reviews.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonResenas();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonResenas,700);
+  setTimeout(instalarBotonResenas,1500);
+  setTimeout(instalarBotonResenas,3000);
+
+})();
+
+</script>
 </body>
 </html>
