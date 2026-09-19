@@ -39454,6 +39454,213 @@ if(document.readyState==="loading"){
      FIN MÓDULO 17 — QUIZ DEL ARTE
      ========================================================= -->
 
-   
+   <!-- COMPARTIR PREMIOS - MÓDULO MÁQUINA 🎰 -->
+<style>
+.roxthal-share-premios {
+  margin: 18px auto;
+  padding: 16px;
+  max-width: 520px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #171717, #292929);
+  border: 1px solid rgba(255,215,0,.45);
+  box-shadow: 0 8px 25px rgba(0,0,0,.35);
+  text-align: center;
+  color: #fff;
+  font-family: inherit;
+}
+
+.roxthal-share-premios h3 {
+  margin: 0 0 8px;
+  color: #ffd700;
+  font-size: 20px;
+}
+
+.roxthal-share-premios p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  opacity: .9;
+}
+
+.roxthal-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#ffd700,#ff9d00);
+  color: #111;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255,180,0,.3);
+}
+
+.roxthal-share-btn:active {
+  transform: scale(.97);
+}
+
+.roxthal-share-menu {
+  display: none;
+  margin-top: 12px;
+  grid-template-columns: repeat(2,1fr);
+  gap: 8px;
+}
+
+.roxthal-share-menu button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 8px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roxthal-whatsapp { background:#25D366; }
+.roxthal-facebook { background:#1877F2; }
+.roxthal-telegram { background:#229ED9; }
+.roxthal-copiar { background:#555; }
+
+.roxthal-share-menu.activo {
+  display: grid;
+}
+</style>
+
+<div class="roxthal-share-premios">
+  <h3>🎰 ¿Qué puedes ganar jugando?</h3>
+
+  <p>
+    Descubre los premios disponibles en nuestra máquina y
+    comparte esta experiencia con tus amigos.
+  </p>
+
+  <button
+    type="button"
+    class="roxthal-share-btn"
+    onclick="roxthalMostrarCompartir()">
+    📲 Compartir premios
+  </button>
+
+  <div id="roxthalShareMenu" class="roxthal-share-menu">
+
+    <button
+      type="button"
+      class="roxthal-whatsapp"
+      onclick="roxthalCompartirWhatsApp()">
+      🟢 WhatsApp
+    </button>
+
+    <button
+      type="button"
+      class="roxthal-facebook"
+      onclick="roxthalCompartirFacebook()">
+      🔵 Facebook
+    </button>
+
+    <button
+      type="button"
+      class="roxthal-telegram"
+      onclick="roxthalCompartirTelegram()">
+      ✈️ Telegram
+    </button>
+
+    <button
+      type="button"
+      class="roxthal-copiar"
+      onclick="roxthalCopiarEnlace()">
+      🔗 Copiar enlace
+    </button>
+
+  </div>
+</div>
+
+<script>
+(function () {
+
+  window.roxthalMostrarCompartir = function () {
+    const menu = document.getElementById("roxthalShareMenu");
+
+    if (menu) {
+      menu.classList.toggle("activo");
+    }
+  };
+
+  function roxthalTextoCompartir() {
+    return "🎰 ¡Mira lo que puedes ganar jugando en RoXThal Art Design! Descubre la máquina y sus premios.";
+  }
+
+  function roxthalUrl() {
+    return window.location.href;
+  }
+
+  window.roxthalCompartirWhatsApp = function () {
+    const texto =
+      roxthalTextoCompartir() +
+      "\n\n👉 " +
+      roxthalUrl();
+
+    window.open(
+      "https://wa.me/?text=" + encodeURIComponent(texto),
+      "_blank"
+    );
+  };
+
+  window.roxthalCompartirFacebook = function () {
+    const url =
+      "https://www.facebook.com/sharer/sharer.php?u=" +
+      encodeURIComponent(roxthalUrl());
+
+    window.open(
+      url,
+      "_blank",
+      "width=600,height=500"
+    );
+  };
+
+  window.roxthalCompartirTelegram = function () {
+    const texto = roxthalTextoCompartir();
+
+    const url =
+      "https://t.me/share/url?url=" +
+      encodeURIComponent(roxthalUrl()) +
+      "&text=" +
+      encodeURIComponent(texto);
+
+    window.open(
+      url,
+      "_blank"
+    );
+  };
+
+  window.roxthalCopiarEnlace = async function () {
+
+    const texto =
+      roxthalTextoCompartir() +
+      "\n\n👉 " +
+      roxthalUrl();
+
+    try {
+
+      await navigator.clipboard.writeText(texto);
+
+      alert("✅ Enlace y mensaje copiados.");
+
+    } catch (error) {
+
+      const area = document.createElement("textarea");
+      area.value = texto;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+
+      alert("✅ Enlace y mensaje copiados.");
+    }
+  };
+
+})();
+</script>
 </body>
 </html>
