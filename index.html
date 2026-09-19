@@ -41315,5 +41315,123 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR RADIO
+     ========================================================= -->
+
+<script id="roxthal-share-radio-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonRadio(){
+
+    if(document.getElementById('rxShareRadioButton')){
+      return true;
+    }
+
+    const radio =
+      document.getElementById('radio');
+
+    if(!radio){
+      return false;
+    }
+
+    const sectionHead =
+      radio.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareRadioButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'radio'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Radio de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Radio</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente la Radio de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        radio.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        radio.insertBefore(
+          button,
+          radio.firstChild
+        );
+
+        radio.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonRadio();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonRadio,700);
+  setTimeout(instalarBotonRadio,1500);
+  setTimeout(instalarBotonRadio,3000);
+
+})();
+
+</script>
 </body>
 </html>
