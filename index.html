@@ -42024,6 +42024,125 @@ setTimeout(instalarCompartirPremios,3000);
 
 })();
 
-</script>       
+</script>     
+
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR UBICACIÓN Y CONTACTO
+     ========================================================= -->
+
+<script id="roxthal-share-contact-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonContacto(){
+
+    if(document.getElementById('rxShareContactButton')){
+      return true;
+    }
+
+    const contact =
+      document.getElementById('contact');
+
+    if(!contact){
+      return false;
+    }
+
+    const sectionHead =
+      contact.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareContactButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'contact'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Ubicación y Contacto de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Ubicación y Contacto</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente la Ubicación y Contacto de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        contact.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        contact.insertBefore(
+          button,
+          contact.firstChild
+        );
+
+        contact.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonContacto();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonContacto,700);
+  setTimeout(instalarBotonContacto,1500);
+  setTimeout(instalarBotonContacto,3000);
+
+})();
+
+   </script>
 </body>
 </html>
