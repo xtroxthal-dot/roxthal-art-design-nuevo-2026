@@ -41433,5 +41433,123 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+     <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR FOTOS Y VÍDEOS
+     ========================================================= -->
+
+<script id="roxthal-share-media-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonMedia(){
+
+    if(document.getElementById('rxShareMediaButton')){
+      return true;
+    }
+
+    const media =
+      document.getElementById('media');
+
+    if(!media){
+      return false;
+    }
+
+    const sectionHead =
+      media.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareMediaButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'media'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Fotos y Vídeos de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Fotos y Vídeos</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente Fotos y Vídeos de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        media.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        media.insertBefore(
+          button,
+          media.firstChild
+        );
+
+        media.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonMedia();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonMedia,700);
+  setTimeout(instalarBotonMedia,1500);
+  setTimeout(instalarBotonMedia,3000);
+
+})();
+
+</script>
 </body>
 </html>
