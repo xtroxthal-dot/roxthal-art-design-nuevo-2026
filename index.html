@@ -41065,5 +41065,136 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+
+       <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR GALERÍA
+     V1
+     Utiliza el sistema central de compartir ya instalado.
+     ========================================================= -->
+
+<script id="roxthal-share-gallery-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonGaleria(){
+
+    /* Evitar duplicados */
+    if(document.getElementById('rxShareGalleryButton')){
+      return true;
+    }
+
+    /* Identificador real del módulo */
+    const gallery = document.getElementById('gallery');
+
+    if(!gallery){
+      return false;
+    }
+
+    /* Encabezado real del módulo */
+    const sectionHead = gallery.querySelector('.section-head');
+
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareGalleryButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'gallery'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Galería de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Galería</span>';
+
+    const note = document.createElement('div');
+
+    note.className = 'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente el enlace de la Galería de RoXThal.';
+
+    /*
+     * Colocación segura.
+     */
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        gallery.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        gallery.insertBefore(
+          button,
+          gallery.firstChild
+        );
+
+        gallery.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+
+  function instalar(){
+
+    instalarBotonGaleria();
+
+  }
+
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      { once:true }
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+
+  /*
+   * Reintentos por si la estructura del módulo
+   * aparece después mediante otro script.
+   */
+  setTimeout(instalarBotonGaleria,700);
+  setTimeout(instalarBotonGaleria,1500);
+  setTimeout(instalarBotonGaleria,3000);
+
+})();
+
+</script>    
 </body>
 </html>
