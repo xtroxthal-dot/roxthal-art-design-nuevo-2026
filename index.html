@@ -41907,5 +41907,123 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
+          <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR BUSCADORES
+     ========================================================= -->
+
+<script id="roxthal-share-search-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonBuscadores(){
+
+    if(document.getElementById('rxShareSearchButton')){
+      return true;
+    }
+
+    const search =
+      document.getElementById('search');
+
+    if(!search){
+      return false;
+    }
+
+    const sectionHead =
+      search.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareSearchButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'search'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Buscadores de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Buscadores</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente los Buscadores de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        search.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        search.insertBefore(
+          button,
+          search.firstChild
+        );
+
+        search.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonBuscadores();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonBuscadores,700);
+  setTimeout(instalarBotonBuscadores,1500);
+  setTimeout(instalarBotonBuscadores,3000);
+
+})();
+
+</script>       
 </body>
 </html>
