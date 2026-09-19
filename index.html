@@ -42144,5 +42144,124 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
    </script>
+
+     <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR ROXTHAL IA
+     ========================================================= -->
+
+<script id="roxthal-share-ai-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonIA(){
+
+    if(document.getElementById('rxShareAIButton')){
+      return true;
+    }
+
+    const ai =
+      document.getElementById('ai');
+
+    if(!ai){
+      return false;
+    }
+
+    const sectionHead =
+      ai.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareAIButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'ai'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir RoXThal IA de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir RoXThal IA</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente RoXThal IA de RoXThal Art Design.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        ai.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        ai.insertBefore(
+          button,
+          ai.firstChild
+        );
+
+        ai.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonIA();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonIA,700);
+  setTimeout(instalarBotonIA,1500);
+  setTimeout(instalarBotonIA,3000);
+
+})();
+
+</script>
 </body>
 </html>
