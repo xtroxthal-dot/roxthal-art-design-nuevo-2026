@@ -41196,5 +41196,124 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>    
+
+   <!-- =========================================================
+     ROXTHAL — BOTÓN COMPARTIR CURSOS Y TALLERES
+     ========================================================= -->
+
+<script id="roxthal-share-school-v1">
+(function(){
+
+  'use strict';
+
+  function instalarBotonCursos(){
+
+    if(document.getElementById('rxShareSchoolButton')){
+      return true;
+    }
+
+    const school =
+      document.getElementById('school');
+
+    if(!school){
+      return false;
+    }
+
+    const sectionHead =
+      school.querySelector('.section-head');
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+    button.id = 'rxShareSchoolButton';
+    button.className = 'rx-module-share-btn';
+
+    button.setAttribute(
+      'data-roxthal-share-module',
+      'school'
+    );
+
+    button.setAttribute(
+      'aria-label',
+      'Compartir Cursos y Talleres de RoXThal Art Design'
+    );
+
+    button.innerHTML =
+      '📤 <span>Compartir Cursos y Talleres</span>';
+
+    const note =
+      document.createElement('div');
+
+    note.className =
+      'rx-module-share-note';
+
+    note.textContent =
+      'Compartí directamente el enlace de Cursos y Talleres de RoXThal.';
+
+    if(sectionHead){
+
+      sectionHead.appendChild(button);
+      sectionHead.appendChild(note);
+
+    }else{
+
+      const container =
+        school.querySelector('.container');
+
+      if(container){
+
+        container.insertBefore(
+          button,
+          container.firstChild
+        );
+
+        container.insertBefore(
+          note,
+          button.nextSibling
+        );
+
+      }else{
+
+        school.insertBefore(
+          button,
+          school.firstChild
+        );
+
+        school.insertBefore(
+          note,
+          button.nextSibling
+        );
+      }
+    }
+
+    return true;
+  }
+
+  function instalar(){
+    instalarBotonCursos();
+  }
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+  setTimeout(instalarBotonCursos,700);
+  setTimeout(instalarBotonCursos,1500);
+  setTimeout(instalarBotonCursos,3000);
+
+})();
+
+</script>
 </body>
 </html>
