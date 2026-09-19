@@ -39454,213 +39454,472 @@ if(document.readyState==="loading"){
      FIN MÓDULO 17 — QUIZ DEL ARTE
      ========================================================= -->
 
-   <!-- COMPARTIR PREMIOS - MÓDULO MÁQUINA 🎰 -->
+  <!-- =========================================================
+     ROXTHAL — COMPARTIR PREMIOS · REDES Y MÓVIL
+     ========================================================= -->
+
 <style>
-.roxthal-share-premios {
-  margin: 18px auto;
-  padding: 16px;
-  max-width: 520px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #171717, #292929);
-  border: 1px solid rgba(255,215,0,.45);
-  box-shadow: 0 8px 25px rgba(0,0,0,.35);
-  text-align: center;
-  color: #fff;
-  font-family: inherit;
+#rxsd-premios-share{
+  margin-top:14px;
+  padding:15px;
+  border-radius:17px;
+  background:linear-gradient(135deg,#171717,#292929);
+  border:1px solid rgba(255,215,0,.4);
+  text-align:center;
+  box-sizing:border-box;
 }
 
-.roxthal-share-premios h3 {
-  margin: 0 0 8px;
-  color: #ffd700;
-  font-size: 20px;
+#rxsd-premios-share .rxsd-share-title{
+  color:#ffd700;
+  font-weight:900;
+  font-size:18px;
+  margin-bottom:5px;
 }
 
-.roxthal-share-premios p {
-  margin: 0 0 14px;
-  font-size: 14px;
-  opacity: .9;
+#rxsd-premios-share .rxsd-share-text{
+  color:#fff;
+  font-size:13px;
+  line-height:1.4;
+  opacity:.9;
+  margin-bottom:11px;
 }
 
-.roxthal-share-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 48px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg,#ffd700,#ff9d00);
-  color: #111;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(255,180,0,.3);
+#rxsd-premios-share-main{
+  width:100%;
+  min-height:47px;
+  border:0;
+  border-radius:13px;
+  background:linear-gradient(135deg,#ffd700,#ff9d00);
+  color:#111;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
 }
 
-.roxthal-share-btn:active {
-  transform: scale(.97);
+#rxsd-premios-share-menu{
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:9px;
 }
 
-.roxthal-share-menu {
-  display: none;
-  margin-top: 12px;
-  grid-template-columns: repeat(2,1fr);
-  gap: 8px;
+#rxsd-premios-share-menu.activo{
+  display:grid;
 }
 
-.roxthal-share-menu button {
-  border: 0;
-  border-radius: 12px;
-  padding: 12px 8px;
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
+#rxsd-premios-share-menu button{
+  min-height:43px;
+  border:0;
+  border-radius:11px;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+  cursor:pointer;
 }
 
-.roxthal-whatsapp { background:#25D366; }
-.roxthal-facebook { background:#1877F2; }
-.roxthal-telegram { background:#229ED9; }
-.roxthal-copiar { background:#555; }
+.rx-share-whatsapp{background:#25D366;}
+.rx-share-facebook{background:#1877F2;}
+.rx-share-instagram{
+  background:linear-gradient(135deg,#833AB4,#E1306C,#F77737);
+}
+.rx-share-telegram{background:#229ED9;}
+.rx-share-x{background:#111;border:1px solid #444!important;}
+.rx-share-messenger{background:#0084FF;}
+.rx-share-email{background:#666;}
+.rx-share-sms{background:#555;}
+.rx-share-native{background:#d7a84b;color:#111!important;}
+.rx-share-copy{background:#444;}
 
-.roxthal-share-menu.activo {
-  display: grid;
+#rxsd-premios-share-menu button:active{
+  transform:scale(.97);
 }
 </style>
 
-<div class="roxthal-share-premios">
-  <h3>🎰 ¿Qué puedes ganar jugando?</h3>
-
-  <p>
-    Descubre los premios disponibles en nuestra máquina y
-    comparte esta experiencia con tus amigos.
-  </p>
-
-  <button
-    type="button"
-    class="roxthal-share-btn"
-    onclick="roxthalMostrarCompartir()">
-    📲 Compartir premios
-  </button>
-
-  <div id="roxthalShareMenu" class="roxthal-share-menu">
-
-    <button
-      type="button"
-      class="roxthal-whatsapp"
-      onclick="roxthalCompartirWhatsApp()">
-      🟢 WhatsApp
-    </button>
-
-    <button
-      type="button"
-      class="roxthal-facebook"
-      onclick="roxthalCompartirFacebook()">
-      🔵 Facebook
-    </button>
-
-    <button
-      type="button"
-      class="roxthal-telegram"
-      onclick="roxthalCompartirTelegram()">
-      ✈️ Telegram
-    </button>
-
-    <button
-      type="button"
-      class="roxthal-copiar"
-      onclick="roxthalCopiarEnlace()">
-      🔗 Copiar enlace
-    </button>
-
-  </div>
-</div>
-
 <script>
-(function () {
+(function(){
 
-  window.roxthalMostrarCompartir = function () {
-    const menu = document.getElementById("roxthalShareMenu");
+'use strict';
 
-    if (menu) {
-      menu.classList.toggle("activo");
-    }
-  };
+function instalarCompartirPremios(){
 
-  function roxthalTextoCompartir() {
-    return "🎰 ¡Mira lo que puedes ganar jugando en RoXThal Art Design! Descubre la máquina y sus premios.";
+  const card=document.getElementById('rxsd-card');
+
+  if(!card) return;
+
+  if(document.getElementById('rxsd-premios-share')) return;
+
+  const bloque=document.createElement('div');
+
+  bloque.id='rxsd-premios-share';
+
+  bloque.innerHTML=`
+
+    <div class="rxsd-share-title">
+      🎰 ¿QUÉ PUEDES GANAR?
+    </div>
+
+    <div class="rxsd-share-text">
+      Descubre los premios de la Máquina RoXThal
+      y comparte la experiencia.
+    </div>
+
+    <button
+      type="button"
+      id="rxsd-premios-share-main">
+      📲 COMPARTIR PREMIOS
+    </button>
+
+    <div id="rxsd-premios-share-menu">
+
+      <button
+        type="button"
+        class="rx-share-whatsapp"
+        data-share="whatsapp">
+        🟢 WhatsApp
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-facebook"
+        data-share="facebook">
+        🔵 Facebook
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-instagram"
+        data-share="instagram">
+        📸 Instagram
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-telegram"
+        data-share="telegram">
+        ✈️ Telegram
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-x"
+        data-share="x">
+        𝕏 X
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-messenger"
+        data-share="messenger">
+        💬 Messenger
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-email"
+        data-share="email">
+        ✉️ Email
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-sms"
+        data-share="sms">
+        💬 SMS
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-native"
+        data-share="native">
+        📤 Más opciones
+      </button>
+
+      <button
+        type="button"
+        class="rx-share-copy"
+        data-share="copy">
+        🔗 Copiar enlace
+      </button>
+
+    </div>
+  `;
+
+  const enter=document.getElementById('rxsd-enter');
+
+  if(enter){
+
+    enter.insertAdjacentElement(
+      'afterend',
+      bloque
+    );
+
+  }else{
+
+    card
+      .querySelector('.rxsd-card-inner')
+      ?.appendChild(bloque);
+
   }
 
-  function roxthalUrl() {
+  const menu=
+    document.getElementById(
+      'rxsd-premios-share-menu'
+    );
+
+  document
+    .getElementById(
+      'rxsd-premios-share-main'
+    )
+    .onclick=function(){
+
+      menu.classList.toggle('activo');
+
+    };
+
+  function getTexto(){
+
+    return '🎰 ¡Mira lo que puedes ganar en la Máquina RoXThal Art Design! Descubre los premios y entra a jugar.';
+
+  }
+
+  function getURL(){
+
     return window.location.href;
+
   }
 
-  window.roxthalCompartirWhatsApp = function () {
-    const texto =
-      roxthalTextoCompartir() +
-      "\n\n👉 " +
-      roxthalUrl();
+  async function compartirNativo(){
 
-    window.open(
-      "https://wa.me/?text=" + encodeURIComponent(texto),
-      "_blank"
-    );
-  };
+    const texto=getTexto();
+    const url=getURL();
 
-  window.roxthalCompartirFacebook = function () {
-    const url =
-      "https://www.facebook.com/sharer/sharer.php?u=" +
-      encodeURIComponent(roxthalUrl());
+    if(navigator.share){
 
-    window.open(
-      url,
-      "_blank",
-      "width=600,height=500"
-    );
-  };
+      try{
 
-  window.roxthalCompartirTelegram = function () {
-    const texto = roxthalTextoCompartir();
+        await navigator.share({
+          title:'RoXThal Art Design — Máquina 🎰',
+          text:texto,
+          url:url
+        });
 
-    const url =
-      "https://t.me/share/url?url=" +
-      encodeURIComponent(roxthalUrl()) +
-      "&text=" +
-      encodeURIComponent(texto);
+        return;
 
-    window.open(
-      url,
-      "_blank"
-    );
-  };
+      }catch(e){
 
-  window.roxthalCopiarEnlace = async function () {
+        if(e.name==='AbortError') return;
 
-    const texto =
-      roxthalTextoCompartir() +
-      "\n\n👉 " +
-      roxthalUrl();
+      }
 
-    try {
-
-      await navigator.clipboard.writeText(texto);
-
-      alert("✅ Enlace y mensaje copiados.");
-
-    } catch (error) {
-
-      const area = document.createElement("textarea");
-      area.value = texto;
-      document.body.appendChild(area);
-      area.select();
-      document.execCommand("copy");
-      area.remove();
-
-      alert("✅ Enlace y mensaje copiados.");
     }
-  };
+
+    alert(
+      'Tu dispositivo no dispone de compartir nativo. Usa una de las redes disponibles.'
+    );
+
+  }
+
+  function abrir(url){
+
+    window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+  }
+
+  document
+    .querySelectorAll(
+      '#rxsd-premios-share-menu [data-share]'
+    )
+    .forEach(function(btn){
+
+      btn.addEventListener(
+        'click',
+        async function(){
+
+          const tipo=this.dataset.share;
+
+          const texto=getTexto();
+          const url=getURL();
+
+          if(tipo==='whatsapp'){
+
+            abrir(
+              'https://wa.me/?text='+
+              encodeURIComponent(
+                texto+'\n\n👉 '+url
+              )
+            );
+
+          }
+
+          else if(tipo==='facebook'){
+
+            abrir(
+              'https://www.facebook.com/sharer/sharer.php?u='+
+              encodeURIComponent(url)
+            );
+
+          }
+
+          else if(tipo==='instagram'){
+
+            /*
+             * Instagram no dispone de un compartir URL
+             * universal desde una página web.
+             * Abrimos Instagram y copiamos el contenido.
+             */
+
+            try{
+
+              await navigator.clipboard.writeText(
+                texto+'\n\n👉 '+url
+              );
+
+            }catch(e){}
+
+            abrir(
+              'https://www.instagram.com/'
+            );
+
+            alert(
+              '📸 Texto y enlace preparados. Pégalos en Instagram.'
+            );
+
+          }
+
+          else if(tipo==='telegram'){
+
+            abrir(
+              'https://t.me/share/url?url='+
+              encodeURIComponent(url)+
+              '&text='+
+              encodeURIComponent(texto)
+            );
+
+          }
+
+          else if(tipo==='x'){
+
+            abrir(
+              'https://twitter.com/intent/tweet?text='+
+              encodeURIComponent(texto)+
+              '&url='+
+              encodeURIComponent(url)
+            );
+
+          }
+
+          else if(tipo==='messenger'){
+
+            abrir(
+              'https://www.facebook.com/dialog/send?link='+
+              encodeURIComponent(url)+
+              '&app_id=123456789'
+            );
+
+          }
+
+          else if(tipo==='email'){
+
+            window.location.href=
+              'mailto:?subject='+
+              encodeURIComponent(
+                '🎰 RoXThal Art Design — Máquina'
+              )+
+              '&body='+
+              encodeURIComponent(
+                texto+'\n\n👉 '+url
+              );
+
+          }
+
+          else if(tipo==='sms'){
+
+            window.location.href=
+              'sms:?body='+
+              encodeURIComponent(
+                texto+'\n\n👉 '+url
+              );
+
+          }
+
+          else if(tipo==='native'){
+
+            await compartirNativo();
+
+          }
+
+          else if(tipo==='copy'){
+
+            const contenido=
+              texto+'\n\n👉 '+url;
+
+            try{
+
+              await navigator.clipboard.writeText(
+                contenido
+              );
+
+              alert(
+                '✅ Mensaje y enlace copiados.'
+              );
+
+            }catch(e){
+
+              const area=
+                document.createElement('textarea');
+
+              area.value=contenido;
+
+              document.body.appendChild(area);
+
+              area.select();
+
+              document.execCommand('copy');
+
+              area.remove();
+
+              alert(
+                '✅ Mensaje y enlace copiados.'
+              );
+
+            }
+
+          }
+
+        }
+      );
+
+    });
+
+}
+
+/*
+ * La tarjeta de la máquina puede crearse
+ * dinámicamente, así que comprobamos varias veces.
+ */
+
+if(document.readyState==='loading'){
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    instalarCompartirPremios
+  );
+
+}else{
+
+  instalarCompartirPremios();
+
+}
+
+setTimeout(instalarCompartirPremios,500);
+setTimeout(instalarCompartirPremios,1500);
+setTimeout(instalarCompartirPremios,3000);
 
 })();
-</script>
+</script> 
 </body>
 </html>
