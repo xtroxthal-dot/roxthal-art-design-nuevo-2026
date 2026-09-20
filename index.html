@@ -42263,73 +42263,58 @@ setTimeout(instalarCompartirPremios,3000);
 })();
 
 </script>
-
-     <!-- ROXTHAL — REPARADOR AUTOMÁTICO DEL LOGO -->
+<!-- ROXTHAL LOGO REPAIR -->
 <script>
 (function () {
-  'use strict';
-
-  const LOGO_ANTIGUO =
+  const OLD =
     'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
 
-  const LOGO_CORRECTO = './icon-512.png';
+  const NEW = './icon-512.png';
 
-  function repararElemento(el) {
-    if (!el || !el.getAttribute) return;
+  function fix() {
+    // Imágenes
+    document.querySelectorAll('img').forEach(function (img) {
+      const src = img.getAttribute('src');
+      if (src && src.includes(OLD)) {
+        img.setAttribute('src', NEW);
+      }
+    });
 
-    ['src', 'href'].forEach(function (atributo) {
-      const valor = el.getAttribute(atributo);
+    // Favicon y Apple Touch Icon
+    document.querySelectorAll('link').forEach(function (link) {
+      const href = link.getAttribute('href');
+      if (href && href.includes(OLD)) {
+        link.setAttribute('href', NEW);
+      }
+    });
 
-      if (valor && valor.indexOf(LOGO_ANTIGUO) !== -1) {
-        el.setAttribute(atributo, LOGO_CORRECTO);
+    // Elementos SVG/image si existieran
+    document.querySelectorAll('image').forEach(function (el) {
+      const href = el.getAttribute('href');
+      const xlink = el.getAttribute('xlink:href');
+
+      if (href && href.includes(OLD)) {
+        el.setAttribute('href', NEW);
+      }
+
+      if (xlink && xlink.includes(OLD)) {
+        el.setAttribute('xlink:href', NEW);
       }
     });
   }
 
-  function repararTodo() {
-    document
-      .querySelectorAll('img, link, source, image')
-      .forEach(repararElemento);
-  }
+  fix();
 
-  // Reparar inmediatamente lo que ya existe
-  repararTodo();
+  window.addEventListener('DOMContentLoaded', fix);
+  window.addEventListener('load', fix);
 
-  // Reparar cualquier elemento que la aplicación cree posteriormente
-  const observador = new MutationObserver(function (mutaciones) {
-    mutaciones.forEach(function (mutacion) {
-
-      if (mutacion.type === 'attributes') {
-        repararElemento(mutacion.target);
-      }
-
-      if (mutacion.type === 'childList') {
-        mutacion.addedNodes.forEach(function (nodo) {
-          if (nodo.nodeType === 1) {
-            repararElemento(nodo);
-
-            if (nodo.querySelectorAll) {
-              nodo
-                .querySelectorAll('img, link, source, image')
-                .forEach(repararElemento);
-            }
-          }
-        });
-      }
-    });
-  });
-
-  observador.observe(document.documentElement, {
-    subtree: true,
+  new MutationObserver(fix).observe(document.documentElement, {
     childList: true,
+    subtree: true,
     attributes: true,
-    attributeFilter: ['src', 'href']
+    attributeFilter: ['src', 'href', 'xlink:href']
   });
-
-  // Segunda pasada después de cargar completamente la aplicación
-  window.addEventListener('load', repararTodo);
-
 })();
-</script>        
+</script>
 </body>
 </html>
