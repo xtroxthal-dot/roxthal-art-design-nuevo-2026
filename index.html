@@ -49849,5 +49849,206 @@ Arte · Diseño · Tatuaje · Formación`;
 })();
 </script>
 <!-- FIN WHATSAPP REAL -->
+   <!-- ROXTHAL — DIAGNÓSTICO TEMPORAL CONSENTIMIENTO -->
+<script>
+(function () {
+  'use strict';
+
+  const STORAGE_KEY =
+    'roxthal_consentimientos_profesionales_v1';
+
+  function diagnostico() {
+
+    let registros = [];
+
+    try {
+      registros = JSON.parse(
+        localStorage.getItem(STORAGE_KEY) || '[]'
+      );
+    } catch (e) {
+      alert('No se pudo leer el almacenamiento local.');
+      return;
+    }
+
+    if (!Array.isArray(registros) || !registros.length) {
+      alert('No hay consentimientos guardados en este dispositivo.');
+      return;
+    }
+
+    const objetivo =
+      registros.find(function (r) {
+        return JSON.stringify(r).includes(
+          'RX-20260919-Y14UR4'
+        );
+      }) || registros[0];
+
+    const json =
+      JSON.stringify(objetivo, null, 2);
+
+    const fondo = document.createElement('div');
+
+    fondo.id = 'rxDiagnosticoConsentimiento';
+
+    fondo.style.cssText = `
+      position:fixed;
+      inset:0;
+      z-index:9999999;
+      background:rgba(0,0,0,.94);
+      padding:16px;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    `;
+
+    const titulo =
+      document.createElement('div');
+
+    titulo.textContent =
+      '🔎 DATOS REALES DEL CONSENTIMIENTO';
+
+    titulo.style.cssText = `
+      color:#d7ad55;
+      font-size:18px;
+      font-weight:700;
+    `;
+
+    const info =
+      document.createElement('div');
+
+    info.textContent =
+      'Copia TODO el contenido del cuadro y envíamelo aquí.';
+
+    info.style.cssText = `
+      color:#fff;
+      font-size:14px;
+    `;
+
+    const area =
+      document.createElement('textarea');
+
+    area.value = json;
+
+    area.readOnly = true;
+
+    area.style.cssText = `
+      flex:1;
+      width:100%;
+      box-sizing:border-box;
+      background:#111;
+      color:#fff;
+      border:1px solid #555;
+      border-radius:10px;
+      padding:12px;
+      font-family:monospace;
+      font-size:12px;
+      line-height:1.4;
+      resize:none;
+    `;
+
+    const controles =
+      document.createElement('div');
+
+    controles.style.cssText = `
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    `;
+
+    const copiar =
+      document.createElement('button');
+
+    copiar.textContent =
+      '📋 COPIAR JSON';
+
+    copiar.style.cssText = `
+      flex:1;
+      min-height:48px;
+      border:0;
+      border-radius:10px;
+      background:#d7ad55;
+      color:#111;
+      font-weight:700;
+      font-size:15px;
+    `;
+
+    copiar.onclick = async function () {
+
+      try {
+        await navigator.clipboard.writeText(json);
+        copiar.textContent = '✅ COPIADO';
+      } catch (e) {
+        area.focus();
+        area.select();
+        document.execCommand('copy');
+        copiar.textContent = '✅ COPIADO';
+      }
+    };
+
+    const cerrar =
+      document.createElement('button');
+
+    cerrar.textContent =
+      '✕ CERRAR';
+
+    cerrar.style.cssText = `
+      flex:1;
+      min-height:48px;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#222;
+      color:#fff;
+      font-weight:700;
+      font-size:15px;
+    `;
+
+    cerrar.onclick = function () {
+      fondo.remove();
+    };
+
+    controles.appendChild(copiar);
+    controles.appendChild(cerrar);
+
+    fondo.appendChild(titulo);
+    fondo.appendChild(info);
+    fondo.appendChild(area);
+    fondo.appendChild(controles);
+
+    document.body.appendChild(fondo);
+
+    area.focus();
+  }
+
+  const boton =
+    document.createElement('button');
+
+  boton.textContent =
+    '🔎 Diagnóstico consentimiento';
+
+  boton.id =
+    'rxDiagnosticoConsentimientoBtn';
+
+  boton.style.cssText = `
+    position:fixed;
+    left:14px;
+    bottom:14px;
+    z-index:9999998;
+    background:#222;
+    color:#d7ad55;
+    border:1px solid #d7ad55;
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:700;
+    box-shadow:0 4px 18px rgba(0,0,0,.5);
+  `;
+
+  boton.onclick = diagnostico;
+
+  document.body.appendChild(boton);
+
+})();
+</script>
+<!-- FIN DIAGNÓSTICO TEMPORAL -->
 </body>
 </html>
