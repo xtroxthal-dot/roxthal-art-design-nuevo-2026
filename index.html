@@ -43456,5 +43456,141 @@ setTimeout(instalarCompartirPremios,3000);
 
 })();
 </script>
+
+  <!-- ============================================================
+     ROXTHAL — CONTROL DE LOS 5 BOTONES FLOTANTES
+     Al entrar en un módulo: desaparecen los 5.
+     Al volver a Inicio: reaparecen automáticamente.
+     No modifica la navegación de los módulos.
+============================================================ -->
+
+<style id="roxthal-five-floating-control">
+
+  /* Los cinco botones quedan completamente fuera de la vista
+     cuando cualquier módulo está abierto. */
+  body.view-open .rx-hide-in-module {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Transición suave, sin modificar posiciones ni transforms. */
+  #rxModulesLauncher,
+  #rxStudioFab,
+  #rxToolsLauncher,
+  #rxStoreCartButtonV13,
+  .rx-hide-in-module {
+    transition:
+      opacity .22s ease,
+      visibility .22s ease !important;
+  }
+
+</style>
+
+<script id="roxthal-five-floating-control-script">
+(function () {
+  'use strict';
+
+  const FLOATING_IDS = [
+    'rxModulesLauncher',
+    'rxStudioFab',
+    'rxToolsLauncher',
+    'rxStoreCartButtonV13'
+  ];
+
+  function markFloatingButtons() {
+
+    /* 1 — Selector de módulos */
+    FLOATING_IDS.forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('rx-hide-in-module');
+      }
+    });
+
+    /*
+     * 2 — Máquina RoXThal
+     *
+     * En el index actual su botón puede ser creado dinámicamente
+     * y no dispone de un ID fijo. Lo identificamos por su texto
+     * exacto, sin tocar otros botones de la aplicación.
+     */
+    document.querySelectorAll('button').forEach(function (button) {
+
+      const text = (button.textContent || '').trim();
+
+      if (text === '🎰 Máquina RoXThal') {
+        button.classList.add('rx-hide-in-module');
+      }
+
+    });
+  }
+
+  function updateFloatingButtons() {
+
+    markFloatingButtons();
+
+    const moduleOpen =
+      document.body.classList.contains('view-open');
+
+    document.querySelectorAll('.rx-hide-in-module').forEach(function (el) {
+
+      if (moduleOpen) {
+        el.setAttribute('data-rx-floating-hidden', '1');
+      } else {
+        el.removeAttribute('data-rx-floating-hidden');
+      }
+
+    });
+  }
+
+  /*
+   * El carrito y algunos elementos de la aplicación
+   * pueden crearse después de cargar la página.
+   * El observador permite detectarlos automáticamente.
+   */
+  const observer = new MutationObserver(function () {
+    markFloatingButtons();
+
+    if (document.body.classList.contains('view-open')) {
+      document.querySelectorAll('.rx-hide-in-module').forEach(function (el) {
+        el.setAttribute('data-rx-floating-hidden', '1');
+      });
+    }
+  });
+
+  function start() {
+
+    markFloatingButtons();
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    /*
+     * Detectamos exactamente cuándo showView()
+     * abre o cierra un módulo.
+     */
+    const bodyObserver = new MutationObserver(function () {
+      updateFloatingButtons();
+    });
+
+    bodyObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    updateFloatingButtons();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+
+})();
+</script> 
 </body>
 </html>
