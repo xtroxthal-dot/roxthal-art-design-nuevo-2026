@@ -47390,5 +47390,854 @@ body.view-open #rxConsentLauncher{
     bottom: 74px !important;
   }
 </style>
+       <!-- ============================================================
+     ROXTHAL — CONEXIÓN SUPABASE
+     CONSENTIMIENTO DIGITAL PROFESIONAL
+     
+     BLOQUE AISLADO
+     - Usa el cliente Supabase existente: db
+     - No crea otro cliente
+     - No modifica showView()
+     - No modifica otros módulos
+     - Mantiene localStorage como respaldo
+============================================================ -->
+
+<script id="roxthal-consent-supabase-v1">
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_CONSENT_SUPABASE_V1__){
+    return;
+  }
+
+  window.__ROXTHAL_CONSENT_SUPABASE_V1__ = true;
+
+  const TABLE = 'tattoo_consents';
+  const STORAGE_KEY = 'roxthal_consentimientos_profesionales_v1';
+
+  /*
+   * ----------------------------------------------------------
+   * CONVERTIR REGISTRO DEL MÓDULO → SUPABASE
+   * ----------------------------------------------------------
+   */
+
+  function toSupabase(record){
+
+    return {
+
+      consent_id:
+        record.id,
+
+      client_name:
+        record.name || null,
+
+      dni:
+        record.dni || null,
+
+      birth_date:
+        record.birth || null,
+
+      phone:
+        record.phone || null,
+
+      email:
+        record.email || null,
+
+      emergency_contact:
+        record.emergency || null,
+
+      tattoo_description:
+        record.tattoo || null,
+
+      tattoo_style:
+        record.style || null,
+
+      body_area:
+        record.area || null,
+
+      approximate_size:
+        record.size || null,
+
+      color_mode:
+        record.color || null,
+
+      session_number:
+        Number(record.session || 1),
+
+      tattoo_notes:
+        record.notes || null,
+
+      health_declaration:
+        !!record.health,
+
+      skin_condition_declaration:
+        !!record.skin,
+
+      truthful_information_declaration:
+        !!record.truth,
+
+      permanence_declaration:
+        !!record.permanent,
+
+      understood_information_declaration:
+        !!record.info,
+
+      photo_work_authorization:
+        !!record.photoWork,
+
+      photo_promotion_authorization:
+        !!record.photoSocial,
+
+      photo_anonymous_authorization:
+        !!record.photoAnonymous,
+
+      observations:
+        record.additional || null,
+
+      signature_data_url:
+        record.signature || null,
+
+      status:
+        record.status || 'pending',
+
+      signed_at:
+        record.signedAt || null,
+
+      created_at:
+        record.createdAt || undefined
+
+    };
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * CONVERTIR SUPABASE → REGISTRO DEL MÓDULO
+   * ----------------------------------------------------------
+   */
+
+  function fromSupabase(row){
+
+    return {
+
+      id:
+        row.consent_id,
+
+      name:
+        row.client_name || '',
+
+      dni:
+        row.dni || '',
+
+      birth:
+        row.birth_date || '',
+
+      phone:
+        row.phone || '',
+
+      email:
+        row.email || '',
+
+      emergency:
+        row.emergency_contact || '',
+
+      tattoo:
+        row.tattoo_description || '',
+
+      style:
+        row.tattoo_style || '',
+
+      area:
+        row.body_area || '',
+
+      size:
+        row.approximate_size || '',
+
+      color:
+        row.color_mode || '',
+
+      session:
+        String(row.session_number || 1),
+
+      notes:
+        row.tattoo_notes || '',
+
+      health:
+        !!row.health_declaration,
+
+      skin:
+        !!row.skin_condition_declaration,
+
+      truth:
+        !!row.truthful_information_declaration,
+
+      permanent:
+        !!row.permanence_declaration,
+
+      info:
+        !!row.understood_information_declaration,
+
+      photoWork:
+        !!row.photo_work_authorization,
+
+      photoSocial:
+        !!row.photo_promotion_authorization,
+
+      photoAnonymous:
+        !!row.photo_anonymous_authorization,
+
+      additional:
+        row.observations || '',
+
+      signature:
+        row.signature_data_url || null,
+
+      status:
+        row.status || 'pending',
+
+      signedAt:
+        row.signed_at || null,
+
+      createdAt:
+        row.created_at || null
+
+    };
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * GUARDAR UN CONSENTIMIENTO EN SUPABASE
+   * ----------------------------------------------------------
+   */
+
+  async function subirRegistro(record){
+
+    if(!window.db){
+      console.warn(
+        'RoXThal Consent: cliente Supabase no disponible.'
+      );
+      return false;
+    }
+
+    if(!record || !record.id){
+      return false;
+    }
+
+    const payload =
+      toSupabase(record);
+
+    /*
+     * IMPORTANTE:
+     * usamos INSERT, no UPSERT.
+     *
+     * El visitante público solamente tiene permiso
+     * para crear registros.
+     */
+
+    const result =
+      await db
+        .from(TABLE)
+        .insert(payload);
+
+    if(result.error){
+
+      /*
+       * Si ya existe, no intentamos modificarlo
+       * desde el navegador público.
+       */
+
+      if(
+        result.error.code === '23505'
+      ){
+        return true;
+      }
+
+      console.error(
+        'RoXThal Consent → Supabase:',
+        result.error
+      );
+
+      return false;
+    }
+
+    return true;
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * SINCRONIZAR LOS REGISTROS LOCALES
+   * ----------------------------------------------------------
+   */
+
+  async function sincronizarLocales(){
+
+    let raw = null;
+
+    try{
+
+      raw =
+        localStorage.getItem(
+          STORAGE_KEY
+        );
+
+    }catch(error){
+
+      return;
+
+    }
+
+    if(!raw){
+      return;
+    }
+
+    let records = [];
+
+    try{
+
+      records =
+        JSON.parse(raw);
+
+    }catch(error){
+
+      return;
+
+    }
+
+    if(!Array.isArray(records) || !records.length){
+      return;
+    }
+
+    for(
+      const record of records
+    ){
+
+      try{
+
+        await subirRegistro(record);
+
+      }catch(error){
+
+        console.error(
+          'RoXThal Consent — sincronización:',
+          error
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * DETECTAR NUEVOS GUARDADOS DEL MÓDULO
+   *
+   * El módulo existente sigue funcionando exactamente igual.
+   * Cuando guarda localStorage, nosotros copiamos el nuevo
+   * consentimiento a Supabase.
+   * ----------------------------------------------------------
+   */
+
+  const originalSetItem =
+    Storage.prototype.setItem;
+
+  Storage.prototype.setItem =
+    function(key,value){
+
+      const result =
+        originalSetItem.call(
+          this,
+          key,
+          value
+        );
+
+      if(
+        this === localStorage &&
+        key === STORAGE_KEY
+      ){
+
+        try{
+
+          const records =
+            JSON.parse(value);
+
+          if(
+            Array.isArray(records) &&
+            records.length
+          ){
+
+            const newest =
+              records[0];
+
+            if(newest){
+
+              subirRegistro(
+                newest
+              ).then(function(ok){
+
+                if(ok){
+
+                  console.log(
+                    'RoXThal Consent → Supabase sincronizado:',
+                    newest.id
+                  );
+
+                }
+
+              }).catch(function(error){
+
+                console.error(
+                  'RoXThal Consent → error de sincronización:',
+                  error
+                );
+
+              });
+
+            }
+
+          }
+
+        }catch(error){
+
+          console.warn(
+            'RoXThal Consent → no se pudo sincronizar:',
+            error
+          );
+
+        }
+
+      }
+
+      return result;
+
+    };
+
+
+  /*
+   * ----------------------------------------------------------
+   * CARGAR DATOS REMOTOS SOLO PARA ADMINISTRADOR
+   * ----------------------------------------------------------
+   */
+
+  async function cargarHistorialAdmin(){
+
+    if(!window.db){
+      return;
+    }
+
+    try{
+
+      /*
+       * Comprobamos si existe una sesión válida.
+       */
+
+      const auth =
+        await db.auth.getUser();
+
+      const user =
+        auth &&
+        auth.data &&
+        auth.data.user;
+
+      if(!user){
+        return;
+      }
+
+
+      /*
+       * La función existente determina si el usuario
+       * pertenece a los administradores de RoXThal.
+       */
+
+      const adminCheck =
+        await db.rpc(
+          'ig_is_admin'
+        );
+
+      if(
+        adminCheck.error ||
+        adminCheck.data !== true
+      ){
+
+        return;
+
+      }
+
+
+      /*
+       * Solo un administrador puede leer
+       * los consentimientos.
+       */
+
+      const result =
+        await db
+          .from(TABLE)
+          .select('*')
+          .order(
+            'created_at',
+            {
+              ascending:false
+            }
+          )
+          .limit(500);
+
+
+      if(result.error){
+
+        console.error(
+          'RoXThal Consent → lectura Supabase:',
+          result.error
+        );
+
+        return;
+
+      }
+
+
+      if(!Array.isArray(result.data)){
+        return;
+      }
+
+
+      const remoteRecords =
+        result.data.map(
+          fromSupabase
+        );
+
+
+      /*
+       * Recuperamos lo que ya existe localmente.
+       */
+
+      let localRecords = [];
+
+      try{
+
+        const raw =
+          localStorage.getItem(
+            STORAGE_KEY
+          );
+
+        if(raw){
+
+          const parsed =
+            JSON.parse(raw);
+
+          if(Array.isArray(parsed)){
+            localRecords =
+              parsed;
+          }
+
+        }
+
+      }catch(error){}
+
+
+      /*
+       * Fusionamos por ID.
+       */
+
+      const merged =
+        new Map();
+
+
+      localRecords.forEach(
+        function(record){
+
+          if(record && record.id){
+
+            merged.set(
+              record.id,
+              record
+            );
+
+          }
+
+        }
+      );
+
+
+      remoteRecords.forEach(
+        function(record){
+
+          if(record && record.id){
+
+            merged.set(
+              record.id,
+              record
+            );
+
+          }
+
+        }
+      );
+
+
+      const finalRecords =
+        Array.from(
+          merged.values()
+        )
+        .sort(function(a,b){
+
+          return String(
+            b.createdAt || ''
+          ).localeCompare(
+            String(
+              a.createdAt || ''
+            )
+          );
+
+        })
+        .slice(0,500);
+
+
+      /*
+       * Guardamos la copia administrativa local.
+       */
+
+      originalSetItem.call(
+        localStorage,
+        STORAGE_KEY,
+        JSON.stringify(
+          finalRecords
+        )
+      );
+
+
+      /*
+       * El módulo ya está cargado.
+       * Forzamos una actualización visual del historial
+       * si el usuario está dentro de esa pestaña.
+       */
+
+      const historyTab =
+        document.querySelector(
+          '[data-rx-consent-tab="historial"]'
+        );
+
+      if(
+        historyTab &&
+        historyTab.classList.contains('active')
+      ){
+
+        historyTab.click();
+
+      }
+
+
+      console.log(
+        'RoXThal Consent → historial Supabase cargado:',
+        finalRecords.length
+      );
+
+
+    }catch(error){
+
+      console.error(
+        'RoXThal Consent → error cargando historial:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * BORRADO REMOTO
+   *
+   * Solo se permite si el usuario está autenticado como
+   * administrador. El borrado local sigue funcionando.
+   * ----------------------------------------------------------
+   */
+
+  const originalRemoveItem =
+    Storage.prototype.removeItem;
+
+
+  /*
+   * El módulo no utiliza removeItem para borrar registros,
+   * por lo que no modificamos comportamiento global aquí.
+   */
+
+
+  async function borrarSupabasePorId(id){
+
+    if(!window.db || !id){
+      return;
+    }
+
+    try{
+
+      const auth =
+        await db.auth.getUser();
+
+      const user =
+        auth &&
+        auth.data &&
+        auth.data.user;
+
+      if(!user){
+        return;
+      }
+
+
+      const adminCheck =
+        await db.rpc(
+          'ig_is_admin'
+        );
+
+      if(
+        adminCheck.error ||
+        adminCheck.data !== true
+      ){
+
+        return;
+
+      }
+
+
+      const result =
+        await db
+          .from(TABLE)
+          .delete()
+          .eq(
+            'consent_id',
+            id
+          );
+
+
+      if(result.error){
+
+        console.error(
+          'RoXThal Consent → error eliminando:',
+          result.error
+        );
+
+      }else{
+
+        console.log(
+          'RoXThal Consent → eliminado de Supabase:',
+          id
+        );
+
+      }
+
+    }catch(error){
+
+      console.error(
+        'RoXThal Consent → borrado remoto:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * ----------------------------------------------------------
+   * API PÚBLICA DE INTEGRACIÓN
+   * ----------------------------------------------------------
+   */
+
+  window.RoXThalConsentSupabase = {
+
+    sync:
+      sincronizarLocales,
+
+    upload:
+      subirRegistro,
+
+    loadAdmin:
+      cargarHistorialAdmin,
+
+    delete:
+      borrarSupabasePorId
+
+  };
+
+
+  /*
+   * ----------------------------------------------------------
+   * ARRANQUE
+   * ----------------------------------------------------------
+   */
+
+  function iniciar(){
+
+    /*
+     * Los registros creados anteriormente en el dispositivo
+     * se intentan subir automáticamente.
+     */
+
+    sincronizarLocales();
+
+
+    /*
+     * Si ya existe una sesión administrativa,
+     * recuperamos también el historial centralizado.
+     */
+
+    setTimeout(
+      cargarHistorialAdmin,
+      1800
+    );
+
+  }
+
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      {once:true}
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+
+  /*
+   * Cuando cambia el estado de autenticación,
+   * volvemos a comprobar el historial administrativo.
+   */
+
+  if(
+    window.db &&
+    db.auth &&
+    typeof db.auth.onAuthStateChange === 'function'
+  ){
+
+    db.auth.onAuthStateChange(
+      function(){
+
+        setTimeout(
+          cargarHistorialAdmin,
+          500
+        );
+
+      }
+    );
+
+  }
+
+})();
+</script>                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+   
 </body>
 </html>
