@@ -48237,7 +48237,860 @@ body.view-open #rxConsentLauncher{
   }
 
 })();
-</script>                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+</script>       
    
+   <!-- =========================================================
+     ROXTHAL — CONSENTIMIENTO
+     SINCRONIZACIÓN SUPABASE + WHATSAPP
+     BLOQUE INDEPENDIENTE / NO MODIFICA EL MÓDULO ORIGINAL
+========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  const RX_CONSENT_STORAGE = 'roxthal_consentimientos_profesionales_v1';
+  const RX_CONSENT_TABLE = 'tattoo_consents';
+
+  /* ---------------------------------------------------------
+     UTILIDADES
+  --------------------------------------------------------- */
+
+  function rxGetDB() {
+    try {
+      if (typeof db !== 'undefined' && db) return db;
+      if (window.db) return window.db;
+    } catch (e) {}
+
+    return null;
+  }
+
+  function rxReadLocalRecords() {
+    try {
+      const raw = localStorage.getItem(RX_CONSENT_STORAGE);
+      if (!raw) return [];
+
+      const data = JSON.parse(raw);
+
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.warn('[RoXThal Consent] No se pudieron leer los registros locales.', error);
+      return [];
+    }
+  }
+
+  function rxNormalisePhone(phone) {
+    if (!phone) return '';
+
+    let value = String(phone).trim();
+
+    /*
+      Conservamos el + si existe y eliminamos espacios,
+      guiones, paréntesis y demás caracteres.
+    */
+    value = value.replace(/[^\d+]/g, '');
+
+    /*
+      Argentina:
+      si el número viene como 11xxxxxxxx, agregamos +54 9.
+      Si ya viene internacional, lo respetamos.
+    */
+    if (value.startsWith('+549')) {
+      return value;
+    }
+
+    if (value.startsWith('549')) {
+      return '+' + value;
+    }
+
+    if (value.startsWith('+54')) {
+      const rest = value.substring(3);
+
+      if (rest.startsWith('9')) {
+        return value;
+      }
+
+      return '+549' + rest;
+    }
+
+    if (value.startsWith('54')) {
+      const rest = value.substring(2);
+
+      if (rest.startsWith('9')) {
+        return '+' + value;
+      }
+
+      return '+549' + rest;
+    }
+
+    if (value.startsWith('0')) {
+      value = value.substring(1);
+    }
+
+    if (value.length >= 10) {
+      return '+549' + value;
+    }
+
+    return value;
+  }
+
+  function rxWhatsAppMessage(record) {
+    const name =
+      record.clientName ||
+      record.nombre ||
+      record.client_name ||
+      'Cliente';
+
+    const consentId =
+      record.consentId ||
+      record.id ||
+      record.consent_id ||
+      '';
+
+    const tattoo =
+      record.tattooDescription ||
+      record.tattoo_description ||
+      'No especificado';
+
+    const area =
+      record.bodyArea ||
+      record.body_area ||
+      'No especificada';
+
+    const style =
+      record.tattooStyle ||
+      record.tattoo_style ||
+      '';
+
+    const size =
+      record.approximateSize ||
+      record.approximate_size ||
+      '';
+
+    const color =
+      record.colorMode ||
+      record.color_mode ||
+      '';
+
+    const status =
+      record.status === 'signed'
+        ? 'Firmado'
+        : (record.status || 'Pendiente');
+
+    const signed =
+      record.signedAt ||
+      record.signed_at ||
+      '';
+
+    let message =
+`Hola ${name} 👋
+
+Te enviamos la información de tu consentimiento profesional de RoXThal Art Design.
+
+📋 CONSENTIMIENTO
+ID: ${consentId}
+
+🎨 Tatuaje: ${tattoo}
+📍 Zona: ${area}`;
+
+    if (style) {
+      message += `\n🎨 Estilo: ${style}`;
+    }
+
+    if (size) {
+      message += `\n📐 Tamaño: ${size}`;
+    }
+
+    if (color) {
+      message += `\n🖤 Color: ${color}`;
+    }
+
+    message +=
+`\n\n✅ Estado: ${status}`;
+
+    if (signed) {
+      message += `\n🕒 Firmado: ${signed}`;
+    }
+
+    message +=
+`\n\nRoXThal Art Design
+Arte · Diseño · Tatuaje · Formación`;
+
+    return message;
+  }
+
+  /* ---------------------------------------------------------
+     WHATSAPP
+  --------------------------------------------------------- */
+
+  window.RoXThalConsentWhatsApp = function (record) {
+
+    if (!record) {
+      alert('No se encontró el consentimiento.');
+      return;
+    }
+
+    const phone =
+      record.phone ||
+      record.telefono ||
+      record.clientPhone ||
+      '';
+
+    const message = rxWhatsAppMessage(record);
+
+    const normalizedPhone = rxNormalisePhone(phone);
+
+    let url;
+
+    if (normalizedPhone && normalizedPhone.length >= 10) {
+      url =
+        'https://wa.me/' +
+        normalizedPhone.replace(/\+/g, '') +
+        '?text=' +
+        encodeURIComponent(message);
+    } else {
+      /*
+        Si el consentimiento no tiene teléfono,
+        abrimos WhatsApp con el mensaje preparado
+        para que el usuario pueda elegir el contacto.
+      */
+      url =
+        'https://wa.me/?text=' +
+        encodeURIComponent(message);
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  /* ---------------------------------------------------------
+     CONVERSIÓN AL FORMATO DE SUPABASE
+  --------------------------------------------------------- */
+
+  function rxToSupabase(record) {
+
+    return {
+      consent_id:
+        record.consentId ||
+        record.consent_id ||
+        record.id,
+
+      client_name:
+        record.clientName ||
+        record.client_name ||
+        record.nombre ||
+        '',
+
+      dni:
+        record.dni ||
+        null,
+
+      birth_date:
+        record.birthDate ||
+        record.birth_date ||
+        null,
+
+      phone:
+        record.phone ||
+        record.telefono ||
+        null,
+
+      email:
+        record.email ||
+        null,
+
+      emergency_contact:
+        record.emergencyContact ||
+        record.emergency_contact ||
+        null,
+
+      tattoo_description:
+        record.tattooDescription ||
+        record.tattoo_description ||
+        null,
+
+      tattoo_style:
+        record.tattooStyle ||
+        record.tattoo_style ||
+        null,
+
+      body_area:
+        record.bodyArea ||
+        record.body_area ||
+        null,
+
+      approximate_size:
+        record.approximateSize ||
+        record.approximate_size ||
+        null,
+
+      color_mode:
+        record.colorMode ||
+        record.color_mode ||
+        null,
+
+      session_number:
+        record.sessionNumber != null
+          ? Number(record.sessionNumber)
+          : (
+              record.session_number != null
+                ? Number(record.session_number)
+                : null
+            ),
+
+      tattoo_notes:
+        record.tattooNotes ||
+        record.tattoo_notes ||
+        null,
+
+      health_declaration:
+        !!(
+          record.healthDeclaration ??
+          record.health_declaration
+        ),
+
+      skin_condition_declaration:
+        !!(
+          record.skinConditionDeclaration ??
+          record.skin_condition_declaration
+        ),
+
+      truthful_information_declaration:
+        !!(
+          record.truthfulInformationDeclaration ??
+          record.truthful_information_declaration
+        ),
+
+      permanence_declaration:
+        !!(
+          record.permanenceDeclaration ??
+          record.permanence_declaration
+        ),
+
+      understood_information_declaration:
+        !!(
+          record.understoodInformationDeclaration ??
+          record.understood_information_declaration
+        ),
+
+      photo_work_authorization:
+        !!(
+          record.photoWorkAuthorization ??
+          record.photo_work_authorization
+        ),
+
+      photo_promotion_authorization:
+        !!(
+          record.photoPromotionAuthorization ??
+          record.photo_promotion_authorization
+        ),
+
+      photo_anonymous_authorization:
+        !!(
+          record.photoAnonymousAuthorization ??
+          record.photo_anonymous_authorization
+        ),
+
+      observations:
+        record.observations ||
+        null,
+
+      signature_data_url:
+        record.signature ||
+        record.signatureDataUrl ||
+        record.signature_data_url ||
+        null,
+
+      status:
+        record.status || 'pending',
+
+      signed_at:
+        record.signedAt ||
+        record.signed_at ||
+        null
+    };
+  }
+
+  /* ---------------------------------------------------------
+     SINCRONIZACIÓN
+  --------------------------------------------------------- */
+
+  async function rxUploadRecord(record) {
+
+    const client = rxGetDB();
+
+    if (!client || !record) {
+      return {
+        ok: false,
+        reason: 'db_unavailable'
+      };
+    }
+
+    const payload = rxToSupabase(record);
+
+    if (!payload.consent_id) {
+      return {
+        ok: false,
+        reason: 'missing_consent_id'
+      };
+    }
+
+    if (!payload.client_name) {
+      return {
+        ok: false,
+        reason: 'missing_client_name'
+      };
+    }
+
+    try {
+
+      const { error } = await client
+        .from(RX_CONSENT_TABLE)
+        .insert(payload);
+
+      if (!error) {
+
+        console.log(
+          '[RoXThal Consent] Sincronizado:',
+          payload.consent_id
+        );
+
+        return {
+          ok: true,
+          inserted: true,
+          consent_id: payload.consent_id
+        };
+      }
+
+      /*
+        23505 = registro ya existente.
+        No lo consideramos un error funcional.
+      */
+      if (error.code === '23505') {
+
+        console.log(
+          '[RoXThal Consent] Ya existía en Supabase:',
+          payload.consent_id
+        );
+
+        return {
+          ok: true,
+          alreadyExists: true,
+          consent_id: payload.consent_id
+        };
+      }
+
+      console.warn(
+        '[RoXThal Consent] Error Supabase:',
+        error
+      );
+
+      return {
+        ok: false,
+        reason: 'supabase_error',
+        error: error
+      };
+
+    } catch (error) {
+
+      console.warn(
+        '[RoXThal Consent] Error de conexión:',
+        error
+      );
+
+      return {
+        ok: false,
+        reason: 'exception',
+        error: error
+      };
+    }
+  }
+
+  async function rxSyncAll() {
+
+    const records = rxReadLocalRecords();
+
+    if (!records.length) {
+      return;
+    }
+
+    console.log(
+      '[RoXThal Consent] Comprobando sincronización:',
+      records.length,
+      'registro(s)'
+    );
+
+    for (const record of records) {
+      try {
+        await rxUploadRecord(record);
+      } catch (error) {
+        console.warn(
+          '[RoXThal Consent] Error sincronizando registro:',
+          error
+        );
+      }
+    }
+  }
+
+  /*
+    API pública para pruebas futuras.
+  */
+  window.RoXThalConsentSupabaseV2 = {
+    sync: rxSyncAll,
+    upload: rxUploadRecord
+  };
+
+  /* ---------------------------------------------------------
+     BOTÓN WHATSAPP EN HISTORIAL
+  --------------------------------------------------------- */
+
+  function rxGetRecordById(consentId) {
+
+    const records = rxReadLocalRecords();
+
+    return records.find(function (record) {
+
+      const id =
+        record.consentId ||
+        record.consent_id ||
+        record.id;
+
+      return String(id) === String(consentId);
+
+    }) || null;
+  }
+
+  function rxFindConsentId(element) {
+
+    const text = element.innerText || '';
+
+    const match = text.match(
+      /ID:\s*(RX-\d{8}-[A-Z0-9]+)/i
+    );
+
+    return match ? match[1] : null;
+  }
+
+  function rxAddWhatsAppButtons() {
+
+    const consentModule =
+      document.querySelector('#rxConsentApp');
+
+    if (!consentModule) {
+      return;
+    }
+
+    /*
+      Buscamos bloques del historial que contengan
+      un ID de consentimiento.
+    */
+    const allElements =
+      consentModule.querySelectorAll('*');
+
+    allElements.forEach(function (element) {
+
+      if (
+        !element.innerText ||
+        !element.innerText.includes('ID:')
+      ) {
+        return;
+      }
+
+      const consentId =
+        rxFindConsentId(element);
+
+      if (!consentId) {
+        return;
+      }
+
+      /*
+        Evitamos actuar sobre elementos demasiado grandes.
+      */
+      const textLength =
+        element.innerText.trim().length;
+
+      if (textLength > 1500) {
+        return;
+      }
+
+      /*
+        Buscamos un contenedor razonable.
+      */
+      let container = element;
+
+      for (let i = 0; i < 5; i++) {
+
+        if (!container.parentElement) break;
+
+        const parent =
+          container.parentElement;
+
+        const parentText =
+          parent.innerText || '';
+
+        if (
+          parentText.includes('ID:') &&
+          parentText.length < 2500
+        ) {
+          container = parent;
+        } else {
+          break;
+        }
+      }
+
+      if (
+        container.querySelector(
+          '.rx-consent-whatsapp-btn'
+        )
+      ) {
+        return;
+      }
+
+      const record =
+        rxGetRecordById(consentId);
+
+      if (!record) {
+        return;
+      }
+
+      const button =
+        document.createElement('button');
+
+      button.type = 'button';
+
+      button.className =
+        'rx-consent-whatsapp-btn';
+
+      button.textContent =
+        '📲 Enviar por WhatsApp';
+
+      button.addEventListener(
+        'click',
+        function (event) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          const freshRecord =
+            rxGetRecordById(consentId);
+
+          if (freshRecord) {
+            window.RoXThalConsentWhatsApp(
+              freshRecord
+            );
+          }
+        }
+      );
+
+      /*
+        Intentamos colocarlo junto a los botones
+        existentes del registro.
+      */
+      const existingButtons =
+        container.querySelectorAll('button');
+
+      if (existingButtons.length) {
+
+        const lastButton =
+          existingButtons[
+            existingButtons.length - 1
+          ];
+
+        if (lastButton.parentElement) {
+
+          lastButton.parentElement.appendChild(
+            button
+          );
+
+        } else {
+
+          container.appendChild(button);
+
+        }
+
+      } else {
+
+        container.appendChild(button);
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------
+     ESTILO DEL BOTÓN
+  --------------------------------------------------------- */
+
+  function rxInstallStyles() {
+
+    if (
+      document.getElementById(
+        'rxConsentWhatsAppStyles'
+      )
+    ) {
+      return;
+    }
+
+    const style =
+      document.createElement('style');
+
+    style.id =
+      'rxConsentWhatsAppStyles';
+
+    style.textContent = `
+      .rx-consent-whatsapp-btn {
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:7px !important;
+        margin:8px 6px 4px 0 !important;
+        padding:10px 14px !important;
+        border:1px solid rgba(37,211,102,.55) !important;
+        border-radius:10px !important;
+        background:linear-gradient(
+          135deg,
+          #128c7e,
+          #25d366
+        ) !important;
+        color:#fff !important;
+        font-weight:700 !important;
+        font-size:13px !important;
+        line-height:1.2 !important;
+        cursor:pointer !important;
+        box-shadow:
+          0 4px 14px rgba(0,0,0,.22) !important;
+        transition:
+          transform .15s ease,
+          filter .15s ease !important;
+      }
+
+      .rx-consent-whatsapp-btn:hover {
+        filter:brightness(1.08) !important;
+        transform:translateY(-1px) !important;
+      }
+
+      .rx-consent-whatsapp-btn:active {
+        transform:translateY(0) !important;
+      }
+
+      @media (max-width:600px) {
+        .rx-consent-whatsapp-btn {
+          width:100% !important;
+          min-height:42px !important;
+          margin-top:8px !important;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /* ---------------------------------------------------------
+     OBSERVADOR DEL HISTORIAL
+  --------------------------------------------------------- */
+
+  function rxStartObserver() {
+
+    if (!document.body) {
+      setTimeout(
+        rxStartObserver,
+        500
+      );
+      return;
+    }
+
+    const observer =
+      new MutationObserver(
+        function () {
+          rxAddWhatsAppButtons();
+        }
+      );
+
+    observer.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+    /*
+      También hacemos comprobaciones periódicas
+      porque algunos elementos del módulo pueden
+      actualizarse sin producir el cambio esperado.
+    */
+    setInterval(
+      rxAddWhatsAppButtons,
+      1500
+    );
+  }
+
+  /* ---------------------------------------------------------
+     ARRANQUE
+  --------------------------------------------------------- */
+
+  function rxStart() {
+
+    rxInstallStyles();
+
+    rxStartObserver();
+
+    /*
+      Primera sincronización.
+    */
+    setTimeout(
+      rxSyncAll,
+      1200
+    );
+
+    /*
+      Segunda comprobación para cubrir
+      carga tardía de Supabase/módulos.
+    */
+    setTimeout(
+      rxSyncAll,
+      5000
+    );
+
+    /*
+      Cuando la aplicación vuelve al primer plano,
+      intentamos sincronizar nuevamente.
+    */
+    document.addEventListener(
+      'visibilitychange',
+      function () {
+
+        if (
+          document.visibilityState === 'visible'
+        ) {
+          rxSyncAll();
+          rxAddWhatsAppButtons();
+        }
+      }
+    );
+
+    /*
+      Cuando la conexión vuelve.
+    */
+    window.addEventListener(
+      'online',
+      rxSyncAll
+    );
+  }
+
+  if (
+    document.readyState === 'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      rxStart,
+      { once:true }
+    );
+
+  } else {
+
+    rxStart();
+  }
+
+})();
+</script>
+<!-- FIN ROXTHAL — CONSENTIMIENTO SUPABASE + WHATSAPP -->
 </body>
 </html>
