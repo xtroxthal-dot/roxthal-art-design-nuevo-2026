@@ -43592,5 +43592,3796 @@ setTimeout(instalarCompartirPremios,3000);
 
 })();
 </script> 
+
+    <!-- ============================================================
+     ROXTHAL ART DESIGN
+     MÓDULO PROFESIONAL — CONSENTIMIENTO DIGITAL DE TATUAJES
+     
+     VERSIÓN AISLADA
+     - No modifica showView()
+     - No modifica publicViews[]
+     - No modifica módulos existentes
+     - No modifica Supabase existente
+     - Almacenamiento local como respaldo/prototipo
+============================================================ -->
+
+<style id="roxthal-consent-pro-style">
+
+/* ============================================================
+   BOTÓN DE ACCESO
+============================================================ */
+
+#rxConsentLauncher{
+  position:fixed;
+  left:16px;
+  bottom:18px;
+  z-index:99970;
+
+  min-height:50px;
+  padding:0 18px;
+
+  border:1px solid rgba(215,173,85,.65);
+  border-radius:999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(215,173,85,.96),
+      rgba(180,130,45,.96)
+    );
+
+  color:#080808;
+  font-weight:950;
+  letter-spacing:.3px;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.55),
+    0 0 25px rgba(215,173,85,.12);
+
+  cursor:pointer;
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    opacity .2s ease;
+}
+
+#rxConsentLauncher:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 14px 35px rgba(0,0,0,.65),
+    0 0 32px rgba(215,173,85,.22);
+}
+
+body.view-open #rxConsentLauncher{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+
+/* ============================================================
+   OVERLAY PRINCIPAL
+============================================================ */
+
+#rxConsentApp{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+
+  display:none;
+
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(215,173,85,.09),
+      transparent 32%
+    ),
+    #080808;
+
+  overflow-y:auto;
+
+  -webkit-overflow-scrolling:touch;
+}
+
+#rxConsentApp.rx-open{
+  display:block;
+}
+
+.rx-consent-shell{
+  width:min(1180px,94%);
+  margin:0 auto;
+  padding:20px 0 60px;
+}
+
+
+/* ============================================================
+   CABECERA
+============================================================ */
+
+.rx-consent-header{
+  position:sticky;
+  top:0;
+  z-index:20;
+
+  margin-bottom:20px;
+
+  padding:14px;
+
+  border:1px solid #292929;
+  border-radius:16px;
+
+  background:rgba(8,8,8,.93);
+
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  box-shadow:0 12px 35px rgba(0,0,0,.35);
+}
+
+.rx-consent-header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.rx-consent-brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-width:0;
+}
+
+.rx-consent-brand img{
+  width:44px;
+  height:44px;
+  object-fit:contain;
+  border-radius:50%;
+}
+
+.rx-consent-brand-text{
+  min-width:0;
+}
+
+.rx-consent-brand-text strong{
+  display:block;
+  font-size:15px;
+  letter-spacing:.8px;
+}
+
+.rx-consent-brand-text span{
+  display:block;
+  margin-top:2px;
+  color:#999;
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.rx-consent-close{
+  min-width:44px;
+  min-height:44px;
+
+  border:1px solid #292929;
+  border-radius:12px;
+
+  background:#111;
+  color:#fff;
+
+  font-size:22px;
+  cursor:pointer;
+}
+
+.rx-consent-close:hover{
+  border-color:#d7ad55;
+  color:#d7ad55;
+}
+
+
+/* ============================================================
+   NAVEGACIÓN INTERNA
+============================================================ */
+
+.rx-consent-tabs{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+
+  margin-top:13px;
+  padding-bottom:2px;
+
+  scrollbar-width:none;
+}
+
+.rx-consent-tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.rx-consent-tab{
+  flex:0 0 auto;
+
+  min-height:38px;
+  padding:0 13px;
+
+  border:1px solid #292929;
+  border-radius:999px;
+
+  background:#111;
+  color:#aaa;
+
+  font-size:12px;
+  font-weight:850;
+
+  cursor:pointer;
+}
+
+.rx-consent-tab.active{
+  background:#d7ad55;
+  border-color:#d7ad55;
+  color:#080808;
+}
+
+
+/* ============================================================
+   PANTALLAS
+============================================================ */
+
+.rx-consent-screen{
+  display:none;
+}
+
+.rx-consent-screen.active{
+  display:block;
+}
+
+.rx-consent-title{
+  margin:12px 0 6px;
+
+  font-size:clamp(28px,5vw,46px);
+  line-height:1;
+
+  letter-spacing:-1.5px;
+}
+
+.rx-consent-subtitle{
+  color:#999;
+  line-height:1.55;
+  max-width:760px;
+}
+
+.rx-consent-kicker{
+  color:#d7ad55;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+
+/* ============================================================
+   TARJETAS
+============================================================ */
+
+.rx-consent-card{
+  margin-top:16px;
+
+  padding:18px;
+
+  border:1px solid #292929;
+  border-radius:17px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #181818,
+      #101010
+    );
+
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+.rx-consent-card h3{
+  margin-bottom:7px;
+  font-size:18px;
+}
+
+.rx-consent-card p{
+  color:#aaa;
+  line-height:1.55;
+  font-size:13px;
+}
+
+
+/* ============================================================
+   GRID
+============================================================ */
+
+.rx-consent-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+
+.rx-consent-grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:13px;
+}
+
+
+/* ============================================================
+   CAMPOS
+============================================================ */
+
+.rx-consent-field{
+  display:grid;
+  gap:6px;
+  margin-top:13px;
+}
+
+.rx-consent-field label{
+  color:#aaa;
+  font-size:11px;
+  font-weight:850;
+}
+
+.rx-consent-field input,
+.rx-consent-field textarea,
+.rx-consent-field select{
+  width:100%;
+
+  min-height:44px;
+
+  padding:10px 12px;
+
+  border:1px solid #303030;
+  border-radius:10px;
+
+  outline:none;
+
+  background:#0a0a0a;
+  color:#f5f5f5;
+}
+
+.rx-consent-field textarea{
+  min-height:105px;
+  resize:vertical;
+}
+
+.rx-consent-field input:focus,
+.rx-consent-field textarea:focus,
+.rx-consent-field select:focus{
+  border-color:#d7ad55;
+  box-shadow:0 0 0 2px rgba(215,173,85,.08);
+}
+
+
+/* ============================================================
+   CHECKBOXES
+============================================================ */
+
+.rx-consent-check{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+
+  margin-top:10px;
+  padding:12px;
+
+  border:1px solid #292929;
+  border-radius:11px;
+
+  background:#0d0d0d;
+
+  cursor:pointer;
+}
+
+.rx-consent-check:hover{
+  border-color:#444;
+}
+
+.rx-consent-check input{
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  margin-top:1px;
+
+  accent-color:#d7ad55;
+}
+
+.rx-consent-check span{
+  color:#c9c9c9;
+  font-size:12px;
+  line-height:1.5;
+}
+
+
+/* ============================================================
+   AVISOS
+============================================================ */
+
+.rx-consent-notice{
+  margin-top:14px;
+  padding:13px;
+
+  border:1px solid #3b3320;
+  border-radius:12px;
+
+  background:rgba(215,173,85,.055);
+
+  color:#cfc3a1;
+
+  font-size:12px;
+  line-height:1.55;
+}
+
+.rx-consent-notice strong{
+  color:#d7ad55;
+}
+
+.rx-consent-danger{
+  border-color:#522025;
+  background:rgba(130,20,30,.07);
+  color:#d9aaaa;
+}
+
+
+/* ============================================================
+   BOTONES
+============================================================ */
+
+.rx-consent-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:18px;
+}
+
+.rx-consent-btn{
+  min-height:45px;
+  padding:0 17px;
+
+  border:1px solid #303030;
+  border-radius:11px;
+
+  background:#111;
+  color:#f5f5f5;
+
+  font-weight:850;
+  cursor:pointer;
+}
+
+.rx-consent-btn:hover{
+  border-color:#d7ad55;
+}
+
+.rx-consent-btn.primary{
+  background:#d7ad55;
+  border-color:#d7ad55;
+  color:#080808;
+}
+
+.rx-consent-btn.danger{
+  background:#210d0f;
+  border-color:#572126;
+  color:#ffb2b5;
+}
+
+.rx-consent-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+
+/* ============================================================
+   INDICADORES
+============================================================ */
+
+.rx-consent-status{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+
+  padding:6px 10px;
+
+  border-radius:999px;
+
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+}
+
+.rx-consent-status.pending{
+  background:#332a13;
+  color:#e7cb78;
+}
+
+.rx-consent-status.signed{
+  background:#12351f;
+  color:#8de2ae;
+}
+
+.rx-consent-status.cancelled{
+  background:#3b1518;
+  color:#ff9da2;
+}
+
+
+/* ============================================================
+   FIRMA
+============================================================ */
+
+.rx-consent-signature-wrap{
+  position:relative;
+
+  margin-top:13px;
+
+  border:1px solid #393939;
+  border-radius:14px;
+
+  background:#050505;
+
+  overflow:hidden;
+}
+
+#rxConsentSignature{
+  display:block;
+
+  width:100%;
+  height:240px;
+
+  touch-action:none;
+
+  cursor:crosshair;
+}
+
+.rx-consent-signature-label{
+  position:absolute;
+  left:15px;
+  top:12px;
+
+  color:#555;
+
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+
+  pointer-events:none;
+}
+
+.rx-consent-signature-line{
+  position:absolute;
+  left:10%;
+  right:10%;
+  bottom:54px;
+
+  border-bottom:1px dashed #353535;
+
+  pointer-events:none;
+}
+
+
+/* ============================================================
+   RESUMEN
+============================================================ */
+
+.rx-consent-summary{
+  display:grid;
+  gap:8px;
+
+  margin-top:14px;
+}
+
+.rx-consent-summary-row{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+
+  padding:9px 0;
+
+  border-bottom:1px solid rgba(255,255,255,.06);
+
+  font-size:13px;
+}
+
+.rx-consent-summary-row span:first-child{
+  color:#888;
+}
+
+.rx-consent-summary-row strong{
+  text-align:right;
+}
+
+
+/* ============================================================
+   HISTORIAL
+============================================================ */
+
+.rx-consent-search{
+  display:flex;
+  gap:8px;
+  margin-top:16px;
+}
+
+.rx-consent-search input{
+  flex:1;
+
+  min-height:45px;
+
+  padding:0 13px;
+
+  border:1px solid #303030;
+  border-radius:11px;
+
+  background:#0a0a0a;
+  color:#fff;
+  outline:none;
+}
+
+.rx-consent-search input:focus{
+  border-color:#d7ad55;
+}
+
+.rx-consent-list{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+
+.rx-consent-record{
+  padding:15px;
+
+  border:1px solid #292929;
+  border-radius:14px;
+
+  background:#111;
+}
+
+.rx-consent-record-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.rx-consent-record h4{
+  font-size:15px;
+}
+
+.rx-consent-record-meta{
+  margin-top:7px;
+
+  color:#888;
+
+  font-size:11px;
+  line-height:1.6;
+}
+
+
+/* ============================================================
+   VISTA DOCUMENTO
+============================================================ */
+
+#rxConsentDocument{
+  display:none;
+}
+
+.rx-consent-document{
+  background:#fff;
+  color:#111;
+
+  max-width:850px;
+  margin:0 auto;
+  padding:40px;
+
+  border-radius:4px;
+}
+
+.rx-consent-document-logo{
+  width:100px;
+  height:100px;
+  object-fit:contain;
+  display:block;
+  margin:0 auto 12px;
+}
+
+.rx-consent-document h1{
+  text-align:center;
+  font-size:25px;
+  margin-bottom:5px;
+}
+
+.rx-consent-document h2{
+  margin-top:24px;
+  padding-bottom:5px;
+  border-bottom:1px solid #ddd;
+  font-size:16px;
+}
+
+.rx-consent-document p,
+.rx-consent-document li{
+  font-size:12px;
+  line-height:1.55;
+}
+
+.rx-consent-document ul{
+  padding-left:20px;
+}
+
+.rx-consent-document-signature{
+  margin-top:25px;
+  padding-top:15px;
+  border-top:1px solid #ddd;
+}
+
+.rx-consent-document-signature img{
+  max-width:300px;
+  max-height:120px;
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+#rxConsentToast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+
+  z-index:100500;
+
+  transform:translateX(-50%) translateY(20px);
+
+  max-width:min(90%,520px);
+
+  padding:12px 16px;
+
+  border:1px solid #3b3b3b;
+  border-radius:12px;
+
+  background:#171717;
+  color:#fff;
+
+  box-shadow:0 15px 40px rgba(0,0,0,.5);
+
+  opacity:0;
+  pointer-events:none;
+
+  transition:.25s ease;
+
+  font-size:12px;
+  text-align:center;
+}
+
+#rxConsentToast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media(max-width:800px){
+
+  .rx-consent-grid,
+  .rx-consent-grid-3{
+    grid-template-columns:1fr;
+  }
+
+  .rx-consent-shell{
+    width:min(94%,680px);
+  }
+
+  .rx-consent-document{
+    padding:25px 18px;
+  }
+}
+
+@media(max-width:520px){
+
+  #rxConsentLauncher{
+    left:10px;
+    bottom:10px;
+
+    min-height:46px;
+    padding:0 13px;
+
+    font-size:12px;
+  }
+
+  .rx-consent-shell{
+    width:94%;
+    padding-top:10px;
+  }
+
+  .rx-consent-header{
+    border-radius:13px;
+  }
+
+  .rx-consent-brand-text span{
+    font-size:8px;
+  }
+
+  .rx-consent-title{
+    font-size:31px;
+  }
+
+  #rxConsentSignature{
+    height:210px;
+  }
+
+  .rx-consent-record-top{
+    flex-direction:column;
+  }
+}
+
+@media print{
+
+  body *{
+    visibility:hidden !important;
+  }
+
+  #rxConsentDocument,
+  #rxConsentDocument *{
+    visibility:visible !important;
+  }
+
+  #rxConsentDocument{
+    display:block !important;
+
+    position:absolute;
+    left:0;
+    top:0;
+
+    width:100%;
+    background:#fff;
+  }
+
+  .rx-consent-document{
+    box-shadow:none;
+    margin:0;
+    max-width:none;
+  }
+}
+
+</style>
+
+
+<!-- ============================================================
+     BOTÓN
+============================================================ -->
+
+<button
+  id="rxConsentLauncher"
+  type="button"
+  aria-label="Abrir consentimiento profesional"
+>
+  📋 Consentimiento
+</button>
+
+
+<!-- ============================================================
+     APLICACIÓN
+============================================================ -->
+
+<div id="rxConsentApp" aria-hidden="true">
+
+  <div class="rx-consent-shell">
+
+    <header class="rx-consent-header">
+
+      <div class="rx-consent-header-row">
+
+        <div class="rx-consent-brand">
+
+          <img
+            src="./icon-512.png"
+            alt="RoXThal Art Design"
+          >
+
+          <div class="rx-consent-brand-text">
+
+            <strong>RoXThal Art Design</strong>
+
+            <span>
+              Consentimiento profesional
+            </span>
+
+          </div>
+
+        </div>
+
+        <button
+          id="rxConsentClose"
+          class="rx-consent-close"
+          type="button"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <nav class="rx-consent-tabs">
+
+        <button
+          class="rx-consent-tab active"
+          data-rx-consent-tab="nuevo"
+          type="button"
+        >
+          Nuevo
+        </button>
+
+        <button
+          class="rx-consent-tab"
+          data-rx-consent-tab="revision"
+          type="button"
+        >
+          Revisión
+        </button>
+
+        <button
+          class="rx-consent-tab"
+          data-rx-consent-tab="firma"
+          type="button"
+        >
+          Firma
+        </button>
+
+        <button
+          class="rx-consent-tab"
+          data-rx-consent-tab="historial"
+          type="button"
+        >
+          Historial
+        </button>
+
+      </nav>
+
+    </header>
+
+
+    <!-- ========================================================
+         NUEVO
+    ========================================================= -->
+
+    <section
+      id="rxConsentScreenNuevo"
+      class="rx-consent-screen active"
+    >
+
+      <div class="rx-consent-kicker">
+        RoXThal · Tattoo Studio
+      </div>
+
+      <h1 class="rx-consent-title">
+        Consentimiento profesional
+      </h1>
+
+      <p class="rx-consent-subtitle">
+        Registro digital de información previa, condiciones del
+        procedimiento, autorizaciones y consentimiento del cliente.
+      </p>
+
+
+      <!-- CLIENTE -->
+
+      <div class="rx-consent-card">
+
+        <h3>01 · Datos del cliente</h3>
+
+        <p>
+          Completa los datos necesarios para identificar correctamente
+          el consentimiento.
+        </p>
+
+        <div class="rx-consent-grid">
+
+          <div class="rx-consent-field">
+            <label>Nombre y apellido *</label>
+            <input
+              id="rxCName"
+              type="text"
+              autocomplete="name"
+              placeholder="Nombre completo"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Documento / DNI</label>
+            <input
+              id="rxCDni"
+              type="text"
+              inputmode="numeric"
+              placeholder="Documento"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Fecha de nacimiento</label>
+            <input
+              id="rxCBirth"
+              type="date"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Teléfono / WhatsApp *</label>
+            <input
+              id="rxCPhone"
+              type="tel"
+              autocomplete="tel"
+              placeholder="+54..."
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Email</label>
+            <input
+              id="rxCEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="correo@ejemplo.com"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Contacto de emergencia</label>
+            <input
+              id="rxCEmergency"
+              type="text"
+              placeholder="Nombre y teléfono"
+            >
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- PROCEDIMIENTO -->
+
+      <div class="rx-consent-card">
+
+        <h3>02 · Datos del tatuaje</h3>
+
+        <p>
+          Información básica del trabajo que será realizado.
+        </p>
+
+        <div class="rx-consent-grid">
+
+          <div class="rx-consent-field">
+            <label>Descripción del diseño *</label>
+            <input
+              id="rxCTattoo"
+              type="text"
+              placeholder="Descripción del tatuaje"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Estilo</label>
+            <input
+              id="rxCStyle"
+              type="text"
+              placeholder="Blackwork, tradicional, realismo..."
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Zona corporal *</label>
+            <input
+              id="rxCArea"
+              type="text"
+              placeholder="Antebrazo, espalda..."
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Tamaño aproximado</label>
+            <input
+              id="rxCSize"
+              type="text"
+              placeholder="Ej.: 10 × 8 cm"
+            >
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Color</label>
+            <select id="rxCColor">
+              <option value="">Seleccionar</option>
+              <option>Negro y gris</option>
+              <option>Color</option>
+              <option>Mixto</option>
+            </select>
+          </div>
+
+          <div class="rx-consent-field">
+            <label>Número de sesión</label>
+            <input
+              id="rxCSession"
+              type="number"
+              min="1"
+              value="1"
+            >
+          </div>
+
+        </div>
+
+        <div class="rx-consent-field">
+          <label>Observaciones del proyecto</label>
+
+          <textarea
+            id="rxCNotes"
+            placeholder="Detalles relevantes del diseño o de la sesión..."
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <!-- DECLARACIONES -->
+
+      <div class="rx-consent-card">
+
+        <h3>03 · Declaraciones del cliente</h3>
+
+        <p>
+          El cliente debe informar de forma veraz cualquier circunstancia
+          relevante que pueda afectar al procedimiento o a la cicatrización.
+        </p>
+
+        <label class="rx-consent-check">
+          <input
+            id="rxCheckHealth"
+            type="checkbox"
+          >
+          <span>
+            Declaro que he informado de cualquier condición, antecedente,
+            alergia, tratamiento o circunstancia relevante que considere
+            necesaria para la realización segura del procedimiento.
+          </span>
+        </label>
+
+        <label class="rx-consent-check">
+          <input
+            id="rxCheckSkin"
+            type="checkbox"
+          >
+          <span>
+            Declaro que he informado si existe alguna alteración,
+            lesión, irritación o condición visible en la zona donde
+            se realizará el trabajo.
+          </span>
+        </label>
+
+        <label class="rx-consent-check">
+          <input
+            id="rxCheckTruth"
+            type="checkbox"
+          >
+          <span>
+            Declaro que la información proporcionada en este formulario
+            es verdadera y completa según mi conocimiento.
+          </span>
+        </label>
+
+        <label class="rx-consent-check">
+          <input
+            id="rxCheckPermanent"
+            type="checkbox"
+          >
+          <span>
+            Comprendo que un tatuaje es una modificación permanente del
+            cuerpo y que su eliminación o modificación posterior puede
+            requerir procedimientos adicionales.
+          </span>
+        </label>
+
+      </div>
+
+
+      <!-- INFORMACIÓN -->
+
+      <div class="rx-consent-card">
+
+        <h3>04 · Información del procedimiento</h3>
+
+        <div class="rx-consent-notice">
+
+          <strong>Información importante</strong><br><br>
+
+          El tatuaje implica una modificación permanente de la piel.
+          Durante y después del procedimiento pueden producirse molestias,
+          inflamación, enrojecimiento, sensibilidad y otros efectos
+          relacionados con el procedimiento y el proceso de cicatrización.
+
+          <br><br>
+
+          El cliente debe seguir las instrucciones de cuidado proporcionadas
+          por RoXThal y comunicar cualquier situación que considere relevante.
+
+        </div>
+
+        <label class="rx-consent-check">
+
+          <input
+            id="rxCheckInfo"
+            type="checkbox"
+          >
+
+          <span>
+            Confirmo que he leído y comprendido la información anterior
+            y que he tenido oportunidad de realizar preguntas antes
+            de continuar.
+          </span>
+
+        </label>
+
+      </div>
+
+
+      <!-- FOTOS -->
+
+      <div class="rx-consent-card">
+
+        <h3>05 · Autorización de fotografías</h3>
+
+        <p>
+          Estas autorizaciones son independientes del consentimiento
+          para realizar el tatuaje.
+        </p>
+
+        <label class="rx-consent-check">
+
+          <input
+            id="rxPhotoWork"
+            type="checkbox"
+          >
+
+          <span>
+            Autorizo a RoXThal Art Design a realizar fotografías del
+            trabajo con fines de registro del procedimiento.
+          </span>
+
+        </label>
+
+        <label class="rx-consent-check">
+
+          <input
+            id="rxPhotoSocial"
+            type="checkbox"
+          >
+
+          <span>
+            Autorizo la utilización de fotografías del trabajo para
+            portfolio, galería, redes sociales y comunicación
+            promocional de RoXThal Art Design.
+          </span>
+
+        </label>
+
+        <label class="rx-consent-check">
+
+          <input
+            id="rxPhotoAnonymous"
+            type="checkbox"
+          >
+
+          <span>
+            En caso de publicación, autorizo que el trabajo pueda
+            mostrarse sin identificar públicamente mi nombre.
+          </span>
+
+        </label>
+
+      </div>
+
+
+      <!-- ADICIONAL -->
+
+      <div class="rx-consent-card">
+
+        <h3>06 · Observaciones adicionales</h3>
+
+        <textarea
+          id="rxCAdditional"
+          style="
+            width:100%;
+            min-height:130px;
+            margin-top:10px;
+            padding:12px;
+            border:1px solid #303030;
+            border-radius:10px;
+            background:#0a0a0a;
+            color:#fff;
+            outline:none;
+          "
+          placeholder="Información adicional que el cliente desee dejar registrada..."
+        ></textarea>
+
+      </div>
+
+
+      <div class="rx-consent-notice rx-consent-danger">
+
+        Este formulario constituye un registro operativo de información
+        y consentimiento. Su contenido debe adaptarse a las condiciones
+        reales del servicio y a la legislación aplicable antes de utilizarlo
+        como documento jurídico definitivo.
+
+      </div>
+
+
+      <div class="rx-consent-actions">
+
+        <button
+          id="rxConsentContinue"
+          class="rx-consent-btn primary"
+          type="button"
+        >
+          Continuar a revisión →
+        </button>
+
+        <button
+          id="rxConsentReset"
+          class="rx-consent-btn"
+          type="button"
+        >
+          Limpiar formulario
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================
+         REVISIÓN
+    ========================================================= -->
+
+    <section
+      id="rxConsentScreenRevision"
+      class="rx-consent-screen"
+    >
+
+      <div class="rx-consent-kicker">
+        Verificación
+      </div>
+
+      <h2 class="rx-consent-title">
+        Revisá los datos
+      </h2>
+
+      <p class="rx-consent-subtitle">
+        Antes de firmar, comprobá que toda la información sea correcta.
+      </p>
+
+
+      <div class="rx-consent-card">
+
+        <h3>Resumen del consentimiento</h3>
+
+        <div
+          id="rxConsentSummary"
+          class="rx-consent-summary"
+        ></div>
+
+      </div>
+
+
+      <div class="rx-consent-card">
+
+        <h3>Autorizaciones</h3>
+
+        <div
+          id="rxConsentAuthorizations"
+          class="rx-consent-summary"
+        ></div>
+
+      </div>
+
+
+      <div class="rx-consent-notice">
+
+        <strong>Última comprobación</strong><br>
+
+        La firma digital confirma que el cliente revisó la información
+        mostrada y desea dejar constancia de su consentimiento.
+
+      </div>
+
+
+      <div class="rx-consent-actions">
+
+        <button
+          id="rxConsentBackEdit"
+          class="rx-consent-btn"
+          type="button"
+        >
+          ← Volver a editar
+        </button>
+
+        <button
+          id="rxConsentGoSign"
+          class="rx-consent-btn primary"
+          type="button"
+        >
+          Ir a firma →
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================
+         FIRMA
+    ========================================================= -->
+
+    <section
+      id="rxConsentScreenFirma"
+      class="rx-consent-screen"
+    >
+
+      <div class="rx-consent-kicker">
+        Firma digital
+      </div>
+
+      <h2 class="rx-consent-title">
+        Firmá el consentimiento
+      </h2>
+
+      <p class="rx-consent-subtitle">
+        Utilizá el dedo o un lápiz táctil para realizar la firma.
+      </p>
+
+
+      <div class="rx-consent-card">
+
+        <h3>Firma del cliente</h3>
+
+        <div class="rx-consent-signature-wrap">
+
+          <canvas id="rxConsentSignature"></canvas>
+
+          <span class="rx-consent-signature-label">
+            FIRMA AQUÍ
+          </span>
+
+          <span class="rx-consent-signature-line"></span>
+
+        </div>
+
+        <div class="rx-consent-actions">
+
+          <button
+            id="rxConsentClearSignature"
+            class="rx-consent-btn"
+            type="button"
+          >
+            Borrar firma
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="rx-consent-card">
+
+        <h3>Confirmación final</h3>
+
+        <label class="rx-consent-check">
+
+          <input
+            id="rxFinalConfirm"
+            type="checkbox"
+          >
+
+          <span>
+            Confirmo que he revisado los datos anteriores, que la información
+            aportada es correcta según mi conocimiento y que comprendo
+            el carácter permanente del procedimiento.
+          </span>
+
+        </label>
+
+      </div>
+
+
+      <div class="rx-consent-actions">
+
+        <button
+          id="rxConsentBackRevision"
+          class="rx-consent-btn"
+          type="button"
+        >
+          ← Volver
+        </button>
+
+        <button
+          id="rxConsentFinish"
+          class="rx-consent-btn primary"
+          type="button"
+        >
+          ✓ Firmar y registrar
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================
+         HISTORIAL
+    ========================================================= -->
+
+    <section
+      id="rxConsentScreenHistorial"
+      class="rx-consent-screen"
+    >
+
+      <div class="rx-consent-kicker">
+        Registros
+      </div>
+
+      <h2 class="rx-consent-title">
+        Historial
+      </h2>
+
+      <p class="rx-consent-subtitle">
+        Consulta los consentimientos registrados en este dispositivo.
+      </p>
+
+
+      <div class="rx-consent-search">
+
+        <input
+          id="rxConsentSearch"
+          type="search"
+          placeholder="Buscar por nombre, teléfono, DNI o ID..."
+          autocomplete="off"
+        >
+
+        <button
+          id="rxConsentSearchBtn"
+          class="rx-consent-btn primary"
+          type="button"
+        >
+          Buscar
+        </button>
+
+      </div>
+
+
+      <div class="rx-consent-actions">
+
+        <button
+          id="rxConsentExport"
+          class="rx-consent-btn"
+          type="button"
+        >
+          Exportar registros
+        </button>
+
+        <button
+          id="rxConsentImportBtn"
+          class="rx-consent-btn"
+          type="button"
+        >
+          Importar registros
+        </button>
+
+        <input
+          id="rxConsentImport"
+          type="file"
+          accept="application/json"
+          hidden
+        >
+
+      </div>
+
+
+      <div
+        id="rxConsentList"
+        class="rx-consent-list"
+      ></div>
+
+    </section>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     DOCUMENTO PARA IMPRESIÓN / PDF
+============================================================ -->
+
+<div id="rxConsentDocument"></div>
+
+
+<!-- ============================================================
+     TOAST
+============================================================ -->
+
+<div id="rxConsentToast"></div>
+
+
+<script id="roxthal-consent-pro-script">
+(function(){
+
+  'use strict';
+
+
+  /* ==========================================================
+     CONFIGURACIÓN
+  ========================================================== */
+
+  const STORAGE_KEY =
+    'roxthal_consentimientos_profesionales_v1';
+
+  const BRAND_LOGO =
+    './icon-512.png';
+
+
+  /* ==========================================================
+     DOM
+  ========================================================== */
+
+  const app =
+    document.getElementById('rxConsentApp');
+
+  const launcher =
+    document.getElementById('rxConsentLauncher');
+
+  const closeBtn =
+    document.getElementById('rxConsentClose');
+
+  const toast =
+    document.getElementById('rxConsentToast');
+
+  const canvas =
+    document.getElementById('rxConsentSignature');
+
+
+  if(!app || !launcher || !canvas){
+    return;
+  }
+
+
+  /* ==========================================================
+     ESTADO
+  ========================================================== */
+
+  let records =
+    loadRecords();
+
+  let current =
+    null;
+
+  let drawing =
+    false;
+
+  let hasSignature =
+    false;
+
+
+  /* ==========================================================
+     UTILIDADES
+  ========================================================== */
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+
+  function escapeHTML(value){
+
+    return String(value == null ? '' : value)
+
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+
+  }
+
+
+  function showToast(message){
+
+    toast.textContent =
+      message;
+
+    toast.classList.add('show');
+
+    clearTimeout(showToast.timer);
+
+    showToast.timer =
+      setTimeout(function(){
+
+        toast.classList.remove('show');
+
+      },2600);
+
+  }
+
+
+  function nowISO(){
+
+    return new Date().toISOString();
+
+  }
+
+
+  function formatDate(value){
+
+    if(!value){
+      return '—';
+    }
+
+    const d =
+      new Date(value);
+
+    if(Number.isNaN(d.getTime())){
+      return value;
+    }
+
+    return d.toLocaleString(
+      'es-AR',
+      {
+        dateStyle:'short',
+        timeStyle:'short'
+      }
+    );
+
+  }
+
+
+  function generateID(){
+
+    const date =
+      new Date();
+
+    const y =
+      date.getFullYear();
+
+    const m =
+      String(date.getMonth()+1)
+        .padStart(2,'0');
+
+    const d =
+      String(date.getDate())
+        .padStart(2,'0');
+
+    const random =
+      Math.random()
+        .toString(36)
+        .slice(2,8)
+        .toUpperCase();
+
+    return (
+      'RX-' +
+      y +
+      m +
+      d +
+      '-' +
+      random
+    );
+
+  }
+
+
+  /* ==========================================================
+     STORAGE
+  ========================================================== */
+
+  function loadRecords(){
+
+    try{
+
+      const raw =
+        localStorage.getItem(
+          STORAGE_KEY
+        );
+
+      if(!raw){
+        return [];
+      }
+
+      const parsed =
+        JSON.parse(raw);
+
+      return Array.isArray(parsed)
+        ? parsed
+        : [];
+
+    }catch(error){
+
+      console.warn(
+        'RoXThal Consent:',
+        error
+      );
+
+      return [];
+
+    }
+
+  }
+
+
+  function saveRecords(){
+
+    try{
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(records)
+      );
+
+      return true;
+
+    }catch(error){
+
+      console.error(
+        'RoXThal Consent:',
+        error
+      );
+
+      showToast(
+        'No se pudo guardar el registro en este dispositivo.'
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     ABRIR / CERRAR
+  ========================================================== */
+
+  function openApp(){
+
+    app.classList.add('rx-open');
+
+    app.setAttribute(
+      'aria-hidden',
+      'false'
+    );
+
+    document.body.style.overflow =
+      'hidden';
+
+    resizeCanvas();
+
+    showTab('nuevo');
+
+  }
+
+
+  function closeApp(){
+
+    app.classList.remove('rx-open');
+
+    app.setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+    document.body.style.overflow =
+      '';
+
+  }
+
+
+  launcher.addEventListener(
+    'click',
+    openApp
+  );
+
+
+  closeBtn.addEventListener(
+    'click',
+    closeApp
+  );
+
+
+  /* ==========================================================
+     TABS
+  ========================================================== */
+
+  function showTab(name){
+
+    document
+      .querySelectorAll(
+        '[data-rx-consent-tab]'
+      )
+      .forEach(function(btn){
+
+        btn.classList.toggle(
+          'active',
+          btn.dataset.rxConsentTab === name
+        );
+
+      });
+
+
+    document
+      .querySelectorAll(
+        '.rx-consent-screen'
+      )
+      .forEach(function(screen){
+
+        screen.classList.remove(
+          'active'
+        );
+
+      });
+
+
+    const target =
+      $('rxConsentScreen' +
+        name.charAt(0).toUpperCase() +
+        name.slice(1)
+      );
+
+    if(target){
+      target.classList.add(
+        'active'
+      );
+    }
+
+
+    if(name === 'firma'){
+
+      setTimeout(
+        resizeCanvas,
+        30
+      );
+
+    }
+
+
+    if(name === 'historial'){
+
+      renderHistory();
+
+    }
+
+  }
+
+
+  document
+    .querySelectorAll(
+      '[data-rx-consent-tab]'
+    )
+    .forEach(function(btn){
+
+      btn.addEventListener(
+        'click',
+        function(){
+
+          showTab(
+            btn.dataset.rxConsentTab
+          );
+
+        }
+      );
+
+    });
+
+
+  /* ==========================================================
+     CAPTURA DE FORMULARIO
+  ========================================================== */
+
+  function getFormData(){
+
+    return {
+
+      name:
+        $('rxCName').value.trim(),
+
+      dni:
+        $('rxCDni').value.trim(),
+
+      birth:
+        $('rxCBirth').value,
+
+      phone:
+        $('rxCPhone').value.trim(),
+
+      email:
+        $('rxCEmail').value.trim(),
+
+      emergency:
+        $('rxCEmergency').value.trim(),
+
+      tattoo:
+        $('rxCTattoo').value.trim(),
+
+      style:
+        $('rxCStyle').value.trim(),
+
+      area:
+        $('rxCArea').value.trim(),
+
+      size:
+        $('rxCSize').value.trim(),
+
+      color:
+        $('rxCColor').value,
+
+      session:
+        $('rxCSession').value || '1',
+
+      notes:
+        $('rxCNotes').value.trim(),
+
+      health:
+        $('rxCheckHealth').checked,
+
+      skin:
+        $('rxCheckSkin').checked,
+
+      truth:
+        $('rxCheckTruth').checked,
+
+      permanent:
+        $('rxCheckPermanent').checked,
+
+      info:
+        $('rxCheckInfo').checked,
+
+      photoWork:
+        $('rxPhotoWork').checked,
+
+      photoSocial:
+        $('rxPhotoSocial').checked,
+
+      photoAnonymous:
+        $('rxPhotoAnonymous').checked,
+
+      additional:
+        $('rxCAdditional').value.trim()
+
+    };
+
+  }
+
+
+  function validateData(data){
+
+    if(!data.name){
+
+      showToast(
+        'Falta el nombre y apellido.'
+      );
+
+      return false;
+
+    }
+
+
+    if(!data.phone){
+
+      showToast(
+        'Falta el teléfono / WhatsApp.'
+      );
+
+      return false;
+
+    }
+
+
+    if(!data.tattoo){
+
+      showToast(
+        'Falta la descripción del tatuaje.'
+      );
+
+      return false;
+
+    }
+
+
+    if(!data.area){
+
+      showToast(
+        'Falta la zona corporal.'
+      );
+
+      return false;
+
+    }
+
+
+    const requiredChecks = [
+
+      ['health','Debes confirmar la declaración de información relevante.'],
+
+      ['skin','Debes confirmar la declaración sobre la zona corporal.'],
+
+      ['truth','Debes confirmar que los datos son verdaderos.'],
+
+      ['permanent','Debes confirmar que comprendes la permanencia del tatuaje.'],
+
+      ['info','Debes confirmar que has leído la información.']
+
+    ];
+
+
+    for(
+      const item of requiredChecks
+    ){
+
+      if(!data[item[0]]){
+
+        showToast(
+          item[1]
+        );
+
+        return false;
+
+      }
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     CONTINUAR
+  ========================================================== */
+
+  $('rxConsentContinue')
+    .addEventListener(
+      'click',
+      function(){
+
+        const data =
+          getFormData();
+
+        if(!validateData(data)){
+          return;
+        }
+
+        current = {
+
+          ...data,
+
+          id:
+            generateID(),
+
+          createdAt:
+            nowISO(),
+
+          status:
+            'pending',
+
+          signature:
+            null,
+
+          signedAt:
+            null
+
+        };
+
+
+        renderSummary();
+
+        showTab(
+          'revision'
+        );
+
+      }
+    );
+
+
+  /* ==========================================================
+     RESUMEN
+  ========================================================== */
+
+  function renderSummary(){
+
+    if(!current){
+      return;
+    }
+
+
+    const rows = [
+
+      ['Cliente',current.name],
+
+      ['DNI',current.dni || 'No indicado'],
+
+      ['Teléfono',current.phone],
+
+      ['Email',current.email || 'No indicado'],
+
+      ['Fecha de nacimiento',current.birth || 'No indicada'],
+
+      ['Emergencia',current.emergency || 'No indicado'],
+
+      ['Tatuaje',current.tattoo],
+
+      ['Estilo',current.style || 'No indicado'],
+
+      ['Zona',current.area],
+
+      ['Tamaño',current.size || 'No indicado'],
+
+      ['Color',current.color || 'No indicado'],
+
+      ['Sesión',current.session],
+
+      ['Observaciones',current.notes || 'Sin observaciones'],
+
+      ['ID',current.id]
+
+    ];
+
+
+    $('rxConsentSummary').innerHTML =
+      rows.map(function(row){
+
+        return `
+          <div class="rx-consent-summary-row">
+            <span>${escapeHTML(row[0])}</span>
+            <strong>${escapeHTML(row[1])}</strong>
+          </div>
+        `;
+
+      }).join('');
+
+
+    $('rxConsentAuthorizations').innerHTML = [
+
+      ['Registro fotográfico',
+       current.photoWork
+         ? 'Autorizado'
+         : 'No autorizado'],
+
+      ['Publicación',
+       current.photoSocial
+         ? 'Autorizada'
+         : 'No autorizada'],
+
+      ['Publicación sin nombre',
+       current.photoAnonymous
+         ? 'Autorizada'
+         : 'No autorizada']
+
+    ].map(function(row){
+
+      return `
+        <div class="rx-consent-summary-row">
+          <span>${escapeHTML(row[0])}</span>
+          <strong>${escapeHTML(row[1])}</strong>
+        </div>
+      `;
+
+    }).join('');
+
+  }
+
+
+  /* ==========================================================
+     NAVEGACIÓN
+  ========================================================== */
+
+  $('rxConsentBackEdit')
+    .addEventListener(
+      'click',
+      function(){
+
+        showTab('nuevo');
+
+      }
+    );
+
+
+  $('rxConsentGoSign')
+    .addEventListener(
+      'click',
+      function(){
+
+        if(!current){
+          showToast(
+            'No existe un consentimiento preparado.'
+          );
+          return;
+        }
+
+        clearSignature();
+
+        $('rxFinalConfirm').checked =
+          false;
+
+        showTab('firma');
+
+      }
+    );
+
+
+  $('rxConsentBackRevision')
+    .addEventListener(
+      'click',
+      function(){
+
+        showTab('revision');
+
+      }
+    );
+
+
+  /* ==========================================================
+     CANVAS DE FIRMA
+  ========================================================== */
+
+  const ctx =
+    canvas.getContext('2d');
+
+
+  function resizeCanvas(){
+
+    const rect =
+      canvas.getBoundingClientRect();
+
+    if(!rect.width || !rect.height){
+      return;
+    }
+
+
+    const ratio =
+      Math.max(
+        1,
+        window.devicePixelRatio || 1
+      );
+
+
+    let oldData = null;
+
+    if(canvas.width && canvas.height){
+
+      try{
+        oldData =
+          canvas.toDataURL();
+      }catch(e){}
+
+    }
+
+
+    canvas.width =
+      Math.round(
+        rect.width * ratio
+      );
+
+    canvas.height =
+      Math.round(
+        rect.height * ratio
+      );
+
+
+    ctx.setTransform(
+      ratio,
+      0,
+      0,
+      ratio,
+      0,
+      0
+    );
+
+
+    ctx.lineCap =
+      'round';
+
+    ctx.lineJoin =
+      'round';
+
+    ctx.strokeStyle =
+      '#f2d991';
+
+    ctx.lineWidth =
+      2.2;
+
+
+    if(oldData && hasSignature){
+
+      const image =
+        new Image();
+
+      image.onload =
+        function(){
+
+          ctx.drawImage(
+            image,
+            0,
+            0,
+            rect.width,
+            rect.height
+          );
+
+        };
+
+      image.src =
+        oldData;
+
+    }
+
+  }
+
+
+  window.addEventListener(
+    'resize',
+    function(){
+
+      if(
+        $('rxConsentScreenFirma')
+          .classList.contains('active')
+      ){
+
+        resizeCanvas();
+
+      }
+
+    }
+  );
+
+
+  function pointerPosition(event){
+
+    const rect =
+      canvas.getBoundingClientRect();
+
+    return {
+
+      x:
+        event.clientX -
+        rect.left,
+
+      y:
+        event.clientY -
+        rect.top
+
+    };
+
+  }
+
+
+  canvas.addEventListener(
+    'pointerdown',
+    function(event){
+
+      event.preventDefault();
+
+      drawing =
+        true;
+
+      hasSignature =
+        true;
+
+      canvas.setPointerCapture(
+        event.pointerId
+      );
+
+      const p =
+        pointerPosition(event);
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        p.x,
+        p.y
+      );
+
+    }
+  );
+
+
+  canvas.addEventListener(
+    'pointermove',
+    function(event){
+
+      if(!drawing){
+        return;
+      }
+
+      event.preventDefault();
+
+      const p =
+        pointerPosition(event);
+
+      ctx.lineTo(
+        p.x,
+        p.y
+      );
+
+      ctx.stroke();
+
+    }
+  );
+
+
+  function finishDrawing(event){
+
+    drawing =
+      false;
+
+    if(event && canvas.hasPointerCapture(
+      event.pointerId
+    )){
+
+      canvas.releasePointerCapture(
+        event.pointerId
+      );
+
+    }
+
+  }
+
+
+  canvas.addEventListener(
+    'pointerup',
+    finishDrawing
+  );
+
+  canvas.addEventListener(
+    'pointercancel',
+    finishDrawing
+  );
+
+  canvas.addEventListener(
+    'pointerleave',
+    function(event){
+
+      if(drawing){
+        finishDrawing(event);
+      }
+
+    }
+  );
+
+
+  function clearSignature(){
+
+    const rect =
+      canvas.getBoundingClientRect();
+
+    const ratio =
+      Math.max(
+        1,
+        window.devicePixelRatio || 1
+      );
+
+
+    canvas.width =
+      Math.round(
+        rect.width * ratio
+      );
+
+    canvas.height =
+      Math.round(
+        rect.height * ratio
+      );
+
+
+    ctx.setTransform(
+      ratio,
+      0,
+      0,
+      ratio,
+      0,
+      0
+    );
+
+
+    ctx.lineCap =
+      'round';
+
+    ctx.lineJoin =
+      'round';
+
+    ctx.strokeStyle =
+      '#f2d991';
+
+    ctx.lineWidth =
+      2.2;
+
+    hasSignature =
+      false;
+
+  }
+
+
+  $('rxConsentClearSignature')
+    .addEventListener(
+      'click',
+      function(){
+
+        clearSignature();
+
+      }
+    );
+
+
+  /* ==========================================================
+     FINALIZAR
+  ========================================================== */
+
+  $('rxConsentFinish')
+    .addEventListener(
+      'click',
+      function(){
+
+        if(!current){
+
+          showToast(
+            'No existe un consentimiento activo.'
+          );
+
+          return;
+
+        }
+
+
+        if(!hasSignature){
+
+          showToast(
+            'Debes realizar la firma.'
+          );
+
+          return;
+
+        }
+
+
+        if(!$('rxFinalConfirm').checked){
+
+          showToast(
+            'Debes confirmar la declaración final.'
+          );
+
+          return;
+
+        }
+
+
+        let signatureData = null;
+
+        try{
+
+          signatureData =
+            canvas.toDataURL(
+              'image/png'
+            );
+
+        }catch(error){
+
+          showToast(
+            'No se pudo registrar la firma.'
+          );
+
+          return;
+
+        }
+
+
+        current.signature =
+          signatureData;
+
+        current.signedAt =
+          nowISO();
+
+        current.status =
+          'signed';
+
+
+        records.unshift(
+          JSON.parse(
+            JSON.stringify(current)
+          )
+        );
+
+
+        if(records.length > 500){
+
+          records =
+            records.slice(
+              0,
+              500
+            );
+
+        }
+
+
+        if(!saveRecords()){
+          return;
+        }
+
+
+        showToast(
+          'Consentimiento registrado correctamente.'
+        );
+
+
+        buildDocument(
+          current
+        );
+
+
+        setTimeout(
+          function(){
+
+            showDocumentOptions();
+
+          },
+          250
+        );
+
+
+      }
+    );
+
+
+  /* ==========================================================
+     DOCUMENTO
+  ========================================================== */
+
+  function buildDocument(record){
+
+    const doc =
+      $('rxConsentDocument');
+
+
+    const authorizations = [
+
+      [
+        'Registro fotográfico',
+        record.photoWork
+          ? 'AUTORIZADO'
+          : 'NO AUTORIZADO'
+      ],
+
+      [
+        'Publicación promocional',
+        record.photoSocial
+          ? 'AUTORIZADA'
+          : 'NO AUTORIZADA'
+      ],
+
+      [
+        'Publicación sin identificar nombre',
+        record.photoAnonymous
+          ? 'AUTORIZADA'
+          : 'NO AUTORIZADA'
+      ]
+
+    ];
+
+
+    doc.innerHTML = `
+
+      <div class="rx-consent-document">
+
+        <img
+          class="rx-consent-document-logo"
+          src="${BRAND_LOGO}"
+          alt="RoXThal"
+        >
+
+        <h1>
+          ROXTHAL ART DESIGN
+        </h1>
+
+        <p style="text-align:center;color:#666">
+          CONSENTIMIENTO PROFESIONAL PARA TATUAJE
+        </p>
+
+        <p style="text-align:center;color:#888">
+          ID: ${escapeHTML(record.id)}
+        </p>
+
+
+        <h2>Datos del cliente</h2>
+
+        <p>
+          <strong>Nombre:</strong>
+          ${escapeHTML(record.name)}
+        </p>
+
+        <p>
+          <strong>DNI:</strong>
+          ${escapeHTML(record.dni || 'No indicado')}
+        </p>
+
+        <p>
+          <strong>Fecha de nacimiento:</strong>
+          ${escapeHTML(record.birth || 'No indicada')}
+        </p>
+
+        <p>
+          <strong>Teléfono:</strong>
+          ${escapeHTML(record.phone)}
+        </p>
+
+        <p>
+          <strong>Email:</strong>
+          ${escapeHTML(record.email || 'No indicado')}
+        </p>
+
+
+        <h2>Datos del procedimiento</h2>
+
+        <p>
+          <strong>Descripción:</strong>
+          ${escapeHTML(record.tattoo)}
+        </p>
+
+        <p>
+          <strong>Estilo:</strong>
+          ${escapeHTML(record.style || 'No indicado')}
+        </p>
+
+        <p>
+          <strong>Zona:</strong>
+          ${escapeHTML(record.area)}
+        </p>
+
+        <p>
+          <strong>Tamaño:</strong>
+          ${escapeHTML(record.size || 'No indicado')}
+        </p>
+
+        <p>
+          <strong>Color:</strong>
+          ${escapeHTML(record.color || 'No indicado')}
+        </p>
+
+        <p>
+          <strong>Sesión:</strong>
+          ${escapeHTML(record.session)}
+        </p>
+
+
+        <h2>Declaraciones</h2>
+
+        <ul>
+
+          <li>
+            El cliente declara haber informado de circunstancias
+            relevantes que puedan afectar al procedimiento.
+          </li>
+
+          <li>
+            El cliente declara que la información proporcionada
+            es verdadera según su conocimiento.
+          </li>
+
+          <li>
+            El cliente declara comprender el carácter permanente
+            del tatuaje.
+          </li>
+
+          <li>
+            El cliente confirma haber leído la información previa
+            proporcionada.
+          </li>
+
+        </ul>
+
+
+        <h2>Autorizaciones fotográficas</h2>
+
+        <ul>
+
+          ${authorizations.map(function(item){
+
+            return `
+              <li>
+                <strong>
+                  ${escapeHTML(item[0])}:
+                </strong>
+                ${escapeHTML(item[1])}
+              </li>
+            `;
+
+          }).join('')}
+
+        </ul>
+
+
+        ${
+          record.notes
+          ? `
+            <h2>Observaciones del proyecto</h2>
+            <p>
+              ${escapeHTML(record.notes)}
+            </p>
+          `
+          : ''
+        }
+
+
+        ${
+          record.additional
+          ? `
+            <h2>Observaciones adicionales</h2>
+            <p>
+              ${escapeHTML(record.additional)}
+            </p>
+          `
+          : ''
+        }
+
+
+        <h2>Registro</h2>
+
+        <p>
+          <strong>Creado:</strong>
+          ${escapeHTML(formatDate(record.createdAt))}
+        </p>
+
+        <p>
+          <strong>Firmado:</strong>
+          ${escapeHTML(formatDate(record.signedAt))}
+        </p>
+
+        <p>
+          <strong>Estado:</strong>
+          CONSENTIMIENTO FIRMADO
+        </p>
+
+
+        <div class="rx-consent-document-signature">
+
+          <p>
+            <strong>Firma registrada</strong>
+          </p>
+
+          <img
+            src="${record.signature || ''}"
+            alt="Firma del cliente"
+          >
+
+          <p>
+            Firma digital registrada el
+            ${escapeHTML(formatDate(record.signedAt))}
+          </p>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function showDocumentOptions(){
+
+    const existing =
+      document.getElementById(
+        'rxConsentDocumentActions'
+      );
+
+
+    if(existing){
+      existing.remove();
+    }
+
+
+    const actions =
+      document.createElement('div');
+
+    actions.id =
+      'rxConsentDocumentActions';
+
+    actions.style.cssText = `
+
+      position:fixed;
+      left:50%;
+      bottom:20px;
+      transform:translateX(-50%);
+      z-index:100600;
+
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+
+      width:min(94%,520px);
+
+      padding:12px;
+
+      border:1px solid #333;
+      border-radius:14px;
+
+      background:#111;
+
+      box-shadow:0 15px 45px #0009;
+
+    `;
+
+
+    actions.innerHTML = `
+
+      <button
+        id="rxDocPrint"
+        class="rx-consent-btn primary"
+        type="button"
+      >
+        🖨️ Imprimir / PDF
+      </button>
+
+      <button
+        id="rxDocClose"
+        class="rx-consent-btn"
+        type="button"
+      >
+        Cerrar documento
+      </button>
+
+    `;
+
+
+    document.body.appendChild(
+      actions
+    );
+
+
+    $('rxDocPrint')
+      .addEventListener(
+        'click',
+        function(){
+
+          $('rxConsentDocument')
+            .style.display =
+              'block';
+
+          window.print();
+
+        }
+      );
+
+
+    $('rxDocClose')
+      .addEventListener(
+        'click',
+        function(){
+
+          actions.remove();
+
+          $('rxConsentDocument')
+            .style.display =
+              'none';
+
+          current =
+            null;
+
+          clearForm();
+
+          showTab(
+            'nuevo'
+          );
+
+        }
+      );
+
+  }
+
+
+  /* ==========================================================
+     HISTORIAL
+  ========================================================== */
+
+  function renderHistory(
+    searchTerm
+  ){
+
+    const list =
+      $('rxConsentList');
+
+
+    const term =
+      String(
+        searchTerm ||
+        $('rxConsentSearch').value ||
+        ''
+      )
+      .trim()
+      .toLowerCase();
+
+
+    const filtered =
+      records.filter(
+        function(record){
+
+          if(!term){
+            return true;
+          }
+
+          return [
+
+            record.id,
+            record.name,
+            record.phone,
+            record.dni,
+            record.tattoo,
+            record.area
+
+          ]
+          .join(' ')
+          .toLowerCase()
+          .includes(term);
+
+        }
+      );
+
+
+    if(!filtered.length){
+
+      list.innerHTML = `
+
+        <div class="rx-consent-card">
+
+          <div style="
+            text-align:center;
+            padding:25px;
+            color:#888;
+          ">
+
+            No se encontraron registros.
+
+          </div>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    list.innerHTML =
+      filtered.map(
+        function(record){
+
+          const statusClass =
+            record.status === 'signed'
+              ? 'signed'
+              : record.status === 'cancelled'
+                ? 'cancelled'
+                : 'pending';
+
+
+          const statusText =
+            record.status === 'signed'
+              ? 'Firmado'
+              : record.status === 'cancelled'
+                ? 'Anulado'
+                : 'Pendiente';
+
+
+          return `
+
+            <article
+              class="rx-consent-record"
+            >
+
+              <div
+                class="rx-consent-record-top"
+              >
+
+                <div>
+
+                  <h4>
+                    ${escapeHTML(record.name)}
+                  </h4>
+
+                  <div
+                    class="rx-consent-record-meta"
+                  >
+
+                    ID:
+                    ${escapeHTML(record.id)}
+
+                    <br>
+
+                    Tatuaje:
+                    ${escapeHTML(record.tattoo)}
+
+                    <br>
+
+                    Zona:
+                    ${escapeHTML(record.area)}
+
+                    <br>
+
+                    Registrado:
+                    ${escapeHTML(
+                      formatDate(
+                        record.createdAt
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+
+                <span
+                  class="rx-consent-status ${statusClass}"
+                >
+                  ${statusText}
+                </span>
+
+              </div>
+
+
+              <div class="rx-consent-actions">
+
+                ${
+                  record.status === 'signed'
+                  ? `
+                    <button
+                      class="rx-consent-btn"
+                      data-rx-view="${escapeHTML(record.id)}"
+                      type="button"
+                    >
+                      Ver documento
+                    </button>
+                  `
+                  : ''
+                }
+
+                <button
+                  class="rx-consent-btn danger"
+                  data-rx-delete="${escapeHTML(record.id)}"
+                  type="button"
+                >
+                  Eliminar
+                </button>
+
+              </div>
+
+            </article>
+
+          `;
+
+        }
+      ).join('');
+
+
+    list
+      .querySelectorAll(
+        '[data-rx-view]'
+      )
+      .forEach(function(btn){
+
+        btn.addEventListener(
+          'click',
+          function(){
+
+            const record =
+              records.find(
+                function(item){
+
+                  return item.id ===
+                    btn.dataset.rxView;
+
+                }
+              );
+
+
+            if(!record){
+              return;
+            }
+
+
+            buildDocument(
+              record
+            );
+
+
+            $('rxConsentDocument')
+              .style.display =
+                'block';
+
+
+            showDocumentOptions();
+
+          }
+        );
+
+      });
+
+
+    list
+      .querySelectorAll(
+        '[data-rx-delete]'
+      )
+      .forEach(function(btn){
+
+        btn.addEventListener(
+          'click',
+          function(){
+
+            const id =
+              btn.dataset.rxDelete;
+
+
+            const ok =
+              window.confirm(
+                '¿Eliminar definitivamente este registro de este dispositivo?'
+              );
+
+
+            if(!ok){
+              return;
+            }
+
+
+            records =
+              records.filter(
+                function(item){
+                  return item.id !== id;
+                }
+              );
+
+
+            saveRecords();
+
+            renderHistory();
+
+            showToast(
+              'Registro eliminado.'
+            );
+
+          }
+        );
+
+      });
+
+  }
+
+
+  $('rxConsentSearchBtn')
+    .addEventListener(
+      'click',
+      function(){
+
+        renderHistory();
+
+      }
+    );
+
+
+  $('rxConsentSearch')
+    .addEventListener(
+      'input',
+      function(){
+
+        renderHistory();
+
+      }
+    );
+
+
+  /* ==========================================================
+     EXPORTAR
+  ========================================================== */
+
+  $('rxConsentExport')
+    .addEventListener(
+      'click',
+      function(){
+
+        if(!records.length){
+
+          showToast(
+            'No hay registros para exportar.'
+          );
+
+          return;
+
+        }
+
+
+        const payload =
+          JSON.stringify(
+            {
+              app:
+                'RoXThal Art Design',
+
+              type:
+                'consentimientos',
+
+              version:
+                1,
+
+              exportedAt:
+                nowISO(),
+
+              records:
+                records
+
+            },
+            null,
+            2
+          );
+
+
+        const blob =
+          new Blob(
+            [payload],
+            {
+              type:
+                'application/json'
+            }
+          );
+
+
+        const url =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        const a =
+          document.createElement(
+            'a'
+          );
+
+        a.href =
+          url;
+
+        a.download =
+          'roxthal-consentimientos-' +
+          new Date()
+            .toISOString()
+            .slice(0,10) +
+          '.json';
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+        URL.revokeObjectURL(
+          url
+        );
+
+
+        showToast(
+          'Registros exportados.'
+        );
+
+      }
+    );
+
+
+  /* ==========================================================
+     IMPORTAR
+  ========================================================== */
+
+  $('rxConsentImportBtn')
+    .addEventListener(
+      'click',
+      function(){
+
+        $('rxConsentImport').click();
+
+      }
+    );
+
+
+  $('rxConsentImport')
+    .addEventListener(
+      'change',
+      function(){
+
+        const file =
+          this.files &&
+          this.files[0];
+
+
+        if(!file){
+          return;
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          function(){
+
+            try{
+
+              const imported =
+                JSON.parse(
+                  reader.result
+                );
+
+
+              if(
+                !imported ||
+                !Array.isArray(
+                  imported.records
+                )
+              ){
+
+                throw new Error(
+                  'Formato inválido'
+                );
+
+              }
+
+
+              let added =
+                0;
+
+
+              imported.records.forEach(
+                function(record){
+
+                  if(
+                    !record ||
+                    !record.id
+                  ){
+                    return;
+                  }
+
+
+                  const exists =
+                    records.some(
+                      function(item){
+                        return item.id ===
+                          record.id;
+                      }
+                    );
+
+
+                  if(!exists){
+
+                    records.push(
+                      record
+                    );
+
+                    added++;
+
+                  }
+
+                }
+              );
+
+
+              saveRecords();
+
+              renderHistory();
+
+              showToast(
+                added +
+                ' registro(s) importado(s).'
+              );
+
+
+            }catch(error){
+
+              console.error(
+                error
+              );
+
+              showToast(
+                'El archivo no tiene un formato válido.'
+              );
+
+            }
+
+          };
+
+
+        reader.readAsText(
+          file
+        );
+
+
+        this.value =
+          '';
+
+      }
+    );
+
+
+  /* ==========================================================
+     LIMPIAR FORMULARIO
+  ========================================================== */
+
+  function clearForm(){
+
+    [
+
+      'rxCName',
+      'rxCDni',
+      'rxCBirth',
+      'rxCPhone',
+      'rxCEmail',
+      'rxCEmergency',
+      'rxCTattoo',
+      'rxCStyle',
+      'rxCArea',
+      'rxCSize',
+      'rxCNotes',
+      'rxCAdditional'
+
+    ].forEach(function(id){
+
+      const el =
+        $(id);
+
+      if(el){
+        el.value =
+          '';
+      }
+
+    });
+
+
+    $('rxCColor').value =
+      '';
+
+    $('rxCSession').value =
+      '1';
+
+
+    [
+
+      'rxCheckHealth',
+      'rxCheckSkin',
+      'rxCheckTruth',
+      'rxCheckPermanent',
+      'rxCheckInfo',
+      'rxPhotoWork',
+      'rxPhotoSocial',
+      'rxPhotoAnonymous',
+      'rxFinalConfirm'
+
+    ].forEach(function(id){
+
+      const el =
+        $(id);
+
+      if(el){
+        el.checked =
+          false;
+      }
+
+    });
+
+
+    clearSignature();
+
+  }
+
+
+  $('rxConsentReset')
+    .addEventListener(
+      'click',
+      function(){
+
+        const ok =
+          window.confirm(
+            '¿Limpiar todos los datos introducidos?'
+          );
+
+
+        if(!ok){
+          return;
+        }
+
+
+        clearForm();
+
+        showToast(
+          'Formulario limpiado.'
+        );
+
+      }
+    );
+
+
+  /* ==========================================================
+     ESCAPE
+  ========================================================== */
+
+  document.addEventListener(
+    'keydown',
+    function(event){
+
+      if(
+        event.key === 'Escape' &&
+        app.classList.contains('rx-open')
+      ){
+
+        closeApp();
+
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     INICIALIZACIÓN
+  ========================================================== */
+
+  renderHistory();
+
+
+  /*
+   * Permite abrir el módulo desde otros puntos
+   * sin modificar la navegación existente.
+   */
+
+  window.RoXThalConsent = {
+
+    open:
+      openApp,
+
+    close:
+      closeApp,
+
+    newConsent:
+      function(){
+
+        clearForm();
+
+        current =
+          null;
+
+        showTab(
+          'nuevo'
+        );
+
+        openApp();
+
+      },
+
+    getRecords:
+      function(){
+
+        return JSON.parse(
+          JSON.stringify(
+            records
+          )
+        );
+
+      }
+
+  };
+
+
+})();
+</script>       
 </body>
 </html>
