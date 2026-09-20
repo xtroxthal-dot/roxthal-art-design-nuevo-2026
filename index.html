@@ -42316,408 +42316,1144 @@ setTimeout(instalarCompartirPremios,3000);
   });
 })();
 </script>
+
    <!-- ============================================================
-     ROXTHAL — PRESENTACIÓN ARTÍSTICA PREMIUM
-     Capa visual sobre el módulo #welcome existente.
-     No modifica la lógica de entrada.
+     ROXTHAL ART DESIGN
+     THE ATELIER — ULTIMATE OPENING EXPERIENCE
 ============================================================ -->
 <style>
-/* ---------- ESCENA ---------- */
-#welcome {
+/* ============================================================
+   ESCENA
+============================================================ */
+
+#welcome.rx-ultimate {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 99999 !important;
+  z-index: 999999 !important;
   overflow: hidden !important;
   isolation: isolate !important;
-  background:
-    radial-gradient(circle at 50% 42%,
-      rgba(215,173,85,.16) 0%,
-      rgba(215,173,85,.055) 19%,
-      transparent 48%),
-    radial-gradient(circle at 18% 82%,
-      rgba(110,72,30,.12),
-      transparent 34%),
-    radial-gradient(circle at 84% 17%,
-      rgba(180,130,45,.08),
-      transparent 32%),
-    #050505 !important;
+  background: #020202 !important;
+  color: #ead59b !important;
 }
 
-/* Profundidad de galería */
-#welcome::before {
-  content: "";
+/* Oscuridad cinematográfica */
+#welcome.rx-ultimate .rx-cinema {
   position: absolute;
-  inset: -20%;
-  z-index: -3;
+  inset: -10%;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse at center,
-      transparent 24%,
-      rgba(0,0,0,.32) 58%,
-      rgba(0,0,0,.88) 100%);
-  animation: rxGalleryBreath 7s ease-in-out infinite alternate;
+    radial-gradient(
+      ellipse at 50% 44%,
+      rgba(215,173,85,.14) 0%,
+      rgba(215,173,85,.055) 17%,
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 15% 15%,
+      rgba(91,58,22,.13),
+      transparent 35%
+    ),
+    radial-gradient(
+      ellipse at 88% 85%,
+      rgba(91,58,22,.12),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 28%,
+      rgba(0,0,0,.35) 62%,
+      #000 100%
+    );
+  animation: rxCinema 10s ease-in-out infinite alternate;
 }
 
-/* Textura artística */
-#welcome::after {
-  content: "";
+/* Grano cinematográfico */
+#welcome.rx-ultimate .rx-grain {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  opacity: .065;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+  animation: rxGrain .25s steps(2) infinite;
+}
+
+/* Viñeta */
+#welcome.rx-ultimate .rx-vignette {
   position: absolute;
   inset: 0;
-  z-index: -2;
-  opacity: .18;
-  background:
-    repeating-radial-gradient(
-      ellipse at 50% 45%,
-      transparent 0,
-      transparent 7px,
-      rgba(255,255,255,.018) 8px,
-      transparent 10px
-    );
-  mix-blend-mode: screen;
   pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 35%,
+      rgba(0,0,0,.35) 68%,
+      rgba(0,0,0,.92) 100%
+    );
 }
 
-/* ---------- HALO CENTRAL ---------- */
-#welcome .welcome-inner {
+
+/* ============================================================
+   ESCENARIO INTERIOR
+============================================================ */
+
+#welcome.rx-ultimate .welcome-inner {
   position: relative !important;
-  width: min(92vw, 620px) !important;
+  z-index: 10 !important;
+  width: 100% !important;
   height: 100% !important;
-  margin: 0 auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  text-align: center !important;
-  padding: 30px 20px !important;
-  box-sizing: border-box !important;
+
+  overflow: hidden !important;
 }
 
-/* Halo */
-#welcome .welcome-inner::before {
+
+/* ============================================================
+   PORTAL PRINCIPAL
+============================================================ */
+
+#welcome.rx-ultimate .rx-portal {
+  position: absolute;
+  width: min(108vw, 720px);
+  height: min(108vw, 720px);
+  border-radius: 50%;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(215,173,85,.075) 0%,
+      rgba(215,173,85,.025) 31%,
+      transparent 62%
+    );
+
+  border: 1px solid rgba(215,173,85,.16);
+
+  box-shadow:
+    0 0 40px rgba(215,173,85,.055),
+    inset 0 0 90px rgba(215,173,85,.025);
+
+  animation:
+    rxPortalIn 2.2s cubic-bezier(.16,1,.3,1) both,
+    rxPortalSpin 36s linear 2.2s infinite;
+}
+
+#welcome.rx-ultimate .rx-portal::before {
   content: "";
   position: absolute;
-  width: min(88vw, 560px);
-  height: min(88vw, 560px);
+  inset: 7%;
   border-radius: 50%;
-  background:
-    radial-gradient(circle,
-      rgba(215,173,85,.17) 0%,
-      rgba(215,173,85,.075) 25%,
-      rgba(215,173,85,.025) 45%,
-      transparent 70%);
-  filter: blur(5px);
-  animation: rxHalo 5s ease-in-out infinite;
+  border: 1px solid rgba(215,173,85,.08);
+  border-top-color: rgba(232,202,131,.62);
+  border-bottom-color: rgba(232,202,131,.25);
+  transform: rotate(31deg);
+}
+
+#welcome.rx-ultimate .rx-portal::after {
+  content: "";
+  position: absolute;
+  inset: 17%;
+  border-radius: 50%;
+  border: 1px dashed rgba(215,173,85,.09);
+  transform: rotate(-18deg);
+}
+
+
+/* ============================================================
+   AROS SECUNDARIOS
+============================================================ */
+
+#welcome.rx-ultimate .rx-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid rgba(215,173,85,.07);
+}
+
+#welcome.rx-ultimate .rx-ring.r1 {
+  width: min(83vw, 550px);
+  height: min(83vw, 550px);
+  transform: rotate(17deg);
+  border-top-color: rgba(215,173,85,.48);
+  animation: rxRing1 24s linear infinite;
+}
+
+#welcome.rx-ultimate .rx-ring.r2 {
+  width: min(125vw, 820px);
+  height: min(125vw, 820px);
+  transform: rotate(-25deg);
+  border-right-color: rgba(215,173,85,.18);
+  animation: rxRing2 42s linear infinite;
+}
+
+#welcome.rx-ultimate .rx-ring.r3 {
+  width: min(65vw, 430px);
+  height: min(65vw, 430px);
+  transform: rotate(51deg);
+  border-left-color: rgba(215,173,85,.28);
+  animation: rxRing3 18s linear infinite;
+}
+
+
+/* ============================================================
+   NODOS ORBITALES
+============================================================ */
+
+#welcome.rx-ultimate .rx-node {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e4c577;
+  box-shadow:
+    0 0 8px rgba(228,197,119,.95),
+    0 0 24px rgba(215,173,85,.35);
   pointer-events: none;
 }
 
-/* ---------- LOGO ---------- */
-#welcome .welcome-logo {
-  position: relative !important;
-  z-index: 2 !important;
-  width: min(58vw, 330px) !important;
-  height: min(58vw, 330px) !important;
-  object-fit: contain !important;
-  filter:
-    drop-shadow(0 0 8px rgba(215,173,85,.30))
-    drop-shadow(0 0 28px rgba(215,173,85,.18))
-    drop-shadow(0 18px 38px rgba(0,0,0,.80)) !important;
-  animation:
-    rxLogoIn 1.5s cubic-bezier(.16,1,.3,1) both,
-    rxLogoGlow 4.5s ease-in-out 1.5s infinite !important;
+#welcome.rx-ultimate .rx-node.n1 {
+  top: 19%;
+  left: 22%;
 }
 
-/* ---------- AROS ARTÍSTICOS ---------- */
-#welcome .welcome-logo::after {
+#welcome.rx-ultimate .rx-node.n2 {
+  top: 27%;
+  right: 16%;
+}
+
+#welcome.rx-ultimate .rx-node.n3 {
+  bottom: 21%;
+  left: 17%;
+}
+
+#welcome.rx-ultimate .rx-node.n4 {
+  right: 22%;
+  bottom: 17%;
+}
+
+
+/* ============================================================
+   TRAZOS DE TINTA
+============================================================ */
+
+#welcome.rx-ultimate .rx-brush {
+  position: absolute;
+  width: 430px;
+  height: 115px;
+  border-radius: 50%;
+  border-top: 1px solid rgba(215,173,85,.14);
+  border-bottom: 1px solid rgba(215,173,85,.035);
+  pointer-events: none;
+  filter: blur(.15px);
+}
+
+#welcome.rx-ultimate .rx-brush::before,
+#welcome.rx-ultimate .rx-brush::after {
   content: "";
-}
-
-/* ---------- TÍTULO ---------- */
-#welcome .welcome-title {
-  position: relative !important;
-  z-index: 3 !important;
-  margin-top: 22px !important;
-  color: #d7ad55 !important;
-  font-family: Georgia, "Times New Roman", serif !important;
-  font-size: clamp(22px, 5vw, 38px) !important;
-  font-weight: 700 !important;
-  letter-spacing: clamp(3px, 1vw, 8px) !important;
-  line-height: 1.15 !important;
-  text-shadow:
-    0 0 12px rgba(215,173,85,.24),
-    0 3px 12px rgba(0,0,0,.9) !important;
-  animation: rxTitleIn 1.1s cubic-bezier(.16,1,.3,1) .55s both !important;
-}
-
-/* Línea artística */
-#welcome .welcome-title::after {
-  content: "";
-  display: block;
-  width: 76px;
+  position: absolute;
+  width: 76%;
   height: 1px;
-  margin: 16px auto 0;
+  left: 12%;
   background: linear-gradient(
     90deg,
     transparent,
-    #d7ad55,
+    rgba(215,173,85,.12),
     transparent
   );
-  box-shadow: 0 0 10px rgba(215,173,85,.45);
 }
 
-/* ---------- BOTÓN ---------- */
-#welcome .welcome-enter {
+#welcome.rx-ultimate .rx-brush::before {
+  top: 34%;
+}
+
+#welcome.rx-ultimate .rx-brush::after {
+  top: 63%;
+}
+
+#welcome.rx-ultimate .rx-brush.b1 {
+  left: -190px;
+  top: 21%;
+  transform: rotate(-22deg);
+  animation: rxBrush1 10s ease-in-out infinite alternate;
+}
+
+#welcome.rx-ultimate .rx-brush.b2 {
+  right: -205px;
+  bottom: 21%;
+  transform: rotate(-22deg);
+  animation: rxBrush2 12s ease-in-out infinite alternate;
+}
+
+
+/* ============================================================
+   ESTRELLAS ARTÍSTICAS
+============================================================ */
+
+#welcome.rx-ultimate .rx-star {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  opacity: 0;
+  animation:
+    rxStar
+    var(--time)
+    ease-in-out
+    var(--delay)
+    infinite;
+}
+
+#welcome.rx-ultimate .rx-star::before,
+#welcome.rx-ultimate .rx-star::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #d7ad55;
+  box-shadow: 0 0 10px rgba(215,173,85,.65);
+  transform: translate(-50%,-50%);
+}
+
+#welcome.rx-ultimate .rx-star::before {
+  width: 1px;
+  height: 100%;
+}
+
+#welcome.rx-ultimate .rx-star::after {
+  width: 100%;
+  height: 1px;
+}
+
+
+/* ============================================================
+   LOGO — REVELACIÓN
+============================================================ */
+
+#welcome.rx-ultimate .welcome-logo {
   position: relative !important;
-  z-index: 3 !important;
-  margin-top: 34px !important;
-  min-width: 210px !important;
-  padding: 14px 25px !important;
-  border: 1px solid rgba(215,173,85,.72) !important;
+  z-index: 50 !important;
+
+  width: min(61vw, 355px) !important;
+  height: min(61vw, 355px) !important;
+  object-fit: contain !important;
+
+  opacity: 0;
+
+  filter:
+    brightness(.55)
+    contrast(1.12)
+    drop-shadow(0 0 5px rgba(255,225,145,.48))
+    drop-shadow(0 0 24px rgba(215,173,85,.28))
+    drop-shadow(0 0 65px rgba(215,173,85,.12))
+    drop-shadow(0 30px 45px rgba(0,0,0,.95));
+
+  animation:
+    rxLogoAppear 2.4s cubic-bezier(.16,1,.3,1) .45s forwards,
+    rxLogoPulse 5s ease-in-out 2.9s infinite;
+}
+
+
+/* Barrido luminoso */
+#welcome.rx-ultimate .rx-sweep {
+  position: absolute;
+  z-index: 60;
+  width: min(65vw, 380px);
+  height: 7px;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,235,171,.95),
+      transparent
+    );
+
+  filter: blur(5px);
+  opacity: 0;
+
+  transform:
+    translate(-120px,-155px)
+    rotate(-28deg);
+
+  animation:
+    rxSweep 2.8s cubic-bezier(.16,1,.3,1) 1.35s forwards;
+}
+
+
+/* ============================================================
+   TÍTULO
+============================================================ */
+
+#welcome.rx-ultimate .welcome-title {
+  position: relative !important;
+  z-index: 70 !important;
+
+  margin-top: 17px !important;
+
+  color: #e5c679 !important;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif !important;
+
+  font-size:
+    clamp(21px,5.3vw,39px) !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing:
+    clamp(3px,1.05vw,9px) !important;
+
+  line-height: 1.15 !important;
+
+  text-align: center !important;
+
+  text-shadow:
+    0 0 12px rgba(215,173,85,.30),
+    0 0 35px rgba(215,173,85,.11),
+    0 6px 20px rgba(0,0,0,.95) !important;
+
+  opacity: 0;
+
+  animation:
+    rxTitle
+    1.45s
+    cubic-bezier(.16,1,.3,1)
+    1.75s
+    forwards !important;
+}
+
+#welcome.rx-ultimate .welcome-title::before {
+  content: "✦  ATELIER  ·  ROXTHAL  ·  ART  ✦";
+
+  display: block;
+
+  margin-bottom: 13px;
+
+  color: rgba(215,173,85,.55);
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  font-size: 8px;
+
+  font-weight: 400;
+
+  letter-spacing: 3px;
+}
+
+#welcome.rx-ultimate .welcome-title::after {
+  content: "";
+
+  display: block;
+
+  width: 125px;
+  height: 1px;
+
+  margin: 16px auto 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #d7ad55,
+      #f2d991,
+      #d7ad55,
+      transparent
+    );
+
+  box-shadow:
+    0 0 13px rgba(215,173,85,.58);
+
+  transform: scaleX(0);
+
+  animation:
+    rxLine 1.2s ease 2.5s forwards;
+}
+
+
+/* ============================================================
+   SUBTÍTULO
+============================================================ */
+
+#welcome.rx-ultimate .rx-tagline {
+  position: relative;
+  z-index: 70;
+
+  margin-top: 10px;
+
+  color: rgba(237,220,174,.54);
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  font-size: 9px;
+
+  font-weight: 400;
+
+  letter-spacing: 4px;
+
+  text-transform: uppercase;
+
+  opacity: 0;
+
+  animation:
+    rxTagline
+    1.2s ease
+    2.65s
+    forwards;
+}
+
+
+/* ============================================================
+   BOTÓN DE ENTRADA
+============================================================ */
+
+#welcome.rx-ultimate .welcome-enter {
+  position: relative !important;
+  z-index: 80 !important;
+
+  min-width: 235px !important;
+
+  margin-top: 31px !important;
+
+  padding: 15px 28px !important;
+
+  border:
+    1px solid
+    rgba(215,173,85,.62) !important;
+
   border-radius: 2px !important;
+
   background:
     linear-gradient(
       135deg,
       rgba(215,173,85,.16),
-      rgba(215,173,85,.035)
+      rgba(215,173,85,.025)
     ) !important;
-  color: #f3dfaa !important;
+
+  color: #f1dda6 !important;
+
+  font-family:
+    Arial,
+    sans-serif !important;
+
+  font-size: 11px !important;
+
   font-weight: 700 !important;
-  letter-spacing: 2px !important;
+
+  letter-spacing: 3px !important;
+
   box-shadow:
-    0 0 0 1px rgba(215,173,85,.04),
-    0 0 22px rgba(215,173,85,.10),
-    inset 0 0 20px rgba(215,173,85,.035) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  cursor: pointer !important;
+    0 0 0 1px rgba(215,173,85,.025),
+    0 0 28px rgba(215,173,85,.11),
+    inset 0 0 25px rgba(215,173,85,.035) !important;
+
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+
+  opacity: 0;
+
+  animation:
+    rxButton
+    1.15s
+    cubic-bezier(.16,1,.3,1)
+    3s
+    forwards !important;
+
   transition:
     transform .25s ease,
     box-shadow .25s ease,
     background .25s ease !important;
-  animation: rxButtonIn 1s cubic-bezier(.16,1,.3,1) 1.05s both !important;
 }
 
-#welcome .welcome-enter:hover {
-  transform: translateY(-2px) !important;
-  background: rgba(215,173,85,.13) !important;
+#welcome.rx-ultimate .welcome-enter::before {
+  content: "◆";
+  margin-right: 10px;
+  color: #d7ad55;
+  font-size: 8px;
+}
+
+#welcome.rx-ultimate .welcome-enter:hover {
+  transform: translateY(-3px);
+  background:
+    rgba(215,173,85,.14) !important;
   box-shadow:
-    0 0 28px rgba(215,173,85,.22),
-    inset 0 0 20px rgba(215,173,85,.06) !important;
+    0 0 40px rgba(215,173,85,.23),
+    inset 0 0 28px rgba(215,173,85,.08) !important;
 }
 
-#welcome .welcome-enter:active {
-  transform: translateY(0) scale(.98) !important;
+#welcome.rx-ultimate .welcome-enter:active {
+  transform: scale(.97);
 }
 
-/* ---------- PARTÍCULAS ---------- */
-#welcome .rx-particle {
+
+/* ============================================================
+   POLVO DORADO
+============================================================ */
+
+#welcome.rx-ultimate .rx-dust {
   position: absolute;
-  width: 2px;
-  height: 2px;
   border-radius: 50%;
   background: #d7ad55;
-  box-shadow: 0 0 7px rgba(215,173,85,.8);
-  pointer-events: none;
+  width: var(--size);
+  height: var(--size);
+  left: var(--left);
+  top: var(--top);
   opacity: 0;
-  animation: rxParticleFloat linear infinite;
+
+  box-shadow:
+    0 0 5px rgba(215,173,85,.8);
+
+  animation:
+    rxDust
+    var(--duration)
+    linear
+    var(--delay)
+    infinite;
 }
 
-/* ---------- TRAZOS ---------- */
-#welcome .rx-stroke {
+
+/* ============================================================
+   BORDE DE GALERÍA
+============================================================ */
+
+#welcome.rx-ultimate .rx-frame {
   position: absolute;
-  width: 42vw;
-  max-width: 330px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(215,173,85,.38),
-    transparent
-  );
-  opacity: .32;
+  inset: 18px;
+  border: 1px solid rgba(215,173,85,.055);
   pointer-events: none;
-  transform-origin: center;
 }
 
-#welcome .rx-stroke.one {
-  top: 23%;
-  left: -8%;
-  transform: rotate(-17deg);
-  animation: rxStrokeOne 8s ease-in-out infinite alternate;
+#welcome.rx-ultimate .rx-frame::before,
+#welcome.rx-ultimate .rx-frame::after {
+  content: "";
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-color: rgba(215,173,85,.18);
 }
 
-#welcome .rx-stroke.two {
-  right: -10%;
-  bottom: 25%;
-  transform: rotate(-17deg);
-  animation: rxStrokeTwo 9s ease-in-out infinite alternate;
+#welcome.rx-ultimate .rx-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid;
+  border-left: 1px solid;
 }
 
-/* ---------- ANIMACIONES ---------- */
-@keyframes rxGalleryBreath {
-  from { transform: scale(1); opacity: .82; }
-  to   { transform: scale(1.06); opacity: 1; }
+#welcome.rx-ultimate .rx-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
 }
 
-@keyframes rxHalo {
-  0%,100% {
-    transform: scale(.94);
-    opacity: .65;
-  }
-  50% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
+
+/* ============================================================
+   ANIMACIONES
+============================================================ */
+
+@keyframes rxCinema {
+  from { transform: scale(1); }
+  to   { transform: scale(1.07); }
 }
 
-@keyframes rxLogoIn {
+@keyframes rxGrain {
+  0%   { transform: translate(0,0); }
+  25%  { transform: translate(-2%,1%); }
+  50%  { transform: translate(1%,-2%); }
+  75%  { transform: translate(2%,2%); }
+  100% { transform: translate(-1%,-1%); }
+}
+
+@keyframes rxPortalIn {
   from {
     opacity: 0;
-    transform: scale(.72) translateY(24px);
-    filter: blur(12px) brightness(.55);
+    transform: scale(.42);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
-    filter:
-      drop-shadow(0 0 8px rgba(215,173,85,.30))
-      drop-shadow(0 0 28px rgba(215,173,85,.18))
-      drop-shadow(0 18px 38px rgba(0,0,0,.80));
+    transform: scale(1);
   }
 }
 
-@keyframes rxLogoGlow {
+@keyframes rxPortalSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rxRing1 {
+  to { transform: rotate(377deg); }
+}
+
+@keyframes rxRing2 {
+  to { transform: rotate(-385deg); }
+}
+
+@keyframes rxRing3 {
+  to { transform: rotate(411deg); }
+}
+
+@keyframes rxBrush1 {
+  from {
+    transform:
+      translateX(-40px)
+      rotate(-22deg)
+      scaleX(.82);
+  }
+  to {
+    transform:
+      translateX(110px)
+      rotate(-15deg)
+      scaleX(1.22);
+  }
+}
+
+@keyframes rxBrush2 {
+  from {
+    transform:
+      translateX(40px)
+      rotate(-22deg)
+      scaleX(.85);
+  }
+  to {
+    transform:
+      translateX(-110px)
+      rotate(-30deg)
+      scaleX(1.2);
+  }
+}
+
+@keyframes rxLogoAppear {
+  0% {
+    opacity: 0;
+    transform:
+      scale(.45)
+      translateY(42px);
+    filter:
+      blur(22px)
+      brightness(.15);
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  75% {
+    filter:
+      brightness(1.28)
+      drop-shadow(0 0 28px rgba(255,220,130,.35));
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      scale(1)
+      translateY(0);
+    filter:
+      brightness(1)
+      contrast(1.12)
+      drop-shadow(0 0 5px rgba(255,225,145,.48))
+      drop-shadow(0 0 24px rgba(215,173,85,.28))
+      drop-shadow(0 0 65px rgba(215,173,85,.12))
+      drop-shadow(0 30px 45px rgba(0,0,0,.95));
+  }
+}
+
+@keyframes rxLogoPulse {
   0%,100% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.018);
+    transform: scale(1.022);
   }
 }
 
-@keyframes rxTitleIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-    letter-spacing: 12px;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    letter-spacing: clamp(3px, 1vw, 8px);
-  }
-}
-
-@keyframes rxButtonIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes rxParticleFloat {
+@keyframes rxSweep {
   0% {
     opacity: 0;
-    transform: translate3d(0, 20px, 0) scale(.5);
+    transform:
+      translate(-130px,-160px)
+      rotate(-28deg);
   }
-  15% {
-    opacity: .65;
+
+  18% {
+    opacity: .85;
   }
-  75% {
-    opacity: .28;
-  }
+
   100% {
     opacity: 0;
-    transform: translate3d(var(--rx-x), -110px, 0) scale(1);
+    transform:
+      translate(150px,170px)
+      rotate(-28deg);
   }
 }
 
-@keyframes rxStrokeOne {
-  from { transform: translateX(-30px) rotate(-17deg); }
-  to   { transform: translateX(80px) rotate(-17deg); }
-}
-
-@keyframes rxStrokeTwo {
-  from { transform: translateX(30px) rotate(-17deg); }
-  to   { transform: translateX(-80px) rotate(-17deg); }
-}
-
-/* ---------- MÓVIL ---------- */
-@media (max-width: 600px) {
-  #welcome .welcome-logo {
-    width: min(67vw, 300px) !important;
-    height: min(67vw, 300px) !important;
+@keyframes rxTitle {
+  from {
+    opacity: 0;
+    transform:
+      translateY(25px)
+      scale(.94);
+    letter-spacing: 14px;
   }
 
-  #welcome .welcome-title {
-    font-size: clamp(19px, 5.8vw, 29px) !important;
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+    letter-spacing:
+      clamp(3px,1.05vw,9px);
+  }
+}
+
+@keyframes rxLine {
+  to { transform: scaleX(1); }
+}
+
+@keyframes rxTagline {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rxButton {
+  from {
+    opacity: 0;
+    transform:
+      translateY(26px)
+      scale(.93);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes rxStar {
+  0%,100% {
+    opacity: 0;
+    transform: scale(.2) rotate(45deg);
+  }
+
+  45% {
+    opacity: .9;
+    transform: scale(1.1) rotate(45deg);
+  }
+
+  70% {
+    opacity: .15;
+  }
+}
+
+@keyframes rxDust {
+  0% {
+    opacity: 0;
+    transform:
+      translate3d(0,35px,0)
+      scale(.35);
+  }
+
+  15% {
+    opacity: .75;
+  }
+
+  70% {
+    opacity: .25;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--drift),-180px,0)
+      scale(1);
+  }
+}
+
+
+/* ============================================================
+   MÓVIL
+============================================================ */
+
+@media (max-width:600px) {
+
+  #welcome.rx-ultimate .welcome-logo {
+    width: min(68vw,315px) !important;
+    height: min(68vw,315px) !important;
+  }
+
+  #welcome.rx-ultimate .welcome-title {
+    font-size:
+      clamp(19px,5.6vw,29px) !important;
     letter-spacing: 3px !important;
   }
 
-  #welcome .welcome-enter {
-    margin-top: 29px !important;
-    min-width: 195px !important;
+  #welcome.rx-ultimate .welcome-enter {
+    min-width: 205px !important;
+    margin-top: 28px !important;
+    padding: 14px 21px !important;
+  }
+
+  #welcome.rx-ultimate .rx-frame {
+    inset: 11px;
   }
 }
 
-/* Accesibilidad: reduce movimiento si el dispositivo lo solicita */
+
+/* ============================================================
+   REDUCIR MOVIMIENTO
+============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
-  #welcome *,
-  #welcome::before,
-  #welcome::after {
+
+  #welcome.rx-ultimate *,
+  #welcome.rx-ultimate::before,
+  #welcome.rx-ultimate::after {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
 }
 </style>
 
+
 <script>
 (function () {
   'use strict';
 
-  const welcome = document.getElementById('welcome');
+  const welcome =
+    document.getElementById('welcome');
+
   if (!welcome) return;
 
-  /* Trazos decorativos */
-  if (!welcome.querySelector('.rx-stroke')) {
-    const stroke1 = document.createElement('div');
-    stroke1.className = 'rx-stroke one';
+  /* Identificador visual */
+  welcome.classList.add('rx-ultimate');
 
-    const stroke2 = document.createElement('div');
-    stroke2.className = 'rx-stroke two';
 
-    welcome.appendChild(stroke1);
-    welcome.appendChild(stroke2);
+  /* ----------------------------------------------------------
+     CAPAS ESCÉNICAS
+  ---------------------------------------------------------- */
+
+  function add(className) {
+    const el = document.createElement('div');
+    el.className = className;
+    welcome.appendChild(el);
+    return el;
   }
 
-  /* Partículas discretas */
-  if (!welcome.querySelector('.rx-particle')) {
-    const fragment = document.createDocumentFragment();
+  if (!welcome.querySelector('.rx-cinema')) {
+    add('rx-cinema');
+  }
 
-    for (let i = 0; i < 26; i++) {
-      const p = document.createElement('span');
-      p.className = 'rx-particle';
+  if (!welcome.querySelector('.rx-grain')) {
+    add('rx-grain');
+  }
 
-      p.style.left = (8 + Math.random() * 84) + '%';
-      p.style.top = (42 + Math.random() * 48) + '%';
-      p.style.setProperty(
-        '--rx-x',
-        ((Math.random() - .5) * 90) + 'px'
+  if (!welcome.querySelector('.rx-vignette')) {
+    add('rx-vignette');
+  }
+
+  if (!welcome.querySelector('.rx-frame')) {
+    add('rx-frame');
+  }
+
+  if (!welcome.querySelector('.rx-portal')) {
+    add('rx-portal');
+  }
+
+  if (!welcome.querySelector('.rx-ring.r1')) {
+    const r1 = add('rx-ring r1');
+    const r2 = add('rx-ring r2');
+    const r3 = add('rx-ring r3');
+  }
+
+
+  /* ----------------------------------------------------------
+     NODOS
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-node')) {
+
+    [
+      'n1',
+      'n2',
+      'n3',
+      'n4'
+    ].forEach(function (name) {
+      add('rx-node ' + name);
+    });
+  }
+
+
+  /* ----------------------------------------------------------
+     PINCELADAS
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-brush')) {
+
+    add('rx-brush b1');
+    add('rx-brush b2');
+  }
+
+
+  /* ----------------------------------------------------------
+     BARRIDO DE LUZ
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-sweep')) {
+    add('rx-sweep');
+  }
+
+
+  /* ----------------------------------------------------------
+     SUBTÍTULO
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-tagline')) {
+
+    const tagline =
+      document.createElement('div');
+
+    tagline.className =
+      'rx-tagline';
+
+    tagline.textContent =
+      'ARTE  ·  DISEÑO  ·  TATUAJE  ·  FORMACIÓN';
+
+    const title =
+      welcome.querySelector('.welcome-title');
+
+    if (title) {
+      title.insertAdjacentElement(
+        'afterend',
+        tagline
+      );
+    }
+  }
+
+
+  /* ----------------------------------------------------------
+     ESTRELLAS
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-star')) {
+
+    const stars = [
+      [18,28],
+      [79,23],
+      [12,57],
+      [88,62],
+      [23,77],
+      [76,75],
+      [40,14],
+      [62,17],
+      [8,42],
+      [93,40]
+    ];
+
+    stars.forEach(function (pos, i) {
+
+      const star =
+        document.createElement('span');
+
+      star.className =
+        'rx-star';
+
+      star.style.left =
+        pos[0] + '%';
+
+      star.style.top =
+        pos[1] + '%';
+
+      star.style.setProperty(
+        '--time',
+        (3.2 + Math.random() * 3.5) + 's'
       );
 
-      p.style.animationDuration =
-        (4.5 + Math.random() * 5) + 's';
+      star.style.setProperty(
+        '--delay',
+        (i * .32) + 's'
+      );
 
-      p.style.animationDelay =
-        (Math.random() * 5) + 's';
+      welcome.appendChild(star);
+    });
+  }
 
-      fragment.appendChild(p);
+
+  /* ----------------------------------------------------------
+     POLVO DORADO
+  ---------------------------------------------------------- */
+
+  if (!welcome.querySelector('.rx-dust')) {
+
+    const fragment =
+      document.createDocumentFragment();
+
+    for (let i = 0; i < 42; i++) {
+
+      const dust =
+        document.createElement('span');
+
+      dust.className =
+        'rx-dust';
+
+      dust.style.setProperty(
+        '--left',
+        (3 + Math.random() * 94) + '%'
+      );
+
+      dust.style.setProperty(
+        '--top',
+        (40 + Math.random() * 53) + '%'
+      );
+
+      dust.style.setProperty(
+        '--size',
+        (.7 + Math.random() * 2.4) + 'px'
+      );
+
+      dust.style.setProperty(
+        '--duration',
+        (5 + Math.random() * 7) + 's'
+      );
+
+      dust.style.setProperty(
+        '--delay',
+        (Math.random() * 7) + 's'
+      );
+
+      dust.style.setProperty(
+        '--drift',
+        ((Math.random() - .5) * 170) + 'px'
+      );
+
+      fragment.appendChild(dust);
     }
 
     welcome.appendChild(fragment);
   }
+
 })();
 </script>
 </body>
