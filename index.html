@@ -49092,5 +49092,279 @@ Arte · Diseño · Tatuaje · Formación`;
 })();
 </script>
 <!-- FIN ROXTHAL — CONSENTIMIENTO SUPABASE + WHATSAPP -->
+
+   <!-- ROXTHAL — CORRECCIÓN DATOS WHATSAPP CONSENTIMIENTO -->
+<script>
+(function () {
+  'use strict';
+
+  function obtenerRegistro(consentId) {
+    try {
+      const raw = localStorage.getItem(
+        'roxthal_consentimientos_profesionales_v1'
+      );
+
+      if (!raw) return null;
+
+      const registros = JSON.parse(raw);
+
+      if (!Array.isArray(registros)) return null;
+
+      return registros.find(function (r) {
+        return String(
+          r.consentId ||
+          r.consent_id ||
+          r.id ||
+          ''
+        ) === String(consentId);
+      }) || null;
+
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function valor(r, nombres, defecto) {
+    for (const nombre of nombres) {
+      if (
+        r &&
+        r[nombre] !== undefined &&
+        r[nombre] !== null &&
+        String(r[nombre]).trim() !== ''
+      ) {
+        return r[nombre];
+      }
+    }
+
+    return defecto;
+  }
+
+  window.RoXThalConsentWhatsAppCorrecto = function (consentId) {
+
+    const r = obtenerRegistro(consentId);
+
+    if (!r) {
+      alert('No se encontró el consentimiento.');
+      return;
+    }
+
+    const nombre = valor(
+      r,
+      [
+        'clientName',
+        'client_name',
+        'name',
+        'nombre'
+      ],
+      'Cliente'
+    );
+
+    const id = valor(
+      r,
+      [
+        'consentId',
+        'consent_id',
+        'id'
+      ],
+      ''
+    );
+
+    const tatuaje = valor(
+      r,
+      [
+        'tattooDescription',
+        'tattoo_description',
+        'tattoo',
+        'description'
+      ],
+      'No especificado'
+    );
+
+    const zona = valor(
+      r,
+      [
+        'bodyArea',
+        'body_area',
+        'area',
+        'zone',
+        'zona'
+      ],
+      'No especificada'
+    );
+
+    const estado =
+      r.status === 'signed'
+        ? 'Firmado'
+        : valor(
+            r,
+            ['status'],
+            'Pendiente'
+          );
+
+    const firmado = valor(
+      r,
+      [
+        'signedAt',
+        'signed_at'
+      ],
+      ''
+    );
+
+    const telefono = valor(
+      r,
+      [
+        'phone',
+        'clientPhone',
+        'client_phone',
+        'telefono'
+      ],
+      ''
+    );
+
+    let mensaje =
+`Hola ${nombre} 👋
+
+Te enviamos la información de tu consentimiento profesional de RoXThal Art Design.
+
+📋 CONSENTIMIENTO
+ID: ${id}
+
+🎨 Tatuaje: ${tatuaje}
+📍 Zona: ${zona}
+
+✅ Estado: ${estado}`;
+
+    if (firmado) {
+      mensaje += `\n🕒 Firmado: ${firmado}`;
+    }
+
+    mensaje +=
+`\n\nRoXThal Art Design
+Arte · Diseño · Tatuaje · Formación`;
+
+    let numero = String(telefono)
+      .replace(/[^\d+]/g, '');
+
+    numero = numero.replace(/\+/g, '');
+
+    let url;
+
+    if (numero.length >= 10) {
+      url =
+        'https://wa.me/' +
+        numero +
+        '?text=' +
+        encodeURIComponent(mensaje);
+    } else {
+      url =
+        'https://wa.me/?text=' +
+        encodeURIComponent(mensaje);
+    }
+
+    window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
+
+  /*
+    Sustituye únicamente la acción de los botones
+    de WhatsApp ya creados.
+  */
+  function corregirBotones() {
+
+    document
+      .querySelectorAll('.rx-consent-whatsapp-btn')
+      .forEach(function (boton) {
+
+        if (boton.dataset.rxCorrected === '1') {
+          return;
+        }
+
+        const contenedor =
+          boton.closest(
+            'div, article, section, li'
+          );
+
+        if (!contenedor) return;
+
+        const texto =
+          contenedor.innerText || '';
+
+        const match =
+          texto.match(
+            /ID:\s*(RX-\d{8}-[A-Z0-9]+)/i
+          );
+
+        if (!match) return;
+
+        const consentId = match[1];
+
+        /*
+          Clonamos el botón para eliminar
+          el evento anterior sin tocar
+          ningún otro elemento.
+        */
+        const nuevo =
+          boton.cloneNode(true);
+
+        nuevo.dataset.rxCorrected = '1';
+
+        nuevo.addEventListener(
+          'click',
+          function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.RoXThalConsentWhatsAppCorrecto(
+              consentId
+            );
+          }
+        );
+
+        boton.replaceWith(nuevo);
+      });
+  }
+
+  function iniciar() {
+
+    corregirBotones();
+
+    const observer =
+      new MutationObserver(
+        corregirBotones
+      );
+
+    observer.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+
+    setInterval(
+      corregirBotones,
+      1000
+    );
+  }
+
+  if (
+    document.readyState === 'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      { once: true }
+    );
+  } else {
+    iniciar();
+  }
+
+})();
+</script>
+<!-- FIN CORRECCIÓN WHATSAPP -->
 </body>
 </html>
