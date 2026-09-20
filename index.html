@@ -42264,6 +42264,72 @@ setTimeout(instalarCompartirPremios,3000);
 
 </script>
 
-             
+     <!-- ROXTHAL — REPARADOR AUTOMÁTICO DEL LOGO -->
+<script>
+(function () {
+  'use strict';
+
+  const LOGO_ANTIGUO =
+    'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
+
+  const LOGO_CORRECTO = './icon-512.png';
+
+  function repararElemento(el) {
+    if (!el || !el.getAttribute) return;
+
+    ['src', 'href'].forEach(function (atributo) {
+      const valor = el.getAttribute(atributo);
+
+      if (valor && valor.indexOf(LOGO_ANTIGUO) !== -1) {
+        el.setAttribute(atributo, LOGO_CORRECTO);
+      }
+    });
+  }
+
+  function repararTodo() {
+    document
+      .querySelectorAll('img, link, source, image')
+      .forEach(repararElemento);
+  }
+
+  // Reparar inmediatamente lo que ya existe
+  repararTodo();
+
+  // Reparar cualquier elemento que la aplicación cree posteriormente
+  const observador = new MutationObserver(function (mutaciones) {
+    mutaciones.forEach(function (mutacion) {
+
+      if (mutacion.type === 'attributes') {
+        repararElemento(mutacion.target);
+      }
+
+      if (mutacion.type === 'childList') {
+        mutacion.addedNodes.forEach(function (nodo) {
+          if (nodo.nodeType === 1) {
+            repararElemento(nodo);
+
+            if (nodo.querySelectorAll) {
+              nodo
+                .querySelectorAll('img, link, source, image')
+                .forEach(repararElemento);
+            }
+          }
+        });
+      }
+    });
+  });
+
+  observador.observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['src', 'href']
+  });
+
+  // Segunda pasada después de cargar completamente la aplicación
+  window.addEventListener('load', repararTodo);
+
+})();
+</script>        
 </body>
 </html>
