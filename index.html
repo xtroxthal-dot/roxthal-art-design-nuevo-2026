@@ -49366,5 +49366,488 @@ Arte · Diseño · Tatuaje · Formación`;
 })();
 </script>
 <!-- FIN CORRECCIÓN WHATSAPP -->
+
+   <!-- ROXTHAL — WHATSAPP: LECTOR ROBUSTO DEL CONSENTIMIENTO REAL -->
+<script>
+(function () {
+  'use strict';
+
+  const RX_STORAGE =
+    'roxthal_consentimientos_profesionales_v1';
+
+  function obtenerRegistros() {
+    try {
+      const raw = localStorage.getItem(RX_STORAGE);
+      if (!raw) return [];
+      const data = JSON.parse(raw);
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.warn('[RoXThal WhatsApp] Error leyendo registros:', e);
+      return [];
+    }
+  }
+
+  function encontrarRegistroPorId(id) {
+    const registros = obtenerRegistros();
+
+    return registros.find(function (registro) {
+
+      let encontrado = false;
+
+      function recorrer(valor) {
+        if (encontrado || valor == null) return;
+
+        if (typeof valor === 'string') {
+          if (valor.trim() === String(id).trim()) {
+            encontrado = true;
+          }
+          return;
+        }
+
+        if (Array.isArray(valor)) {
+          valor.forEach(recorrer);
+          return;
+        }
+
+        if (typeof valor === 'object') {
+          Object.keys(valor).forEach(function (clave) {
+            recorrer(valor[clave]);
+          });
+        }
+      }
+
+      recorrer(registro);
+
+      return encontrado;
+    }) || null;
+  }
+
+  function buscarValor(objeto, claves) {
+
+    let resultado = '';
+
+    function recorrer(valor) {
+
+      if (resultado || valor == null) return;
+
+      if (Array.isArray(valor)) {
+        valor.forEach(recorrer);
+        return;
+      }
+
+      if (typeof valor !== 'object') return;
+
+      Object.keys(valor).forEach(function (clave) {
+
+        if (resultado) return;
+
+        const claveNormalizada =
+          String(clave)
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '');
+
+        const coincide =
+          claves.some(function (buscada) {
+            return claveNormalizada.includes(buscada);
+          });
+
+        if (coincide) {
+
+          const dato = valor[clave];
+
+          if (
+            typeof dato === 'string' ||
+            typeof dato === 'number'
+          ) {
+            if (String(dato).trim()) {
+              resultado = String(dato).trim();
+              return;
+            }
+          }
+        }
+
+        recorrer(valor[clave]);
+      });
+    }
+
+    recorrer(objeto);
+
+    return resultado;
+  }
+
+  function crearMensaje(id, registro, tarjeta) {
+
+    /*
+      Primero obtenemos los datos directamente
+      de la estructura real del consentimiento.
+    */
+
+    let nombre = buscarValor(
+      registro,
+      [
+        'clientname',
+        'nombre',
+        'name'
+      ]
+    );
+
+    let telefono = buscarValor(
+      registro,
+      [
+        'phone',
+        'telefono',
+        'tel',
+        'movil',
+        'mobile'
+      ]
+    );
+
+    let tatuaje = buscarValor(
+      registro,
+      [
+        'tattoodescription',
+        'descripcion',
+        'description'
+      ]
+    );
+
+    let estilo = buscarValor(
+      registro,
+      [
+        'tattoostyle',
+        'estilo',
+        'style'
+      ]
+    );
+
+    let zona = buscarValor(
+      registro,
+      [
+        'bodyarea',
+        'zona',
+        'area',
+        'body'
+      ]
+    );
+
+    let tamano = buscarValor(
+      registro,
+      [
+        'approximatesize',
+        'tamano',
+        'size'
+      ]
+    );
+
+    let color = buscarValor(
+      registro,
+      [
+        'colormode',
+        'color'
+      ]
+    );
+
+    let sesion = buscarValor(
+      registro,
+      [
+        'sessionnumber',
+        'sesion',
+        'session'
+      ]
+    );
+
+    let estado = buscarValor(
+      registro,
+      [
+        'status',
+        'estado'
+      ]
+    );
+
+    let firmado = buscarValor(
+      registro,
+      [
+        'signedat',
+        'firmado',
+        'signed'
+      ]
+    );
+
+    /*
+      Si algún dato no está expuesto con una clave
+      reconocible, lo obtenemos de la tarjeta visible.
+    */
+
+    if (tarjeta) {
+
+      const texto =
+        tarjeta.innerText || '';
+
+      const lineas =
+        texto
+          .split('\n')
+          .map(function (x) {
+            return x.trim();
+          })
+          .filter(Boolean);
+
+      if (!nombre) {
+        const posible =
+          lineas.find(function (linea) {
+            return (
+              linea !== 'Historial' &&
+              linea !== 'Registros' &&
+              !linea.startsWith('ID:') &&
+              !linea.startsWith('Tatuaje:') &&
+              !linea.startsWith('Zona:') &&
+              !linea.startsWith('Registrado:') &&
+              linea !== 'Firmado' &&
+              linea !== 'Eliminar' &&
+              !linea.includes('WhatsApp')
+            );
+          });
+
+        if (posible) nombre = posible;
+      }
+
+      if (!tatuaje) {
+        const linea =
+          lineas.find(function (x) {
+            return x.startsWith('Tatuaje:');
+          });
+
+        if (linea) {
+          tatuaje =
+            linea.replace(/^Tatuaje:\s*/i, '');
+        }
+      }
+
+      if (!zona) {
+        const linea =
+          lineas.find(function (x) {
+            return x.startsWith('Zona:');
+          });
+
+        if (linea) {
+          zona =
+            linea.replace(/^Zona:\s*/i, '');
+        }
+      }
+    }
+
+    nombre =
+      nombre || 'Cliente';
+
+    tatuaje =
+      tatuaje || 'No especificado';
+
+    zona =
+      zona || 'No especificada';
+
+    estado =
+      /signed|firmad/i.test(estado)
+        ? 'Firmado'
+        : (estado || 'Pendiente');
+
+    let mensaje =
+`Hola ${nombre} 👋
+
+Te enviamos la información de tu consentimiento profesional de RoXThal Art Design.
+
+📋 CONSENTIMIENTO
+ID: ${id}
+
+🎨 Tatuaje: ${tatuaje}`;
+
+    if (estilo) {
+      mensaje += `\n🎨 Estilo: ${estilo}`;
+    }
+
+    mensaje +=
+`\n📍 Zona: ${zona}`;
+
+    if (tamano) {
+      mensaje += `\n📐 Tamaño: ${tamano}`;
+    }
+
+    if (color) {
+      mensaje += `\n🖤 Color: ${color}`;
+    }
+
+    if (sesion) {
+      mensaje += `\n🔢 Sesión: ${sesion}`;
+    }
+
+    mensaje +=
+`\n\n✅ Estado: ${estado}`;
+
+    if (firmado) {
+      mensaje += `\n🕒 Firmado: ${firmado}`;
+    }
+
+    mensaje +=
+`\n\nRoXThal Art Design
+Arte · Diseño · Tatuaje · Formación`;
+
+    return {
+      mensaje: mensaje,
+      telefono: telefono
+    };
+  }
+
+  function abrirWhatsApp(id, tarjeta) {
+
+    const registro =
+      encontrarRegistroPorId(id);
+
+    if (!registro) {
+      alert(
+        'No se encontró el registro del consentimiento.'
+      );
+      return;
+    }
+
+    const datos =
+      crearMensaje(
+        id,
+        registro,
+        tarjeta
+      );
+
+    let telefono =
+      String(datos.telefono || '')
+        .replace(/[^\d+]/g, '');
+
+    telefono =
+      telefono.replace(/\+/g, '');
+
+    let url;
+
+    if (telefono.length >= 10) {
+
+      url =
+        'https://wa.me/' +
+        telefono +
+        '?text=' +
+        encodeURIComponent(
+          datos.mensaje
+        );
+
+    } else {
+
+      url =
+        'https://wa.me/?text=' +
+        encodeURIComponent(
+          datos.mensaje
+        );
+    }
+
+    window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  }
+
+  function corregirBotones() {
+
+    document
+      .querySelectorAll(
+        '.rx-consent-whatsapp-btn'
+      )
+      .forEach(function (boton) {
+
+        if (
+          boton.dataset.rxFinalWhatsapp === '1'
+        ) {
+          return;
+        }
+
+        const tarjeta =
+          boton.closest(
+            'article, li, section, div'
+          );
+
+        if (!tarjeta) return;
+
+        const texto =
+          tarjeta.innerText || '';
+
+        const coincidencia =
+          texto.match(
+            /ID:\s*(RX-\d{8}-[A-Z0-9]+)/i
+          );
+
+        if (!coincidencia) return;
+
+        const id =
+          coincidencia[1];
+
+        const nuevo =
+          boton.cloneNode(true);
+
+        nuevo.dataset.rxFinalWhatsapp = '1';
+
+        nuevo.addEventListener(
+          'click',
+          function (evento) {
+
+            evento.preventDefault();
+            evento.stopPropagation();
+
+            abrirWhatsApp(
+              id,
+              tarjeta
+            );
+          }
+        );
+
+        boton.replaceWith(nuevo);
+      });
+  }
+
+  function iniciar() {
+
+    corregirBotones();
+
+    const observador =
+      new MutationObserver(
+        corregirBotones
+      );
+
+    observador.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+
+    setInterval(
+      corregirBotones,
+      1000
+    );
+  }
+
+  if (
+    document.readyState === 'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      { once: true }
+    );
+
+  } else {
+
+    iniciar();
+  }
+
+})();
+</script>
+<!-- FIN WHATSAPP REAL -->
 </body>
 </html>
