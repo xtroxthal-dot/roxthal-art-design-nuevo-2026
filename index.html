@@ -42264,32 +42264,6 @@ setTimeout(instalarCompartirPremios,3000);
 
 </script>
 
- <!-- REPARADOR DE LOGO — RoXThal Art Design -->
-<script>
-(function () {
-  const LOGO_ANTIGUO =
-    'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
-
-  const LOGO_NUEVO = './logo-roxthal-art-design.png';
-
-  function repararLogo() {
-    document.querySelectorAll('img, link').forEach(function (elemento) {
-      if (elemento.tagName === 'IMG' && elemento.getAttribute('src') === LOGO_ANTIGUO) {
-        elemento.setAttribute('src', LOGO_NUEVO);
-      }
-
-      if (elemento.tagName === 'LINK' && elemento.getAttribute('href') === LOGO_ANTIGUO) {
-        elemento.setAttribute('href', LOGO_NUEVO);
-      }
-    });
-  }
-
-  repararLogo();
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', repararLogo, { once: true });
-  }
-})();
-</script>                    
+             
 </body>
 </html>
