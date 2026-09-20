@@ -50138,5 +50138,327 @@ Arte · Diseño · Tatuaje · Formación`;
 })();
 </script>
 <!-- FIN WHATSAPP CONSENTIMIENTO DEFINITIVO -->
+         <!-- =========================================================
+     ROXTHAL — WHATSAPP CONSENTIMIENTO — AISLADO
+     Solo afecta al módulo Consentimiento / Historial
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__RX_CONSENT_WHATSAPP_AISLADO_2026__) return;
+  window.__RX_CONSENT_WHATSAPP_AISLADO_2026__ = true;
+
+  const STORAGE_KEY =
+    'roxthal_consentimientos_profesionales_v1';
+
+  function registros() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+
+      const data = JSON.parse(raw);
+
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.records)) return data.records;
+
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function buscarRegistro(id) {
+    return registros().find(r =>
+      r &&
+      String(r.id || '').toUpperCase() ===
+      String(id || '').toUpperCase()
+    ) || null;
+  }
+
+  function obtenerId(boton) {
+    let elemento = boton;
+
+    for (let i = 0; i < 10 && elemento; i++) {
+
+      const texto = elemento.textContent || '';
+
+      const coincidencia = texto.match(
+        /RX-\d{8}-[A-Z0-9]{4,12}/i
+      );
+
+      if (coincidencia) {
+        return coincidencia[0];
+      }
+
+      for (const atributo of [
+        'data-id',
+        'data-consent-id',
+        'data-record-id'
+      ]) {
+        const valor = elemento.getAttribute &&
+                      elemento.getAttribute(atributo);
+
+        if (valor && /^RX-\d{8}-[A-Z0-9]{4,12}$/i.test(valor)) {
+          return valor;
+        }
+      }
+
+      elemento = elemento.parentElement;
+    }
+
+    return null;
+  }
+
+  function mensaje(record) {
+
+    const nombre = record.name || 'Cliente';
+    const id = record.id || '';
+    const tatuaje = record.tattoo || 'No especificado';
+    const estilo = record.style || '';
+    const zona = record.area || 'No especificada';
+    const tamano = record.size || '';
+    const color = record.color || '';
+    const sesion = record.session || '';
+
+    let estado = 'Pendiente';
+
+    if (record.status === 'signed') {
+      estado = 'Firmado';
+    } else if (record.status === 'cancelled') {
+      estado = 'Cancelado';
+    }
+
+    let firmado = '';
+
+    if (record.signedAt) {
+      try {
+        firmado = new Date(record.signedAt)
+          .toLocaleString('es-AR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+      } catch (e) {
+        firmado = record.signedAt;
+      }
+    }
+
+    let texto =
+`Hola ${nombre} 👋
+
+Te enviamos la información de tu consentimiento profesional de RoXThal Art Design.
+
+📋 CONSENTIMIENTO
+ID: ${id}
+
+🎨 Tatuaje: ${tatuaje}`;
+
+    if (estilo) texto += `\n🎨 Estilo: ${estilo}`;
+    if (zona) texto += `\n📍 Zona: ${zona}`;
+    if (tamano) texto += `\n📐 Tamaño: ${tamano}`;
+    if (color) texto += `\n🖤 Color: ${color}`;
+    if (sesion) texto += `\n🔢 Sesión: ${sesion}`;
+
+    texto += `\n\n✅ Estado: ${estado}`;
+
+    if (firmado) {
+      texto += `\n🕒 Firmado: ${firmado}`;
+    }
+
+    texto +=
+`\n\nRoXThal Art Design
+Arte · Diseño · Tatuaje · Formación`;
+
+    return texto;
+  }
+
+  function enviar(boton) {
+
+    const id = obtenerId(boton);
+
+    if (!id) {
+      alert(
+        'No se pudo identificar el consentimiento seleccionado.'
+      );
+      return;
+    }
+
+    const record = buscarRegistro(id);
+
+    if (!record) {
+      alert(
+        'No se encontró el consentimiento seleccionado.'
+      );
+      return;
+    }
+
+    const telefono = String(record.phone || '')
+      .replace(/\D/g, '');
+
+    if (!telefono) {
+      alert(
+        'Este consentimiento no tiene un teléfono válido.'
+      );
+      return;
+    }
+
+    const url =
+      'https://wa.me/' +
+      telefono +
+      '?text=' +
+      encodeURIComponent(mensaje(record));
+
+    const ventana = window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    if (!ventana) {
+      window.location.href = url;
+    }
+  }
+
+  /*
+   * IMPORTANTE:
+   * Solo buscamos botones que estén dentro del contenedor
+   * del módulo de Consentimiento.
+   */
+  function preparar() {
+
+    /*
+     * Localizamos el módulo por sus elementos propios.
+     */
+    const modulo =
+      document.querySelector('#rxConsentApp') ||
+      document.querySelector('[id*="Consent"]');
+
+    if (!modulo) return;
+
+    /*
+     * Eliminamos únicamente el diagnóstico antiguo
+     * relacionado con Consentimiento.
+     */
+    modulo.querySelectorAll(
+      '#rxDiagnosticoConsentimientoBtn,' +
+      '#rxDiagnosticoConsentimiento'
+    ).forEach(el => el.remove());
+
+    /*
+     * SOLO dentro de #rxConsentApp.
+     */
+    const botones = Array.from(
+      modulo.querySelectorAll('button, a')
+    );
+
+    botones.forEach(original => {
+
+      const texto =
+        (original.textContent || '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+
+      const clase =
+        typeof original.className === 'string'
+          ? original.className.toLowerCase()
+          : '';
+
+      /*
+       * Debe ser inequívocamente el botón de WhatsApp
+       * del consentimiento.
+       */
+      const esWhatsApp =
+        clase.includes('rx-consent-whatsapp-btn') ||
+        texto.includes('enviar por whatsapp');
+
+      if (!esWhatsApp) return;
+
+      if (
+        original.dataset.rxConsentWhatsAppFinal === '1'
+      ) {
+        return;
+      }
+
+      /*
+       * CLONAR elimina los listeners antiguos.
+       */
+      const nuevo = original.cloneNode(true);
+
+      nuevo.removeAttribute('onclick');
+      nuevo.onclick = null;
+
+      if (nuevo.tagName === 'A') {
+        nuevo.removeAttribute('href');
+      }
+
+      nuevo.dataset.rxConsentWhatsAppFinal = '1';
+
+      nuevo.addEventListener(
+        'click',
+        function (evento) {
+
+          evento.preventDefault();
+          evento.stopPropagation();
+          evento.stopImmediatePropagation();
+
+          enviar(nuevo);
+
+          return false;
+        },
+        true
+      );
+
+      original.replaceWith(nuevo);
+    });
+  }
+
+  /*
+   * Exponer también la función global, pero solamente
+   * para registros de Consentimiento.
+   */
+  window.RoXThalConsentWhatsApp = function (record) {
+
+    if (!record || !record.phone) {
+      alert('El consentimiento no tiene teléfono.');
+      return;
+    }
+
+    const telefono =
+      String(record.phone).replace(/\D/g, '');
+
+    const url =
+      'https://wa.me/' +
+      telefono +
+      '?text=' +
+      encodeURIComponent(mensaje(record));
+
+    const ventana = window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    if (!ventana) {
+      window.location.href = url;
+    }
+  };
+
+  preparar();
+
+  const observer = new MutationObserver(function () {
+    preparar();
+  });
+
+  if (document.body) {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+})();
+</script>
+<!-- FIN WHATSAPP CONSENTIMIENTO AISLADO -->
 </body>
 </html>
