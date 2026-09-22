@@ -36858,15 +36858,43 @@ import { createClient } from
      Usa EXCLUSIVAMENTE la conexión existente de la app.
      ======================================================= */
 
-  function getDB(){
-    try{
-      if(typeof db!=='undefined' && db) return db;
-    }catch(_){}
+  let rxsdDB=null;
 
-    if(window.db) return window.db;
+function getDB(){
 
-    return null;
+  if(
+    rxsdDB &&
+    typeof rxsdDB.functions?.invoke === 'function'
+  ){
+    return rxsdDB;
   }
+
+  try{
+
+    if(
+      window.supabase &&
+      typeof window.supabase.createClient === 'function'
+    ){
+
+      rxsdDB=window.supabase.createClient(
+        'https://hxtzlrsmjwrpqgjgbzyl.supabase.co',
+        'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J'
+      );
+
+      return rxsdDB;
+    }
+
+  }catch(error){
+
+    console.error(
+      'RoXThal Súper Máquina — conexión Supabase:',
+      error
+    );
+
+  }
+
+  return null;
+}
 
   function playerToken(){
     let token=localStorage.getItem(PLAYER_KEY);
