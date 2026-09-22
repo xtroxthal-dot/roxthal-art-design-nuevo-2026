@@ -55834,6 +55834,93 @@ if(
 <!-- ============================================================
      FIN REPARADOR V4
      ============================================================ -->
-     
+     <script id="roxthal-machine-payment-return-final-repair">
+(function () {
+  "use strict";
+
+  if (window.__RX_MACHINE_PAYMENT_RETURN_FINAL_REPAIR__) return;
+  window.__RX_MACHINE_PAYMENT_RETURN_FINAL_REPAIR__ = true;
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (!params.get("roxthal_machine")) return;
+
+  const OLD_OVERLAY_ID = "rxm-overlay";
+
+  function hideOldMachine() {
+    const oldOverlay = document.getElementById(OLD_OVERLAY_ID);
+
+    if (oldOverlay) {
+      oldOverlay.style.setProperty(
+        "display",
+        "none",
+        "important"
+      );
+    }
+  }
+
+  let opened = false;
+  let attempts = 0;
+
+  function openNewMachineOnce() {
+
+    if (opened) return true;
+
+    hideOldMachine();
+
+    if (
+      window.RoXThalSuperDefinitive &&
+      typeof window.RoXThalSuperDefinitive.open === "function"
+    ) {
+      opened = true;
+
+      window.RoXThalSuperDefinitive.open();
+
+      return true;
+    }
+
+    attempts++;
+
+    if (attempts < 40) {
+      setTimeout(openNewMachineOnce, 150);
+    } else {
+      console.warn(
+        "RoXThal: no se pudo abrir la Súper Máquina Old School."
+      );
+    }
+
+    return false;
+  }
+
+  function hookOldMachine() {
+
+    hideOldMachine();
+
+    if (
+      window.RoXThalMachine &&
+      typeof window.RoXThalMachine.open === "function"
+    ) {
+
+      if (!window.__RX_MACHINE_PAYMENT_OLD_OPEN_HOOKED__) {
+
+        window.__RX_MACHINE_PAYMENT_OLD_OPEN_HOOKED__ = true;
+
+        window.RoXThalMachine.open = function () {
+          return openNewMachineOnce();
+        };
+      }
+
+      return;
+    }
+
+    setTimeout(hookOldMachine, 50);
+  }
+
+  hideOldMachine();
+
+  hookOldMachine();
+
+})();
+</script>
 </body>
 </html>
