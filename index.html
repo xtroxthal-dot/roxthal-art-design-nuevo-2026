@@ -54780,5 +54780,1059 @@ window.RoXThalAcademia={
 <!-- ============================================================
      FIN REPARADOR DE APERTURA DE LECCIONES
      ============================================================ -->
+
+   <!-- ============================================================
+     ROXTHAL ACADEMIA — REPARADOR V4
+     APERTURA REAL DE LECCIONES PROTEGIDAS
+     
+     - No modifica academy_lessons
+     - No modifica RLS
+     - No modifica cursos
+     - No modifica alumnos
+     - No requiere eliminar el reparador anterior
+     - Utiliza la misma sesión Supabase de Academia
+     - Renderiza contenido + materiales + ejercicio + quiz
+     - Guarda progreso directamente
+     ============================================================ -->
+<style id="rxAcademiaLessonRepairV4CSS">
+#axLessonModal.rx-v4-ready{
+  display:flex !important;
+  z-index:100500 !important;
+}
+
+#axLessonModal.rx-v4-ready .ax-modal-box{
+  max-height:calc(100dvh - 24px);
+  overflow-y:auto;
+}
+
+#axLessonModal .rx-v4-loading,
+#axLessonModal .rx-v4-error{
+  padding:18px;
+  border-radius:14px;
+  line-height:1.65;
+}
+
+#axLessonModal .rx-v4-loading{
+  border:1px solid rgba(155,92,255,.35);
+  background:rgba(155,92,255,.08);
+  text-align:center;
+}
+
+#axLessonModal .rx-v4-error{
+  border:1px solid rgba(255,70,70,.45);
+  background:rgba(255,50,50,.08);
+}
+
+#axLessonModal .rx-v4-info{
+  padding:14px 16px;
+  border-radius:12px;
+  margin-bottom:16px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+}
+
+#axLessonModal .rx-v4-section{
+  margin-top:20px;
+  padding:18px;
+  border-radius:15px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+#axLessonModal .rx-v4-section h3{
+  margin-top:0;
+}
+
+#axLessonModal .rx-v4-question{
+  margin:18px 0;
+  padding:15px;
+  border-radius:13px;
+  background:rgba(255,255,255,.035);
+}
+
+#axLessonModal .rx-v4-option{
+  display:block;
+  margin:9px 0;
+  padding:9px 10px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+#axLessonModal .rx-v4-option:hover{
+  background:rgba(155,92,255,.09);
+}
+</style>
+
+<script id="rxAcademiaLessonRepairV4">
+(function(){
+
+"use strict";
+
+if(window.__ROXTHAL_ACADEMIA_LESSON_REPAIR_V4__) return;
+window.__ROXTHAL_ACADEMIA_LESSON_REPAIR_V4__=true;
+
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+
+const RX_URL=
+  "https://hxtzlrsmjwrpqgjgbzyl.supabase.co";
+
+const RX_KEY=
+  "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+const OLD_REPAIR_ID="rxAcademiaLessonRepair";
+
+/* ============================================================
+   DESACTIVAR EL REPARADOR ANTERIOR
+   ============================================================ */
+
+function disableOldRepair(){
+
+  try{
+
+    const old=document.getElementById(OLD_REPAIR_ID);
+
+    if(old){
+      old.remove();
+    }
+
+    /*
+     * La bandera impide que otro bloque antiguo
+     * vuelva a inicializarse.
+     */
+    window.__ROXTHAL_ACADEMIA_LESSON_REPAIR__=true;
+
+  }catch(e){
+    console.warn(
+      "Academia V4: no se pudo desactivar completamente el reparador anterior.",
+      e
+    );
+  }
+}
+
+/* ============================================================
+   CLIENTE SUPABASE
+   ============================================================ */
+
+let readerDB=null;
+
+function getReaderDB(){
+
+  if(readerDB) return readerDB;
+
+  try{
+
+    if(
+      window.supabase &&
+      typeof window.supabase.createClient==="function"
+    ){
+
+      readerDB=window.supabase.createClient(
+        RX_URL,
+        RX_KEY,
+        {
+          auth:{
+            persistSession:true,
+            autoRefreshToken:true,
+            detectSessionInUrl:true
+          }
+        }
+      );
+
+      return readerDB;
+    }
+
+  }catch(e){
+    console.error(
+      "Academia V4: error creando cliente Supabase.",
+      e
+    );
+  }
+
+  return null;
+}
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+
+function esc(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function text(value){
+
+  let s=esc(value || "");
+
+  s=s.replace(/\r\n/g,"\n");
+  s=s.replace(/\n\n+/g,"</p><p>");
+  s=s.replace(/\n/g,"<br>");
+
+  return "<p>"+s+"</p>";
+}
+
+function modal(){
+
+  const m=document.getElementById("axLessonModal");
+
+  if(!m) return null;
+
+  m.classList.add("show");
+  m.classList.add("rx-v4-ready");
+  m.style.display="flex";
+
+  return m;
+}
+
+function message(html){
+
+  const box=document.getElementById("axLessonMsg");
+
+  if(box){
+    box.innerHTML=html;
+  }
+}
+
+function loading(){
+
+  message(`
+    <div class="rx-v4-loading">
+      <strong>📖 Cargando lección completa…</strong>
+      <div style="margin-top:8px;opacity:.75">
+        Verificando tu sesión y recuperando el contenido protegido.
+      </div>
+    </div>
+  `);
+}
+
+function error(title,description){
+
+  message(`
+    <div class="rx-v4-error">
+      <strong>⚠️ ${esc(title)}</strong>
+      <div style="margin-top:7px">
+        ${esc(description)}
+      </div>
+    </div>
+  `);
+}
+
+/* ============================================================
+   RENDER QUIZ
+   ============================================================ */
+
+function renderQuiz(quiz){
+
+  const box=document.getElementById("axLessonQuiz");
+
+  if(!box) return;
+
+  const questions=
+    Array.isArray(quiz)
+    ? quiz
+    : [];
+
+  if(!questions.length){
+
+    box.innerHTML="";
+
+    return;
+  }
+
+  box.innerHTML=`
+
+    <div class="ax-quiz">
+
+      <h3>🧠 Cuestionario</h3>
+
+      ${
+        questions.map((q,i)=>{
+
+          const options=
+            Array.isArray(q.options)
+            ? q.options
+            : [];
+
+          return `
+
+            <div class="rx-v4-question">
+
+              <strong>
+                ${i+1}. ${esc(q.question || "")}
+              </strong>
+
+              ${
+                options.map((option,j)=>`
+
+                  <label class="rx-v4-option">
+
+                    <input
+                      type="radio"
+                      name="rx_v4_q_${i}"
+                      value="${j}">
+
+                    ${esc(option)}
+
+                  </label>
+
+                `).join("")
+              }
+
+            </div>
+
+          `;
+
+        }).join("")
+      }
+
+      <button
+        type="button"
+        class="ax-btn primary"
+        id="rxV4CheckQuiz">
+
+        Comprobar cuestionario
+
+      </button>
+
+      <div
+        id="rxV4QuizResult"
+        style="margin-top:14px">
+      </div>
+
+    </div>
+  `;
+
+  const check=
+    document.getElementById("rxV4CheckQuiz");
+
+  if(!check) return;
+
+  check.onclick=function(){
+
+    let correct=0;
+
+    questions.forEach((q,i)=>{
+
+      const selected=
+        document.querySelector(
+          `input[name="rx_v4_q_${i}"]:checked`
+        );
+
+      if(!selected) return;
+
+      const value=
+        Number(selected.value);
+
+      if(
+        String(q.correct)===String(value) ||
+        String(q.answer)===String(value)
+      ){
+
+        correct++;
+
+      }
+
+    });
+
+    const score=
+      questions.length
+      ? Math.round(
+          (correct/questions.length)*100
+        )
+      : 0;
+
+    const result=
+      document.getElementById(
+        "rxV4QuizResult"
+      );
+
+    if(result){
+
+      result.innerHTML=`
+
+        <div class="ax-notice ${
+          score>=70 ? "ok" : "warn"
+        }">
+
+          <strong>
+            Resultado: ${score}%
+          </strong>
+
+          <br>
+
+          ${correct} de ${questions.length}
+          respuestas correctas.
+
+        </div>
+      `;
+
+    }
+
+    window.__RX_V4_QUIZ_SCORE__=score;
+  };
+}
+
+/* ============================================================
+   GUARDAR PROGRESO
+   ============================================================ */
+
+async function completeLesson(
+  lesson,
+  student
+){
+
+  const db=getReaderDB();
+
+  if(!db || !lesson || !student) return;
+
+  const score=
+    typeof window.__RX_V4_QUIZ_SCORE__==="number"
+    ? window.__RX_V4_QUIZ_SCORE__
+    : null;
+
+  try{
+
+    const existing=
+      await db
+        .from("academy_progress")
+        .select("id")
+        .eq("student_id",student.id)
+        .eq("lesson_id",lesson.id)
+        .maybeSingle();
+
+    if(existing.error){
+      throw existing.error;
+    }
+
+    let result;
+
+    const payload={
+      completed:true,
+      quiz_score:score,
+      completed_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    };
+
+    if(existing.data){
+
+      result=
+        await db
+          .from("academy_progress")
+          .update(payload)
+          .eq("id",existing.data.id);
+
+    }else{
+
+      result=
+        await db
+          .from("academy_progress")
+          .insert({
+            student_id:student.id,
+            lesson_id:lesson.id,
+            completed:true,
+            quiz_score:score,
+            completed_at:new Date().toISOString()
+          });
+
+    }
+
+    if(result.error){
+      throw result.error;
+    }
+
+    message(`
+      <div class="ax-notice ok">
+
+        <strong>
+          ✓ Lección completada
+        </strong>
+
+        <br>
+
+        Tu progreso se ha guardado correctamente.
+
+      </div>
+    `);
+
+    setTimeout(()=>{
+
+      const m=
+        document.getElementById(
+          "axLessonModal"
+        );
+
+      if(m){
+        m.classList.remove("show");
+        m.classList.remove("rx-v4-ready");
+        m.style.display="";
+      }
+
+    },800);
+
+  }catch(e){
+
+    console.error(
+      "Academia V4 — guardar progreso:",
+      e
+    );
+
+    error(
+      "No se pudo guardar el progreso",
+      e?.message ||
+      "La lección se ha podido leer, pero no se pudo guardar la finalización."
+    );
+
+  }
+}
+
+/* ============================================================
+   ABRIR LECCIÓN
+   ============================================================ */
+
+async function openLessonV4(lessonId){
+
+  if(!lessonId) return;
+
+  const m=modal();
+
+  if(!m) return;
+
+  loading();
+
+  const db=getReaderDB();
+
+  if(!db){
+
+    error(
+      "Academia no está conectada",
+      "No se pudo inicializar la conexión con Supabase."
+    );
+
+    return;
+  }
+
+  try{
+
+    /*
+     * 1. OBTENER SESIÓN REAL
+     */
+
+    const sessionResult=
+      await db.auth.getSession();
+
+    if(sessionResult.error){
+      throw sessionResult.error;
+    }
+
+    const session=
+      sessionResult.data?.session;
+
+    const user=
+      session?.user;
+
+    if(!user){
+
+      error(
+        "Sesión no iniciada",
+        "Tu sesión de alumno no está activa. Inicia sesión en Academia y vuelve a abrir la lección."
+      );
+
+      return;
+    }
+
+    /*
+     * 2. COMPROBAR ADMINISTRADOR
+     */
+
+    let isAdmin=
+      user.app_metadata?.role==="admin";
+
+    if(!isAdmin){
+
+      const adminResult=
+        await db
+          .from("ig_admins")
+          .select("user_id")
+          .eq("user_id",user.id)
+          .maybeSingle();
+
+      if(!adminResult.error && adminResult.data){
+        isAdmin=true;
+      }
+
+    }
+
+    /*
+     * 3. COMPROBAR ALUMNO AUTORIZADO
+     *
+     * No usamos la variable privada AX.
+     * Consultamos directamente la misma tabla.
+     */
+
+    let student=null;
+
+    if(!isAdmin){
+
+      const studentResult=
+        await db
+          .from("students")
+          .select(
+            "id,email,name,status,academy_access"
+          )
+          .ilike(
+            "email",
+            String(user.email || "").toLowerCase()
+          )
+          .eq("status","activo")
+          .eq("academy_access",true)
+          .limit(1);
+
+      if(studentResult.error){
+        throw studentResult.error;
+      }
+
+      student=
+        studentResult.data?.[0] ||
+        null;
+
+      if(!student){
+
+        error(
+          "Cuenta sin autorización",
+          "La sesión está iniciada, pero esta cuenta no aparece como alumno autorizado de Academia."
+        );
+
+        return;
+      }
+
+    }else{
+
+      /*
+       * Para administradores intentamos localizar
+       * también su registro de alumno, si existe.
+       */
+
+      const adminStudent=
+        await db
+          .from("students")
+          .select(
+            "id,email,name,status,academy_access"
+          )
+          .ilike(
+            "email",
+            String(user.email || "").toLowerCase()
+          )
+          .limit(1);
+
+      if(!adminStudent.error){
+        student=
+          adminStudent.data?.[0] ||
+          null;
+      }
+
+    }
+
+    /*
+     * 4. LEER EL CONTENIDO PROTEGIDO
+     *
+     * ESTA ES LA OPERACIÓN IMPORTANTE.
+     *
+     * La petición se realiza con el mismo cliente
+     * que contiene la sesión autenticada.
+     *
+     * RLS sigue siendo quien decide el acceso.
+     */
+
+    const result=
+      await db
+        .from("academy_lessons")
+        .select("*")
+        .eq("id",lessonId)
+        .eq("published",true)
+        .maybeSingle();
+
+    if(result.error){
+
+      console.error(
+        "Academia V4 — academy_lessons:",
+        result.error
+      );
+
+      error(
+        "Supabase rechazó la lectura",
+        result.error.message ||
+        "No se pudo obtener el contenido protegido."
+      );
+
+      return;
+    }
+
+    if(!result.data){
+
+      error(
+        "Lección no disponible",
+        "La lección existe, pero Supabase no ha autorizado a esta sesión a leer su contenido completo."
+      );
+
+      return;
+    }
+
+    const lesson=result.data;
+
+    /*
+     * 5. CURSO
+     */
+
+    let course=null;
+
+    const courseResult=
+      await db
+        .from("academy_courses")
+        .select("id,title")
+        .eq("id",lesson.course_id)
+        .maybeSingle();
+
+    if(!courseResult.error){
+      course=courseResult.data || null;
+    }
+
+    /*
+     * 6. LIMPIAR ESTADO DEL QUIZ
+     */
+
+    window.__RX_V4_QUIZ_SCORE__=null;
+
+    /*
+     * 7. TÍTULO
+     */
+
+    const courseBox=
+      document.getElementById(
+        "axLessonCourse"
+      );
+
+    const titleBox=
+      document.getElementById(
+        "axLessonTitle"
+      );
+
+    const contentBox=
+      document.getElementById(
+        "axLessonContent"
+      );
+
+    if(courseBox){
+
+      courseBox.textContent=
+        course?.title ||
+        "Academia RoXThal";
+
+    }
+
+    if(titleBox){
+
+      titleBox.textContent=
+        lesson.title ||
+        "Lección";
+
+    }
+
+    /*
+     * 8. CONTENIDO COMPLETO
+     */
+
+    if(contentBox){
+
+      contentBox.innerHTML=`
+
+        ${
+          lesson.summary
+          ? `
+            <div class="rx-v4-info">
+
+              <strong>
+                Resumen
+              </strong>
+
+              ${text(lesson.summary)}
+
+            </div>
+          `
+          : ""
+        }
+
+        <div
+          style="
+            line-height:1.8;
+            font-size:16px;
+          ">
+
+          ${text(lesson.content || "")}
+
+        </div>
+
+        ${
+          lesson.materials
+          ? `
+
+            <div class="rx-v4-section">
+
+              <h3>
+                🧰 Materiales
+              </h3>
+
+              ${text(lesson.materials)}
+
+            </div>
+
+          `
+          : ""
+        }
+
+        ${
+          lesson.exercise
+          ? `
+
+            <div class="rx-v4-section">
+
+              <h3>
+                ✍️ Ejercicio
+              </h3>
+
+              ${text(lesson.exercise)}
+
+            </div>
+
+          `
+          : ""
+        }
+
+      `;
+
+    }
+
+    /*
+     * 9. QUIZ
+     */
+
+    renderQuiz(lesson.quiz);
+
+    /*
+     * 10. BOTÓN DE COMPLETAR
+     *
+     * Sustituimos SOLO su listener visual actual
+     * mientras esta lección está abierta.
+     */
+
+    const complete=
+      document.getElementById(
+        "axCompleteLesson"
+      );
+
+    if(complete){
+
+      const clone=
+        complete.cloneNode(true);
+
+      complete.replaceWith(clone);
+
+      clone.addEventListener(
+        "click",
+        function(){
+
+          if(isAdmin){
+
+            message(`
+              <div class="ax-notice ok">
+                Modo administrador: la lección se ha abierto correctamente.
+              </div>
+            `);
+
+            return;
+          }
+
+          completeLesson(
+            lesson,
+            student
+          );
+
+        }
+      );
+
+    }
+
+    /*
+     * 11. LIMPIAR MENSAJE
+     */
+
+    message("");
+
+    /*
+     * 12. ABRIR Y LLEVAR AL PRINCIPIO
+     */
+
+    modal();
+
+    const body=
+      document.querySelector(
+        "#axLessonModal .ax-modal-body"
+      );
+
+    if(body){
+      body.scrollTop=0;
+    }
+
+  }catch(e){
+
+    console.error(
+      "Academia V4 — error:",
+      e
+    );
+
+    error(
+      "No se pudo abrir la lección",
+      e?.message ||
+      "Se produjo un error inesperado."
+    );
+
+  }
+
+}
+
+/* ============================================================
+   INTERCEPTOR DE BOTONES
+   ============================================================ */
+
+function bindLessonButtons(){
+
+  const container=
+    document.getElementById(
+      "axCoursesView"
+    );
+
+  if(!container) return;
+
+  container
+    .querySelectorAll(
+      "[data-axlesson]"
+    )
+    .forEach(button=>{
+
+      if(
+        button.dataset.rxV4Bound==="1"
+      ){
+        return;
+      }
+
+      button.dataset.rxV4Bound="1";
+
+      /*
+       * CAPTURE = true
+       *
+       * Entramos antes que el listener original
+       * de Academia.
+       */
+
+      button.addEventListener(
+        "click",
+        function(event){
+
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          const id=
+            this.dataset.axlesson;
+
+          if(id){
+            openLessonV4(id);
+          }
+
+        },
+        true
+      );
+
+    });
+
+}
+
+/* ============================================================
+   OBSERVADOR DE ACADEMIA
+   ============================================================ */
+
+function start(){
+
+  disableOldRepair();
+
+  const container=
+    document.getElementById(
+      "axCoursesView"
+    );
+
+  if(!container){
+
+    setTimeout(start,500);
+
+    return;
+  }
+
+  bindLessonButtons();
+
+  const observer=
+    new MutationObserver(
+      function(){
+
+        bindLessonButtons();
+
+      }
+    );
+
+  observer.observe(
+    container,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+  window.__ROXTHAL_ACADEMIA_V4_READY__=true;
+
+  console.log(
+    "✅ RoXThal Academia V4: reparador de lecciones activo."
+  );
+
+}
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+
+if(
+  document.readyState==="loading"
+){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    start,
+    {once:true}
+  );
+
+}else{
+
+  start();
+
+}
+
+})();
+</script>
+<!-- ============================================================
+     FIN REPARADOR V4
+     ============================================================ -->
 </body>
 </html>
