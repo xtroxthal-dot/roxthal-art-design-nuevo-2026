@@ -53603,5 +53603,539 @@ window.RoXThalAcademia={
 
 })();
 </script>
+<!-- ============================================================
+     ROXTHAL — REPARADOR EXCLUSIVO ACADEMIA ROXTHAL
+     
+     Integra #academia con el sistema showView() existente.
+     
+     NO modifica:
+     - Servicios
+     - Galería
+     - Escuela
+     - Radio
+     - Fotos y Vídeos
+     - Reseñas
+     - Sorteo
+     - Pagos
+     - Buscadores
+     - Contacto
+     - Visitas
+     - Sobre RoXThal
+     - RoXThal IA
+     - Administrador
+     - Control de Alumnos
+     - Supabase
+     
+     ============================================================ -->
+
+<style id="rxAcademiaOnlyRepairStyle">
+
+/* ============================================================
+   ACADEMIA — PRIMER PLANO
+   ============================================================ */
+
+#academia:not(.hidden){
+
+  position:fixed !important;
+  inset:0 !important;
+
+  width:100% !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+
+  z-index:100000 !important;
+
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+
+  pointer-events:auto !important;
+
+  padding:92px 0 50px !important;
+
+  isolation:isolate !important;
+}
+
+
+/* ============================================================
+   BOTÓN VOLVER — EXCLUSIVO ACADEMIA
+   ============================================================ */
+
+#academia .rx-academia-home-button{
+
+  position:fixed !important;
+
+  top:14px !important;
+  left:14px !important;
+
+  z-index:100100 !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  gap:8px !important;
+
+  min-height:44px !important;
+
+  padding:0 15px !important;
+
+  border:1px solid var(--border) !important;
+
+  border-radius:12px !important;
+
+  background:rgba(17,17,17,.96) !important;
+
+  color:var(--text) !important;
+
+  font-weight:900 !important;
+
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.45) !important;
+
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+
+  cursor:pointer !important;
+
+  pointer-events:auto !important;
+}
+
+#academia .rx-academia-home-button:hover{
+
+  border-color:var(--yellow) !important;
+  color:var(--yellow) !important;
+
+}
+
+
+/* ============================================================
+   MÓVIL
+   ============================================================ */
+
+@media(max-width:600px){
+
+  #academia:not(.hidden){
+
+    padding-top:76px !important;
+
+  }
+
+  #academia .rx-academia-home-button{
+
+    top:10px !important;
+    left:10px !important;
+
+    min-height:43px !important;
+
+    padding:0 13px !important;
+
+    font-size:14px !important;
+
+  }
+
+}
+
+</style>
+
+
+<script id="rxAcademiaOnlyRepair">
+
+(function(){
+
+  'use strict';
+
+  /*
+   * Evita que el reparador pueda instalarse dos veces.
+   */
+  if(window.__ROXTHAL_ACADEMIA_ONLY_REPAIR__) return;
+
+  window.__ROXTHAL_ACADEMIA_ONLY_REPAIR__ = true;
+
+
+  /* ==========================================================
+     1. INTEGRAR ACADEMIA EN publicViews
+     
+     El problema real del index es que Academia no estaba
+     incluida en publicViews.
+     
+     No sustituimos showView().
+     No creamos otro sistema de navegación.
+     Simplemente añadimos Academia a la lista existente.
+     ========================================================== */
+
+  function integrateAcademia(){
+
+    if(
+      Array.isArray(window.publicViews) &&
+      !window.publicViews.includes('academia')
+    ){
+
+      window.publicViews.push('academia');
+
+    }
+
+  }
+
+
+  /*
+   * En el index actual publicViews está declarado como
+   * const dentro del mismo ámbito del script principal.
+   *
+   * Si no queda expuesto en window, usamos directamente
+   * showView() mediante una integración mínima.
+   */
+
+  function ensureAcademiaNavigation(){
+
+    /*
+     * Si showView ya reconoce Academia no hacemos nada.
+     */
+
+    if(typeof window.showView === 'function'){
+
+      try{
+
+        window.showView('academia');
+
+        return true;
+
+      }catch(e){
+
+        console.warn(
+          'RoXThal Academia: integración de navegación pendiente.',
+          e
+        );
+
+      }
+
+    }
+
+    return false;
+
+  }
+
+
+  /* ==========================================================
+     2. BOTÓN VOLVER
+     ========================================================== */
+
+  function ensureAcademiaBackButton(){
+
+    const academia =
+      document.getElementById('academia');
+
+    if(!academia) return;
+
+    if(
+      academia.querySelector(
+        '.rx-academia-home-button'
+      )
+    ){
+
+      return;
+
+    }
+
+
+    const button =
+      document.createElement('button');
+
+    button.type = 'button';
+
+    button.className =
+      'rx-academia-home-button';
+
+    button.innerHTML =
+      '← <span>Volver a RoXThal</span>';
+
+
+    button.addEventListener(
+      'click',
+      function(e){
+
+        e.preventDefault();
+        e.stopPropagation();
+
+
+        /*
+         * Usamos el sistema existente.
+         */
+
+        if(typeof window.showView === 'function'){
+
+          window.showView('home');
+
+          return;
+
+        }
+
+
+        /*
+         * Fallback mínimo exclusivamente para
+         * Academia si showView no estuviera disponible.
+         */
+
+        academia.classList.add('hidden');
+
+        document.body.classList.remove(
+          'view-open'
+        );
+
+        const home =
+          document.getElementById('home');
+
+        if(home){
+
+          home.classList.remove('hidden');
+
+        }
+
+        window.scrollTo(0,0);
+
+      },
+      false
+    );
+
+
+    academia.prepend(button);
+
+  }
+
+
+  /* ==========================================================
+     3. ASEGURAR PRIMER PLANO DE ACADEMIA
+     ========================================================== */
+
+  function updateAcademia(){
+
+    const academia =
+      document.getElementById('academia');
+
+    if(!academia) return;
+
+
+    const open =
+      !academia.classList.contains('hidden');
+
+
+    if(!open){
+
+      return;
+
+    }
+
+
+    /*
+     * Academia exclusivamente.
+     */
+
+    academia.style.setProperty(
+      'z-index',
+      '100000',
+      'important'
+    );
+
+
+    academia.style.setProperty(
+      'position',
+      'fixed',
+      'important'
+    );
+
+
+    academia.style.setProperty(
+      'inset',
+      '0',
+      'important'
+    );
+
+
+    /*
+     * El sistema existente de RoXThal utiliza
+     * body.view-open para ocultar los botones
+     * flotantes.
+     */
+
+    document.body.classList.add(
+      'view-open'
+    );
+
+
+    ensureAcademiaBackButton();
+
+  }
+
+
+  /* ==========================================================
+     4. DETECTAR CUÁNDO ACADEMIA SE ABRE
+     ========================================================== */
+
+  function start(){
+
+    const academia =
+      document.getElementById('academia');
+
+    if(!academia) return;
+
+
+    const observer =
+      new MutationObserver(function(){
+
+        updateAcademia();
+
+      });
+
+
+    observer.observe(
+      academia,
+      {
+        attributes:true,
+        attributeFilter:[
+          'class',
+          'style'
+        ]
+      }
+    );
+
+
+    updateAcademia();
+
+
+    /*
+     * Detectamos exclusivamente los accesos
+     * que llevan a Academia.
+     */
+
+    document.addEventListener(
+      'click',
+      function(e){
+
+        const target =
+          e.target.closest?.(
+            '[data-go="academia"]'
+          );
+
+
+        if(!target) return;
+
+
+        /*
+         * Dejamos que el sistema original procese
+         * el clic primero.
+         *
+         * Después aseguramos el estado correcto.
+         */
+
+        setTimeout(function(){
+
+          const academy =
+            document.getElementById(
+              'academia'
+            );
+
+          if(!academy) return;
+
+
+          /*
+           * Academia debe ser la vista activa.
+           */
+
+          document
+            .querySelectorAll(
+              '.view'
+            )
+            .forEach(function(view){
+
+              if(view.id !== 'academia'){
+
+                view.classList.add(
+                  'hidden'
+                );
+
+              }
+
+            });
+
+
+          academy.classList.remove(
+            'hidden'
+          );
+
+
+          document.body.classList.add(
+            'view-open'
+          );
+
+
+          academy.scrollTop = 0;
+
+          window.scrollTo(0,0);
+
+          ensureAcademiaBackButton();
+
+          updateAcademia();
+
+
+          /*
+           * Cargar/actualizar Academia usando
+           * su sistema existente.
+           */
+
+          if(
+            typeof window.RoXThalAcademia !==
+            'undefined' &&
+            typeof window.RoXThalAcademia.refresh ===
+            'function'
+          ){
+
+            window.RoXThalAcademia.refresh();
+
+          }else if(
+            typeof loadPublicAcademy ===
+            'function'
+          ){
+
+            loadPublicAcademy();
+
+          }
+
+        },40);
+
+      },
+      false
+    );
+
+  }
+
+
+  /* ==========================================================
+     5. ARRANQUE
+     ========================================================== */
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      start,
+      {once:true}
+    );
+
+  }else{
+
+    start();
+
+  }
+
+
+})();
+
+</script>
+
+<!-- ============================================================
+     FIN — REPARADOR EXCLUSIVO ACADEMIA
+     ============================================================ -->
+   
 </body>
 </html>
