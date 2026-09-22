@@ -54136,6 +54136,119 @@ window.RoXThalAcademia={
 <!-- ============================================================
      FIN — REPARADOR EXCLUSIVO ACADEMIA
      ============================================================ -->
-   
+   <!-- REPARADOR EXCLUSIVO — BOTÓN VOLVER DE ACADEMIA ROXTHAL -->
+<script id="rxAcademiaBackButtonRepair">
+(function () {
+  'use strict';
+
+  if (window.__RX_ACADEMIA_BACK_BUTTON_REPAIR__) return;
+  window.__RX_ACADEMIA_BACK_BUTTON_REPAIR__ = true;
+
+  function closeAcademiaOnly() {
+    var academia = document.getElementById('academia');
+    var home = document.getElementById('home');
+
+    if (!academia) return;
+
+    /*
+     * Cerramos ÚNICAMENTE Academia.
+     * No tocamos los demás módulos ni los botones flotantes.
+     */
+    academia.classList.add('hidden');
+
+    /*
+     * Volvemos al inicio.
+     */
+    if (home) {
+      home.classList.remove('hidden');
+      home.scrollTop = 0;
+    }
+
+    /*
+     * Quitamos solamente el estado de módulo abierto.
+     */
+    document.body.classList.remove('view-open');
+
+    /*
+     * Restauramos el scroll de la página.
+     */
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
+  }
+
+  function repairAcademiaBackButton() {
+    var academia = document.getElementById('academia');
+    if (!academia) return;
+
+    var button = academia.querySelector('.rx-academia-home-button');
+    if (!button) return;
+
+    /*
+     * Evita que el reparador se enganche varias veces
+     * al mismo botón.
+     */
+    if (button.dataset.rxBackRepair === '1') return;
+
+    button.dataset.rxBackRepair = '1';
+
+    /*
+     * Usamos CAPTURE para que esta acción tenga prioridad
+     * sobre otros listeners que pudiera tener el botón.
+     */
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      closeAcademiaOnly();
+    }, true);
+  }
+
+  /*
+   * Buscar el botón cuando el documento ya existe.
+   */
+  function startRepair() {
+    repairAcademiaBackButton();
+
+    /*
+     * Academia puede crear el botón después de cargar.
+     * Por eso observamos solamente Academia.
+     */
+    var academia = document.getElementById('academia');
+
+    if (academia) {
+      var observer = new MutationObserver(function () {
+        repairAcademiaBackButton();
+      });
+
+      observer.observe(academia, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    /*
+     * Pequeño segundo intento por si Academia se genera
+     * dinámicamente después de la inicialización.
+     */
+    setTimeout(repairAcademiaBackButton, 100);
+    setTimeout(repairAcademiaBackButton, 500);
+    setTimeout(repairAcademiaBackButton, 1000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startRepair, {
+      once: true
+    });
+  } else {
+    startRepair();
+  }
+
+})();
+</script>
+<!-- FIN REPARADOR EXCLUSIVO — BOTÓN VOLVER DE ACADEMIA ROXTHAL -->
 </body>
 </html>
