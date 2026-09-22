@@ -35258,7 +35258,14 @@ import { createClient } from
       setTimeout(
         () => {
 
-          openMachine();
+         if (
+  window.RoXThalSuperDefinitive &&
+  typeof window.RoXThalSuperDefinitive.open === "function"
+) {
+  window.RoXThalSuperDefinitive.open();
+} else {
+  openMachine();
+}
 
         },
         350
