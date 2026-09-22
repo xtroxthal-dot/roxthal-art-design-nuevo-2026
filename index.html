@@ -54250,5 +54250,535 @@ window.RoXThalAcademia={
 })();
 </script>
 <!-- FIN REPARADOR EXCLUSIVO — BOTÓN VOLVER DE ACADEMIA ROXTHAL -->
+
+   <!-- ============================================================
+     ROXTHAL ACADEMIA — REPARADOR DE APERTURA DE LECCIONES
+     Soluciona la apertura del contenido completo sin modificar
+     cursos, lecciones, RLS ni ningún otro módulo.
+     ============================================================ -->
+<style id="rxAcademiaLessonRepairCSS">
+  #axLessonModal.rx-academia-lesson-ready {
+    display: flex !important;
+    z-index: 100200 !important;
+  }
+
+  #axLessonModal.rx-academia-lesson-ready .ax-modal-box {
+    max-height: calc(100dvh - 30px);
+    overflow-y: auto;
+  }
+
+  #axLessonModal .rx-lesson-loading {
+    padding: 22px;
+    text-align: center;
+    border: 1px solid var(--border, #333);
+    border-radius: 14px;
+    background: rgba(255,255,255,.035);
+  }
+
+  #axLessonModal .rx-lesson-error {
+    padding: 18px;
+    border: 1px solid rgba(255,80,80,.45);
+    border-radius: 14px;
+    background: rgba(255,50,50,.08);
+    line-height: 1.6;
+  }
+
+  #axLessonModal .rx-lesson-error strong {
+    display: block;
+    margin-bottom: 7px;
+  }
+</style>
+
+<script id="rxAcademiaLessonRepair">
+(function(){
+
+  "use strict";
+
+  if(window.__ROXTHAL_ACADEMIA_LESSON_REPAIR__) return;
+  window.__ROXTHAL_ACADEMIA_LESSON_REPAIR__ = true;
+
+  function getAcademiaDB(){
+    if(window.db && typeof window.db.from === "function"){
+      return window.db;
+    }
+
+    if(window.supabaseDB && typeof window.supabaseDB.from === "function"){
+      return window.supabaseDB;
+    }
+
+    if(window.supabaseClient &&
+       typeof window.supabaseClient.from === "function"){
+      return window.supabaseClient;
+    }
+
+    return null;
+  }
+
+  function escLocal(value){
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function formatText(value){
+    let s=escLocal(value || "");
+
+    s=s.replace(/\n\n/g,"</p><p>");
+    s=s.replace(/\n/g,"<br>");
+
+    return "<p>"+s+"</p>";
+  }
+
+  function showLessonModal(){
+    const modal=document.getElementById("axLessonModal");
+
+    if(!modal) return null;
+
+    modal.classList.add("show");
+    modal.classList.add("rx-academia-lesson-ready");
+
+    modal.style.display="flex";
+
+    return modal;
+  }
+
+  function setMessage(html){
+    const box=document.getElementById("axLessonMsg");
+
+    if(box){
+      box.innerHTML=html;
+    }
+  }
+
+  function loadingMessage(){
+    setMessage(`
+      <div class="rx-lesson-loading">
+        <strong>📖 Cargando lección completa…</strong>
+        <div style="margin-top:8px;opacity:.75">
+          Estamos recuperando el contenido protegido de Academia.
+        </div>
+      </div>
+    `);
+  }
+
+  function errorMessage(title,text){
+    setMessage(`
+      <div class="rx-lesson-error">
+        <strong>⚠️ ${escLocal(title)}</strong>
+        <div>${escLocal(text)}</div>
+      </div>
+    `);
+  }
+
+  async function repairOpenLesson(lessonId){
+
+    if(!lessonId) return;
+
+    /*
+     * La función original ya comprueba la sesión y el acceso.
+     * Aquí volvemos a comprobarlo de forma independiente para
+     * evitar que una condición antigua deje la pantalla bloqueada.
+     */
+
+    const AX=window.__ROXTHAL_ACADEMIA_STATE__;
+
+    /*
+     * Si la implementación original mantiene AX en su cierre,
+     * no podemos acceder directamente a él. Por eso comprobamos
+     * la sesión de Supabase aquí.
+     */
+
+    const db=getAcademiaDB();
+
+    if(!db){
+
+      const modal=showLessonModal();
+
+      if(modal){
+        errorMessage(
+          "Academia no está conectada",
+          "No se encontró la conexión con Supabase."
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * Abrimos el modal ANTES de consultar la lección.
+     * Este es uno de los arreglos principales.
+     */
+
+    showLessonModal();
+    loadingMessage();
+
+    try{
+
+      /*
+       * Comprobamos sesión.
+       */
+
+      let sessionData=null;
+
+      if(db.auth && typeof db.auth.getSession==="function"){
+
+        const sessionResult=await db.auth.getSession();
+
+        if(sessionResult.error){
+          throw sessionResult.error;
+        }
+
+        sessionData=sessionResult.data?.session || null;
+      }
+
+      if(!sessionData?.user){
+
+        if(typeof window.openModal==="function"){
+          window.openModal("axLoginModal");
+        }else{
+          document.getElementById("axLessonModal")
+            ?.classList.remove("show");
+        }
+
+        const loginMsg=document.getElementById("axLoginMsg");
+
+        if(loginMsg){
+          loginMsg.innerHTML=`
+            <div class="ax-notice warn">
+              Necesitas iniciar sesión para acceder a esta lección.
+            </div>
+          `;
+        }
+
+        return;
+      }
+
+      /*
+       * Primero obtenemos la lección completa.
+       * RLS seguirá protegiendo el contenido.
+       */
+
+      const result=await db
+        .from("academy_lessons")
+        .select("*")
+        .eq("id",lessonId)
+        .eq("published",true)
+        .maybeSingle();
+
+      if(result.error){
+
+        console.error(
+          "RoXThal Academia — error leyendo lección:",
+          result.error
+        );
+
+        errorMessage(
+          "No se pudo cargar la lección",
+          result.error.message ||
+          "Supabase ha rechazado la lectura del contenido."
+        );
+
+        return;
+      }
+
+      if(!result.data){
+
+        errorMessage(
+          "Lección no disponible",
+          "La lección existe en Academia, pero tu sesión no tiene permiso para leer su contenido completo."
+        );
+
+        return;
+      }
+
+      const lesson=result.data;
+
+      /*
+       * Guardamos la lección en la variable global que utiliza
+       * el sistema de progreso.
+       */
+
+      try{
+        if(typeof AX!=="undefined" && AX){
+          AX.currentLesson=lesson;
+        }
+      }catch(e){}
+
+      /*
+       * Buscar el curso.
+       */
+
+      let course=null;
+
+      try{
+
+        const courses=
+          Array.isArray(window.RoXThalAcademia?.courses)
+          ? window.RoXThalAcademia.courses
+          : null;
+
+        if(courses){
+          course=courses.find(
+            c=>c.id===lesson.course_id
+          );
+        }
+
+      }catch(e){}
+
+      /*
+       * Si la variable interna AX no está expuesta,
+       * buscamos el título directamente en el DOM/estado
+       * disponible mediante una consulta ligera.
+       */
+
+      if(!course){
+
+        try{
+
+          const courseResult=await db
+            .from("academy_courses")
+            .select("id,title")
+            .eq("id",lesson.course_id)
+            .maybeSingle();
+
+          if(!courseResult.error){
+            course=courseResult.data || null;
+          }
+
+        }catch(e){}
+      }
+
+      const courseTitle=
+        course?.title ||
+        "Academia RoXThal";
+
+      const courseBox=
+        document.getElementById("axLessonCourse");
+
+      const titleBox=
+        document.getElementById("axLessonTitle");
+
+      const contentBox=
+        document.getElementById("axLessonContent");
+
+      const quizBox=
+        document.getElementById("axLessonQuiz");
+
+      if(courseBox){
+        courseBox.textContent=courseTitle;
+      }
+
+      if(titleBox){
+        titleBox.textContent=
+          lesson.title || "Lección";
+      }
+
+      if(contentBox){
+
+        contentBox.innerHTML=`
+
+          ${
+            lesson.summary
+            ? `
+              <div class="ax-notice"
+                   style="margin-bottom:18px">
+
+                <strong>Resumen</strong><br>
+
+                ${formatText(lesson.summary)}
+
+              </div>
+            `
+            : ""
+          }
+
+          <div style="
+            line-height:1.75;
+            font-size:1rem;
+          ">
+            ${formatText(lesson.content || "")}
+          </div>
+
+          ${
+            lesson.materials
+            ? `
+              <div class="ax-panel"
+                   style="margin-top:20px">
+
+                <h3>🧰 Materiales</h3>
+
+                <div style="line-height:1.65">
+                  ${formatText(lesson.materials)}
+                </div>
+
+              </div>
+            `
+            : ""
+          }
+
+          ${
+            lesson.exercise
+            ? `
+              <div class="ax-panel"
+                   style="margin-top:20px">
+
+                <h3>✍️ Ejercicio</h3>
+
+                <div style="line-height:1.65">
+                  ${formatText(lesson.exercise)}
+                </div>
+
+              </div>
+            `
+            : ""
+          }
+
+        `;
+      }
+
+      /*
+       * Quiz.
+       * Utilizamos la función original si existe.
+       */
+
+      if(typeof window.renderQuiz==="function"){
+
+        try{
+          window.renderQuiz(lesson.quiz);
+        }catch(e){
+          console.warn(
+            "Academia: no se pudo renderizar el cuestionario.",
+            e
+          );
+        }
+
+      }else if(quizBox){
+
+        quizBox.innerHTML="";
+      }
+
+      /*
+       * Quitamos mensaje de carga.
+       */
+
+      setMessage("");
+
+      /*
+       * El modal ya está abierto.
+       */
+
+      showLessonModal();
+
+      /*
+       * Llevar el contenido al principio.
+       */
+
+      const body=
+        document.querySelector("#axLessonModal .ax-modal-body");
+
+      if(body){
+        body.scrollTop=0;
+      }
+
+    }catch(error){
+
+      console.error(
+        "RoXThal Academia — openLesson repair:",
+        error
+      );
+
+      errorMessage(
+        "No se pudo abrir la lección",
+        error?.message ||
+        "Se produjo un error al recuperar el contenido."
+      );
+    }
+  }
+
+  function bindLessonButtons(){
+
+    document
+      .querySelectorAll("#axCoursesView [data-axlesson]")
+      .forEach(function(button){
+
+        if(button.dataset.rxLessonRepairBound==="1"){
+          return;
+        }
+
+        button.dataset.rxLessonRepairBound="1";
+
+        button.addEventListener(
+          "click",
+          function(event){
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const id=this.dataset.axlesson;
+
+            if(id){
+              repairOpenLesson(id);
+            }
+
+          },
+          true
+        );
+
+      });
+
+  }
+
+  /*
+   * Como openCourse genera los botones dinámicamente,
+   * observamos únicamente la zona de cursos de Academia.
+   */
+
+  function start(){
+
+    const coursesView=
+      document.getElementById("axCoursesView");
+
+    if(!coursesView){
+      setTimeout(start,500);
+      return;
+    }
+
+    bindLessonButtons();
+
+    const observer=new MutationObserver(function(){
+
+      bindLessonButtons();
+
+    });
+
+    observer.observe(coursesView,{
+      childList:true,
+      subtree:true
+    });
+
+  }
+
+  if(document.readyState==="loading"){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      start,
+      {once:true}
+    );
+
+  }else{
+
+    start();
+
+  }
+
+})();
+</script>
+<!-- ============================================================
+     FIN REPARADOR DE APERTURA DE LECCIONES
+     ============================================================ -->
 </body>
 </html>
