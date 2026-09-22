@@ -55834,5 +55834,177 @@ if(
 <!-- ============================================================
      FIN REPARADOR V4
      ============================================================ -->
+     <!-- ============================================================
+     REPARADOR — RETORNO DE PAGO → NUEVA SÚPER MÁQUINA
+     No modifica Mercado Pago.
+     No elimina la máquina antigua.
+     Solo redirige la apertura post-pago hacia la nueva máquina.
+     ============================================================ -->
+
+<script id="roxthal-machine-payment-return-repair">
+(function () {
+  "use strict";
+
+  if (window.__RX_MACHINE_PAYMENT_RETURN_REPAIR__) return;
+  window.__RX_MACHINE_PAYMENT_RETURN_REPAIR__ = true;
+
+  const OLD_OVERLAY_ID = "rxm-overlay";
+
+  function hideOldMachine() {
+    const oldMachine = document.getElementById(OLD_OVERLAY_ID);
+
+    if (oldMachine) {
+      oldMachine.style.setProperty(
+        "display",
+        "none",
+        "important"
+      );
+    }
+  }
+
+  function openNewMachine() {
+    hideOldMachine();
+
+    if (
+      window.RoXThalSuperDefinitive &&
+      typeof window.RoXThalSuperDefinitive.open === "function"
+    ) {
+      return window.RoXThalSuperDefinitive.open();
+    }
+
+    console.warn(
+      "RoXThal: la nueva Súper Máquina todavía no está disponible."
+    );
+
+    return false;
+  }
+
+  /*
+   * REEMPLAZAMOS SOLO LA APERTURA DE LA MÁQUINA ANTIGUA.
+   *
+   * El pago y Mercado Pago permanecen intactos.
+   */
+  function repairOldMachineOpen() {
+    if (
+      !window.RoXThalMachine ||
+      typeof window.RoXThalMachine.open !== "function"
+    ) {
+      return false;
+    }
+
+    if (window.__RX_MACHINE_OPEN_REPAIRED__) {
+      return true;
+    }
+
+    const oldOpen =
+      window.RoXThalMachine.open;
+
+    window.RoXThalMachine.open = function () {
+
+      hideOldMachine();
+
+      /*
+       * La nueva máquina es la que debe abrirse
+       * después del pago confirmado.
+       */
+      if (
+        window.RoXThalSuperDefinitive &&
+        typeof window.RoXThalSuperDefinitive.open === "function"
+      ) {
+        return window.RoXThalSuperDefinitive.open();
+      }
+
+      /*
+       * Si todavía está cargando, esperamos un momento.
+       */
+      setTimeout(function () {
+
+        if (
+          window.RoXThalSuperDefinitive &&
+          typeof window.RoXThalSuperDefinitive.open === "function"
+        ) {
+          hideOldMachine();
+          window.RoXThalSuperDefinitive.open();
+        } else {
+          console.warn(
+            "RoXThal: no se pudo localizar la nueva Súper Máquina."
+          );
+        }
+
+      }, 500);
+
+      return false;
+    };
+
+    window.__RX_MACHINE_OPEN_REPAIRED__ = true;
+
+    return true;
+  }
+
+  /*
+   * Esperamos a que estén disponibles las dos APIs.
+   */
+  function install() {
+
+    hideOldMachine();
+
+    if (repairOldMachineOpen()) {
+      return;
+    }
+
+    setTimeout(install, 150);
+  }
+
+  /*
+   * SOLO ACTUAMOS COMO REPARACIÓN POST-PAGO
+   * cuando existe el parámetro de retorno de la máquina.
+   */
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const machineReturn =
+    params.get("roxthal_machine");
+
+  if (machineReturn) {
+
+    /*
+     * Instalamos antes de que el antiguo
+     * setTimeout de 350 ms ejecute openMachine().
+     */
+    install();
+
+    /*
+     * Ocultamos inmediatamente la máquina antigua.
+     */
+    hideOldMachine();
+
+    /*
+     * Seguridad adicional:
+     * si el retorno ya está listo, abrimos la nueva.
+     */
+    setTimeout(function () {
+
+      hideOldMachine();
+
+      if (
+        window.RoXThalSuperDefinitive &&
+        typeof window.RoXThalSuperDefinitive.open === "function"
+      ) {
+
+        window.RoXThalSuperDefinitive.open();
+
+      }
+
+    }, 450);
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN REPARADOR POST-PAGO
+     ============================================================ -->
 </body>
 </html>
