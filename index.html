@@ -53603,5 +53603,662 @@ window.RoXThalAcademia={
 
 })();
 </script>
+<!-- =========================================================
+     ROXTHAL · REPARADOR DE NAVEGACIÓN Y BOTONES FLOTANTES
+     Pegar inmediatamente antes de </body>
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  /* Evitar que el reparador se instale dos veces */
+  if (window.__RX_NAV_REPAIR__) return;
+  window.__RX_NAV_REPAIR__ = true;
+
+  /* ---------------------------------------------------------
+     CONFIGURACIÓN
+     --------------------------------------------------------- */
+
+  var RX_HOME_IDS = [
+    'home',
+    'inicio',
+    'inicioSection',
+    'main',
+    'mainHome',
+    'landing',
+    'portada'
+  ];
+
+  /*
+   * Selectores habituales de botones/controles flotantes.
+   * El sistema también detecta elementos fixed/floating por
+   * posición y clases sin tocar el contenido de los módulos.
+   */
+  var RX_FLOATING_SELECTORS = [
+    '.floating-buttons',
+    '.floating-btns',
+    '.floating-actions',
+    '.floating-menu',
+    '.floating-menu-container',
+    '.app-floating-buttons',
+    '.fixed-buttons',
+    '.social-floating',
+    '.social-buttons',
+    '.social-float',
+    '.floating-social',
+    '.fab-container',
+    '.fab-buttons',
+    '.fab-menu',
+    '[class*="floating"]',
+    '[id*="floating"]',
+    '[id*="Float"]',
+    '[class*="fab-"]'
+  ];
+
+  /* ---------------------------------------------------------
+     CREAR BOTÓN VOLVER A INICIO
+     --------------------------------------------------------- */
+
+  var backButton = document.getElementById('rxRepairBackHome');
+
+  if (!backButton) {
+    backButton = document.createElement('button');
+    backButton.id = 'rxRepairBackHome';
+    backButton.type = 'button';
+    backButton.setAttribute('aria-label', 'Volver a inicio');
+    backButton.innerHTML = '← <span>Volver a inicio</span>';
+
+    backButton.style.cssText = [
+      'position:fixed',
+      'top:14px',
+      'left:14px',
+      'z-index:2147483647',
+      'display:none',
+      'align-items:center',
+      'gap:7px',
+      'padding:11px 16px',
+      'border:1px solid rgba(255,255,255,.25)',
+      'border-radius:999px',
+      'background:rgba(12,12,18,.94)',
+      'color:#fff',
+      'font-family:inherit',
+      'font-size:14px',
+      'font-weight:700',
+      'line-height:1',
+      'cursor:pointer',
+      'box-shadow:0 6px 25px rgba(0,0,0,.35)',
+      'backdrop-filter:blur(10px)',
+      '-webkit-backdrop-filter:blur(10px)',
+      'transition:transform .2s ease,opacity .2s ease'
+    ].join(';');
+
+    document.body.appendChild(backButton);
+  }
+
+  /* ---------------------------------------------------------
+     BUSCAR TODAS LAS SECCIONES REALES
+     --------------------------------------------------------- */
+
+  function getSections() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll(
+        'section, main, [role="main"], .section, .page, .screen, [data-section]'
+      )
+    );
+  }
+
+  function isVisible(el) {
+    if (!el) return false;
+
+    var style = window.getComputedStyle(el);
+
+    if (
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      parseFloat(style.opacity || '1') === 0
+    ) {
+      return false;
+    }
+
+    var rect = el.getBoundingClientRect();
+
+    return (
+      rect.width > 0 &&
+      rect.height > 0
+    );
+  }
+
+  /* ---------------------------------------------------------
+     DETECTAR SI ESTAMOS EN INICIO
+     --------------------------------------------------------- */
+
+  function isHomeVisible() {
+
+    /* 1. Buscar IDs de inicio conocidos */
+    for (var i = 0; i < RX_HOME_IDS.length; i++) {
+      var el = document.getElementById(RX_HOME_IDS[i]);
+
+      if (el && isVisible(el)) {
+        return true;
+      }
+    }
+
+    /* 2. Buscar elementos que indiquen explícitamente inicio */
+    var homeSelectors = [
+      '[data-section="home"]',
+      '[data-section="inicio"]',
+      '[data-page="home"]',
+      '[data-page="inicio"]',
+      '[data-screen="home"]',
+      '[data-screen="inicio"]'
+    ];
+
+    for (var j = 0; j < homeSelectors.length; j++) {
+      var h = document.querySelector(homeSelectors[j]);
+
+      if (h && isVisible(h)) {
+        return true;
+      }
+    }
+
+    /* 3. Si la URL tiene hash de inicio */
+    var hash = String(window.location.hash || '').toLowerCase();
+
+    if (
+      hash === '#home' ||
+      hash === '#inicio' ||
+      hash === '#/' ||
+      hash === ''
+    ) {
+      /*
+       * No damos por hecho que hash vacío sea inicio si existe
+       * una sección interna visible.
+       */
+      var internalVisible = false;
+
+      getSections().forEach(function (section) {
+        var id = String(section.id || '').toLowerCase();
+
+        if (
+          id &&
+          id !== 'home' &&
+          id !== 'inicio' &&
+          id !== 'main' &&
+          isVisible(section)
+        ) {
+          internalVisible = true;
+        }
+      });
+
+      if (!internalVisible) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /* ---------------------------------------------------------
+     DETECTAR BOTONES FLOTANTES
+     --------------------------------------------------------- */
+
+  function getFloatingElements() {
+
+    var found = [];
+
+    RX_FLOATING_SELECTORS.forEach(function (selector) {
+      try {
+        document.querySelectorAll(selector).forEach(function (el) {
+          if (found.indexOf(el) === -1) {
+            found.push(el);
+          }
+        });
+      } catch (e) {}
+    });
+
+    /*
+     * Detección adicional de elementos fixed situados en las
+     * esquinas. Esto permite encontrar botones cuyo nombre de
+     * clase sea completamente diferente.
+     */
+    document.querySelectorAll('body *').forEach(function (el) {
+
+      if (el === backButton) return;
+
+      var style;
+
+      try {
+        style = window.getComputedStyle(el);
+      } catch (e) {
+        return;
+      }
+
+      if (
+        style.position !== 'fixed' &&
+        style.position !== 'sticky'
+      ) {
+        return;
+      }
+
+      var rect = el.getBoundingClientRect();
+
+      if (
+        rect.width <= 0 ||
+        rect.height <= 0 ||
+        rect.width > window.innerWidth * .7 ||
+        rect.height > window.innerHeight * .5
+      ) {
+        return;
+      }
+
+      /*
+       * Elementos ubicados cerca de las esquinas suelen ser
+       * botones flotantes.
+       */
+      var nearLeft =
+        rect.left < 35;
+
+      var nearRight =
+        rect.right > window.innerWidth - 35;
+
+      var nearBottom =
+        rect.bottom > window.innerHeight - 35;
+
+      var nearTop =
+        rect.top < 35;
+
+      if (
+        (nearLeft || nearRight) &&
+        (nearBottom || nearTop)
+      ) {
+        if (found.indexOf(el) === -1) {
+          found.push(el);
+        }
+      }
+    });
+
+    return found;
+  }
+
+  /* ---------------------------------------------------------
+     OCULTAR / MOSTRAR FLOTANTES
+     --------------------------------------------------------- */
+
+  function setFloatingVisible(show) {
+
+    var elements = getFloatingElements();
+
+    elements.forEach(function (el) {
+
+      if (el === backButton) return;
+
+      /*
+       * Guardamos el display original para poder recuperarlo.
+       */
+      if (!el.hasAttribute('data-rx-original-display')) {
+        el.setAttribute(
+          'data-rx-original-display',
+          el.style.display || ''
+        );
+      }
+
+      if (show) {
+
+        var original =
+          el.getAttribute('data-rx-original-display');
+
+        el.style.setProperty(
+          'display',
+          original || '',
+          'important'
+        );
+
+        el.style.removeProperty('pointer-events');
+
+        if (original === '') {
+          /*
+           * Si originalmente no tenía display inline,
+           * quitamos nuestra regla.
+           */
+          setTimeout(function () {
+            if (el.isConnected) {
+              el.style.removeProperty('display');
+            }
+          }, 0);
+        }
+
+      } else {
+
+        el.style.setProperty(
+          'display',
+          'none',
+          'important'
+        );
+
+        el.style.setProperty(
+          'pointer-events',
+          'none',
+          'important'
+        );
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------
+     MOSTRAR BOTÓN VOLVER
+     --------------------------------------------------------- */
+
+  function setBackButtonVisible(show) {
+
+    if (!backButton) return;
+
+    backButton.style.display =
+      show ? 'flex' : 'none';
+  }
+
+  /* ---------------------------------------------------------
+     VOLVER A INICIO
+     --------------------------------------------------------- */
+
+  function goHome() {
+
+    /*
+     * Primero intentamos usar la navegación existente de la app.
+     */
+
+    var homeCandidates = [
+      document.getElementById('home'),
+      document.getElementById('inicio'),
+      document.getElementById('inicioSection'),
+      document.querySelector('[data-section="home"]'),
+      document.querySelector('[data-section="inicio"]'),
+      document.querySelector('[data-page="home"]'),
+      document.querySelector('[data-page="inicio"]')
+    ];
+
+    var home = null;
+
+    for (var i = 0; i < homeCandidates.length; i++) {
+      if (homeCandidates[i]) {
+        home = homeCandidates[i];
+        break;
+      }
+    }
+
+    /*
+     * Si la app tiene botones con onclick / navegación interna,
+     * intentamos encontrar un botón que diga Inicio.
+     */
+    if (!home) {
+
+      var clickable = document.querySelectorAll(
+        'button, a, [role="button"]'
+      );
+
+      for (var j = 0; j < clickable.length; j++) {
+
+        var txt =
+          String(clickable[j].innerText || clickable[j].textContent || '')
+            .trim()
+            .toLowerCase();
+
+        if (
+          txt === 'inicio' ||
+          txt === 'ir a inicio' ||
+          txt === 'volver a inicio' ||
+          txt === 'home'
+        ) {
+          try {
+            clickable[j].click();
+            setTimeout(updateNavigationState, 80);
+            setTimeout(updateNavigationState, 300);
+            return;
+          } catch (e) {}
+        }
+      }
+    }
+
+    /*
+     * Si encontramos la sección de inicio, hacemos navegación
+     * directa sin recargar la página.
+     */
+    if (home) {
+
+      getSections().forEach(function (section) {
+
+        if (section === home) {
+
+          section.style.removeProperty('display');
+          section.style.removeProperty('visibility');
+
+          if (
+            window.getComputedStyle(section).display === 'none'
+          ) {
+            section.style.setProperty(
+              'display',
+              'block',
+              'important'
+            );
+          }
+
+        } else {
+
+          /*
+           * Solo ocultamos secciones claramente identificadas
+           * como pantallas/secciones.
+           */
+          if (
+            section.matches(
+              'section, .page, .screen, [data-section]'
+            )
+          ) {
+            section.style.setProperty(
+              'display',
+              'none',
+              'important'
+            );
+          }
+        }
+      });
+
+      try {
+        history.replaceState(
+          null,
+          '',
+          window.location.pathname +
+          window.location.search +
+          '#inicio'
+        );
+      } catch (e) {}
+
+      try {
+        home.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } catch (e) {
+        window.scrollTo(0, 0);
+      }
+
+      setTimeout(updateNavigationState, 100);
+      return;
+    }
+
+    /*
+     * Último recurso: usar hash.
+     */
+    try {
+      window.location.hash = 'inicio';
+    } catch (e) {}
+
+    window.scrollTo(0, 0);
+
+    setTimeout(updateNavigationState, 100);
+  }
+
+  backButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    goHome();
+  });
+
+  backButton.addEventListener('mouseenter', function () {
+    backButton.style.transform = 'translateY(-2px)';
+  });
+
+  backButton.addEventListener('mouseleave', function () {
+    backButton.style.transform = 'translateY(0)';
+  });
+
+  /* ---------------------------------------------------------
+     ESTADO DE NAVEGACIÓN
+     --------------------------------------------------------- */
+
+  var lastHomeState = null;
+
+  function updateNavigationState() {
+
+    var home = isHomeVisible();
+
+    /*
+     * En inicio:
+     * - flotantes visibles
+     * - botón volver oculto
+     *
+     * En módulo:
+     * - flotantes ocultos
+     * - botón volver visible
+     */
+
+    if (home) {
+
+      setFloatingVisible(true);
+      setBackButtonVisible(false);
+
+    } else {
+
+      setFloatingVisible(false);
+      setBackButtonVisible(true);
+    }
+
+    lastHomeState = home;
+  }
+
+  /* ---------------------------------------------------------
+     OBSERVADOR DE CAMBIOS
+     --------------------------------------------------------- */
+
+  var observer = new MutationObserver(function () {
+
+    /*
+     * Esperamos un instante para permitir que la app termine
+     * de mostrar/ocultar su sección.
+     */
+    clearTimeout(window.__rxNavRepairTimer);
+
+    window.__rxNavRepairTimer = setTimeout(
+      updateNavigationState,
+      40
+    );
+
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: [
+      'style',
+      'class',
+      'hidden',
+      'aria-hidden'
+    ]
+  });
+
+  /* ---------------------------------------------------------
+     CAMBIOS DE HASH / HISTORIAL
+     --------------------------------------------------------- */
+
+  window.addEventListener(
+    'hashchange',
+    function () {
+      setTimeout(updateNavigationState, 50);
+    }
+  );
+
+  window.addEventListener(
+    'popstate',
+    function () {
+      setTimeout(updateNavigationState, 50);
+    }
+  );
+
+  /* ---------------------------------------------------------
+     INTERCEPTAR CLICK EN ENLACES INTERNOS
+     --------------------------------------------------------- */
+
+  document.addEventListener(
+    'click',
+    function (event) {
+
+      var target = event.target;
+
+      if (!target) return;
+
+      var clickable =
+        target.closest &&
+        target.closest(
+          'a[href^="#"], button, [role="button"]'
+        );
+
+      if (!clickable) return;
+
+      /*
+       * No interferir con nuestro propio botón.
+       */
+      if (clickable === backButton) return;
+
+      setTimeout(
+        updateNavigationState,
+        80
+      );
+
+      setTimeout(
+        updateNavigationState,
+        350
+      );
+    },
+    true
+  );
+
+  /* ---------------------------------------------------------
+     INICIALIZACIÓN
+     --------------------------------------------------------- */
+
+  function init() {
+
+    /*
+     * Damos tiempo a la aplicación para terminar de cargar.
+     */
+    setTimeout(updateNavigationState, 100);
+    setTimeout(updateNavigationState, 500);
+    setTimeout(updateNavigationState, 1200);
+    setTimeout(updateNavigationState, 2500);
+  }
+
+  if (
+    document.readyState === 'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      init
+    );
+  } else {
+    init();
+  }
+
+})();
+</script>
+           
 </body>
 </html>
