@@ -55956,6 +55956,22 @@ if(
   hookOldMachine();
 
 })();
+   </scrip>
+
+   <script>
+/* RoXThal Art Design — Registro PWA */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker
+      .register("./sw.js", { scope: "./" })
+      .then(function (registration) {
+        console.log("RoXThal PWA: Service Worker registrado", registration.scope);
+      })
+      .catch(function (error) {
+        console.error("RoXThal PWA: error al registrar Service Worker", error);
+      });
+  });
+}
 </script>
 </body>
 </html>
