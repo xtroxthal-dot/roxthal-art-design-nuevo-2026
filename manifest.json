@@ -11,7 +11,7 @@
   "lang": "es",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
