@@ -57969,7 +57969,1900 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
   display:none !important;
 }
 </style>
+<!-- ============================================================
+     ROXTHAL ART DESIGN
+     CARNÉ OFICIAL DE ESTUDIANTE
+     INTEGRACIÓN DIRECTA EN #rxConsentScreenNuevo
+     ============================================================ -->
+<script>
+(function(){
 
+'use strict';
+
+if(window.__RX_STUDENT_CARD_FINAL_2026__) return;
+window.__RX_STUDENT_CARD_FINAL_2026__ = true;
+
+
+/* ============================================================
+   SUPABASE
+   El index ya posee una conexión "db" en su script principal.
+   ============================================================ */
+
+function getDB(){
+
+  try{
+    if(typeof db !== 'undefined' && db){
+      return db;
+    }
+  }catch(e){}
+
+  if(
+    window.db &&
+    typeof window.db.from === 'function'
+  ){
+    return window.db;
+  }
+
+  return null;
+}
+
+
+/* ============================================================
+   ESTILOS
+   ============================================================ */
+
+const style=document.createElement('style');
+
+style.textContent=`
+
+#rxStudentCardEntry{
+  width:100%;
+  box-sizing:border-box;
+  margin:22px 0;
+  padding:18px;
+  border:1px solid rgba(215,173,85,.55);
+  border-radius:18px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(215,173,85,.16),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(215,173,85,.08),
+      rgba(0,0,0,.96)
+    );
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.25),
+    inset 0 0 30px rgba(215,173,85,.025);
+}
+
+#rxStudentCardEntry .rx-sc-kicker{
+  color:#d7ad55;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+
+#rxStudentCardEntry .rx-sc-title{
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:6px;
+}
+
+#rxStudentCardEntry .rx-sc-text{
+  color:rgba(255,255,255,.62);
+  font-size:12px;
+  line-height:1.5;
+  margin-bottom:14px;
+}
+
+#rxStudentCardEntry button{
+  width:100%;
+  box-sizing:border-box;
+  padding:13px 16px;
+  border:1px solid #d7ad55;
+  border-radius:11px;
+  background:#d7ad55;
+  color:#080808;
+  font-size:14px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+#rxStudentCardOverlay{
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  box-sizing:border-box;
+  background:rgba(0,0,0,.9);
+  backdrop-filter:blur(7px);
+}
+
+#rxStudentCardOverlay.rx-sc-open{
+  display:flex;
+}
+
+#rxStudentCardWindow{
+  width:min(760px,100%);
+  max-height:95vh;
+  overflow:auto;
+  box-sizing:border-box;
+  border:1px solid rgba(215,173,85,.65);
+  border-radius:22px;
+  background:#080808;
+  color:#fff;
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.85),
+    0 0 55px rgba(215,173,85,.07);
+}
+
+#rxStudentCardHeader{
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:15px 18px;
+  background:rgba(8,8,8,.98);
+  border-bottom:1px solid rgba(215,173,85,.2);
+}
+
+#rxStudentCardHeader strong{
+  color:#d7ad55;
+  font-size:17px;
+}
+
+#rxStudentCardClose{
+  width:38px;
+  height:38px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;
+  background:#151515;
+  color:#fff;
+  font-size:21px;
+  cursor:pointer;
+}
+
+#rxStudentCardBody{
+  padding:18px;
+  box-sizing:border-box;
+}
+
+.rx-sc-message{
+  padding:15px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  background:rgba(255,255,255,.035);
+  line-height:1.5;
+}
+
+.rx-sc-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:16px;
+}
+
+.rx-sc-actions button{
+  padding:11px 14px;
+  border-radius:10px;
+  border:1px solid rgba(215,173,85,.48);
+  background:#111;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.rx-sc-actions button.primary{
+  background:#d7ad55;
+  color:#080808;
+  border-color:#d7ad55;
+}
+
+.rx-sc-actions button.danger{
+  color:#ff9a9a;
+  border-color:rgba(255,70,70,.5);
+}
+
+
+/* ============================================================
+   CARNÉ
+   ============================================================ */
+
+#rxStudentCardPrint{
+  width:100%;
+}
+
+.rx-sc-card{
+  position:relative;
+  overflow:hidden;
+  width:100%;
+  min-height:340px;
+  box-sizing:border-box;
+  padding:25px;
+  border:1px solid rgba(215,173,85,.8);
+  border-radius:23px;
+
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(215,173,85,.24),
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at 5% 95%,
+      rgba(215,173,85,.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #050505 0%,
+      #191408 52%,
+      #050505 100%
+    );
+
+  box-shadow:
+    inset 0 0 55px rgba(215,173,85,.045),
+    0 20px 55px rgba(0,0,0,.6);
+}
+
+.rx-sc-card::before{
+  content:'ROXTHAL';
+  position:absolute;
+  right:-24px;
+  bottom:-35px;
+  font-size:100px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-5px;
+  color:rgba(215,173,85,.035);
+  pointer-events:none;
+}
+
+.rx-sc-card::after{
+  content:'✦';
+  position:absolute;
+  top:18px;
+  right:25px;
+  color:rgba(215,173,85,.35);
+  font-size:40px;
+  pointer-events:none;
+}
+
+.rx-sc-top{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:23px;
+}
+
+.rx-sc-brand{
+  color:#d7ad55;
+  font-size:19px;
+  font-weight:1000;
+  letter-spacing:1.8px;
+}
+
+.rx-sc-subbrand{
+  margin-top:4px;
+  color:rgba(255,255,255,.5);
+  font-size:9px;
+  letter-spacing:2.4px;
+  text-transform:uppercase;
+}
+
+.rx-sc-official{
+  padding:7px 10px;
+  border:1px solid rgba(215,173,85,.45);
+  border-radius:20px;
+  color:#d7ad55;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.4px;
+  white-space:nowrap;
+}
+
+.rx-sc-main{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:125px 1fr;
+  gap:22px;
+  align-items:center;
+}
+
+.rx-sc-photo{
+  width:125px;
+  height:150px;
+  object-fit:cover;
+  display:block;
+  box-sizing:border-box;
+  border-radius:14px;
+  border:1px solid rgba(215,173,85,.72);
+  background:#111;
+  box-shadow:0 8px 25px rgba(0,0,0,.4);
+}
+
+.rx-sc-photo-empty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#d7ad55;
+  font-size:42px;
+}
+
+.rx-sc-label{
+  margin-top:7px;
+  color:rgba(255,255,255,.42);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+}
+
+.rx-sc-name{
+  color:#fff;
+  font-size:25px;
+  line-height:1.08;
+  font-weight:1000;
+  word-break:break-word;
+}
+
+.rx-sc-course{
+  color:#d7ad55;
+  font-size:16px;
+  font-weight:800;
+  word-break:break-word;
+}
+
+.rx-sc-bottom{
+  position:relative;
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:12px;
+  margin-top:25px;
+  padding-top:13px;
+  border-top:1px solid rgba(215,173,85,.18);
+}
+
+.rx-sc-number{
+  color:rgba(255,255,255,.72);
+  font-size:10px;
+  letter-spacing:1px;
+}
+
+.rx-sc-date{
+  margin-top:4px;
+  color:rgba(255,255,255,.45);
+  font-size:9px;
+}
+
+.rx-sc-status{
+  color:#78d88a;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:1px;
+}
+
+.rx-sc-status.off{
+  color:#ff8585;
+}
+
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+
+.rx-sc-form{
+  display:grid;
+  gap:8px;
+}
+
+.rx-sc-form label{
+  margin-top:5px;
+  color:rgba(255,255,255,.65);
+  font-size:11px;
+}
+
+.rx-sc-form input,
+.rx-sc-form select{
+  width:100%;
+  box-sizing:border-box;
+  padding:11px 12px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  outline:none;
+}
+
+.rx-sc-form input:focus,
+.rx-sc-form select:focus{
+  border-color:#d7ad55;
+}
+
+.rx-sc-admin-title{
+  margin:22px 0 12px;
+  padding-top:18px;
+  border-top:1px solid rgba(215,173,85,.2);
+  color:#d7ad55;
+  font-size:15px;
+}
+
+.rx-sc-admin-item{
+  margin-bottom:10px;
+  padding:13px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;
+  background:rgba(255,255,255,.035);
+}
+
+.rx-sc-admin-item strong{
+  display:block;
+  color:#fff;
+}
+
+.rx-sc-admin-item small{
+  display:block;
+  margin-top:4px;
+  color:rgba(255,255,255,.5);
+}
+
+
+/* ============================================================
+   MÓVIL
+   ============================================================ */
+
+@media(max-width:520px){
+
+  .rx-sc-card{
+    min-height:300px;
+    padding:18px;
+  }
+
+  .rx-sc-main{
+    grid-template-columns:88px 1fr;
+    gap:13px;
+  }
+
+  .rx-sc-photo{
+    width:88px;
+    height:112px;
+  }
+
+  .rx-sc-name{
+    font-size:19px;
+  }
+
+  .rx-sc-course{
+    font-size:14px;
+  }
+
+  .rx-sc-official{
+    display:none;
+  }
+
+}
+
+
+/* ============================================================
+   IMPRESIÓN
+   ============================================================ */
+
+@media print{
+
+  body *{
+    visibility:hidden !important;
+  }
+
+  #rxStudentCardPrint,
+  #rxStudentCardPrint *{
+    visibility:visible !important;
+  }
+
+  #rxStudentCardPrint{
+    position:absolute !important;
+    left:0 !important;
+    top:0 !important;
+    width:100% !important;
+  }
+
+  #rxStudentCardOverlay{
+    position:static !important;
+    display:block !important;
+    background:#fff !important;
+  }
+
+  #rxStudentCardWindow{
+    max-height:none !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+
+  #rxStudentCardHeader,
+  .rx-sc-actions{
+    display:none !important;
+  }
+
+}
+
+`;
+
+document.head.appendChild(style);
+
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+
+function esc(value){
+
+  return String(value==null?'':value)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+
+}
+
+
+function openWindow(title,html){
+
+  let overlay=
+    document.getElementById(
+      'rxStudentCardOverlay'
+    );
+
+  if(!overlay){
+
+    overlay=document.createElement('div');
+
+    overlay.id='rxStudentCardOverlay';
+
+    overlay.innerHTML=`
+
+      <div id="rxStudentCardWindow">
+
+        <div id="rxStudentCardHeader">
+
+          <strong id="rxStudentCardTitle">
+            🎓 Carné de Estudiante
+          </strong>
+
+          <button
+            type="button"
+            id="rxStudentCardClose">
+            ×
+          </button>
+
+        </div>
+
+        <div id="rxStudentCardBody"></div>
+
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document
+      .getElementById('rxStudentCardClose')
+      .onclick=closeWindow;
+
+    overlay.onclick=function(e){
+
+      if(e.target===overlay)
+        closeWindow();
+
+    };
+
+  }
+
+  document
+    .getElementById('rxStudentCardTitle')
+    .textContent=title;
+
+  document
+    .getElementById('rxStudentCardBody')
+    .innerHTML=html;
+
+  overlay.classList.add('rx-sc-open');
+
+}
+
+
+function closeWindow(){
+
+  const overlay=
+    document.getElementById(
+      'rxStudentCardOverlay'
+    );
+
+  if(overlay)
+    overlay.classList.remove(
+      'rx-sc-open'
+    );
+
+}
+
+
+/* ============================================================
+   CARNÉ VISUAL
+   ============================================================ */
+
+function renderCard(card){
+
+  const body=
+    document.getElementById(
+      'rxStudentCardBody'
+    );
+
+  if(!body) return;
+
+  const active=
+    String(card.status||'')
+      .toUpperCase()==='ACTIVO';
+
+  body.innerHTML=`
+
+    <div id="rxStudentCardPrint">
+
+      <div class="rx-sc-card">
+
+        <div class="rx-sc-top">
+
+          <div>
+
+            <div class="rx-sc-brand">
+              ROXTHAL ART DESIGN
+            </div>
+
+            <div class="rx-sc-subbrand">
+              Atelier · Escuela · Tattoo
+            </div>
+
+          </div>
+
+          <div class="rx-sc-official">
+            CARNÉ OFICIAL
+          </div>
+
+        </div>
+
+
+        <div class="rx-sc-main">
+
+          <div>
+
+            ${
+              card.photo_url
+              ?
+              `<img
+                id="rxStudentCardPhoto"
+                class="rx-sc-photo"
+                src="${esc(card.photo_url)}"
+                alt="Foto del estudiante"
+              >`
+              :
+              `<div class="rx-sc-photo rx-sc-photo-empty">
+                🎓
+              </div>`
+            }
+
+          </div>
+
+
+          <div>
+
+            <div class="rx-sc-label">
+              Estudiante
+            </div>
+
+            <div class="rx-sc-name">
+              ${esc(card.full_name)}
+            </div>
+
+            <div class="rx-sc-label">
+              Formación artística
+            </div>
+
+            <div class="rx-sc-course">
+              ${esc(
+                card.course ||
+                'Formación RoXThal'
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="rx-sc-bottom">
+
+          <div>
+
+            <div class="rx-sc-number">
+              N.º ${esc(card.card_number)}
+            </div>
+
+            <div class="rx-sc-date">
+              EMISIÓN · ${esc(card.issue_date||'')}
+            </div>
+
+          </div>
+
+          <div class="
+            rx-sc-status
+            ${active?'':'off'}
+          ">
+            ● ${active?'ACTIVO':'INACTIVO'}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="rx-sc-actions">
+
+      <button
+        type="button"
+        class="primary"
+        id="rxStudentPrint">
+        🖨️ Guardar / imprimir
+      </button>
+
+      <button
+        type="button"
+        id="rxStudentClose">
+        Cerrar
+      </button>
+
+    </div>
+  `;
+
+  const image=
+    document.getElementById(
+      'rxStudentCardPhoto'
+    );
+
+  if(image){
+
+    image.onerror=function(){
+
+      const empty=
+        document.createElement('div');
+
+      empty.className=
+        'rx-sc-photo rx-sc-photo-empty';
+
+      empty.textContent='🎓';
+
+      image.replaceWith(empty);
+
+    };
+
+  }
+
+  document
+    .getElementById('rxStudentPrint')
+    .onclick=function(){
+      window.print();
+    };
+
+  document
+    .getElementById('rxStudentClose')
+    .onclick=closeWindow;
+
+}
+
+
+/* ============================================================
+   MI CARNÉ
+   ============================================================ */
+
+async function showMyCard(){
+
+  const DB=getDB();
+
+  openWindow(
+    '🎓 Mi Carné de Estudiante',
+    `<div class="rx-sc-message">
+      Comprobando tu acceso…
+    </div>`
+  );
+
+  if(!DB){
+
+    document.getElementById(
+      'rxStudentCardBody'
+    ).innerHTML=`
+      <div class="rx-sc-message">
+        ❌ No se encontró la conexión con Supabase.
+      </div>
+    `;
+
+    return;
+  }
+
+  try{
+
+    const sessionResult=
+      await DB.auth.getSession();
+
+    const session=
+      sessionResult?.data?.session;
+
+    const user=
+      session?.user;
+
+    if(!user){
+
+      document.getElementById(
+        'rxStudentCardBody'
+      ).innerHTML=`
+        <div class="rx-sc-message">
+          🔐 Debes iniciar sesión para consultar tu Carné de Estudiante.
+        </div>
+      `;
+
+      return;
+    }
+
+    const email=
+      String(user.email||'')
+        .trim()
+        .toLowerCase();
+
+    if(!email)
+      throw new Error(
+        'La cuenta no tiene correo electrónico.'
+      );
+
+
+    const studentResult=
+      await DB
+        .from('students')
+        .select(
+          'id,name,email,course,status,photo_url'
+        )
+        .ilike('email',email)
+        .eq('status','activo')
+        .limit(1)
+        .maybeSingle();
+
+
+    if(studentResult.error)
+      throw studentResult.error;
+
+
+    const student=
+      studentResult.data;
+
+
+    if(!student){
+
+      document.getElementById(
+        'rxStudentCardBody'
+      ).innerHTML=`
+        <div class="rx-sc-message">
+          No encontramos un alumno activo asociado a esta cuenta.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const cardResult=
+      await DB
+        .from('student_cards')
+        .select('*')
+        .eq(
+          'student_id',
+          student.id
+        )
+        .eq(
+          'status',
+          'ACTIVO'
+        )
+        .maybeSingle();
+
+
+    if(cardResult.error)
+      throw cardResult.error;
+
+
+    if(!cardResult.data){
+
+      document.getElementById(
+        'rxStudentCardBody'
+      ).innerHTML=`
+        <div class="rx-sc-message">
+          🎓 Tu Carné todavía no ha sido emitido por RoXThal Art Design.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    renderCard(
+      cardResult.data
+    );
+
+
+  }catch(error){
+
+    console.error(
+      '[RoXThal Carné]',
+      error
+    );
+
+    document.getElementById(
+      'rxStudentCardBody'
+    ).innerHTML=`
+      <div class="rx-sc-message">
+        ❌ No se pudo cargar el Carné.
+        <br>
+        <small>
+          ${esc(
+            error.message ||
+            'Error desconocido'
+          )}
+        </small>
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ============================================================
+   ADMINISTRACIÓN
+   ============================================================ */
+
+async function showAdmin(){
+
+  const DB=getDB();
+
+  if(!DB){
+
+    openWindow(
+      '🛠️ Administración',
+      `<div class="rx-sc-message">
+        ❌ No se encontró Supabase.
+      </div>`
+    );
+
+    return;
+  }
+
+
+  try{
+
+    const sessionResult=
+      await DB.auth.getSession();
+
+    const user=
+      sessionResult?.data?.session?.user;
+
+    const isAdmin=
+      !!(
+        user &&
+        user.app_metadata &&
+        user.app_metadata.role==='admin'
+      );
+
+
+    if(!isAdmin){
+
+      openWindow(
+        '🔐 Administración',
+        `<div class="rx-sc-message">
+          No tienes permisos de administrador.
+        </div>`
+      );
+
+      return;
+    }
+
+
+    openWindow(
+      '🛠️ Administrar Carnés',
+      `<div class="rx-sc-message">
+        Cargando alumnos…
+      </div>`
+    );
+
+
+    const studentsResult=
+      await DB
+        .from('students')
+        .select(
+          'id,name,email,course,status,photo_url'
+        )
+        .order(
+          'name',
+          {ascending:true}
+        );
+
+
+    if(studentsResult.error)
+      throw studentsResult.error;
+
+
+    const students=
+      studentsResult.data||[];
+
+
+    const options=
+      students.map(function(student){
+
+        return `
+          <option value="${esc(student.id)}">
+            ${esc(student.name||'Sin nombre')}
+            ${
+              student.email
+              ? ' — '+esc(student.email)
+              : ''
+            }
+          </option>
+        `;
+
+      }).join('');
+
+
+    document.getElementById(
+      'rxStudentCardBody'
+    ).innerHTML=`
+
+      <form
+        id="rxStudentCardForm"
+        class="rx-sc-form">
+
+        <label>Alumno</label>
+
+        <select
+          id="rxSCStudent"
+          required>
+
+          <option value="">
+            Seleccionar alumno…
+          </option>
+
+          ${options}
+
+        </select>
+
+
+        <label>Número de carné</label>
+
+        <input
+          id="rxSCNumber"
+          type="text"
+          placeholder="RX-XXXXXXXXXX">
+
+
+        <label>Formación artística</label>
+
+        <input
+          id="rxSCCourse"
+          type="text"
+          placeholder="Curso o formación">
+
+
+        <label>Fecha de emisión</label>
+
+        <input
+          id="rxSCDate"
+          type="date">
+
+
+        <label>Estado</label>
+
+        <select id="rxSCStatus">
+
+          <option value="ACTIVO">
+            ACTIVO
+          </option>
+
+          <option value="INACTIVO">
+            INACTIVO
+          </option>
+
+        </select>
+
+
+        <label>URL de fotografía</label>
+
+        <input
+          id="rxSCPhoto"
+          type="url"
+          placeholder="https://...">
+
+
+        <div class="rx-sc-actions">
+
+          <button
+            type="submit"
+            class="primary">
+            💾 Guardar carné
+          </button>
+
+          <button
+            type="button"
+            id="rxSCNew">
+            ➕ Nuevo
+          </button>
+
+        </div>
+
+      </form>
+
+
+      <h3 class="rx-sc-admin-title">
+        📋 Carnés registrados
+      </h3>
+
+      <div id="rxSCList">
+        Cargando…
+      </div>
+    `;
+
+
+    const form=
+      document.getElementById(
+        'rxStudentCardForm'
+      );
+
+    const select=
+      document.getElementById(
+        'rxSCStudent'
+      );
+
+
+    select.onchange=function(){
+
+      const student=
+        students.find(function(s){
+
+          return String(s.id)===
+            String(select.value);
+
+        });
+
+
+      if(!student) return;
+
+
+      document.getElementById(
+        'rxSCCourse'
+      ).value=
+        student.course||'';
+
+
+      document.getElementById(
+        'rxSCPhoto'
+      ).value=
+        student.photo_url||'';
+
+
+      document.getElementById(
+        'rxSCDate'
+      ).value=
+        new Date()
+          .toISOString()
+          .slice(0,10);
+
+    };
+
+
+    document.getElementById(
+      'rxSCNew'
+    ).onclick=function(){
+
+      form.reset();
+
+      delete form.dataset.editing;
+
+      document.getElementById(
+        'rxSCStatus'
+      ).value='ACTIVO';
+
+    };
+
+
+    async function loadCards(){
+
+      const list=
+        document.getElementById(
+          'rxSCList'
+        );
+
+
+      const result=
+        await DB
+          .from('student_cards')
+          .select('*')
+          .order(
+            'created_at',
+            {ascending:false}
+          );
+
+
+      if(result.error){
+
+        list.innerHTML=`
+          <div class="rx-sc-message">
+            ❌ ${esc(result.error.message)}
+          </div>
+        `;
+
+        return;
+      }
+
+
+      const cards=
+        result.data||[];
+
+
+      if(!cards.length){
+
+        list.innerHTML=`
+          <div class="rx-sc-message">
+            Todavía no hay carnés registrados.
+          </div>
+        `;
+
+        return;
+      }
+
+
+      list.innerHTML=
+        cards.map(function(card){
+
+          return `
+
+            <div class="rx-sc-admin-item">
+
+              <strong>
+                ${esc(card.full_name)}
+              </strong>
+
+              <small>
+                ${esc(card.card_number)}
+                · ${esc(card.course||'')}
+                · ${esc(card.status)}
+              </small>
+
+              <div class="rx-sc-actions">
+
+                <button
+                  type="button"
+                  data-rx-edit="${esc(card.id)}">
+                  ✏️ Editar
+                </button>
+
+                <button
+                  type="button"
+                  data-rx-view="${esc(card.id)}">
+                  👁️ Ver
+                </button>
+
+                <button
+                  type="button"
+                  class="danger"
+                  data-rx-delete="${esc(card.id)}">
+                  🗑️ Eliminar
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        }).join('');
+
+
+      list
+        .querySelectorAll(
+          '[data-rx-edit]'
+        )
+        .forEach(function(button){
+
+          button.onclick=function(){
+
+            const card=
+              cards.find(function(c){
+
+                return String(c.id)===
+                  String(
+                    button.dataset.rxEdit
+                  );
+
+              });
+
+
+            if(!card) return;
+
+
+            select.value=
+              card.student_id;
+
+            document.getElementById(
+              'rxSCNumber'
+            ).value=
+              card.card_number||'';
+
+            document.getElementById(
+              'rxSCCourse'
+            ).value=
+              card.course||'';
+
+            document.getElementById(
+              'rxSCDate'
+            ).value=
+              card.issue_date||'';
+
+            document.getElementById(
+              'rxSCStatus'
+            ).value=
+              card.status||'ACTIVO';
+
+            document.getElementById(
+              'rxSCPhoto'
+            ).value=
+              card.photo_url||'';
+
+            form.dataset.editing=
+              card.id;
+
+          };
+
+        });
+
+
+      list
+        .querySelectorAll(
+          '[data-rx-view]'
+        )
+        .forEach(function(button){
+
+          button.onclick=function(){
+
+            const card=
+              cards.find(function(c){
+
+                return String(c.id)===
+                  String(
+                    button.dataset.rxView
+                  );
+
+              });
+
+
+            if(card)
+              renderCard(card);
+
+          };
+
+        });
+
+
+      list
+        .querySelectorAll(
+          '[data-rx-delete]'
+        )
+        .forEach(function(button){
+
+          button.onclick=
+            async function(){
+
+              const card=
+                cards.find(function(c){
+
+                  return String(c.id)===
+                    String(
+                      button.dataset.rxDelete
+                    );
+
+                });
+
+
+              if(!card) return;
+
+
+              if(!confirm(
+                '¿Eliminar definitivamente este carné?'
+              )){
+                return;
+              }
+
+
+              const result=
+                await DB
+                  .from('student_cards')
+                  .delete()
+                  .eq(
+                    'id',
+                    card.id
+                  );
+
+
+              if(result.error){
+
+                alert(
+                  'No se pudo eliminar: '+
+                  result.error.message
+                );
+
+                return;
+              }
+
+
+              await loadCards();
+
+            };
+
+        });
+
+    }
+
+
+    form.onsubmit=
+      async function(event){
+
+        event.preventDefault();
+
+
+        const student=
+          students.find(function(s){
+
+            return String(s.id)===
+              String(select.value);
+
+          });
+
+
+        if(!student){
+
+          alert(
+            'Selecciona un alumno.'
+          );
+
+          return;
+        }
+
+
+        const payload={
+
+          student_id:
+            student.id,
+
+          full_name:
+            String(
+              student.name||''
+            ).trim(),
+
+          course:
+            document.getElementById(
+              'rxSCCourse'
+            ).value.trim(),
+
+          issue_date:
+            document.getElementById(
+              'rxSCDate'
+            ).value ||
+            new Date()
+              .toISOString()
+              .slice(0,10),
+
+          status:
+            document.getElementById(
+              'rxSCStatus'
+            ).value,
+
+          photo_url:
+            document.getElementById(
+              'rxSCPhoto'
+            ).value.trim()
+
+        };
+
+
+        const number=
+          document.getElementById(
+            'rxSCNumber'
+          ).value.trim();
+
+
+        if(number)
+          payload.card_number=number;
+
+
+        let result;
+
+
+        if(form.dataset.editing){
+
+          result=
+            await DB
+              .from('student_cards')
+              .update(payload)
+              .eq(
+                'id',
+                form.dataset.editing
+              );
+
+        }else{
+
+          result=
+            await DB
+              .from('student_cards')
+              .upsert(
+                payload,
+                {
+                  onConflict:'student_id'
+                }
+              );
+
+        }
+
+
+        if(result.error){
+
+          alert(
+            'No se pudo guardar el carné:\n'+
+            result.error.message
+          );
+
+          return;
+        }
+
+
+        alert(
+          '✅ Carné guardado correctamente.'
+        );
+
+
+        form.reset();
+
+        delete form.dataset.editing;
+
+        document.getElementById(
+          'rxSCStatus'
+        ).value='ACTIVO';
+
+
+        await loadCards();
+
+      };
+
+
+    await loadCards();
+
+
+  }catch(error){
+
+    console.error(
+      '[RoXThal Admin Carnés]',
+      error
+    );
+
+    document.getElementById(
+      'rxStudentCardBody'
+    ).innerHTML=`
+      <div class="rx-sc-message">
+        ❌ Error al cargar la administración.
+        <br>
+        <small>
+          ${esc(
+            error.message ||
+            'Error desconocido'
+          )}
+        </small>
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ============================================================
+   MENÚ PRINCIPAL
+   ============================================================ */
+
+async function openStudentCard(){
+
+  const DB=getDB();
+
+  if(!DB){
+
+    openWindow(
+      '🎓 Carné de Estudiante',
+      `<div class="rx-sc-message">
+        ❌ La conexión de RoXThal no está disponible.
+      </div>`
+    );
+
+    return;
+  }
+
+
+  let admin=false;
+
+  try{
+
+    const result=
+      await DB.auth.getSession();
+
+    const user=
+      result?.data?.session?.user;
+
+    admin=
+      !!(
+        user &&
+        user.app_metadata &&
+        user.app_metadata.role==='admin'
+      );
+
+  }catch(e){}
+
+
+  if(admin){
+
+    openWindow(
+      '🎓 Carné de Estudiante',
+      `
+
+        <div class="rx-sc-message">
+          Sistema de identificación estudiantil
+          de RoXThal Art Design.
+        </div>
+
+        <div class="rx-sc-actions">
+
+          <button
+            type="button"
+            class="primary"
+            id="rxSCMyCard">
+            🎓 Mi Carné
+          </button>
+
+          <button
+            type="button"
+            id="rxSCAdmin">
+            🛠️ Administrar Carnés
+          </button>
+
+        </div>
+      `
+    );
+
+
+    document.getElementById(
+      'rxSCMyCard'
+    ).onclick=showMyCard;
+
+    document.getElementById(
+      'rxSCAdmin'
+    ).onclick=showAdmin;
+
+  }else{
+
+    await showMyCard();
+
+  }
+
+}
+
+
+/* ============================================================
+   INSERTAR DIRECTAMENTE EN EL CONSENTIMIENTO REAL
+   ============================================================ */
+
+function installEntry(){
+
+  const screen=
+    document.getElementById(
+      'rxConsentScreenNuevo'
+    );
+
+  if(!screen)
+    return false;
+
+
+  if(
+    document.getElementById(
+      'rxStudentCardEntry'
+    )
+  ){
+    return true;
+  }
+
+
+  const entry=
+    document.createElement('div');
+
+  entry.id=
+    'rxStudentCardEntry';
+
+  entry.innerHTML=`
+
+    <div class="rx-sc-kicker">
+      ROXTHAL ART DESIGN · FORMACIÓN
+    </div>
+
+    <div class="rx-sc-title">
+      🎓 Carné de Estudiante
+    </div>
+
+    <div class="rx-sc-text">
+      Identificación oficial del estudiante
+      de RoXThal Art Design.
+    </div>
+
+    <button
+      type="button"
+      id="rxStudentCardOpen">
+      🎓 Acceder al Carné
+    </button>
+
+  `;
+
+
+  /*
+   * El elemento se coloca exactamente dentro
+   * de la pantalla NUEVO del Consentimiento,
+   * antes del primer bloque de datos.
+   */
+
+  const firstCard=
+    screen.querySelector(
+      '.rx-consent-card'
+    );
+
+
+  if(firstCard){
+
+    screen.insertBefore(
+      entry,
+      firstCard
+    );
+
+  }else{
+
+    screen.appendChild(
+      entry
+    );
+
+  }
+
+
+  document.getElementById(
+    'rxStudentCardOpen'
+  ).onclick=
+    openStudentCard;
+
+
+  return true;
+}
+
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+
+function start(){
+
+  /*
+   * En el index real estos elementos ya existen
+   * desde la carga inicial.
+   */
+
+  installEntry();
+
+
+  /*
+   * Por seguridad, si otro módulo reconstruye
+   * el contenido del consentimiento, lo volvemos
+   * a instalar sin tocar el resto.
+   */
+
+  const observer=
+    new MutationObserver(
+      function(){
+
+        if(
+          !document.getElementById(
+            'rxStudentCardEntry'
+          )
+        ){
+
+          installEntry();
+
+        }
+
+      }
+    );
+
+
+  if(document.body){
+
+    observer.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+  }
+
+}
+
+
+if(
+  document.readyState==='loading'
+){
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    start,
+    {once:true}
+  );
+
+}else{
+
+  start();
+
+}
+
+
+/* ============================================================
+   API
+   ============================================================ */
+
+window.RoXThalStudentCard={
+
+  open:openStudentCard,
+
+  admin:showAdmin,
+
+  close:closeWindow,
+
+  print:function(){
+    window.print();
+  }
+
+};
+
+
+})();
+</script>
    
 </body>
 </html>
