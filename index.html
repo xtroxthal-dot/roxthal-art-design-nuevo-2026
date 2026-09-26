@@ -57624,5 +57624,344 @@ if ("serviceWorker" in navigator) {
 <!-- ============================================================
      FIN CONSENTIMIENTO MENORES
      ============================================================ -->
+
+   <!-- ============================================================
+     ROXTHAL · ENVÍO DE CONSENTIMIENTO DE MENORES POR WHATSAPP
+     No modifica el módulo existente.
+     ============================================================ -->
+
+<style>
+#rxMinorWhatsAppSend{
+  width:100%;
+  margin-top:12px;
+  padding:14px 18px;
+  border:0;
+  border-radius:12px;
+  background:#25D366;
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 4px 14px rgba(37,211,102,.20);
+}
+
+#rxMinorWhatsAppSend:hover{
+  filter:brightness(1.08);
+}
+
+#rxMinorWhatsAppSend:active{
+  transform:scale(.99);
+}
+</style>
+
+<script id="roxthal-minor-whatsapp-v1">
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_MINOR_WHATSAPP_V1__){
+    return;
+  }
+
+  window.__ROXTHAL_MINOR_WHATSAPP_V1__ = true;
+
+  const WHATSAPP_NUMBER = '5491169633376';
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+  function valor(id){
+    const el = $(id);
+    return el ? String(el.value || '').trim() : '';
+  }
+
+  function marcado(id){
+    const el = $(id);
+    return !!(el && el.checked);
+  }
+
+  function escapar(texto){
+    return String(texto || '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+  function crearBoton(){
+
+    if($('rxMinorWhatsAppSend')){
+      return true;
+    }
+
+    const saveButton =
+      $('rxMinorConsentSave');
+
+    if(!saveButton){
+      return false;
+    }
+
+    const boton =
+      document.createElement('button');
+
+    boton.id =
+      'rxMinorWhatsAppSend';
+
+    boton.type =
+      'button';
+
+    boton.innerHTML =
+      '📲 Enviar consentimiento por WhatsApp';
+
+    saveButton.insertAdjacentElement(
+      'afterend',
+      boton
+    );
+
+    boton.addEventListener(
+      'click',
+      enviarWhatsApp
+    );
+
+    return true;
+  }
+
+  function enviarWhatsApp(){
+
+    const alumno =
+      valor('rxMinorStudentName');
+
+    const dniAlumno =
+      valor('rxMinorStudentDni');
+
+    const nacimiento =
+      valor('rxMinorBirthDate');
+
+    const curso =
+      valor('rxMinorCourse');
+
+    const tutor =
+      valor('rxMinorTutorName');
+
+    const dniTutor =
+      valor('rxMinorTutorDni');
+
+    const relacion =
+      valor('rxMinorTutorRelation');
+
+    const telefono =
+      valor('rxMinorTutorContact');
+
+    const email =
+      valor('rxMinorTutorEmail');
+
+    const observaciones =
+      valor('rxMinorObservations');
+
+    const autorizacion =
+      marcado('rxMinorAuthorization');
+
+    const informacion =
+      marcado('rxMinorInformation');
+
+    const contacto =
+      marcado('rxMinorContact');
+
+
+    if(
+      !alumno ||
+      !dniAlumno ||
+      !nacimiento ||
+      !curso ||
+      !tutor ||
+      !dniTutor ||
+      !relacion ||
+      !telefono
+    ){
+
+      alert(
+        'Completa primero todos los campos obligatorios del consentimiento de menores.'
+      );
+
+      return;
+    }
+
+
+    if(
+      !autorizacion ||
+      !informacion ||
+      !contacto
+    ){
+
+      alert(
+        'Debes aceptar las tres declaraciones del consentimiento antes de enviarlo por WhatsApp.'
+      );
+
+      return;
+    }
+
+
+    const ahora =
+      new Date();
+
+    const fechaHora =
+      ahora.toLocaleString(
+        'es-AR',
+        {
+          dateStyle:'short',
+          timeStyle:'short'
+        }
+      );
+
+
+    const mensaje =
+
+`ROXTHAL ART DESIGN
+CONSENTIMIENTO PARA ALUMNO MENOR
+
+━━━━━━━━━━━━━━━━━━
+
+DATOS DEL ALUMNO
+
+Nombre y apellido:
+${alumno}
+
+DNI / documento:
+${dniAlumno}
+
+Fecha de nacimiento:
+${nacimiento}
+
+Curso o taller:
+${curso}
+
+━━━━━━━━━━━━━━━━━━
+
+PADRE / MADRE / REPRESENTANTE LEGAL
+
+Nombre y apellido:
+${tutor}
+
+DNI / documento:
+${dniTutor}
+
+Relación con el alumno:
+${relacion}
+
+Teléfono / WhatsApp:
+${telefono}
+
+Correo electrónico:
+${email || 'No indicado'}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARACIONES
+
+Autorización del representante:
+SÍ
+
+Información leída y comprendida:
+SÍ
+
+Autorización de contacto para la gestión:
+SÍ
+
+━━━━━━━━━━━━━━━━━━
+
+OBSERVACIONES
+
+${observaciones || 'Sin observaciones.'}
+
+━━━━━━━━━━━━━━━━━━
+
+FECHA Y HORA DE ENVÍO
+
+${fechaHora}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARO QUE LOS DATOS INDICADOS SON CORRECTOS Y QUE AUTORIZO LA PARTICIPACIÓN DEL ALUMNO MENOR EN LA ACTIVIDAD INDICADA DE ROXTHAL ART DESIGN.
+
+Este mensaje constituye el envío del consentimiento para su revisión y registro por RoXThal Art Design.`;
+
+
+    const url =
+      'https://wa.me/' +
+      WHATSAPP_NUMBER +
+      '?text=' +
+      encodeURIComponent(mensaje);
+
+
+    window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+  }
+
+
+  function iniciar(){
+
+    if(crearBoton()){
+      return;
+    }
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          if(crearBoton()){
+            observer.disconnect();
+          }
+
+        }
+      );
+
+    if(document.body){
+
+      observer.observe(
+        document.body,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+
+    }
+
+    setTimeout(
+      function(){
+        observer.disconnect();
+      },
+      15000
+    );
+
+  }
+
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      {once:true}
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+})();
+</script>
+
+<!-- FIN ENVÍO WHATSAPP -->
 </body>
 </html>
