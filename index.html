@@ -59095,12 +59095,25 @@ async function showAdmin(){
         </select>
 
 
-        <label>URL de fotografía</label>
+        <label>Fotografía del alumno</label>
 
-        <input
-          id="rxSCPhoto"
-          type="url"
-          placeholder="https://...">
+<input
+  id="rxSCPhoto"
+  type="url"
+  placeholder="Se completará al subir la foto..."
+  readonly>
+
+<input
+  id="rxSCPhotoFile"
+  type="file"
+  accept="image/jpeg,image/png,image/webp,image/gif"
+  style="margin-top:8px;width:100%;">
+
+<div
+  id="rxSCPhotoStatus"
+  style="margin-top:7px;font-size:12px;color:#aaa;">
+  📷 Selecciona una fotografía directamente desde el teléfono.
+</div>
 
 
         <div class="rx-sc-actions">
@@ -59142,7 +59155,178 @@ async function showAdmin(){
         'rxSCStudent'
       );
 
+    const photoFile=
+      document.getElementById(
+        'rxSCPhotoFile'
+      );
 
+    const photoStatus=
+      document.getElementById(
+        'rxSCPhotoStatus'
+      );
+
+    if(photoFile){
+
+      photoFile.onchange=async function(){
+
+        const file=
+          photoFile.files &&
+          photoFile.files[0];
+
+        if(!file) return;
+
+        if(!file.type ||
+           !file.type.startsWith('image/')){
+
+          photoStatus.textContent=
+            '❌ El archivo seleccionado no es una imagen.';
+
+          photoFile.value='';
+          return;
+        }
+
+        if(file.size > 10*1024*1024){
+
+          photoStatus.textContent=
+            '❌ La fotografía supera el límite de 10 MB.';
+
+          photoFile.value='';
+          return;
+        }
+
+        photoStatus.textContent=
+          '⏳ Subiendo fotografía...';
+
+        photoFile.disabled=true;
+
+        try{
+
+          const sessionResult=
+            await DB.auth.getSession();
+
+          const session=
+            sessionResult &&
+            sessionResult.data &&
+            sessionResult.data.session;
+
+          if(!session || !session.user){
+
+            throw new Error(
+              'No hay una sesión de administrador activa.'
+            );
+
+          }
+
+          const role=
+            session.user.app_metadata &&
+            session.user.app_metadata.role;
+
+          if(role!=='admin'){
+
+            throw new Error(
+              'La sesión actual no tiene permisos de administrador.'
+            );
+
+          }
+
+          const originalExt=
+            (
+              file.name.split('.').pop() ||
+              'jpg'
+            ).toLowerCase();
+
+          const ext=
+            [
+              'jpg',
+              'jpeg',
+              'png',
+              'webp',
+              'gif'
+            ].includes(originalExt)
+              ? originalExt
+              : 'jpg';
+
+          const fileName=
+            'student-card-' +
+            Date.now() +
+            '-' +
+            Math.random()
+              .toString(36)
+              .slice(2,9) +
+            '.' +
+            ext;
+
+          const storagePath=
+            'student-cards/' +
+            fileName;
+
+          const upload=
+            await DB.storage
+              .from('images')
+              .upload(
+                storagePath,
+                file,
+                {
+                  cacheControl:'3600',
+                  upsert:false,
+                  contentType:file.type
+                }
+              );
+
+          if(upload.error)
+            throw upload.error;
+
+          const publicResult=
+            DB.storage
+              .from('images')
+              .getPublicUrl(
+                storagePath
+              );
+
+          const publicUrl=
+            publicResult &&
+            publicResult.data &&
+            publicResult.data.publicUrl;
+
+          if(!publicUrl){
+
+            throw new Error(
+              'Supabase no devolvió la URL pública de la fotografía.'
+            );
+
+          }
+
+          document.getElementById(
+            'rxSCPhoto'
+          ).value=publicUrl;
+
+          photoStatus.textContent=
+            '✅ Fotografía subida correctamente. Pulsa «Guardar carné».';
+
+        }catch(error){
+
+          console.error(
+            '[RoXThal Student Card Photo]',
+            error
+          );
+
+          photoStatus.textContent=
+            '❌ No se pudo subir la fotografía: ' +
+            (
+              error && error.message
+                ? error.message
+                : 'error desconocido'
+            );
+
+        }finally{
+
+          photoFile.disabled=false;
+
+        }
+
+      };
+
+    }
     select.onchange=function(){
 
       const student=
