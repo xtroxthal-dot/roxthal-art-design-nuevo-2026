@@ -59150,5 +59150,71 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
 
 })();
 </script>
+
+   <script>
+(function(){
+  function ponerCarne(){
+
+    if(document.getElementById('rx-carne-consentimiento')) return;
+
+    const elementos=[...document.querySelectorAll(
+      'h1,h2,h3,h4,h5,h6,strong,div,span'
+    )];
+
+    const titulo=elementos.find(e =>
+      (e.textContent||'').trim().toLowerCase()
+      .includes('consentimiento profesional')
+    );
+
+    if(!titulo) return;
+
+    const boton=document.createElement('button');
+
+    boton.id='rx-carne-consentimiento';
+    boton.type='button';
+    boton.innerHTML='🎓 Carné de Estudiante';
+
+    boton.style.cssText=`
+      display:block;
+      width:100%;
+      margin:16px 0;
+      padding:14px;
+      border:1px solid #d7ad55;
+      border-radius:12px;
+      background:#111;
+      color:#d7ad55;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      box-sizing:border-box;
+    `;
+
+    boton.onclick=function(){
+
+      if(window.RoXThalStudentCard &&
+         typeof window.RoXThalStudentCard.open==='function'){
+
+        window.RoXThalStudentCard.open();
+
+      }else{
+
+        alert('El módulo Carné de Estudiante todavía no está disponible.');
+
+      }
+    };
+
+    titulo.parentElement.appendChild(boton);
+  }
+
+  ponerCarne();
+
+  new MutationObserver(ponerCarne)
+    .observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+
+})();
+</script>
 </body>
 </html>
