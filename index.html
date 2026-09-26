@@ -57969,5 +57969,1186 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
   display:none !important;
 }
 </style>
+
+   <!-- =========================================================
+     ROXTHAL — CARNÉ DE ESTUDIANTE
+     Integración dentro de CONSENTIMIENTO
+     No elimina ni modifica módulos existentes
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__RX_STUDENT_CARD_CONSENT_V2__) return;
+  window.__RX_STUDENT_CARD_CONSENT_V2__ = true;
+
+  const DB = window.db;
+  const STUDENTS_TABLE = 'students';
+  const CARDS_TABLE = 'student_cards';
+
+  if (!DB || !DB.from || !DB.auth) {
+    console.warn('[RoXThal Carné] Supabase no disponible: window.db');
+    return;
+  }
+
+  /* =========================================================
+     ESTILOS
+     ========================================================= */
+  const style = document.createElement('style');
+  style.id = 'rx-student-card-styles';
+  style.textContent = `
+    #rxStudentCardArea {
+      margin: 14px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #rxStudentCardLauncher {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid rgba(215,173,85,.55);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background:
+        linear-gradient(135deg,
+          rgba(215,173,85,.14),
+          rgba(0,0,0,.42));
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.25);
+    }
+
+    #rxStudentCardLauncher:hover {
+      border-color: #d7ad55;
+      transform: translateY(-1px);
+    }
+
+    #rxStudentCardLauncher small {
+      display: block;
+      margin-top: 4px;
+      opacity: .72;
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    #rxStudentCardModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(0,0,0,.78);
+      box-sizing: border-box;
+    }
+
+    #rxStudentCardModal.rx-open {
+      display: flex;
+    }
+
+    .rx-card-dialog {
+      width: min(720px, 100%);
+      max-height: 94vh;
+      overflow: auto;
+      border: 1px solid rgba(215,173,85,.5);
+      border-radius: 20px;
+      background: #090909;
+      color: #fff;
+      box-shadow: 0 20px 70px rgba(0,0,0,.65);
+      box-sizing: border-box;
+    }
+
+    .rx-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(215,173,85,.22);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: #090909;
+    }
+
+    .rx-card-head strong {
+      color: #d7ad55;
+      font-size: 18px;
+    }
+
+    .rx-card-close {
+      border: 1px solid rgba(255,255,255,.18);
+      background: #151515;
+      color: #fff;
+      border-radius: 10px;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .rx-card-body {
+      padding: 18px;
+    }
+
+    .rx-id-card {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 280px;
+      border-radius: 20px;
+      border: 1px solid rgba(215,173,85,.7);
+      background:
+        radial-gradient(circle at 85% 15%,
+          rgba(215,173,85,.20),
+          transparent 30%),
+        linear-gradient(135deg,#080808,#17130a 55%,#080808);
+      box-shadow:
+        inset 0 0 40px rgba(215,173,85,.06),
+        0 15px 45px rgba(0,0,0,.5);
+      padding: 22px;
+      box-sizing: border-box;
+    }
+
+    .rx-id-card::after {
+      content: "RX";
+      position: absolute;
+      right: 20px;
+      bottom: -25px;
+      font-size: 130px;
+      line-height: 1;
+      font-weight: 900;
+      color: rgba(215,173,85,.045);
+      pointer-events: none;
+    }
+
+    .rx-id-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #d7ad55;
+      font-weight: 900;
+      letter-spacing: 1px;
+      font-size: 17px;
+      margin-bottom: 20px;
+    }
+
+    .rx-id-brand span {
+      color: #fff;
+      opacity: .78;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: 500;
+    }
+
+    .rx-id-main {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .rx-id-photo {
+      width: 110px;
+      height: 135px;
+      border-radius: 12px;
+      border: 1px solid rgba(215,173,85,.55);
+      background: #111;
+      object-fit: cover;
+      display: block;
+    }
+
+    .rx-id-photo.rx-no-photo {
+      object-fit: contain;
+      padding: 12px;
+      box-sizing: border-box;
+      opacity: .45;
+    }
+
+    .rx-id-label {
+      color: rgba(255,255,255,.52);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      margin-top: 8px;
+    }
+
+    .rx-id-value {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .rx-id-name {
+      color: #d7ad55;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .rx-id-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(215,173,85,.18);
+      font-size: 11px;
+    }
+
+    .rx-id-status {
+      color: #78d88a;
+      font-weight: 800;
+    }
+
+    .rx-id-number {
+      color: rgba(255,255,255,.72);
+    }
+
+    .rx-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    .rx-card-btn {
+      border: 1px solid rgba(215,173,85,.48);
+      border-radius: 10px;
+      padding: 10px 13px;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .rx-card-btn.rx-primary {
+      background: #d7ad55;
+      color: #090909;
+      border-color: #d7ad55;
+    }
+
+    .rx-card-btn.rx-danger {
+      border-color: rgba(255,80,80,.5);
+      color: #ff9c9c;
+    }
+
+    .rx-card-message {
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.09);
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+
+    .rx-admin-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .rx-admin-row {
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 13px;
+      padding: 12px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .rx-admin-row-title {
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .rx-admin-row-meta {
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 4px;
+    }
+
+    .rx-form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .rx-form label {
+      font-size: 12px;
+      opacity: .72;
+    }
+
+    .rx-form input,
+    .rx-form select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: #111;
+      color: #fff;
+      outline: none;
+    }
+
+    .rx-form input:focus,
+    .rx-form select:focus {
+      border-color: #d7ad55;
+    }
+
+    .rx-admin-section {
+      border-top: 1px solid rgba(215,173,85,.18);
+      padding-top: 18px;
+      margin-top: 20px;
+    }
+
+    .rx-admin-section h3 {
+      margin: 0 0 12px;
+      color: #d7ad55;
+    }
+
+    @media (max-width: 520px) {
+      .rx-id-card {
+        padding: 16px;
+      }
+
+      .rx-id-main {
+        grid-template-columns: 82px 1fr;
+        gap: 12px;
+      }
+
+      .rx-id-photo {
+        width: 82px;
+        height: 105px;
+      }
+
+      .rx-id-name {
+        font-size: 18px;
+      }
+
+      .rx-id-value {
+        font-size: 14px;
+      }
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+
+      #rxStudentCardPrint,
+      #rxStudentCardPrint * {
+        visibility: visible !important;
+      }
+
+      #rxStudentCardPrint {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        background: #fff !important;
+      }
+
+      #rxStudentCardPrint .rx-id-card {
+        color: #111 !important;
+        box-shadow: none !important;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .rx-card-actions,
+      .rx-card-head {
+        display: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  /* =========================================================
+     UTILIDADES
+     ========================================================= */
+  const esc = function (value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  function normalizeText(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  async function getSession() {
+    const result = await DB.auth.getSession();
+    return result && result.data ? result.data.session : null;
+  }
+
+  async function isAdmin() {
+    try {
+      const session = await getSession();
+      const user = session && session.user;
+      return !!(
+        user &&
+        user.app_metadata &&
+        user.app_metadata.role === 'admin'
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('rxStudentCardModal');
+    if (modal) modal.classList.remove('rx-open');
+  }
+
+  function openModal(title, html) {
+    let modal = document.getElementById('rxStudentCardModal');
+
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'rxStudentCardModal';
+      modal.innerHTML = `
+        <div class="rx-card-dialog" role="dialog" aria-modal="true">
+          <div class="rx-card-head">
+            <strong id="rxStudentCardTitle">🎓 Carné de Estudiante</strong>
+            <button type="button"
+                    class="rx-card-close"
+                    id="rxStudentCardClose"
+                    aria-label="Cerrar">×</button>
+          </div>
+          <div class="rx-card-body" id="rxStudentCardBody"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+      });
+
+      document
+        .getElementById('rxStudentCardClose')
+        .addEventListener('click', closeModal);
+    }
+
+    document.getElementById('rxStudentCardTitle').textContent = title;
+    document.getElementById('rxStudentCardBody').innerHTML = html;
+
+    modal.classList.add('rx-open');
+  }
+
+  /* =========================================================
+     TARJETA VISUAL
+     ========================================================= */
+  function cardHTML(card) {
+    const photo = card.photo_url
+      ? `<img class="rx-id-photo"
+              src="${esc(card.photo_url)}"
+              alt="Foto del estudiante"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+         <div class="rx-id-photo rx-no-photo"
+              style="display:none;align-items:center;justify-content:center;">
+           🎓
+         </div>`
+      : `<div class="rx-id-photo rx-no-photo"
+              style="display:flex;align-items:center;justify-content:center;">
+           🎓
+         </div>`;
+
+    const statusActive = String(card.status || '').toUpperCase() === 'ACTIVO';
+
+    return `
+      <div id="rxStudentCardPrint">
+        <div class="rx-id-card">
+          <div class="rx-id-brand">
+            ROXTHAL ART DESIGN
+            <span>CARNÉ DE ESTUDIANTE</span>
+          </div>
+
+          <div class="rx-id-main">
+            <div>${photo}</div>
+
+            <div>
+              <div class="rx-id-label">Estudiante</div>
+              <div class="rx-id-name">${esc(card.full_name)}</div>
+
+              <div class="rx-id-label">Formación</div>
+              <div class="rx-id-value">${esc(card.course || 'Formación artística')}</div>
+
+              <div class="rx-id-label">Fecha de emisión</div>
+              <div class="rx-id-value">${esc(card.issue_date || '')}</div>
+            </div>
+          </div>
+
+          <div class="rx-id-footer">
+            <div class="rx-id-number">
+              N.º ${esc(card.card_number)}
+            </div>
+
+            <div class="rx-id-status"
+                 style="${statusActive ? '' : 'color:#ff8585;'}">
+              ${statusActive ? '● ACTIVO' : '● INACTIVO'}
+            </div>
+          </div>
+        </div>
+
+        <div class="rx-card-actions">
+          <button type="button"
+                  class="rx-card-btn rx-primary"
+                  onclick="window.RoXThalStudentCard.print()">
+            🖨️ Guardar / descargar
+          </button>
+
+          <button type="button"
+                  class="rx-card-btn"
+                  onclick="window.RoXThalStudentCard.close()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /* =========================================================
+     VISTA DEL ALUMNO
+     ========================================================= */
+  async function showMyCard() {
+    openModal(
+      '🎓 Mi Carné de Estudiante',
+      `<div class="rx-card-message">Comprobando tu acceso…</div>`
+    );
+
+    try {
+      const session = await getSession();
+
+      if (!session || !session.user) {
+        document.getElementById('rxStudentCardBody').innerHTML = `
+          <div class="rx-card-message">
+            🔐 Debes iniciar sesión para consultar tu Carné de Estudiante.
+          </div>
+        `;
+        return;
+      }
+
+      const email = String(session.user.email || '').trim().toLowerCase();
+
+      if (!email) {
+        throw new Error('La cuenta no tiene correo electrónico.');
+      }
+
+      const studentResult = await DB
+        .from(STUDENTS_TABLE)
+        .select('id,name,email,course,status,photo_url')
+        .ilike('email', email)
+        .eq('status', 'activo')
+        .limit(1)
+        .maybeSingle();
+
+      if (studentResult.error) throw studentResult.error;
+
+      const student = studentResult.data;
+
+      if (!student) {
+        document.getElementById('rxStudentCardBody').innerHTML = `
+          <div class="rx-card-message">
+            No encontramos un alumno activo asociado a esta cuenta.
+          </div>
+        `;
+        return;
+      }
+
+      const cardResult = await DB
+        .from(CARDS_TABLE)
+        .select('*')
+        .eq('student_id', student.id)
+        .eq('status', 'ACTIVO')
+        .maybeSingle();
+
+      if (cardResult.error) throw cardResult.error;
+
+      if (!cardResult.data) {
+        document.getElementById('rxStudentCardBody').innerHTML = `
+          <div class="rx-card-message">
+            🎓 Tu Carné todavía no ha sido emitido por la administración.
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('rxStudentCardBody').innerHTML =
+        cardHTML(cardResult.data);
+
+    } catch (error) {
+      console.error('[RoXThal Carné]', error);
+
+      document.getElementById('rxStudentCardBody').innerHTML = `
+        <div class="rx-card-message">
+          ❌ No se pudo cargar el Carné.<br>
+          <small>${esc(error.message || 'Error desconocido')}</small>
+        </div>
+      `;
+    }
+  }
+
+  /* =========================================================
+     ADMINISTRACIÓN
+     ========================================================= */
+  async function showAdmin() {
+    const admin = await isAdmin();
+
+    if (!admin) {
+      openModal(
+        '🔐 Administración',
+        `<div class="rx-card-message">
+          No tienes permisos de administrador.
+        </div>`
+      );
+      return;
+    }
+
+    openModal(
+      '🛠️ Administrar Carnés',
+      `<div class="rx-card-message">Cargando alumnos…</div>`
+    );
+
+    try {
+      const result = await DB
+        .from(STUDENTS_TABLE)
+        .select('id,name,email,course,status,photo_url')
+        .order('name', { ascending: true });
+
+      if (result.error) throw result.error;
+
+      const students = result.data || [];
+
+      let options = `
+        <option value="">Seleccionar alumno…</option>
+      `;
+
+      students.forEach(function (student) {
+        options += `
+          <option value="${esc(student.id)}">
+            ${esc(student.name || 'Sin nombre')}
+            ${student.email ? ' — ' + esc(student.email) : ''}
+          </option>
+        `;
+      });
+
+      document.getElementById('rxStudentCardBody').innerHTML = `
+        <form class="rx-form" id="rxStudentCardForm">
+
+          <label for="rxStudentSelect">Alumno</label>
+          <select id="rxStudentSelect" required>
+            ${options}
+          </select>
+
+          <label for="rxStudentCardNumber">Número de carné</label>
+          <input id="rxStudentCardNumber"
+                 type="text"
+                 placeholder="RX-XXXXXXXXXX">
+
+          <label for="rxStudentCourse">Formación</label>
+          <input id="rxStudentCourse"
+                 type="text"
+                 placeholder="Curso / formación">
+
+          <label for="rxStudentIssueDate">Fecha de emisión</label>
+          <input id="rxStudentIssueDate"
+                 type="date">
+
+          <label for="rxStudentStatus">Estado</label>
+          <select id="rxStudentStatus">
+            <option value="ACTIVO">ACTIVO</option>
+            <option value="INACTIVO">INACTIVO</option>
+          </select>
+
+          <label for="rxStudentPhoto">URL de fotografía</label>
+          <input id="rxStudentPhoto"
+                 type="url"
+                 placeholder="https://...">
+
+          <div class="rx-card-actions">
+            <button class="rx-card-btn rx-primary" type="submit">
+              💾 Guardar carné
+            </button>
+
+            <button class="rx-card-btn"
+                    type="button"
+                    id="rxStudentNew">
+              ➕ Nuevo
+            </button>
+          </div>
+        </form>
+
+        <div class="rx-admin-section">
+          <h3>📋 Carnés emitidos</h3>
+          <div id="rxStudentCardsList"
+               class="rx-admin-list">
+            Cargando…
+          </div>
+        </div>
+      `;
+
+      const select = document.getElementById('rxStudentSelect');
+      const form = document.getElementById('rxStudentCardForm');
+
+      async function loadCards() {
+        const list = document.getElementById('rxStudentCardsList');
+
+        const cardsResult = await DB
+          .from(CARDS_TABLE)
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (cardsResult.error) {
+          list.innerHTML = `
+            <div class="rx-card-message">
+              ❌ ${esc(cardsResult.error.message)}
+            </div>
+          `;
+          return;
+        }
+
+        const cards = cardsResult.data || [];
+
+        if (!cards.length) {
+          list.innerHTML = `
+            <div class="rx-card-message">
+              Todavía no hay carnés emitidos.
+            </div>
+          `;
+          return;
+        }
+
+        list.innerHTML = cards.map(function (card) {
+          const student = students.find(
+            s => String(s.id) === String(card.student_id)
+          );
+
+          return `
+            <div class="rx-admin-row">
+              <div class="rx-admin-row-title">
+                ${esc(card.full_name)}
+              </div>
+
+              <div class="rx-admin-row-meta">
+                ${esc(card.card_number)}
+                · ${esc(card.course || '')}
+                · ${esc(card.status)}
+              </div>
+
+              <div class="rx-card-actions">
+                <button type="button"
+                        class="rx-card-btn"
+                        data-rx-edit="${esc(card.id)}">
+                  ✏️ Editar
+                </button>
+
+                <button type="button"
+                        class="rx-card-btn"
+                        data-rx-view="${esc(card.id)}">
+                  👁️ Ver
+                </button>
+
+                <button type="button"
+                        class="rx-card-btn rx-danger"
+                        data-rx-delete="${esc(card.id)}">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        list.querySelectorAll('[data-rx-edit]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            const card = cards.find(
+              c => String(c.id) === String(button.dataset.rxEdit)
+            );
+
+            if (!card) return;
+
+            select.value = card.student_id;
+            document.getElementById('rxStudentCardNumber').value =
+              card.card_number || '';
+
+            document.getElementById('rxStudentCourse').value =
+              card.course || '';
+
+            document.getElementById('rxStudentIssueDate').value =
+              card.issue_date || '';
+
+            document.getElementById('rxStudentStatus').value =
+              card.status || 'ACTIVO';
+
+            document.getElementById('rxStudentPhoto').value =
+              card.photo_url || '';
+
+            form.dataset.editingId = card.id;
+
+            document.getElementById('rxStudentCardTitle').textContent =
+              '🛠️ Editar Carné';
+          });
+        });
+
+        list.querySelectorAll('[data-rx-view]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            const card = cards.find(
+              c => String(c.id) === String(button.dataset.rxView)
+            );
+
+            if (!card) return;
+
+            openModal(
+              '🎓 Carné',
+              cardHTML(card)
+            );
+          });
+        });
+
+        list.querySelectorAll('[data-rx-delete]').forEach(function (button) {
+          button.addEventListener('click', async function () {
+            const card = cards.find(
+              c => String(c.id) === String(button.dataset.rxDelete)
+            );
+
+            if (!card) return;
+
+            if (!confirm(
+              '¿Eliminar definitivamente este carné?'
+            )) return;
+
+            const deleteResult = await DB
+              .from(CARDS_TABLE)
+              .delete()
+              .eq('id', card.id);
+
+            if (deleteResult.error) {
+              alert(
+                'No se pudo eliminar: ' +
+                deleteResult.error.message
+              );
+              return;
+            }
+
+            await loadCards();
+          });
+        });
+      }
+
+      document
+        .getElementById('rxStudentNew')
+        .addEventListener('click', function () {
+          form.reset();
+          delete form.dataset.editingId;
+          document.getElementById('rxStudentStatus').value = 'ACTIVO';
+          document.getElementById('rxStudentCardTitle').textContent =
+            '🛠️ Administrar Carnés';
+        });
+
+      select.addEventListener('change', function () {
+        const student = students.find(
+          s => String(s.id) === String(select.value)
+        );
+
+        if (!student) return;
+
+        document.getElementById('rxStudentCourse').value =
+          student.course || '';
+
+        document.getElementById('rxStudentPhoto').value =
+          student.photo_url || '';
+
+        document.getElementById('rxStudentIssueDate').value =
+          new Date().toISOString().slice(0, 10);
+      });
+
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const studentId = select.value;
+
+        if (!studentId) {
+          alert('Selecciona un alumno.');
+          return;
+        }
+
+        const student = students.find(
+          s => String(s.id) === String(studentId)
+        );
+
+        if (!student) {
+          alert('No se encontró el alumno.');
+          return;
+        }
+
+        const payload = {
+          student_id: student.id,
+          full_name:
+            String(student.name || '').trim(),
+          course:
+            document.getElementById('rxStudentCourse').value.trim(),
+          issue_date:
+            document.getElementById('rxStudentIssueDate').value ||
+            new Date().toISOString().slice(0, 10),
+          status:
+            document.getElementById('rxStudentStatus').value,
+          photo_url:
+            document.getElementById('rxStudentPhoto').value.trim()
+        };
+
+        const numberValue =
+          document.getElementById('rxStudentCardNumber').value.trim();
+
+        if (numberValue) {
+          payload.card_number = numberValue;
+        }
+
+        let result;
+
+        if (form.dataset.editingId) {
+          result = await DB
+            .from(CARDS_TABLE)
+            .update(payload)
+            .eq('id', form.dataset.editingId);
+        } else {
+          result = await DB
+            .from(CARDS_TABLE)
+            .upsert(payload, {
+              onConflict: 'student_id'
+            });
+        }
+
+        if (result.error) {
+          alert(
+            'No se pudo guardar el carné:\n' +
+            result.error.message
+          );
+          return;
+        }
+
+        alert('✅ Carné guardado correctamente.');
+
+        form.reset();
+        delete form.dataset.editingId;
+
+        document.getElementById('rxStudentStatus').value = 'ACTIVO';
+
+        await loadCards();
+      });
+
+      await loadCards();
+
+    } catch (error) {
+      console.error('[RoXThal Carné Admin]', error);
+
+      document.getElementById('rxStudentCardBody').innerHTML = `
+        <div class="rx-card-message">
+          ❌ Error al cargar la administración.<br>
+          <small>${esc(error.message || 'Error desconocido')}</small>
+        </div>
+      `;
+    }
+  }
+
+  /* =========================================================
+     INYECCIÓN DENTRO DE CONSENTIMIENTO
+     ========================================================= */
+
+  function isVisible(element) {
+    if (!element) return false;
+
+    const style = window.getComputedStyle(element);
+
+    return (
+      style.display !== 'none' &&
+      style.visibility !== 'hidden' &&
+      parseFloat(style.opacity || '1') > 0 &&
+      element.getBoundingClientRect().width > 0 &&
+      element.getBoundingClientRect().height > 0
+    );
+  }
+
+  function createConsentContent() {
+    if (document.getElementById('rxStudentCardArea')) return;
+
+    const area = document.createElement('div');
+    area.id = 'rxStudentCardArea';
+
+    area.innerHTML = `
+      <button type="button"
+              id="rxStudentCardLauncher">
+        🎓 Carné de Estudiante
+        <small>
+          Consulta tu carné o administra los carnés si eres administrador.
+        </small>
+      </button>
+    `;
+
+    area
+      .querySelector('#rxStudentCardLauncher')
+      .addEventListener('click', async function () {
+        if (await isAdmin()) {
+          openModal(
+            '🎓 Carné de Estudiante',
+            `
+              <div class="rx-card-message">
+                Selecciona qué deseas hacer:
+              </div>
+
+              <div class="rx-card-actions">
+                <button type="button"
+                        class="rx-card-btn rx-primary"
+                        id="rxConsentMyCard">
+                  🎓 Mi Carné
+                </button>
+
+                <button type="button"
+                        class="rx-card-btn"
+                        id="rxConsentAdminCards">
+                  🛠️ Administrar Carnés
+                </button>
+              </div>
+            `
+          );
+
+          document
+            .getElementById('rxConsentMyCard')
+            .addEventListener('click', showMyCard);
+
+          document
+            .getElementById('rxConsentAdminCards')
+            .addEventListener('click', showAdmin);
+
+        } else {
+          await showMyCard();
+        }
+      });
+
+    /*
+     * Buscamos el contenedor real que pertenece a Consentimiento.
+     * No dependemos de IDs inventados.
+     */
+    const candidates = Array.from(
+      document.querySelectorAll(
+        'section, article, div, dialog, main, .modal, .modal-content'
+      )
+    );
+
+    let target = null;
+
+    for (const element of candidates) {
+      if (!isVisible(element)) continue;
+
+      const text = normalizeText(element.textContent);
+
+      if (
+        text.includes('consentimiento') &&
+        text.length < 5000
+      ) {
+        target = element;
+        break;
+      }
+    }
+
+    if (target) {
+      target.appendChild(area);
+      return true;
+    }
+
+    return false;
+  }
+
+  function attachToConsentButton() {
+    const elements = Array.from(
+      document.querySelectorAll(
+        'button, a, [role="button"], [onclick]'
+      )
+    );
+
+    elements.forEach(function (element) {
+      if (element.dataset.rxConsentHook === '1') return;
+
+      const text = normalizeText(element.textContent);
+
+      if (text !== 'consentimiento') return;
+
+      element.dataset.rxConsentHook = '1';
+
+      element.addEventListener(
+        'click',
+        function () {
+          /*
+           * Dejamos que el código original de Consentimiento
+           * termine primero y después buscamos su contenido.
+           */
+          setTimeout(createConsentContent, 80);
+          setTimeout(createConsentContent, 300);
+          setTimeout(createConsentContent, 800);
+          setTimeout(createConsentContent, 1500);
+        },
+        false
+      );
+    });
+  }
+
+  /* =========================================================
+     API PÚBLICA
+     ========================================================= */
+  window.RoXThalStudentCard = {
+    open: showMyCard,
+    admin: showAdmin,
+    close: closeModal,
+
+    print: function () {
+      window.print();
+    }
+  };
+
+  /* =========================================================
+     OBSERVADOR
+     ========================================================= */
+  function boot() {
+    attachToConsentButton();
+
+    /*
+     * Por si Consentimiento se crea dinámicamente.
+     */
+    const observer = new MutationObserver(function () {
+      attachToConsentButton();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    /*
+     * Primera búsqueda por si el botón ya existe.
+     */
+    setTimeout(attachToConsentButton, 300);
+    setTimeout(attachToConsentButton, 1000);
+    setTimeout(attachToConsentButton, 2500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+})();
+</script>
 </body>
 </html>
