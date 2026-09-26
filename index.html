@@ -59863,6 +59863,316 @@ window.RoXThalStudentCard={
 
 })();
 </script>
-   
+   <!-- =========================================================
+     ROXTHAL — SUBIDA DIRECTA DE FOTO PARA CARNÉ
+     No reemplaza el campo photo_url: lo completa automáticamente.
+     ========================================================= -->
+<script>
+(function(){
+  'use strict';
+
+  if(window.__RX_STUDENT_CARD_UPLOAD_2026__) return;
+  window.__RX_STUDENT_CARD_UPLOAD_2026__ = true;
+
+  const BUCKET = 'images';
+  const FOLDER = 'student-cards';
+
+  function getDB(){
+    try{
+      if(typeof db !== 'undefined' && db) return db;
+    }catch(e){}
+
+    try{
+      if(window.db && typeof window.db.from === 'function'){
+        return window.db;
+      }
+    }catch(e){}
+
+    return null;
+  }
+
+  function findPhotoUrlInput(){
+    const inputs = Array.from(document.querySelectorAll(
+      'input,textarea'
+    ));
+
+    return inputs.find(el => {
+      const text = (
+        (el.id || '') + ' ' +
+        (el.name || '') + ' ' +
+        (el.placeholder || '')
+      ).toLowerCase();
+
+      return (
+        text.includes('photo_url') ||
+        text.includes('photourl') ||
+        text.includes('foto url') ||
+        text.includes('url foto') ||
+        text.includes('foto')
+      ) && (
+        el.type === 'text' ||
+        el.type === 'url' ||
+        !el.type
+      );
+    }) || null;
+  }
+
+  function showStatus(box, message, ok){
+    if(!box) return;
+
+    box.textContent = message;
+    box.style.display = 'block';
+    box.style.padding = '9px 11px';
+    box.style.marginTop = '8px';
+    box.style.borderRadius = '9px';
+    box.style.fontSize = '12px';
+    box.style.fontWeight = '800';
+    box.style.background = ok
+      ? 'rgba(45,150,90,.12)'
+      : 'rgba(180,40,40,.12)';
+    box.style.border = '1px solid ' + (
+      ok ? 'rgba(70,190,110,.35)' : 'rgba(220,70,70,.35)'
+    );
+    box.style.color = ok ? '#8de2ae' : '#ff8b8f';
+  }
+
+  async function uploadPhoto(file, urlInput, statusBox, button){
+    try{
+      const DB = getDB();
+
+      if(!DB){
+        throw new Error('No se encontró la conexión con Supabase.');
+      }
+
+      if(!file){
+        return;
+      }
+
+      if(!file.type || !file.type.startsWith('image/')){
+        throw new Error('Seleccioná una imagen válida.');
+      }
+
+      const maxSize = 10 * 1024 * 1024;
+
+      if(file.size > maxSize){
+        throw new Error('La imagen no puede superar los 10 MB.');
+      }
+
+      const sessionResult = await DB.auth.getSession();
+      const user = sessionResult?.data?.session?.user;
+
+      if(!user){
+        throw new Error('La sesión de administrador no está activa.');
+      }
+
+      const role = user.app_metadata?.role;
+
+      if(role !== 'admin'){
+        throw new Error('Solo un administrador puede subir fotos.');
+      }
+
+      showStatus(
+        statusBox,
+        '⏳ Subiendo foto desde el teléfono...',
+        true
+      );
+
+      if(button){
+        button.disabled = true;
+        button.style.opacity = '.65';
+      }
+
+      const extension = (
+        file.name.split('.').pop() || 'jpg'
+      ).toLowerCase().replace(/[^a-z0-9]/g,'');
+
+      const safeExt = extension || 'jpg';
+
+      const uniqueName =
+        'card-' +
+        Date.now() +
+        '-' +
+        Math.random().toString(36).slice(2,10) +
+        '.' +
+        safeExt;
+
+      const path = FOLDER + '/' + uniqueName;
+
+      const uploadResult = await DB.storage
+        .from(BUCKET)
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type
+        });
+
+      if(uploadResult.error){
+        throw uploadResult.error;
+      }
+
+      const publicResult = DB.storage
+        .from(BUCKET)
+        .getPublicUrl(path);
+
+      const publicUrl = publicResult?.data?.publicUrl;
+
+      if(!publicUrl){
+        throw new Error('No se pudo obtener la URL de la foto.');
+      }
+
+      if(urlInput){
+        urlInput.value = publicUrl;
+
+        urlInput.dispatchEvent(
+          new Event('input', {bubbles:true})
+        );
+
+        urlInput.dispatchEvent(
+          new Event('change', {bubbles:true})
+        );
+      }
+
+      showStatus(
+        statusBox,
+        '✓ Foto subida correctamente. La URL se completó automáticamente.',
+        true
+      );
+
+    }catch(error){
+      console.error(
+        'RoXThal — error al subir foto del carné:',
+        error
+      );
+
+      showStatus(
+        statusBox,
+        '✕ ' + (
+          error?.message ||
+          'No se pudo subir la foto.'
+        ),
+        false
+      );
+
+    }finally{
+      if(button){
+        button.disabled = false;
+        button.style.opacity = '1';
+      }
+    }
+  }
+
+  function installPhotoUpload(){
+    const urlInput = findPhotoUrlInput();
+
+    if(!urlInput){
+      return false;
+    }
+
+    if(
+      urlInput.parentElement &&
+      urlInput.parentElement.querySelector(
+        '[data-rx-student-photo-upload="1"]'
+      )
+    ){
+      return true;
+    }
+
+    const field = urlInput.closest('.field') || urlInput.parentElement;
+
+    if(!field){
+      return false;
+    }
+
+    const wrapper = document.createElement('div');
+
+    wrapper.setAttribute(
+      'data-rx-student-photo-upload',
+      '1'
+    );
+
+    wrapper.style.marginTop = '9px';
+
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className = 'btn';
+    button.textContent = '📷 Seleccionar foto desde el teléfono';
+
+    button.style.width = '100%';
+    button.style.minHeight = '44px';
+    button.style.borderColor = '#f2c400';
+    button.style.color = '#f2c400';
+
+    const fileInput = document.createElement('input');
+
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
+    fileInput.style.display = 'none';
+
+    const statusBox = document.createElement('div');
+
+    statusBox.style.display = 'none';
+
+    button.addEventListener('click', function(){
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async function(){
+      const file = fileInput.files && fileInput.files[0];
+
+      if(!file) return;
+
+      await uploadPhoto(
+        file,
+        urlInput,
+        statusBox,
+        button
+      );
+
+      fileInput.value = '';
+    });
+
+    wrapper.appendChild(button);
+    wrapper.appendChild(fileInput);
+    wrapper.appendChild(statusBox);
+
+    field.appendChild(wrapper);
+
+    return true;
+  }
+
+  function boot(){
+    installPhotoUpload();
+
+    let attempts = 0;
+
+    const timer = setInterval(function(){
+      installPhotoUpload();
+
+      attempts++;
+
+      if(attempts >= 30){
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    const observer = new MutationObserver(function(){
+      installPhotoUpload();
+    });
+
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  }else{
+    boot();
+  }
+
+})();
+</script>
 </body>
 </html>
