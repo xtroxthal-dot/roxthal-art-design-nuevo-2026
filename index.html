@@ -61808,5 +61808,208 @@ window.RoXThalStudentCard={
 <!-- ============================================================
      FIN ROXTHAL TATTOO PREVIEW
      ============================================================ -->
+
+   <!-- ============================================================
+     ROXTHAL TATTOO PREVIEW
+     REPARACIÓN DE NAVEGACIÓN
+     ============================================================ -->
+
+<script id="rxtpNavigationRepair">
+(function(){
+
+  "use strict";
+
+  if(window.__ROXTHAL_TATTOO_PREVIEW_NAV_REPAIR__) return;
+
+  window.__ROXTHAL_TATTOO_PREVIEW_NAV_REPAIR__ = true;
+
+  const MODULE_ID = "rxtpTattooPreview";
+  const CARD_SELECTOR = '[data-go="rxtpTattooPreview"]';
+
+  function openTattooPreview(){
+
+    const target =
+      document.getElementById(MODULE_ID);
+
+    if(!target){
+      console.warn(
+        "RoXThal Tattoo Preview: no se encontró la vista."
+      );
+      return;
+    }
+
+    /*
+     * Ocultamos exclusivamente las vistas existentes.
+     * No modificamos el sistema original de navegación.
+     */
+    document
+      .querySelectorAll(".view")
+      .forEach(function(view){
+
+        if(view.id !== MODULE_ID){
+
+          view.classList.add("hidden");
+
+        }
+
+      });
+
+    /*
+     * Abrimos Tattoo Preview.
+     */
+    target.classList.remove("hidden");
+
+    /*
+     * Mismo estado que utilizan los demás módulos.
+     */
+    document.body.classList.add("view-open");
+
+    /*
+     * Botón volver.
+     */
+    let back =
+      target.querySelector(
+        ".rxtp-navigation-back"
+      );
+
+    if(!back){
+
+      back =
+        document.createElement("button");
+
+      back.type = "button";
+
+      back.className =
+        "view-back rxtp-navigation-back";
+
+      back.innerHTML =
+        "← <span>Volver a RoXThal</span>";
+
+      back.addEventListener(
+        "click",
+        function(event){
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          /*
+           * Volvemos al sistema normal.
+           */
+          const home =
+            document.getElementById("home");
+
+          document
+            .querySelectorAll(".view")
+            .forEach(function(view){
+
+              view.classList.add("hidden");
+
+            });
+
+          if(home){
+            home.classList.remove("hidden");
+          }
+
+          document.body.classList.remove(
+            "view-open"
+          );
+
+          window.scrollTo(0,0);
+
+        }
+      );
+
+      target.prepend(back);
+
+    }
+
+    /*
+     * Llevar el módulo al principio.
+     */
+    window.scrollTo({
+      top:0,
+      behavior:"instant"
+    });
+
+    try{
+      target.scrollTop = 0;
+    }catch(e){}
+
+  }
+
+
+  /*
+   * INTERCEPTAMOS SOLO LA TARJETA DEL NUEVO MÓDULO.
+   *
+   * La captura ocurre antes de que el listener general
+   * de RoXThal ejecute showView().
+   */
+  document.addEventListener(
+    "click",
+    function(event){
+
+      const card =
+        event.target.closest(
+          CARD_SELECTOR
+        );
+
+      if(!card) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      openTattooPreview();
+
+    },
+    true
+  );
+
+
+  /*
+   * También permitimos abrirlo con teclado.
+   */
+  document.addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key !== "Enter" &&
+        event.key !== " "
+      ){
+        return;
+      }
+
+      const card =
+        event.target.closest?.(
+          CARD_SELECTOR
+        );
+
+      if(!card) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      openTattooPreview();
+
+    },
+    true
+  );
+
+
+  /*
+   * Exponemos únicamente la apertura del módulo.
+   * No sustituimos ninguna función existente.
+   */
+  window.RoXThalTattooPreview = {
+    open:openTattooPreview
+  };
+
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN REPARACIÓN DE NAVEGACIÓN
+     ============================================================ -->
 </body>
 </html>
