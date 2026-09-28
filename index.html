@@ -3013,7 +3013,17 @@ $('savePayment').onclick=async()=>{if(!await requireAdmin())return;const id=$('p
 /* RESERVAS */
 async function loadAdminBookings(){if(!await requireAdmin())return;const {data,error}=await db.from('bookings').select('*').order('booking_date',{ascending:false}).order('booking_time',{ascending:false}).limit(200);$('adminBookingList').innerHTML=error?'<div class="empty">'+esc(error.message)+'</div>':(data||[]).map(x=>`<div class="admin-item"><div>📅</div><div><h4>${esc(x.name)} · ${esc(x.booking_date||'')} ${esc(x.booking_time||'')}</h4><p>${esc(x.phone||'')} · ${esc(x.email||'')} · ${esc(x.service||x.course||'')}</p><p>Seña: $${Number(x.deposit||0).toLocaleString('es-AR')} · Estado: ${esc(x.status||'')}</p><p>${esc(x.notes||'')}</p></div><div><select data-booking-status="${x.id}"><option ${x.status==='pending'?'selected':''} value="pending">Pendiente</option><option ${x.status==='confirmed'?'selected':''} value="confirmed">Confirmada</option><option ${x.status==='cancelled'?'selected':''} value="cancelled">Cancelada</option><option ${x.status==='completed'?'selected':''} value="completed">Completada</option></select><button class="btn btn-small btn-danger" data-delete-booking="${x.id}" style="margin-top:6px">Eliminar</button></div></div>`).join('')||'<div class="empty">No hay reservas.</div>'}
 document.addEventListener('change',async e=>{const b=e.target.closest('[data-booking-status]');if(!b)return;if(!await requireAdmin())return;const {error}=await db.from('bookings').update({status:b.value,updated_at:new Date().toISOString()}).eq('id',b.dataset.bookingStatus);if(error)return toast(error.message);toast('Estado de reserva actualizado.');await loadAdminStats()});
-
+document.addEventListener('click',async e=>{
+const b=e.target.closest('[data-delete-booking]');
+if(!b)return;
+if(!await requireAdmin())return;
+if(!confirm('¿Eliminar definitivamente esta reserva?'))return;
+const {error}=await db.from('bookings').delete().eq('id',b.dataset.deleteBooking);
+if(error)return toast(error.message);
+await loadAdminBookings();
+await loadAdminStats();
+toast('Reserva eliminada correctamente.');
+});
 /* CONFIGURACIÓN */
 async function loadSiteSettings(){const {data,error}=await db.from('site_settings').select('key,value').eq('key','mercado_pago_url').maybeSingle();if(!error){const url=data?.value||'#';const a=$('mercadoPagoLink');if(a){a.href=url;a.style.display=url&&url!=='#'?'inline-flex':'none'}}}
 async function loadAdminSettings(){if(!await requireAdmin())return;const {data,error}=await db.from('site_settings').select('key,value').eq('key','mercado_pago_url').maybeSingle();if(!error)$('mercadoPagoUrlAdmin').value=data?.value||''}
