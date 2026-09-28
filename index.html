@@ -57094,60 +57094,70 @@ if ("serviceWorker" in navigator) {
 
     }
 
-    canvas.addEventListener(
-      'pointerdown',
-      function(event){
+      canvas.addEventListener(
+    'pointerdown',
+    function(event){
 
-        event.preventDefault();
+      event.preventDefault();
 
-        const punto =
-          obtenerPunto(event);
+      const punto =
+        obtenerPunto(event);
 
-        canvas.setPointerCapture(
+      canvas.setPointerCapture(
+        event.pointerId
+      );
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        punto.x,
+        punto.y
+      );
+
+      ctx.lineTo(
+        punto.x + 0.01,
+        punto.y + 0.01
+      );
+
+      ctx.stroke();
+
+      rxMinorTutorSignatureSigned =
+        true;
+
+      validar();
+
+    },
+    { passive:false }
+  );
+
+
+  canvas.addEventListener(
+    'pointermove',
+    function(event){
+
+      if(
+        !canvas.hasPointerCapture(
           event.pointerId
-        );
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-          punto.x,
-          punto.y
-        );
-
-        rxMinorTutorSignatureSigned =
-          true;
-
-        validar();
-
+        )
+      ){
+        return;
       }
-    );
 
-    canvas.addEventListener(
-      'pointermove',
-      function(event){
+      event.preventDefault();
 
-        if(
-          !canvas.hasPointerCapture(
-            event.pointerId
-          )
-        ){
-          return;
-        }
+      const punto =
+        obtenerPunto(event);
 
-        event.preventDefault();
+      ctx.lineTo(
+        punto.x,
+        punto.y
+      );
 
-        const punto =
-          obtenerPunto(event);
+      ctx.stroke();
 
-        ctx.lineTo(
-          punto.x,
-          punto.y
-        );
-
-        ctx.stroke();
-
-      }
-    );
+    },
+    { passive:false }
+  );
 
     canvas.addEventListener(
       'pointerup',
