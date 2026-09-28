@@ -57098,6 +57098,13 @@ if ("serviceWorker" in navigator) {
       'pointerdown',
       function(event){
 
+           if(
+          canvas.width <= 1 ||
+          canvas.height <= 1
+        ){
+          ajustarCanvas();
+        }
+
         event.preventDefault();
 
         const rect =
