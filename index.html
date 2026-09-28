@@ -57094,70 +57094,86 @@ if ("serviceWorker" in navigator) {
 
     }
 
-      canvas.addEventListener(
-    'pointerdown',
-    function(event){
+       canvas.addEventListener(
+      'pointerdown',
+      function(event){
 
-      event.preventDefault();
+        event.preventDefault();
 
-      const punto =
-        obtenerPunto(event);
+        const rect =
+          canvas.getBoundingClientRect();
 
-      canvas.setPointerCapture(
-        event.pointerId
-      );
+        const x =
+          event.clientX - rect.left;
 
-      ctx.beginPath();
+        const y =
+          event.clientY - rect.top;
 
-      ctx.moveTo(
-        punto.x,
-        punto.y
-      );
-
-      ctx.lineTo(
-        punto.x + 0.01,
-        punto.y + 0.01
-      );
-
-      ctx.stroke();
-
-      rxMinorTutorSignatureSigned =
-        true;
-
-      validar();
-
-    },
-    { passive:false }
-  );
-
-
-  canvas.addEventListener(
-    'pointermove',
-    function(event){
-
-      if(
-        !canvas.hasPointerCapture(
+        canvas.setPointerCapture(
           event.pointerId
-        )
-      ){
-        return;
+        );
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x,
+          y
+        );
+
+        ctx.lineTo(
+          x + 0.01,
+          y + 0.01
+        );
+
+        ctx.stroke();
+
+        rxMinorTutorSignatureSigned =
+          true;
+
+        validar();
+
+      },
+      {
+        passive:false
       }
+    );
 
-      event.preventDefault();
 
-      const punto =
-        obtenerPunto(event);
+    canvas.addEventListener(
+      'pointermove',
+      function(event){
 
-      ctx.lineTo(
-        punto.x,
-        punto.y
-      );
+        if(
+          !canvas.hasPointerCapture(
+            event.pointerId
+          )
+        ){
+          return;
+        }
 
-      ctx.stroke();
+        event.preventDefault();
 
-    },
-    { passive:false }
-  );
+        const rect =
+          canvas.getBoundingClientRect();
+
+        const x =
+          event.clientX - rect.left;
+
+        const y =
+          event.clientY - rect.top;
+
+        ctx.lineTo(
+          x,
+          y
+        );
+
+        ctx.stroke();
+
+      },
+      {
+        passive:false
+      }
+    );
 
     canvas.addEventListener(
       'pointerup',
