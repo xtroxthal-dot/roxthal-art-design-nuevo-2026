@@ -23194,28 +23194,45 @@ ${imagesHtml}
             .map(item => {
 
               const title =
-                escapeHTML(item.title);
+  escapeHTML(item.title);
 
-              const summary =
-                escapeHTML(item.summary);
+const rawSummary =
+  String(item.summary || '');
 
-              const source =
-                escapeHTML(
-                  item.source_name ||
-                  'Fuente'
-                );
+const summary =
+  escapeHTML(
+    rawSummary
+      .replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/gi, '$1')
+      .replace(/<[^>]+>/g, '')
+      .trim()
+  );
 
-              const cat =
-                escapeHTML(
-                  item.category ||
-                  'Actualidad'
-                );
+const source =
+  escapeHTML(
+    item.source_name ||
+    'Fuente'
+  );
 
-              const link =
-                escapeHTML(
-                  item.source_url ||
-                  '#'
-                );
+const cat =
+  escapeHTML(
+    item.category ||
+    'Actualidad'
+  );
+
+const rawLink =
+  String(item.source_url || '#');
+
+const linkMatch =
+  rawLink.match(/href=["']([^"']+)["']/i) ||
+  rawLink.match(/\]\((https?:\/\/[^)]+)\)/i);
+
+const link =
+  escapeHTML(
+    linkMatch
+      ? linkMatch[1]
+      : rawLink
+  );
 
               const date =
                 formatDate(
