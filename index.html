@@ -22881,6 +22881,24 @@ ${imagesHtml}
     }
 
     #roxthalNewsModule .rx-news-grid {
+           #roxthalNewsModule,
+    #roxthalNewsModule * {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    #roxthalNewsModule .rx-news-card,
+    #roxthalNewsModule .rx-news-footer {
+      min-width: 0;
+      width: 100%;
+    }
+
+    #roxthalNewsModule .rx-news-source,
+    #roxthalNewsModule .rx-news-title,
+    #roxthalNewsModule .rx-news-summary {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
       grid-template-columns: 1fr;
     }
   }
