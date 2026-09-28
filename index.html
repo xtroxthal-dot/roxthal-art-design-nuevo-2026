@@ -60047,6 +60047,2345 @@ window.RoXThalStudentCard={
 
 })();
 </script>
-   
+   <!-- ============================================================
+     ROXTHAL TATTOO PREVIEW — MÓDULO AUTÓNOMO
+     Añadir únicamente antes de </body>
+     ============================================================ -->
+<script>
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_TATTOO_PREVIEW_V4__) return;
+  window.__ROXTHAL_TATTOO_PREVIEW_V4__ = true;
+
+  /* ==========================================================
+     CONFIGURACIÓN
+     ========================================================== */
+
+  const APP_ID = 'rxtpTattooPreview';
+  const DB_NAME = 'RoXThalTattooPreviewDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'designs';
+  const LIBRARY_LIMIT = 12;
+
+  let db = null;
+
+  const state = {
+    photo:null,
+    tattoo:null,
+
+    tattooX:0.5,
+    tattooY:0.5,
+
+    scale:1,
+    opacity:1,
+    rotation:0,
+
+    visible:true,
+    inkMode:false,
+
+    dragging:false,
+    pointerId:null,
+
+    searchResults:[],
+    photoName:'',
+    tattooName:''
+  };
+
+  /* ==========================================================
+     ESTILOS
+     ========================================================== */
+
+  const style = document.createElement('style');
+  style.id = 'rxtpTattooPreviewStyles';
+
+  style.textContent = `
+  #rxtpTattooPreview{
+    min-height:100%;
+    padding:12px;
+    box-sizing:border-box;
+    background:
+      radial-gradient(circle at top right,rgba(130,40,170,.16),transparent 32%),
+      radial-gradient(circle at bottom left,rgba(0,150,255,.10),transparent 35%),
+      #090909;
+    color:#fff;
+  }
+
+  #rxtpTattooPreview *,
+  #rxtpTattooPreview *::before,
+  #rxtpTattooPreview *::after{
+    box-sizing:border-box;
+  }
+
+  .rxtp-shell{
+    width:min(1500px,100%);
+    margin:0 auto;
+  }
+
+  .rxtp-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+  }
+
+  .rxtp-title{
+    margin:0;
+    font-size:clamp(20px,3vw,32px);
+    font-weight:900;
+    letter-spacing:.02em;
+  }
+
+  .rxtp-subtitle{
+    margin:3px 0 0;
+    color:#aaa;
+    font-size:12px;
+  }
+
+  .rxtp-workspace{
+    display:grid;
+    grid-template-columns:76px minmax(0,1fr) 250px;
+    gap:10px;
+    align-items:stretch;
+  }
+
+  .rxtp-toolbar{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    padding:7px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:16px;
+    background:rgba(20,20,20,.92);
+    box-shadow:0 12px 35px rgba(0,0,0,.35);
+    height:max-content;
+    position:sticky;
+    top:10px;
+  }
+
+  .rxtp-tool{
+    width:100%;
+    min-height:48px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:11px;
+    background:#151515;
+    color:#fff;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:2px;
+    padding:5px 3px;
+    font-size:10px;
+    font-weight:700;
+    transition:.15s ease;
+  }
+
+  .rxtp-tool:hover{
+    background:#222;
+    border-color:rgba(255,255,255,.18);
+    transform:translateY(-1px);
+  }
+
+  .rxtp-tool strong{
+    font-size:18px;
+    line-height:1;
+  }
+
+  .rxtp-tool.active{
+    background:#292929;
+    border-color:#fff;
+  }
+
+  .rxtp-canvas-wrap{
+    position:relative;
+    min-width:0;
+    min-height:520px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:10px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.09);
+    background:
+      linear-gradient(45deg,#151515 25%,transparent 25%),
+      linear-gradient(-45deg,#151515 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#151515 75%),
+      linear-gradient(-45deg,transparent 75%,#151515 75%);
+    background-size:28px 28px;
+    background-position:0 0,0 14px,14px -14px,-14px 0;
+    overflow:hidden;
+  }
+
+  #rxtpCanvas{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:calc(100vh - 150px);
+    object-fit:contain;
+    border-radius:10px;
+    touch-action:none;
+    cursor:grab;
+    background:#111;
+  }
+
+  #rxtpCanvas:active{
+    cursor:grabbing;
+  }
+
+  .rxtp-empty{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:30px;
+    pointer-events:none;
+  }
+
+  .rxtp-empty-inner{
+    max-width:360px;
+    color:#aaa;
+  }
+
+  .rxtp-empty-icon{
+    font-size:54px;
+    margin-bottom:10px;
+  }
+
+  .rxtp-panel{
+    min-width:0;
+    padding:10px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:16px;
+    background:rgba(18,18,18,.95);
+    box-shadow:0 12px 35px rgba(0,0,0,.35);
+    max-height:calc(100vh - 150px);
+    overflow:auto;
+  }
+
+  .rxtp-section{
+    padding-bottom:11px;
+    margin-bottom:11px;
+    border-bottom:1px solid rgba(255,255,255,.07);
+  }
+
+  .rxtp-section:last-child{
+    border-bottom:0;
+    margin-bottom:0;
+  }
+
+  .rxtp-section-title{
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#bbb;
+    margin-bottom:7px;
+  }
+
+  .rxtp-row{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+
+  .rxtp-row>*{
+    min-width:0;
+  }
+
+  .rxtp-btn{
+    appearance:none;
+    border:1px solid rgba(255,255,255,.10);
+    background:#191919;
+    color:#fff;
+    border-radius:9px;
+    min-height:36px;
+    padding:7px 9px;
+    cursor:pointer;
+    font-size:11px;
+    font-weight:800;
+  }
+
+  .rxtp-btn:hover{
+    background:#252525;
+  }
+
+  .rxtp-btn.primary{
+    background:#fff;
+    color:#000;
+  }
+
+  .rxtp-btn.danger{
+    background:#351717;
+  }
+
+  .rxtp-file{
+    display:none;
+  }
+
+  .rxtp-range{
+    width:100%;
+    accent-color:#fff;
+  }
+
+  .rxtp-label-row{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:10px;
+    color:#aaa;
+    margin-bottom:4px;
+  }
+
+  .rxtp-value{
+    color:#fff;
+    font-weight:800;
+  }
+
+  .rxtp-style-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .rxtp-style{
+    border:1px solid rgba(255,255,255,.08);
+    background:#151515;
+    color:#ddd;
+    border-radius:8px;
+    padding:7px 5px;
+    cursor:pointer;
+    font-size:10px;
+    font-weight:700;
+  }
+
+  .rxtp-style.active{
+    background:#fff;
+    color:#000;
+  }
+
+  .rxtp-search{
+    display:flex;
+    gap:5px;
+  }
+
+  .rxtp-search input{
+    flex:1;
+    min-width:0;
+    height:36px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:9px;
+    background:#101010;
+    color:#fff;
+    padding:0 9px;
+    outline:none;
+  }
+
+  .rxtp-results{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px;
+    margin-top:7px;
+  }
+
+  .rxtp-result{
+    position:relative;
+    overflow:hidden;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.08);
+    background:#111;
+    aspect-ratio:1/1;
+  }
+
+  .rxtp-result img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .rxtp-result button{
+    position:absolute;
+    left:3px;
+    right:3px;
+    bottom:3px;
+    border:0;
+    border-radius:6px;
+    padding:5px 3px;
+    background:rgba(0,0,0,.85);
+    color:#fff;
+    font-size:8px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .rxtp-library{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .rxtp-library-item{
+    position:relative;
+    aspect-ratio:1/1;
+    overflow:hidden;
+    border-radius:8px;
+    background:#111;
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .rxtp-library-item img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+
+  .rxtp-library-use,
+  .rxtp-library-delete{
+    position:absolute;
+    border:0;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:rgba(0,0,0,.8);
+    color:#fff;
+    cursor:pointer;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .rxtp-library-use{
+    left:3px;
+    bottom:3px;
+  }
+
+  .rxtp-library-delete{
+    right:3px;
+    top:3px;
+  }
+
+  .rxtp-status{
+    min-height:28px;
+    color:#999;
+    font-size:10px;
+    line-height:1.35;
+  }
+
+  .rxtp-bottom-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+
+  .rxtp-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:8px;
+    border-radius:9px;
+    background:#131313;
+    border:1px solid rgba(255,255,255,.07);
+    font-size:10px;
+    color:#ccc;
+  }
+
+  .rxtp-toggle button{
+    border:1px solid rgba(255,255,255,.1);
+    background:#222;
+    color:#fff;
+    border-radius:7px;
+    padding:5px 8px;
+    cursor:pointer;
+    font-size:9px;
+    font-weight:800;
+  }
+
+  @media(max-width:1050px){
+    .rxtp-workspace{
+      grid-template-columns:68px minmax(0,1fr);
+    }
+
+    .rxtp-panel{
+      grid-column:1/-1;
+      max-height:none;
+    }
+
+    .rxtp-panel-inner{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .rxtp-section{
+      border-bottom:0;
+      border-right:1px solid rgba(255,255,255,.07);
+      padding-right:10px;
+    }
+
+    .rxtp-section:last-child{
+      border-right:0;
+    }
+  }
+
+  @media(max-width:700px){
+    #rxtpTattooPreview{
+      padding:8px;
+    }
+
+    .rxtp-workspace{
+      grid-template-columns:1fr;
+    }
+
+    .rxtp-toolbar{
+      position:static;
+      flex-direction:row;
+      overflow-x:auto;
+      height:auto;
+    }
+
+    .rxtp-tool{
+      min-width:58px;
+      flex:0 0 58px;
+    }
+
+    .rxtp-canvas-wrap{
+      min-height:55vh;
+    }
+
+    #rxtpCanvas{
+      max-height:62vh;
+    }
+
+    .rxtp-panel{
+      grid-column:auto;
+    }
+
+    .rxtp-panel-inner{
+      display:block;
+    }
+
+    .rxtp-section{
+      border-right:0;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      padding-right:0;
+    }
+  }
+
+  @media(orientation:landscape) and (max-width:900px){
+    .rxtp-workspace{
+      grid-template-columns:62px minmax(0,1fr);
+    }
+
+    .rxtp-panel{
+      grid-column:1/-1;
+    }
+
+    .rxtp-canvas-wrap{
+      min-height:calc(100vh - 110px);
+    }
+
+    #rxtpCanvas{
+      max-height:78vh;
+    }
+  }
+
+  @media(max-width:480px){
+    .rxtp-head{
+      align-items:flex-start;
+    }
+
+    .rxtp-subtitle{
+      display:none;
+    }
+
+    .rxtp-results,
+    .rxtp-library{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    .rxtp-btn{
+      font-size:10px;
+      padding:6px;
+    }
+  }
+  `;
+
+  document.head.appendChild(style);
+
+  /* ==========================================================
+     VISTA
+     ========================================================== */
+
+  const view = document.createElement('section');
+  view.id = APP_ID;
+  view.className = 'view hidden';
+  view.setAttribute('aria-label','RoXThal Tattoo Preview');
+
+  view.innerHTML = `
+    <div class="rxtp-shell">
+
+      <div class="rxtp-head">
+        <div>
+          <h2 class="rxtp-title">ROXTHAL TATTOO PREVIEW</h2>
+          <p class="rxtp-subtitle">
+            Previsualiza un tatuaje sobre una fotografía antes de realizarlo.
+          </p>
+        </div>
+      </div>
+
+      <div class="rxtp-workspace">
+
+        <aside class="rxtp-toolbar">
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="photo">
+            <strong>📷</strong>
+            Foto
+          </button>
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="tattoo">
+            <strong>🖋</strong>
+            Tatuaje
+          </button>
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="zone">
+            <strong>◎</strong>
+            Zona
+          </button>
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="ink">
+            <strong>◐</strong>
+            Tinta
+          </button>
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="visible">
+            <strong>◉</strong>
+            Mostrar
+          </button>
+
+          <button class="rxtp-tool" type="button" data-rxtp-action="reset">
+            <strong>↺</strong>
+            Reset
+          </button>
+
+        </aside>
+
+        <div class="rxtp-canvas-wrap">
+
+          <canvas id="rxtpCanvas" width="1200" height="800"></canvas>
+
+          <div class="rxtp-empty" id="rxtpEmpty">
+            <div class="rxtp-empty-inner">
+              <div class="rxtp-empty-icon">🖋️</div>
+              <strong>RoXThal Tattoo Preview</strong>
+              <br>
+              Carga una fotografía y después un diseño de tatuaje.
+              <br><br>
+              Puedes arrastrar el tatuaje directamente sobre la imagen.
+            </div>
+          </div>
+
+        </div>
+
+        <aside class="rxtp-panel">
+
+          <div class="rxtp-panel-inner">
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Archivos</div>
+
+              <input
+                id="rxtpPhotoInput"
+                class="rxtp-file"
+                type="file"
+                accept="image/*"
+              >
+
+              <input
+                id="rxtpTattooInput"
+                class="rxtp-file"
+                type="file"
+                accept="image/*"
+              >
+
+              <div class="rxtp-row">
+                <button class="rxtp-btn primary" id="rxtpLoadPhoto">
+                  📷 Foto
+                </button>
+
+                <button class="rxtp-btn" id="rxtpLoadTattoo">
+                  🖋 Diseño
+                </button>
+              </div>
+
+              <div class="rxtp-status" id="rxtpFileStatus">
+                Ninguna imagen cargada.
+              </div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Tamaño</div>
+
+              <div class="rxtp-label-row">
+                <span>Escala</span>
+                <span class="rxtp-value" id="rxtpScaleValue">100%</span>
+              </div>
+
+              <input
+                id="rxtpScale"
+                class="rxtp-range"
+                type="range"
+                min="10"
+                max="300"
+                value="100"
+              >
+
+              <div style="height:8px"></div>
+
+              <div class="rxtp-label-row">
+                <span>Opacidad</span>
+                <span class="rxtp-value" id="rxtpOpacityValue">100%</span>
+              </div>
+
+              <input
+                id="rxtpOpacity"
+                class="rxtp-range"
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+              >
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Rotación</div>
+
+              <div class="rxtp-row">
+                <button class="rxtp-btn" id="rxtpRotateLeft">↶</button>
+                <button class="rxtp-btn" id="rxtpRotateRight">↷</button>
+                <button class="rxtp-btn" id="rxtpRotateReset">0°</button>
+              </div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Modo</div>
+
+              <div class="rxtp-toggle">
+                <span>Modo tinta</span>
+                <button id="rxtpInkToggle">DESACTIVADO</button>
+              </div>
+
+              <div style="height:5px"></div>
+
+              <div class="rxtp-toggle">
+                <span>Tatuaje visible</span>
+                <button id="rxtpVisibilityToggle">VISIBLE</button>
+              </div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Zona rápida</div>
+
+              <div class="rxtp-style-grid">
+
+                <button class="rxtp-style" data-zone="shoulder">Hombro</button>
+                <button class="rxtp-style" data-zone="arm">Brazo</button>
+                <button class="rxtp-style" data-zone="forearm">Antebrazo</button>
+                <button class="rxtp-style" data-zone="chest">Pecho</button>
+                <button class="rxtp-style" data-zone="back">Espalda</button>
+                <button class="rxtp-style" data-zone="leg">Pierna</button>
+
+              </div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Buscar tatuajes online</div>
+
+              <div class="rxtp-search">
+                <input
+                  id="rxtpSearchInput"
+                  type="search"
+                  placeholder="Ej.: blackwork, japonés..."
+                  autocomplete="off"
+                >
+                <button class="rxtp-btn primary" id="rxtpSearchBtn">
+                  🔎
+                </button>
+              </div>
+
+              <div style="height:6px"></div>
+
+              <div class="rxtp-style-grid">
+
+                <button class="rxtp-style" data-style="blackwork">
+                  Blackwork
+                </button>
+
+                <button class="rxtp-style" data-style="japanese tattoo">
+                  Japonés
+                </button>
+
+                <button class="rxtp-style" data-style="traditional tattoo">
+                  Tradicional
+                </button>
+
+                <button class="rxtp-style" data-style="fine line tattoo">
+                  Fine Line
+                </button>
+
+                <button class="rxtp-style" data-style="geometric tattoo">
+                  Geométrico
+                </button>
+
+                <button class="rxtp-style" data-style="ornamental tattoo">
+                  Ornamental
+                </button>
+
+              </div>
+
+              <div class="rxtp-status" id="rxtpSearchStatus"></div>
+
+              <div class="rxtp-results" id="rxtpResults"></div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-section-title">Mis diseños</div>
+
+              <div class="rxtp-library" id="rxtpLibrary"></div>
+
+              <div class="rxtp-status">
+                Tus diseños se guardan localmente en este dispositivo.
+              </div>
+
+            </div>
+
+            <div class="rxtp-section">
+
+              <div class="rxtp-bottom-actions">
+
+                <button class="rxtp-btn" id="rxtpReset">
+                  ↺ Reiniciar
+                </button>
+
+                <button class="rxtp-btn primary" id="rxtpSave">
+                  💾 Guardar PNG
+                </button>
+
+                <button class="rxtp-btn primary" id="rxtpShare">
+                  📤 Compartir
+                </button>
+
+                <button class="rxtp-btn" id="rxtpClear">
+                  🗑 Limpiar
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+    </div>
+  `;
+
+  const main = document.querySelector('main');
+
+  if(!main){
+    console.error('RoXThal Tattoo Preview: no se encontró <main>.');
+    return;
+  }
+
+  main.appendChild(view);
+
+  /* ==========================================================
+     REFERENCIAS
+     ========================================================== */
+
+  const canvas = view.querySelector('#rxtpCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const empty = view.querySelector('#rxtpEmpty');
+
+  const photoInput = view.querySelector('#rxtpPhotoInput');
+  const tattooInput = view.querySelector('#rxtpTattooInput');
+
+  const scaleInput = view.querySelector('#rxtpScale');
+  const opacityInput = view.querySelector('#rxtpOpacity');
+
+  const scaleValue = view.querySelector('#rxtpScaleValue');
+  const opacityValue = view.querySelector('#rxtpOpacityValue');
+
+  const fileStatus = view.querySelector('#rxtpFileStatus');
+
+  const searchInput = view.querySelector('#rxtpSearchInput');
+  const searchBtn = view.querySelector('#rxtpSearchBtn');
+  const searchStatus = view.querySelector('#rxtpSearchStatus');
+  const results = view.querySelector('#rxtpResults');
+
+  const library = view.querySelector('#rxtpLibrary');
+
+  /* ==========================================================
+     INDEXEDDB
+     ========================================================== */
+
+  function openDB(){
+
+    return new Promise((resolve,reject)=>{
+
+      if(!('indexedDB' in window)){
+        resolve(null);
+        return;
+      }
+
+      const request = indexedDB.open(DB_NAME,DB_VERSION);
+
+      request.onupgradeneeded = function(){
+
+        const database = request.result;
+
+        if(!database.objectStoreNames.contains(STORE_NAME)){
+
+          const store = database.createObjectStore(
+            STORE_NAME,
+            {keyPath:'id'}
+          );
+
+          store.createIndex(
+            'created',
+            'created',
+            {unique:false}
+          );
+
+        }
+
+      };
+
+      request.onsuccess = function(){
+        db=request.result;
+        resolve(db);
+      };
+
+      request.onerror = function(){
+        resolve(null);
+      };
+
+    });
+
+  }
+
+  async function saveLocalDesign(data){
+
+    if(!db || !data || !data.dataUrl) return;
+
+    return new Promise(resolve=>{
+
+      try{
+
+        const tx=db.transaction(STORE_NAME,'readwrite');
+        const store=tx.objectStore(STORE_NAME);
+
+        store.put(data);
+
+        tx.oncomplete=resolve;
+        tx.onerror=resolve;
+
+      }catch(e){
+        resolve();
+      }
+
+    });
+
+  }
+
+  async function getLocalDesigns(){
+
+    if(!db) return [];
+
+    return new Promise(resolve=>{
+
+      try{
+
+        const tx=db.transaction(STORE_NAME,'readonly');
+        const store=tx.objectStore(STORE_NAME);
+        const request=store.getAll();
+
+        request.onsuccess=function(){
+
+          const items=Array.isArray(request.result)
+            ?request.result
+            :[];
+
+          items.sort((a,b)=>
+            (b.created||0)-(a.created||0)
+          );
+
+          resolve(items);
+
+        };
+
+        request.onerror=function(){
+          resolve([]);
+        };
+
+      }catch(e){
+        resolve([]);
+      }
+
+    });
+
+  }
+
+  async function deleteLocalDesign(id){
+
+    if(!db) return;
+
+    return new Promise(resolve=>{
+
+      try{
+
+        const tx=db.transaction(STORE_NAME,'readwrite');
+
+        tx.objectStore(STORE_NAME).delete(id);
+
+        tx.oncomplete=resolve;
+        tx.onerror=resolve;
+
+      }catch(e){
+        resolve();
+      }
+
+    });
+
+  }
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+
+  function toast(message){
+
+    if(typeof window.toast==='function'){
+      try{
+        window.toast(message);
+        return;
+      }catch(e){}
+    }
+
+    fileStatus.textContent=message;
+
+  }
+
+  function clamp(value,min,max){
+    return Math.max(min,Math.min(max,value));
+  }
+
+  function fileToDataURL(file){
+
+    return new Promise((resolve,reject)=>{
+
+      const reader=new FileReader();
+
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=reject;
+
+      reader.readAsDataURL(file);
+
+    });
+
+  }
+
+  function loadImage(src){
+
+    return new Promise((resolve,reject)=>{
+
+      const img=new Image();
+
+      img.onload=()=>resolve(img);
+
+      img.onerror=()=>{
+        reject(new Error('No se pudo cargar la imagen.'));
+      };
+
+      img.src=src;
+
+    });
+
+  }
+
+  function fitRect(imgW,imgH,maxW,maxH){
+
+    const ratio=Math.min(
+      maxW/imgW,
+      maxH/imgH
+    );
+
+    return {
+      width:imgW*ratio,
+      height:imgH*ratio
+    };
+
+  }
+
+  /* ==========================================================
+     CANVAS
+     ========================================================== */
+
+  function draw(){
+
+    const W=canvas.width;
+    const H=canvas.height;
+
+    ctx.clearRect(0,0,W,H);
+
+    ctx.fillStyle='#111';
+    ctx.fillRect(0,0,W,H);
+
+    if(!state.photo){
+
+      empty.style.display='flex';
+
+      return;
+
+    }
+
+    empty.style.display='none';
+
+    const photo=state.photo;
+
+    const fit=fitRect(
+      photo.naturalWidth,
+      photo.naturalHeight,
+      W,
+      H
+    );
+
+    const photoX=(W-fit.width)/2;
+    const photoY=(H-fit.height)/2;
+
+    ctx.save();
+
+    ctx.drawImage(
+      photo,
+      photoX,
+      photoY,
+      fit.width,
+      fit.height
+    );
+
+    ctx.restore();
+
+    if(!state.tattoo || !state.visible){
+      return;
+    }
+
+    const tattoo=state.tattoo;
+
+    const base=Math.min(
+      W/tattoo.naturalWidth,
+      H/tattoo.naturalHeight
+    );
+
+    const tattooW=
+      tattoo.naturalWidth*
+      base*
+      state.scale;
+
+    const tattooH=
+      tattoo.naturalHeight*
+      base*
+      state.scale;
+
+    const x=state.tattooX*W;
+    const y=state.tattooY*H;
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    ctx.rotate(
+      state.rotation*Math.PI/180
+    );
+
+    ctx.globalAlpha=state.opacity;
+
+    if(state.inkMode){
+
+      ctx.globalCompositeOperation='multiply';
+
+      ctx.filter=
+        'grayscale(1) contrast(1.35) brightness(.85)';
+
+    }
+
+    ctx.drawImage(
+      tattoo,
+      -tattooW/2,
+      -tattooH/2,
+      tattooW,
+      tattooH
+    );
+
+    ctx.restore();
+
+    ctx.globalAlpha=1;
+    ctx.globalCompositeOperation='source-over';
+    ctx.filter='none';
+
+  }
+
+  function resizeCanvas(){
+
+    const rect=canvas.parentElement.getBoundingClientRect();
+
+    const maxW=Math.max(300,rect.width-20);
+
+    const maxH=Math.max(
+      320,
+      Math.min(
+        window.innerHeight*0.72,
+        900
+      )
+    );
+
+    if(state.photo){
+
+      const r=fitRect(
+        state.photo.naturalWidth,
+        state.photo.naturalHeight,
+        maxW,
+        maxH
+      );
+
+      canvas.width=Math.max(300,Math.round(r.width));
+      canvas.height=Math.max(300,Math.round(r.height));
+
+    }else{
+
+      canvas.width=Math.round(maxW);
+      canvas.height=Math.round(
+        Math.min(maxH,maxW*.72)
+      );
+
+    }
+
+    draw();
+
+  }
+
+  /* ==========================================================
+     FOTO
+     ========================================================== */
+
+  async function usePhotoFile(file){
+
+    if(!file || !file.type.startsWith('image/')){
+      toast('Selecciona una imagen válida.');
+      return;
+    }
+
+    try{
+
+      const url=await fileToDataURL(file);
+
+      const img=await loadImage(url);
+
+      state.photo=img;
+      state.photoName=file.name||'fotografía';
+
+      fileStatus.textContent=
+        'Foto: '+state.photoName;
+
+      resizeCanvas();
+
+    }catch(e){
+
+      toast('No se pudo cargar la fotografía.');
+
+    }
+
+  }
+
+  /* ==========================================================
+     TATUAJE LOCAL
+     ========================================================== */
+
+  async function useTattooData(dataUrl,name){
+
+    try{
+
+      const img=await loadImage(dataUrl);
+
+      state.tattoo=img;
+      state.tattooName=name||'Diseño RoXThal';
+
+      state.tattooX=.5;
+      state.tattooY=.5;
+      state.scale=1;
+      state.opacity=1;
+      state.rotation=0;
+      state.visible=true;
+
+      scaleInput.value=100;
+      opacityInput.value=100;
+
+      updateLabels();
+
+      fileStatus.textContent=
+        'Diseño: '+state.tattooName;
+
+      draw();
+
+    }catch(e){
+
+      toast('No se pudo cargar el diseño.');
+
+    }
+
+  }
+
+  async function useTattooFile(file){
+
+    if(!file || !file.type.startsWith('image/')){
+      toast('Selecciona una imagen válida.');
+      return;
+    }
+
+    try{
+
+      const dataUrl=await fileToDataURL(file);
+
+      await useTattooData(
+        dataUrl,
+        file.name||'Diseño'
+      );
+
+      const designs=await getLocalDesigns();
+
+      const record={
+        id:
+          'design_'+
+          Date.now()+
+          '_'+
+          Math.random()
+            .toString(36)
+            .slice(2),
+
+        name:file.name||'Diseño RoXThal',
+
+        dataUrl:dataUrl,
+
+        created:Date.now()
+      };
+
+      if(designs.length>=LIBRARY_LIMIT){
+
+        designs.sort(
+          (a,b)=>
+            (a.created||0)-
+            (b.created||0)
+        );
+
+        await deleteLocalDesign(
+          designs[0].id
+        );
+
+      }
+
+      await saveLocalDesign(record);
+
+      await renderLibrary();
+
+    }catch(e){
+
+      toast(
+        'El diseño se cargó, pero no se pudo guardar en la biblioteca local.'
+      );
+
+    }
+
+  }
+
+  /* ==========================================================
+     BIBLIOTECA LOCAL
+     ========================================================== */
+
+  async function renderLibrary(){
+
+    const designs=await getLocalDesigns();
+
+    library.innerHTML='';
+
+    if(!designs.length){
+
+      library.innerHTML=
+        '<div class="rxtp-status">Aún no tienes diseños guardados.</div>';
+
+      return;
+
+    }
+
+    designs.forEach(item=>{
+
+      const box=document.createElement('div');
+
+      box.className='rxtp-library-item';
+
+      const img=document.createElement('img');
+
+      img.src=item.dataUrl;
+      img.alt=item.name||'Diseño';
+
+      const use=document.createElement('button');
+
+      use.className='rxtp-library-use';
+      use.type='button';
+      use.title='Usar diseño';
+      use.textContent='✓';
+
+      use.addEventListener('click',()=>{
+
+        useTattooData(
+          item.dataUrl,
+          item.name
+        );
+
+      });
+
+      const del=document.createElement('button');
+
+      del.className='rxtp-library-delete';
+      del.type='button';
+      del.title='Eliminar diseño';
+      del.textContent='×';
+
+      del.addEventListener('click',async()=>{
+
+        await deleteLocalDesign(item.id);
+
+        await renderLibrary();
+
+      });
+
+      box.appendChild(img);
+      box.appendChild(use);
+      box.appendChild(del);
+
+      library.appendChild(box);
+
+    });
+
+  }
+
+  /* ==========================================================
+     CONTROLES
+     ========================================================== */
+
+  function updateLabels(){
+
+    scaleValue.textContent=
+      Math.round(state.scale*100)+'%';
+
+    opacityValue.textContent=
+      Math.round(state.opacity*100)+'%';
+
+  }
+
+  function resetPreview(){
+
+    state.tattooX=.5;
+    state.tattooY=.5;
+    state.scale=1;
+    state.opacity=1;
+    state.rotation=0;
+    state.visible=true;
+    state.inkMode=false;
+
+    scaleInput.value=100;
+    opacityInput.value=100;
+
+    updateLabels();
+
+    view.querySelector(
+      '#rxtpInkToggle'
+    ).textContent='DESACTIVADO';
+
+    view.querySelector(
+      '#rxtpVisibilityToggle'
+    ).textContent='VISIBLE';
+
+    draw();
+
+  }
+
+  function clearPreview(){
+
+    state.photo=null;
+    state.tattoo=null;
+
+    state.photoName='';
+    state.tattooName='';
+
+    fileStatus.textContent=
+      'Ninguna imagen cargada.';
+
+    resetPreview();
+
+    resizeCanvas();
+
+  }
+
+  /* ==========================================================
+     ZONAS
+     ========================================================== */
+
+  const zoneScale={
+    shoulder:.78,
+    arm:.55,
+    forearm:.46,
+    chest:.72,
+    back:.82,
+    leg:.58
+  };
+
+  view.querySelectorAll('[data-zone]').forEach(button=>{
+
+    button.addEventListener('click',()=>{
+
+      const zone=button.dataset.zone;
+
+      if(zoneScale[zone]){
+        state.scale=zoneScale[zone];
+        scaleInput.value=
+          Math.round(zoneScale[zone]*100);
+      }
+
+      const positions={
+        shoulder:[.65,.34],
+        arm:[.66,.48],
+        forearm:[.63,.58],
+        chest:[.5,.39],
+        back:[.5,.45],
+        leg:[.52,.68]
+      };
+
+      if(positions[zone]){
+
+        state.tattooX=
+          positions[zone][0];
+
+        state.tattooY=
+          positions[zone][1];
+
+      }
+
+      updateLabels();
+      draw();
+
+    });
+
+  });
+
+  /* ==========================================================
+     INPUTS
+     ========================================================== */
+
+  view.querySelector('#rxtpLoadPhoto')
+    .addEventListener('click',()=>{
+      photoInput.click();
+    });
+
+  view.querySelector('#rxtpLoadTattoo')
+    .addEventListener('click',()=>{
+      tattooInput.click();
+    });
+
+  view.querySelector(
+    '[data-rxtp-action="photo"]'
+  ).addEventListener('click',()=>{
+    photoInput.click();
+  });
+
+  view.querySelector(
+    '[data-rxtp-action="tattoo"]'
+  ).addEventListener('click',()=>{
+    tattooInput.click();
+  });
+
+  photoInput.addEventListener('change',async()=>{
+
+    const file=photoInput.files?.[0];
+
+    if(file){
+      await usePhotoFile(file);
+    }
+
+    photoInput.value='';
+
+  });
+
+  tattooInput.addEventListener('change',async()=>{
+
+    const file=tattooInput.files?.[0];
+
+    if(file){
+      await useTattooFile(file);
+    }
+
+    tattooInput.value='';
+
+  });
+
+  scaleInput.addEventListener('input',()=>{
+
+    state.scale=
+      Number(scaleInput.value)/100;
+
+    updateLabels();
+    draw();
+
+  });
+
+  opacityInput.addEventListener('input',()=>{
+
+    state.opacity=
+      Number(opacityInput.value)/100;
+
+    updateLabels();
+    draw();
+
+  });
+
+  view.querySelector('#rxtpRotateLeft')
+    .addEventListener('click',()=>{
+
+      state.rotation-=15;
+      draw();
+
+    });
+
+  view.querySelector('#rxtpRotateRight')
+    .addEventListener('click',()=>{
+
+      state.rotation+=15;
+      draw();
+
+    });
+
+  view.querySelector('#rxtpRotateReset')
+    .addEventListener('click',()=>{
+
+      state.rotation=0;
+      draw();
+
+    });
+
+  view.querySelector('#rxtpInkToggle')
+    .addEventListener('click',()=>{
+
+      state.inkMode=!state.inkMode;
+
+      view.querySelector(
+        '#rxtpInkToggle'
+      ).textContent=
+        state.inkMode
+          ?'ACTIVADO'
+          :'DESACTIVADO';
+
+      draw();
+
+    });
+
+  view.querySelector('#rxtpVisibilityToggle')
+    .addEventListener('click',()=>{
+
+      state.visible=!state.visible;
+
+      view.querySelector(
+        '#rxtpVisibilityToggle'
+      ).textContent=
+        state.visible
+          ?'VISIBLE'
+          :'OCULTO';
+
+      draw();
+
+    });
+
+  view.querySelector(
+    '[data-rxtp-action="ink"]'
+  ).addEventListener('click',()=>{
+
+    state.inkMode=!state.inkMode;
+
+    view.querySelector(
+      '#rxtpInkToggle'
+    ).textContent=
+      state.inkMode
+        ?'ACTIVADO'
+        :'DESACTIVADO';
+
+    draw();
+
+  });
+
+  view.querySelector(
+    '[data-rxtp-action="visible"]'
+  ).addEventListener('click',()=>{
+
+    state.visible=!state.visible;
+
+    view.querySelector(
+      '#rxtpVisibilityToggle'
+    ).textContent=
+      state.visible
+        ?'VISIBLE'
+        :'OCULTO';
+
+    draw();
+
+  });
+
+  view.querySelector(
+    '[data-rxtp-action="reset"]'
+  ).addEventListener('click',resetPreview);
+
+  view.querySelector('#rxtpReset')
+    .addEventListener('click',resetPreview);
+
+  view.querySelector('#rxtpClear')
+    .addEventListener('click',clearPreview);
+
+  /* ==========================================================
+     ARRASTRAR TATUAJE DIRECTAMENTE CON EL DEDO
+     ========================================================== */
+
+  function pointerPosition(event){
+
+    const rect=canvas.getBoundingClientRect();
+
+    const x=
+      (event.clientX-rect.left)/
+      rect.width;
+
+    const y=
+      (event.clientY-rect.top)/
+      rect.height;
+
+    return {
+      x:clamp(x,0,1),
+      y:clamp(y,0,1)
+    };
+
+  }
+
+  canvas.addEventListener('pointerdown',event=>{
+
+    if(!state.tattoo || !state.visible) return;
+
+    state.dragging=true;
+    state.pointerId=event.pointerId;
+
+    canvas.setPointerCapture(event.pointerId);
+
+    const p=pointerPosition(event);
+
+    state.tattooX=p.x;
+    state.tattooY=p.y;
+
+    draw();
+
+  });
+
+  canvas.addEventListener('pointermove',event=>{
+
+    if(!state.dragging) return;
+
+    if(
+      state.pointerId!==null &&
+      event.pointerId!==state.pointerId
+    ){
+      return;
+    }
+
+    const p=pointerPosition(event);
+
+    state.tattooX=p.x;
+    state.tattooY=p.y;
+
+    draw();
+
+  });
+
+  function finishPointer(event){
+
+    if(
+      state.pointerId!==null &&
+      event.pointerId!==state.pointerId
+    ){
+      return;
+    }
+
+    state.dragging=false;
+    state.pointerId=null;
+
+  }
+
+  canvas.addEventListener(
+    'pointerup',
+    finishPointer
+  );
+
+  canvas.addEventListener(
+    'pointercancel',
+    finishPointer
+  );
+
+  canvas.addEventListener(
+    'pointerleave',
+    event=>{
+      if(!state.dragging) return;
+    }
+  );
+
+  /* ==========================================================
+     BÚSQUEDA ONLINE — OPENVERSE
+     ========================================================== */
+
+  async function searchOnline(query){
+
+    const clean=(query||'').trim();
+
+    if(!clean){
+      searchStatus.textContent=
+        'Escribe un estilo o tipo de tatuaje.';
+      return;
+    }
+
+    searchStatus.textContent=
+      'Buscando referencias...';
+
+    results.innerHTML='';
+
+    try{
+
+      const url=
+        'https://api.openverse.org/v1/images/?' +
+        'q='+encodeURIComponent(
+          'tattoo '+clean
+        )+
+        '&page=1&page_size=18';
+
+      const response=await fetch(url,{
+        headers:{
+          Accept:'application/json'
+        }
+      });
+
+      if(!response.ok){
+        throw new Error(
+          'HTTP '+response.status
+        );
+      }
+
+      const data=await response.json();
+
+      const items=
+        Array.isArray(data.results)
+          ?data.results
+          :[];
+
+      state.searchResults=items;
+
+      if(!items.length){
+
+        searchStatus.textContent=
+          'No se encontraron referencias.';
+
+        return;
+
+      }
+
+      searchStatus.textContent=
+        items.length+
+        ' referencias encontradas.';
+
+      items.forEach((item,index)=>{
+
+        const box=
+          document.createElement('div');
+
+        box.className='rxtp-result';
+
+        const img=
+          document.createElement('img');
+
+        img.loading='lazy';
+
+        img.alt=
+          item.title||
+          'Referencia de tatuaje';
+
+        img.crossOrigin='anonymous';
+
+        img.src=
+          item.thumbnail||
+          item.url||
+          '';
+
+        const use=
+          document.createElement('button');
+
+        use.type='button';
+
+        use.textContent=
+          'Usar en Preview';
+
+        use.addEventListener(
+          'click',
+          ()=>useOnlineResult(item)
+        );
+
+        box.appendChild(img);
+        box.appendChild(use);
+
+        results.appendChild(box);
+
+      });
+
+    }catch(error){
+
+      searchStatus.textContent=
+        'No se pudo realizar la búsqueda online.';
+
+    }
+
+  }
+
+  async function useOnlineResult(item){
+
+    if(!item) return;
+
+    const source=
+      item.url||
+      item.thumbnail||
+      '';
+
+    if(!source){
+
+      toast(
+        'Esta referencia no tiene una imagen utilizable.'
+      );
+
+      return;
+
+    }
+
+    searchStatus.textContent=
+      'Cargando diseño...';
+
+    try{
+
+      const img=await loadImageWithCors(
+        source
+      );
+
+      state.tattoo=img;
+      state.tattooName=
+        item.title||
+        'Referencia online';
+
+      state.tattooX=.5;
+      state.tattooY=.5;
+      state.scale=1;
+      state.opacity=1;
+      state.rotation=0;
+      state.visible=true;
+
+      scaleInput.value=100;
+      opacityInput.value=100;
+
+      updateLabels();
+
+      fileStatus.textContent=
+        'Diseño online: '+
+        (
+          item.title||
+          'Referencia'
+        );
+
+      draw();
+
+      searchStatus.textContent=
+        'Referencia cargada en Preview.';
+
+    }catch(error){
+
+      searchStatus.textContent=
+        'La imagen no permite cargarla directamente. Abre el original para comprobarla.';
+
+    }
+
+  }
+
+  function loadImageWithCors(src){
+
+    return new Promise((resolve,reject)=>{
+
+      const img=new Image();
+
+      img.crossOrigin='anonymous';
+
+      img.onload=()=>resolve(img);
+
+      img.onerror=()=>reject(
+        new Error('CORS')
+      );
+
+      img.src=src;
+
+    });
+
+  }
+
+  searchBtn.addEventListener(
+    'click',
+    ()=>searchOnline(searchInput.value)
+  );
+
+  searchInput.addEventListener(
+    'keydown',
+    event=>{
+      if(event.key==='Enter'){
+        event.preventDefault();
+        searchOnline(searchInput.value);
+      }
+    }
+  );
+
+  view.querySelectorAll('[data-style]').forEach(button=>{
+
+    button.addEventListener('click',()=>{
+
+      const styleName=
+        button.dataset.style;
+
+      searchInput.value=styleName;
+
+      view.querySelectorAll(
+        '[data-style]'
+      ).forEach(b=>
+        b.classList.remove('active')
+      );
+
+      button.classList.add('active');
+
+      searchOnline(styleName);
+
+    });
+
+  });
+
+  /* ==========================================================
+     GUARDAR PNG
+     ========================================================== */
+
+  function savePNG(){
+
+    try{
+
+      if(!state.photo){
+
+        toast(
+          'Primero carga una fotografía.'
+        );
+
+        return;
+
+      }
+
+      const link=
+        document.createElement('a');
+
+      link.download=
+        'roXthal-tattoo-preview.png';
+
+      link.href=
+        canvas.toDataURL(
+          'image/png',
+          1
+        );
+
+      link.click();
+
+      toast(
+        'PNG guardado correctamente.'
+      );
+
+    }catch(error){
+
+      toast(
+        'No se pudo generar el PNG. La imagen online puede bloquear la exportación.'
+      );
+
+    }
+
+  }
+
+  view.querySelector('#rxtpSave')
+    .addEventListener(
+      'click',
+      savePNG
+    );
+
+  /* ==========================================================
+     COMPARTIR
+     ========================================================== */
+
+  async function sharePreview(){
+
+    try{
+
+      if(!state.photo){
+
+        toast(
+          'Primero carga una fotografía.'
+        );
+
+        return;
+
+      }
+
+      const blob=await new Promise(
+        resolve=>
+          canvas.toBlob(
+            resolve,
+            'image/png',
+            1
+          )
+      );
+
+      if(!blob){
+
+        savePNG();
+        return;
+
+      }
+
+      const file=
+        new File(
+          [blob],
+          'roXthal-tattoo-preview.png',
+          {type:'image/png'}
+        );
+
+      if(
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({files:[file]})
+      ){
+
+        await navigator.share({
+          title:'RoXThal Tattoo Preview',
+          text:'Previsualización de tatuaje — RoXThal Art Design',
+          files:[file]
+        });
+
+        return;
+
+      }
+
+      if(navigator.share){
+
+        await navigator.share({
+          title:'RoXThal Tattoo Preview',
+          text:'Previsualización de tatuaje — RoXThal Art Design'
+        });
+
+        return;
+
+      }
+
+      savePNG();
+
+    }catch(error){
+
+      if(error?.name==='AbortError'){
+        return;
+      }
+
+      savePNG();
+
+    }
+
+  }
+
+  view.querySelector('#rxtpShare')
+    .addEventListener(
+      'click',
+      sharePreview
+    );
+
+  /* ==========================================================
+     REDIMENSIONADO / GIRO DEL TELÉFONO
+     ========================================================== */
+
+  let resizeTimer=null;
+
+  function requestResize(){
+
+    clearTimeout(resizeTimer);
+
+    resizeTimer=setTimeout(
+      resizeCanvas,
+      120
+    );
+
+  }
+
+  window.addEventListener(
+    'resize',
+    requestResize,
+    {passive:true}
+  );
+
+  window.addEventListener(
+    'orientationchange',
+    requestResize,
+    {passive:true}
+  );
+
+  /* ==========================================================
+     INTEGRACIÓN CON EL SISTEMA ACTUAL
+     ========================================================== */
+
+  /*
+     NO sustituimos showView().
+     NO creamos un reparador.
+     Simplemente añadimos el nuevo ID al array
+     que ya utiliza showView().
+  */
+
+  try{
+
+    if(
+      typeof publicViews!=='undefined' &&
+      Array.isArray(publicViews)
+    ){
+
+      if(!publicViews.includes(APP_ID)){
+        publicViews.push(APP_ID);
+      }
+
+    }
+
+  }catch(e){
+
+    console.error(
+      'RoXThal Tattoo Preview: no se pudo registrar la vista.',
+      e
+    );
+
+  }
+
+  /*
+     Añadimos el módulo a la definición existente.
+     renderModuleGrid() seguirá funcionando normalmente.
+  */
+
+  try{
+
+    if(
+      typeof moduleDefinitions!=='undefined' &&
+      Array.isArray(moduleDefinitions)
+    ){
+
+      if(
+        !moduleDefinitions.some(
+          item=>item[1]===APP_ID
+        )
+      ){
+
+        moduleDefinitions.push([
+          '17',
+          APP_ID,
+          'Tattoo Preview',
+          'Previsualización profesional de tatuajes'
+        ]);
+
+      }
+
+    }
+
+  }catch(e){
+
+    console.error(
+      'RoXThal Tattoo Preview: no se pudo registrar el módulo.',
+      e
+    );
+
+  }
+
+  /*
+     Volvemos a ejecutar el render existente una sola vez.
+     No reemplazamos la función.
+  */
+
+  try{
+
+    if(typeof renderModuleGrid==='function'){
+      renderModuleGrid();
+    }
+
+  }catch(e){
+
+    console.error(
+      'RoXThal Tattoo Preview: error al renderizar el módulo.',
+      e
+    );
+
+  }
+
+  /* ==========================================================
+     INICIALIZACIÓN
+     ========================================================== */
+
+  async function init(){
+
+    await openDB();
+
+    await renderLibrary();
+
+    updateLabels();
+
+    resizeCanvas();
+
+  }
+
+  init();
+
+})();
+</script>
 </body>
 </html>
