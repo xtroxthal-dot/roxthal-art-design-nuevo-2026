@@ -62753,5 +62753,1386 @@ window.RoXThalStudentCard={
 
 })();
 </script>
+
+   <!-- ============================================================
+     ROXTHAL · CONSENTIMIENTO MENOR
+     GUARDADO SUPABASE + WHATSAPP + ADMIN
+     ============================================================ -->
+
+<script id="roxthal-minor-consent-supabase-v1">
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_MINOR_CONSENT_SUPABASE_V1__){
+    return;
+  }
+
+  window.__ROXTHAL_MINOR_CONSENT_SUPABASE_V1__ = true;
+
+
+  /* ==========================================================
+     UTILIDADES
+  ========================================================== */
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+
+  function valor(id){
+
+    const elemento = $(id);
+
+    return elemento
+      ? String(elemento.value || '').trim()
+      : '';
+
+  }
+
+
+  function marcado(id){
+
+    const elemento = $(id);
+
+    return !!(
+      elemento &&
+      elemento.checked
+    );
+
+  }
+
+
+  function clienteDB(){
+
+    try{
+
+      if(
+        typeof db !== 'undefined' &&
+        db &&
+        typeof db.from === 'function'
+      ){
+
+        return db;
+
+      }
+
+    }catch(error){}
+
+    if(
+      window.db &&
+      typeof window.db.from === 'function'
+    ){
+
+      return window.db;
+
+    }
+
+    return null;
+
+  }
+
+
+  /* ==========================================================
+     FIRMA
+  ========================================================== */
+
+  function obtenerFirma(){
+
+    /*
+     * Primero intentamos utilizar la función real
+     * del módulo de consentimiento si está disponible.
+     */
+
+    try{
+
+      if(
+        typeof obtenerFirmaTutor === 'function'
+      ){
+
+        const firma =
+          obtenerFirmaTutor();
+
+        if(
+          typeof firma === 'string' &&
+          firma.length > 100
+        ){
+
+          return firma;
+
+        }
+
+      }
+
+    }catch(error){}
+
+
+    /*
+     * Si la función está encapsulada dentro del módulo,
+     * buscamos directamente el canvas de firma.
+     */
+
+    const pantallas = [
+
+      $('rxMinorConsentScreen'),
+
+      $('rxMinorConsentApp')
+
+    ].filter(Boolean);
+
+
+    for(
+      const pantalla of pantallas
+    ){
+
+      const canvas =
+        pantalla.querySelector(
+          'canvas'
+        );
+
+      if(!canvas){
+        continue;
+      }
+
+
+      try{
+
+        const ctx =
+          canvas.getContext('2d');
+
+        if(!ctx){
+          continue;
+        }
+
+
+        const ancho =
+          canvas.width;
+
+        const alto =
+          canvas.height;
+
+
+        if(
+          ancho <= 1 ||
+          alto <= 1
+        ){
+
+          continue;
+
+        }
+
+
+        const datos =
+          ctx.getImageData(
+            0,
+            0,
+            ancho,
+            alto
+          ).data;
+
+
+        let dibujado = false;
+
+
+        /*
+         * Comprobamos si existe contenido real
+         * en el canvas.
+         */
+
+        for(
+          let i = 0;
+          i < datos.length;
+          i += 4
+        ){
+
+          const rojo =
+            datos[i];
+
+          const verde =
+            datos[i + 1];
+
+          const azul =
+            datos[i + 2];
+
+          const alpha =
+            datos[i + 3];
+
+
+          if(
+            alpha > 10 &&
+            (
+              rojo < 245 ||
+              verde < 245 ||
+              azul < 245
+            )
+          ){
+
+            dibujado = true;
+            break;
+
+          }
+
+        }
+
+
+        if(!dibujado){
+          continue;
+        }
+
+
+        return canvas.toDataURL(
+          'image/png'
+        );
+
+      }catch(error){}
+
+    }
+
+
+    return '';
+
+  }
+
+
+  /* ==========================================================
+     VALIDACIÓN
+  ========================================================== */
+
+  function obtenerDatos(){
+
+    const datos = {
+
+      alumno:
+        valor('rxMinorStudentName'),
+
+      dniAlumno:
+        valor('rxMinorStudentDni'),
+
+      nacimiento:
+        valor('rxMinorBirthDate'),
+
+      curso:
+        valor('rxMinorCourse'),
+
+      tutor:
+        valor('rxMinorTutorName'),
+
+      dniTutor:
+        valor('rxMinorTutorDni'),
+
+      relacion:
+        valor('rxMinorTutorRelation'),
+
+      telefono:
+        valor('rxMinorTutorContact'),
+
+      email:
+        valor('rxMinorTutorEmail'),
+
+      observaciones:
+        valor('rxMinorObservations'),
+
+      autorizacion:
+        marcado('rxMinorAuthorization'),
+
+      informacion:
+        marcado('rxMinorInformation'),
+
+      contacto:
+        marcado('rxMinorContact')
+
+    };
+
+
+    if(
+      !datos.alumno ||
+      !datos.dniAlumno ||
+      !datos.nacimiento ||
+      !datos.curso ||
+      !datos.tutor ||
+      !datos.dniTutor ||
+      !datos.relacion ||
+      !datos.telefono
+    ){
+
+      throw new Error(
+        'Completa todos los campos obligatorios del consentimiento de menores.'
+      );
+
+    }
+
+
+    if(
+      !datos.autorizacion ||
+      !datos.informacion ||
+      !datos.contacto
+    ){
+
+      throw new Error(
+        'Debes aceptar las tres declaraciones del consentimiento.'
+      );
+
+    }
+
+
+    /*
+     * Comprobar que realmente sea menor.
+     */
+
+    const fecha =
+      new Date(
+        datos.nacimiento +
+        'T00:00:00'
+      );
+
+
+    if(
+      Number.isNaN(
+        fecha.getTime()
+      )
+    ){
+
+      throw new Error(
+        'La fecha de nacimiento no es válida.'
+      );
+
+    }
+
+
+    const hoy =
+      new Date();
+
+    let edad =
+      hoy.getFullYear() -
+      fecha.getFullYear();
+
+
+    const mes =
+      hoy.getMonth() -
+      fecha.getMonth();
+
+
+    if(
+      mes < 0 ||
+      (
+        mes === 0 &&
+        hoy.getDate() < fecha.getDate()
+      )
+    ){
+
+      edad--;
+
+    }
+
+
+    if(
+      edad >= 18 ||
+      edad < 0
+    ){
+
+      throw new Error(
+        'Este consentimiento solo puede utilizarse para alumnos menores de 18 años.'
+      );
+
+    }
+
+
+    return datos;
+
+  }
+
+
+  /* ==========================================================
+     GUARDAR EN SUPABASE
+  ========================================================== */
+
+  async function guardarConsentimiento(datos){
+
+    const cliente =
+      clienteDB();
+
+
+    if(!cliente){
+
+      throw new Error(
+        'No se pudo acceder al sistema de datos de RoXThal.'
+      );
+
+    }
+
+
+    const firma =
+      obtenerFirma();
+
+
+    if(!firma){
+
+      throw new Error(
+        'Debes realizar primero la firma del padre, madre, tutor o representante legal.'
+      );
+
+    }
+
+
+    const ahora =
+      new Date().toISOString();
+
+
+    const registro = {
+
+      minor_name:
+        datos.alumno,
+
+      minor_dni:
+        datos.dniAlumno || null,
+
+      birth_date:
+        datos.nacimiento,
+
+      course_name:
+        datos.curso,
+
+      course_id:
+        null,
+
+      tutor_name:
+        datos.tutor,
+
+      tutor_dni:
+        datos.dniTutor || null,
+
+      tutor_relation:
+        datos.relacion,
+
+      tutor_contact:
+        datos.telefono || null,
+
+      tutor_email:
+        datos.email || null,
+
+      observations:
+        datos.observaciones || null,
+
+      authorization_confirmed:
+        true,
+
+      information_confirmed:
+        true,
+
+      contact_confirmed:
+        true,
+
+      status:
+        'pending',
+
+      tutor_signature:
+        firma,
+
+      tutor_signature_signed_at:
+        ahora
+
+    };
+
+
+    const resultado =
+      await cliente
+        .from(
+          'minor_student_consents'
+        )
+        .insert(
+          registro
+        );
+
+
+    if(resultado.error){
+
+      console.error(
+        '[RoXThal] Error guardando consentimiento:',
+        resultado.error
+      );
+
+      throw resultado.error;
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     WHATSAPP
+  ========================================================== */
+
+  function crearMensaje(datos){
+
+    const ahora =
+      new Date();
+
+
+    const fechaHora =
+      ahora.toLocaleString(
+        'es-AR',
+        {
+          dateStyle:'short',
+          timeStyle:'short'
+        }
+      );
+
+
+    return `ROXTHAL ART DESIGN
+CONSENTIMIENTO PARA ALUMNO MENOR
+
+━━━━━━━━━━━━━━━━━━
+
+DATOS DEL ALUMNO
+
+Nombre y apellido:
+${datos.alumno}
+
+DNI / documento:
+${datos.dniAlumno}
+
+Fecha de nacimiento:
+${datos.nacimiento}
+
+Curso o taller:
+${datos.curso}
+
+━━━━━━━━━━━━━━━━━━
+
+PADRE / MADRE / REPRESENTANTE LEGAL
+
+Nombre y apellido:
+${datos.tutor}
+
+DNI / documento:
+${datos.dniTutor}
+
+Relación con el alumno:
+${datos.relacion}
+
+Teléfono / WhatsApp:
+${datos.telefono}
+
+Correo electrónico:
+${datos.email || 'No indicado'}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARACIONES
+
+Autorización del representante:
+SÍ
+
+Información leída y comprendida:
+SÍ
+
+Autorización de contacto para la gestión:
+SÍ
+
+━━━━━━━━━━━━━━━━━━
+
+OBSERVACIONES
+
+${datos.observaciones || 'Sin observaciones.'}
+
+━━━━━━━━━━━━━━━━━━
+
+FECHA Y HORA DE ENVÍO
+
+${fechaHora}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARO QUE LOS DATOS INDICADOS SON CORRECTOS Y QUE AUTORIZO LA PARTICIPACIÓN DEL ALUMNO MENOR EN LA ACTIVIDAD INDICADA DE ROXTHAL ART DESIGN.
+
+Este mensaje constituye el envío del consentimiento para su revisión y registro por RoXThal Art Design.`;
+
+  }
+
+
+  /* ==========================================================
+     INTERCEPTAR BOTÓN WHATSAPP
+  ========================================================== */
+
+  async function procesarWhatsApp(event){
+
+    const boton =
+      event.target.closest(
+        '#rxMinorWhatsAppSend'
+      );
+
+
+    if(!boton){
+      return;
+    }
+
+
+    /*
+     * Evitamos que el manejador antiguo abra WhatsApp
+     * antes de que terminemos el registro.
+     */
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+
+    if(
+      window.__ROXTHAL_MINOR_SAVING__
+    ){
+
+      return;
+
+    }
+
+
+    window.__ROXTHAL_MINOR_SAVING__ =
+      true;
+
+
+    const ventana =
+      window.open(
+        'about:blank',
+        '_blank'
+      );
+
+
+    try{
+
+      const datos =
+        obtenerDatos();
+
+
+      /*
+       * Guardamos primero en Supabase.
+       */
+
+      await guardarConsentimiento(
+        datos
+      );
+
+
+      /*
+       * Si el registro fue correcto,
+       * continuamos con WhatsApp.
+       */
+
+      const mensaje =
+        crearMensaje(
+          datos
+        );
+
+
+      const url =
+        'https://wa.me/5491169633376?text=' +
+        encodeURIComponent(
+          mensaje
+        );
+
+
+      if(ventana){
+
+        ventana.location.href =
+          url;
+
+      }else{
+
+        window.location.href =
+          url;
+
+      }
+
+
+      const estado =
+        $('rxMinorConsentStatus');
+
+
+      if(estado){
+
+        estado.textContent =
+          '✓ Consentimiento guardado correctamente y enviado a WhatsApp.';
+
+        estado.className =
+          'rx-minor-success';
+
+        estado.style.display =
+          'block';
+
+      }
+
+    }catch(error){
+
+      console.error(
+        '[RoXThal] Consentimiento:',
+        error
+      );
+
+
+      if(ventana){
+
+        try{
+          ventana.close();
+        }catch(e){}
+
+      }
+
+
+      alert(
+        error?.message ||
+        'No se pudo guardar el consentimiento.'
+      );
+
+    }finally{
+
+      window.__ROXTHAL_MINOR_SAVING__ =
+        false;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     ADMIN — ESTILOS
+  ========================================================== */
+
+  function instalarEstilosAdmin(){
+
+    if(
+      $('rxMinorAdminStyles')
+    ){
+
+      return;
+
+    }
+
+
+    const style =
+      document.createElement(
+        'style'
+      );
+
+
+    style.id =
+      'rxMinorAdminStyles';
+
+
+    style.textContent = `
+
+      #adminMinorConsents{
+        padding:20px;
+      }
+
+      #adminMinorConsents .rx-admin-consent-card{
+        background:#101010;
+        border:1px solid #292929;
+        border-radius:14px;
+        padding:18px;
+        margin-bottom:15px;
+      }
+
+      #adminMinorConsents .rx-admin-consent-card h3{
+        margin:0 0 10px;
+        color:#fff;
+      }
+
+      #adminMinorConsents .rx-admin-consent-card p{
+        margin:6px 0;
+        color:#ccc;
+        line-height:1.45;
+      }
+
+      #adminMinorConsents .rx-admin-signature{
+        width:100%;
+        max-width:520px;
+        background:#fff;
+        border-radius:10px;
+        margin-top:12px;
+        display:block;
+      }
+
+      #adminMinorConsents .rx-admin-consent-tools{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:18px;
+      }
+
+      #adminMinorConsents button{
+        padding:10px 14px;
+        border:0;
+        border-radius:10px;
+        cursor:pointer;
+      }
+
+      #adminMinorConsents .rx-admin-empty{
+        padding:20px;
+        border-radius:12px;
+        background:#101010;
+        color:#aaa;
+      }
+
+    `;
+
+
+    document.head.appendChild(
+      style
+    );
+
+  }
+
+
+  /* ==========================================================
+     ADMIN — CARGAR
+  ========================================================== */
+
+  async function cargarConsentimientosAdmin(){
+
+    const panel =
+      $('adminMinorConsents');
+
+
+    if(!panel){
+      return;
+    }
+
+
+    const cliente =
+      clienteDB();
+
+
+    if(!cliente){
+
+      panel.innerHTML =
+        '<div class="rx-admin-empty">No se pudo acceder al sistema de datos.</div>';
+
+      return;
+
+    }
+
+
+    panel.innerHTML =
+      '<div class="rx-admin-empty">Cargando consentimientos...</div>';
+
+
+    try{
+
+      const usuario =
+        window.RoXThalAdmin &&
+        typeof window.RoXThalAdmin.getUser ===
+          'function'
+          ? await window.RoXThalAdmin.getUser()
+          : null;
+
+
+      if(!usuario){
+
+        panel.innerHTML =
+          '<div class="rx-admin-empty">Acceso reservado al administrador.</div>';
+
+        return;
+
+      }
+
+
+      const resultado =
+        await cliente
+          .from(
+            'minor_student_consents'
+          )
+          .select(
+            '*'
+          )
+          .order(
+            'created_at',
+            {
+              ascending:false
+            }
+          );
+
+
+      if(resultado.error){
+
+        throw resultado.error;
+
+      }
+
+
+      const registros =
+        resultado.data || [];
+
+
+      let html = `
+
+        <div class="rx-admin-consent-tools">
+
+          <button
+            type="button"
+            id="rxMinorAdminReload"
+          >
+            🔄 Actualizar
+          </button>
+
+        </div>
+
+      `;
+
+
+      if(!registros.length){
+
+        html +=
+          '<div class="rx-admin-empty">No hay consentimientos guardados todavía.</div>';
+
+        panel.innerHTML =
+          html;
+
+        $('rxMinorAdminReload').onclick =
+          cargarConsentimientosAdmin;
+
+        return;
+
+      }
+
+
+      html +=
+        registros.map(
+          function(registro){
+
+            const fecha =
+              registro.created_at
+                ? new Date(
+                    registro.created_at
+                  ).toLocaleString(
+                    'es-AR'
+                  )
+                : 'Sin fecha';
+
+
+            const firma =
+              registro.tutor_signature ||
+              '';
+
+
+            return `
+
+              <div class="rx-admin-consent-card">
+
+                <h3>
+                  👨‍👩‍👧 ${escapar(
+                    registro.minor_name ||
+                    'Alumno menor'
+                  )}
+                </h3>
+
+                <p>
+                  <strong>DNI:</strong>
+                  ${escapar(
+                    registro.minor_dni ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Fecha de nacimiento:</strong>
+                  ${escapar(
+                    registro.birth_date ||
+                    'No indicada'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Curso:</strong>
+                  ${escapar(
+                    registro.course_name ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Representante:</strong>
+                  ${escapar(
+                    registro.tutor_name ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>DNI representante:</strong>
+                  ${escapar(
+                    registro.tutor_dni ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Relación:</strong>
+                  ${escapar(
+                    registro.tutor_relation ||
+                    'No indicada'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Teléfono:</strong>
+                  ${escapar(
+                    registro.tutor_contact ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Email:</strong>
+                  ${escapar(
+                    registro.tutor_email ||
+                    'No indicado'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Estado:</strong>
+                  ${escapar(
+                    registro.status ||
+                    'pending'
+                  )}
+                </p>
+
+                <p>
+                  <strong>Registrado:</strong>
+                  ${escapar(
+                    fecha
+                  )}
+                </p>
+
+                <p>
+                  <strong>Firma del representante:</strong>
+                </p>
+
+                ${
+                  firma
+                    ? `<img
+                         class="rx-admin-signature"
+                         src="${escapar(firma)}"
+                         alt="Firma del representante legal"
+                       >`
+                    : '<p>No hay firma almacenada.</p>'
+                }
+
+                ${
+                  registro.observations
+                    ? `<p>
+                         <strong>Observaciones:</strong>
+                         ${escapar(
+                           registro.observations
+                         )}
+                       </p>`
+                    : ''
+                }
+
+              </div>
+
+            `;
+
+          }
+        ).join('');
+
+
+      panel.innerHTML =
+        html;
+
+
+      const reload =
+        $('rxMinorAdminReload');
+
+
+      if(reload){
+
+        reload.onclick =
+          cargarConsentimientosAdmin;
+
+      }
+
+
+    }catch(error){
+
+      console.error(
+        '[RoXThal Admin] Consentimientos:',
+        error
+      );
+
+
+      panel.innerHTML =
+        '<div class="rx-admin-empty">No se pudieron cargar los consentimientos: ' +
+        escapar(
+          error?.message ||
+          error
+        ) +
+        '</div>';
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     ESCAPAR HTML
+  ========================================================== */
+
+  function escapar(texto){
+
+    return String(
+      texto == null
+        ? ''
+        : texto
+    )
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
+
+
+  /* ==========================================================
+     ADMIN — INSTALAR PESTAÑA
+  ========================================================== */
+
+  function instalarAdmin(){
+
+    const adminPanel =
+      $('adminPanel');
+
+
+    if(!adminPanel){
+      return false;
+    }
+
+
+    const nav =
+      adminPanel.querySelector(
+        '.admin-nav'
+      );
+
+
+    const main =
+      adminPanel.querySelector(
+        '.admin-main'
+      );
+
+
+    if(
+      !nav ||
+      !main
+    ){
+
+      return false;
+
+    }
+
+
+    if(
+      !$(
+        'adminMinorConsents'
+      )
+    ){
+
+      const boton =
+        document.createElement(
+          'button'
+        );
+
+
+      boton.type =
+        'button';
+
+      boton.textContent =
+        '👨‍👩‍👧 Consentimientos menores';
+
+      boton.setAttribute(
+        'data-admin-tab',
+        'minorConsents'
+      );
+
+
+      nav.appendChild(
+        boton
+      );
+
+
+      const panel =
+        document.createElement(
+          'section'
+        );
+
+
+      panel.id =
+        'adminMinorConsents';
+
+      panel.className =
+        'admin-tab-panel hidden';
+
+
+      main.appendChild(
+        panel
+      );
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     ADMIN — DETECTAR APERTURA
+  ========================================================== */
+
+  function vigilarAdmin(){
+
+    instalarEstilosAdmin();
+
+
+    if(
+      instalarAdmin()
+    ){
+
+      const boton =
+        document.querySelector(
+          '[data-admin-tab="minorConsents"]'
+        );
+
+
+      if(
+        boton &&
+        !boton.dataset.rxMinorConsentHook
+      ){
+
+        boton.dataset.rxMinorConsentHook =
+          '1';
+
+
+        boton.addEventListener(
+          'click',
+          function(){
+
+            setTimeout(
+              cargarConsentimientosAdmin,
+              50
+            );
+
+          }
+        );
+
+      }
+
+
+      return true;
+
+    }
+
+
+    return false;
+
+  }
+
+
+  /* ==========================================================
+     INICIO
+  ========================================================== */
+
+  function iniciar(){
+
+    /*
+     * El botón de WhatsApp ya existe en el módulo,
+     * pero se crea dinámicamente.
+     */
+
+    document.addEventListener(
+      'click',
+      procesarWhatsApp,
+      true
+    );
+
+
+    vigilarAdmin();
+
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          vigilarAdmin();
+
+        }
+      );
+
+
+    if(document.body){
+
+      observer.observe(
+        document.body,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+
+    }
+
+
+    setTimeout(
+      function(){
+
+        observer.disconnect();
+
+      },
+      20000
+    );
+
+  }
+
+
+  if(
+    document.readyState ===
+    'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      {
+        once:true
+      }
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+})();
+</script>
+
+<!-- FIN ROXTHAL · CONSENTIMIENTO MENOR -->
 </body>
 </html>
