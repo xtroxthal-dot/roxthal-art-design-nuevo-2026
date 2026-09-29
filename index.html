@@ -62753,5 +62753,1546 @@ window.RoXThalStudentCard={
 
 })();
 </script>
+
+   <!-- ============================================================
+     ROXTHAL — CONSENTIMIENTO DE MENORES
+     GUARDADO AUTOMÁTICO + WHATSAPP + ADMINISTRADOR
+     
+     VERSIÓN FINAL
+     - No crea un segundo botón WhatsApp
+     - Usa el botón existente #rxMinorWhatsAppSend
+     - Guarda en public.minor_student_consents
+     - Guarda la firma
+     - Mantiene el envío original por WhatsApp
+     - Añade la pestaña al Administrador existente
+     ============================================================ -->
+
+<script id="roxthal-minor-consent-cloud-final">
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_MINOR_CONSENT_CLOUD_FINAL__){
+    return;
+  }
+
+  window.__ROXTHAL_MINOR_CONSENT_CLOUD_FINAL__ = true;
+
+
+  /* ============================================================
+     CONFIGURACIÓN
+     ============================================================ */
+
+  const TABLE = 'minor_student_consents';
+  const WHATSAPP_NUMBER = '5491169633376';
+
+  let instaladoWhatsApp = false;
+  let instaladoAdmin = false;
+  let guardando = false;
+  let ultimoRegistroFingerprint = null;
+
+
+  /* ============================================================
+     UTILIDADES
+     ============================================================ */
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+
+  function valor(id){
+    const el = $(id);
+    return el
+      ? String(el.value || '').trim()
+      : '';
+  }
+
+
+  function marcado(id){
+    const el = $(id);
+    return !!(el && el.checked);
+  }
+
+
+  function escaparHTML(value){
+    return String(value == null ? '' : value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+
+  function obtenerDB(){
+
+    try{
+
+      if(
+        typeof db !== 'undefined' &&
+        db &&
+        typeof db.from === 'function'
+      ){
+        return db;
+      }
+
+    }catch(e){}
+
+    if(
+      window.db &&
+      typeof window.db.from === 'function'
+    ){
+      return window.db;
+    }
+
+    return null;
+  }
+
+
+  /* ============================================================
+     FIRMA
+     ============================================================ */
+
+  function obtenerFirma(){
+
+    /*
+     * Primero intentamos utilizar el registro local existente.
+     * El módulo de menores ya expone getLast().
+     */
+
+    try{
+
+      if(
+        window.RoXThalMinorConsent &&
+        typeof window.RoXThalMinorConsent.getLast ===
+        'function'
+      ){
+
+        const ultimo =
+          window.RoXThalMinorConsent.getLast();
+
+        if(
+          ultimo &&
+          (
+            ultimo.tutorSignature ||
+            ultimo.tutor_signature
+          )
+        ){
+
+          return (
+            ultimo.tutorSignature ||
+            ultimo.tutor_signature
+          );
+
+        }
+
+      }
+
+    }catch(e){}
+
+
+    /*
+     * Segundo método:
+     * buscar el canvas de firma dentro del consentimiento
+     * de menores.
+     */
+
+    const pantalla =
+      $('rxMinorConsentScreen');
+
+    if(!pantalla){
+      return null;
+    }
+
+    const canvases =
+      pantalla.querySelectorAll('canvas');
+
+    if(!canvases.length){
+      return null;
+    }
+
+
+    /*
+     * Comprobamos los canvas y utilizamos el que realmente
+     * contiene trazos.
+     */
+
+    for(
+      let i = 0;
+      i < canvases.length;
+      i++
+    ){
+
+      const canvas = canvases[i];
+
+      try{
+
+        const ctx =
+          canvas.getContext('2d');
+
+        if(!ctx){
+          continue;
+        }
+
+        const imageData =
+          ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+        let tieneTrazos = false;
+
+        for(
+          let p = 3;
+          p < imageData.data.length;
+          p += 4
+        ){
+
+          if(imageData.data[p] > 0){
+            tieneTrazos = true;
+            break;
+          }
+
+        }
+
+        if(tieneTrazos){
+
+          return canvas.toDataURL(
+            'image/png'
+          );
+
+        }
+
+      }catch(e){}
+
+    }
+
+    return null;
+  }
+
+
+  /* ============================================================
+     VALIDACIÓN
+     ============================================================ */
+
+  function obtenerDatos(){
+
+    return {
+
+      minor_name:
+        valor('rxMinorStudentName'),
+
+      minor_dni:
+        valor('rxMinorStudentDni') || null,
+
+      birth_date:
+        valor('rxMinorBirthDate'),
+
+      course_name:
+        valor('rxMinorCourse'),
+
+      tutor_name:
+        valor('rxMinorTutorName'),
+
+      tutor_dni:
+        valor('rxMinorTutorDni') || null,
+
+      tutor_relation:
+        valor('rxMinorTutorRelation'),
+
+      tutor_contact:
+        valor('rxMinorTutorContact') || null,
+
+      tutor_email:
+        valor('rxMinorTutorEmail') || null,
+
+      observations:
+        valor('rxMinorObservations') || null,
+
+      authorization_confirmed:
+        marcado('rxMinorAuthorization'),
+
+      information_confirmed:
+        marcado('rxMinorInformation'),
+
+      contact_confirmed:
+        marcado('rxMinorContact')
+
+    };
+
+  }
+
+
+  function validarDatos(datos){
+
+    if(
+      !datos.minor_name ||
+      !datos.birth_date ||
+      !datos.course_name ||
+      !datos.tutor_name ||
+      !datos.tutor_dni ||
+      !datos.tutor_relation ||
+      !datos.tutor_contact
+    ){
+
+      alert(
+        'Completa primero todos los campos obligatorios del consentimiento de menores.'
+      );
+
+      return false;
+    }
+
+
+    if(
+      !datos.authorization_confirmed ||
+      !datos.information_confirmed ||
+      !datos.contact_confirmed
+    ){
+
+      alert(
+        'Debes aceptar las tres declaraciones del consentimiento antes de enviarlo por WhatsApp.'
+      );
+
+      return false;
+    }
+
+
+    return true;
+  }
+
+
+  /* ============================================================
+     IDENTIFICADOR LOCAL PARA EVITAR DUPLICADOS EN EL MISMO ENVÍO
+     ============================================================ */
+
+  function fingerprint(datos){
+
+    return [
+      datos.minor_name,
+      datos.minor_dni,
+      datos.birth_date,
+      datos.course_name,
+      datos.tutor_name,
+      datos.tutor_dni,
+      datos.tutor_relation,
+      datos.tutor_contact,
+      datos.tutor_email,
+      datos.observations
+    ].join('|');
+
+  }
+
+
+  /* ============================================================
+     GUARDAR EN SUPABASE
+     ============================================================ */
+
+  async function guardarConsentimiento(datos){
+
+    const cliente =
+      obtenerDB();
+
+    if(!cliente){
+
+      throw new Error(
+        'La conexión con Supabase no está disponible.'
+      );
+
+    }
+
+
+    const firma =
+      obtenerFirma();
+
+    /*
+     * La firma se considera parte del consentimiento.
+     * Si existe, se guarda junto al consentimiento.
+     */
+
+    const payload = {
+
+      minor_name:
+        datos.minor_name,
+
+      minor_dni:
+        datos.minor_dni,
+
+      birth_date:
+        datos.birth_date,
+
+      course_name:
+        datos.course_name,
+
+      tutor_name:
+        datos.tutor_name,
+
+      tutor_dni:
+        datos.tutor_dni,
+
+      tutor_relation:
+        datos.tutor_relation,
+
+      tutor_contact:
+        datos.tutor_contact,
+
+      tutor_email:
+        datos.tutor_email,
+
+      observations:
+        datos.observations,
+
+      authorization_confirmed:
+        true,
+
+      information_confirmed:
+        true,
+
+      contact_confirmed:
+        true,
+
+      status:
+        'pending',
+
+      tutor_signature:
+        firma,
+
+      tutor_signature_signed_at:
+        firma
+          ? new Date().toISOString()
+          : null,
+
+      requested_at:
+        new Date().toISOString(),
+
+      created_at:
+        new Date().toISOString(),
+
+      updated_at:
+        new Date().toISOString()
+
+    };
+
+
+    const resultado =
+      await cliente
+        .from(TABLE)
+        .insert(payload);
+
+
+    if(resultado.error){
+
+      throw resultado.error;
+
+    }
+
+
+    return {
+
+      saved:true,
+      signature:!!firma
+
+    };
+
+  }
+
+
+  /* ============================================================
+     MENSAJE WHATSAPP
+     ============================================================ */
+
+  function crearMensaje(datos){
+
+    const ahora =
+      new Date();
+
+    const fechaHora =
+      ahora.toLocaleString(
+        'es-AR',
+        {
+          dateStyle:'short',
+          timeStyle:'short'
+        }
+      );
+
+
+    return `ROXTHAL ART DESIGN
+CONSENTIMIENTO PARA ALUMNO MENOR
+
+━━━━━━━━━━━━━━━━━━
+
+DATOS DEL ALUMNO
+
+Nombre y apellido:
+${datos.minor_name}
+
+DNI / documento:
+${datos.minor_dni || 'No indicado'}
+
+Fecha de nacimiento:
+${datos.birth_date}
+
+Curso o taller:
+${datos.course_name}
+
+━━━━━━━━━━━━━━━━━━
+
+PADRE / MADRE / REPRESENTANTE LEGAL
+
+Nombre y apellido:
+${datos.tutor_name}
+
+DNI / documento:
+${datos.tutor_dni}
+
+Relación con el alumno:
+${datos.tutor_relation}
+
+Teléfono / WhatsApp:
+${datos.tutor_contact}
+
+Correo electrónico:
+${datos.tutor_email || 'No indicado'}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARACIONES
+
+Autorización del representante:
+SÍ
+
+Información leída y comprendida:
+SÍ
+
+Autorización de contacto para la gestión:
+SÍ
+
+━━━━━━━━━━━━━━━━━━
+
+OBSERVACIONES
+
+${datos.observations || 'Sin observaciones.'}
+
+━━━━━━━━━━━━━━━━━━
+
+FECHA Y HORA DE ENVÍO
+
+${fechaHora}
+
+━━━━━━━━━━━━━━━━━━
+
+DECLARO QUE LOS DATOS INDICADOS SON CORRECTOS Y QUE AUTORIZO LA PARTICIPACIÓN DEL ALUMNO MENOR EN LA ACTIVIDAD INDICADA DE ROXTHAL ART DESIGN.
+
+Este mensaje constituye el envío del consentimiento para su revisión y registro por RoXThal Art Design.`;
+
+  }
+
+
+  /* ============================================================
+     INSTALAR SOBRE EL BOTÓN EXISTENTE
+     ============================================================ */
+
+  function instalarWhatsApp(){
+
+    if(instaladoWhatsApp){
+      return true;
+    }
+
+
+    const boton =
+      $('rxMinorWhatsAppSend');
+
+    if(!boton){
+      return false;
+    }
+
+
+    /*
+     * Marcamos el botón.
+     */
+
+    boton.dataset.rxCloudConsentInstalled =
+      '1';
+
+
+    /*
+     * Capture phase:
+     *
+     * Se ejecuta antes del handler original del botón.
+     *
+     * Abrimos una ventana vacía inmediatamente para conservar
+     * el gesto del usuario y evitar bloqueadores de ventanas.
+     */
+
+    boton.addEventListener(
+      'click',
+      async function(event){
+
+        if(
+          event.__rxCloudHandled
+        ){
+          return;
+        }
+
+        event.__rxCloudHandled = true;
+
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+
+        if(guardando){
+          return;
+        }
+
+
+        const datos =
+          obtenerDatos();
+
+
+        if(!validarDatos(datos)){
+          return;
+        }
+
+
+        const fingerprintActual =
+          fingerprint(datos);
+
+
+        /*
+         * Si ya guardamos exactamente este mismo formulario
+         * durante esta sesión, no volvemos a crear otra fila.
+         */
+
+        if(
+          ultimoRegistroFingerprint ===
+          fingerprintActual
+        ){
+
+          const url =
+            'https://wa.me/' +
+            WHATSAPP_NUMBER +
+            '?text=' +
+            encodeURIComponent(
+              crearMensaje(datos)
+            );
+
+          window.open(
+            url,
+            '_blank',
+            'noopener,noreferrer'
+          );
+
+          return;
+        }
+
+
+        /*
+         * Abrimos la ventana de WhatsApp antes del await.
+         */
+
+        let ventanaWhatsApp =
+          null;
+
+        try{
+
+          ventanaWhatsApp =
+            window.open(
+              '',
+              '_blank'
+            );
+
+        }catch(e){}
+
+
+        guardando = true;
+
+        boton.disabled = true;
+
+
+        const textoOriginal =
+          boton.innerHTML;
+
+        boton.innerHTML =
+          '⏳ Guardando consentimiento…';
+
+
+        try{
+
+          const resultado =
+            await guardarConsentimiento(
+              datos
+            );
+
+
+          ultimoRegistroFingerprint =
+            fingerprintActual;
+
+
+          /*
+           * Aviso local.
+           */
+
+          const estado =
+            $('rxMinorConsentStatus');
+
+          if(estado){
+
+            estado.style.display =
+              'block';
+
+            estado.className =
+              'rx-minor-success';
+
+            estado.innerHTML =
+              resultado.signature
+                ? '✓ Consentimiento y firma guardados correctamente.'
+                : '✓ Consentimiento guardado correctamente.';
+          }
+
+
+          /*
+           * Construimos exactamente el mismo mensaje de WhatsApp.
+           */
+
+          const url =
+            'https://wa.me/' +
+            WHATSAPP_NUMBER +
+            '?text=' +
+            encodeURIComponent(
+              crearMensaje(datos)
+            );
+
+
+          /*
+           * Continuamos con WhatsApp.
+           */
+
+          if(
+            ventanaWhatsApp &&
+            !ventanaWhatsApp.closed
+          ){
+
+            ventanaWhatsApp.location.href =
+              url;
+
+          }else{
+
+            window.open(
+              url,
+              '_blank',
+              'noopener,noreferrer'
+            );
+
+          }
+
+
+        }catch(error){
+
+          console.error(
+            'RoXThal — error guardando consentimiento:',
+            error
+          );
+
+
+          /*
+           * Si se abrió una ventana vacía y el guardado falló,
+           * la cerramos.
+           */
+
+          try{
+
+            if(
+              ventanaWhatsApp &&
+              !ventanaWhatsApp.closed
+            ){
+
+              ventanaWhatsApp.close();
+
+            }
+
+          }catch(e){}
+
+
+          alert(
+            'No se pudo guardar el consentimiento. No se enviará por WhatsApp hasta que quede registrado correctamente.\n\n' +
+            (
+              error?.message ||
+              'Error desconocido.'
+            )
+          );
+
+
+        }finally{
+
+          guardando = false;
+
+          boton.disabled = false;
+
+          boton.innerHTML =
+            textoOriginal;
+
+        }
+
+      },
+      true
+    );
+
+
+    instaladoWhatsApp = true;
+
+    return true;
+
+  }
+
+
+  /* ============================================================
+     ADMINISTRADOR
+     ============================================================ */
+
+  function instalarAdmin(){
+
+    if(instaladoAdmin){
+      return true;
+    }
+
+
+    const tabs =
+      $('adminTabs');
+
+    const adminPanel =
+      $('adminPanel');
+
+    if(!tabs || !adminPanel){
+      return false;
+    }
+
+
+    /*
+     * PESTAÑA
+     */
+
+    let boton =
+      tabs.querySelector(
+        '[data-admin-tab="minorConsents"]'
+      );
+
+
+    if(!boton){
+
+      boton =
+        document.createElement(
+          'button'
+        );
+
+      boton.type =
+        'button';
+
+      boton.dataset.adminTab =
+        'minorConsents';
+
+      boton.textContent =
+        '👨‍👩‍👧 Consentimientos menores';
+
+
+      const logout =
+        $('adminLogout');
+
+
+      if(
+        logout &&
+        logout.parentElement === tabs
+      ){
+
+        tabs.insertBefore(
+          boton,
+          logout
+        );
+
+      }else{
+
+        tabs.appendChild(
+          boton
+        );
+
+      }
+
+    }
+
+
+    /*
+     * PANEL
+     */
+
+    let panel =
+      $('adminMinorConsents');
+
+
+    if(!panel){
+
+      panel =
+        document.createElement(
+          'div'
+        );
+
+      panel.id =
+        'adminMinorConsents';
+
+      panel.className =
+        'admin-tab-panel hidden';
+
+
+      panel.innerHTML = `
+
+        <div class="card">
+
+          <h3>
+            👨‍👩‍👧 Consentimientos de alumnos menores
+          </h3>
+
+          <p class="small">
+            Consentimientos enviados mediante WhatsApp y
+            registrados automáticamente en Supabase.
+          </p>
+
+          <div
+            id="rxMinorAdminStatus"
+            class="status hidden"
+            style="margin-top:12px">
+          </div>
+
+          <div
+            id="rxMinorAdminList"
+            class="admin-list"
+            style="margin-top:16px">
+          </div>
+
+          <button
+            type="button"
+            id="rxMinorAdminRefresh"
+            class="btn btn-primary"
+            style="margin-top:15px">
+            🔄 Actualizar consentimientos
+          </button>
+
+        </div>
+
+      `;
+
+
+      adminPanel.appendChild(
+        panel
+      );
+
+    }
+
+
+    /*
+     * BOTÓN ACTUALIZAR
+     */
+
+    const refresh =
+      $('rxMinorAdminRefresh');
+
+
+    if(
+      refresh &&
+      refresh.dataset.rxBound !== '1'
+    ){
+
+      refresh.dataset.rxBound =
+        '1';
+
+      refresh.addEventListener(
+        'click',
+        cargarAdmin
+      );
+
+    }
+
+
+    /*
+     * Cuando el administrador pulsa la pestaña,
+     * cargamos los registros.
+     */
+
+    if(
+      boton &&
+      boton.dataset.rxMinorBound !== '1'
+    ){
+
+      boton.dataset.rxMinorBound =
+        '1';
+
+      boton.addEventListener(
+        'click',
+        function(){
+
+          setTimeout(
+            cargarAdmin,
+            50
+          );
+
+        }
+      );
+
+    }
+
+
+    instaladoAdmin = true;
+
+    return true;
+
+  }
+
+
+  /* ============================================================
+     CARGAR DATOS DEL ADMINISTRADOR
+     ============================================================ */
+
+  async function cargarAdmin(){
+
+    const panel =
+      $('adminMinorConsents');
+
+    const lista =
+      $('rxMinorAdminList');
+
+    if(!panel || !lista){
+      return;
+    }
+
+
+    /*
+     * Seguridad adicional.
+     *
+     * El propio RLS de Supabase también protege la tabla.
+     */
+
+    try{
+
+      if(
+        typeof requireAdmin ===
+        'function'
+      ){
+
+        const admin =
+          await requireAdmin();
+
+        if(!admin){
+          return;
+        }
+
+      }else{
+
+        const cliente =
+          obtenerDB();
+
+        if(!cliente){
+          return;
+        }
+
+        const usuario =
+          await cliente.auth.getUser();
+
+        if(
+          usuario?.data?.user?.app_metadata?.role !==
+          'admin'
+        ){
+
+          lista.innerHTML =
+            '<div class="empty">Acceso restringido al administrador.</div>';
+
+          return;
+
+        }
+
+      }
+
+    }catch(error){
+
+      lista.innerHTML =
+        '<div class="empty">No se pudo verificar el acceso administrativo.</div>';
+
+      return;
+
+    }
+
+
+    lista.innerHTML =
+      '<div class="empty">Cargando consentimientos…</div>';
+
+
+    const cliente =
+      obtenerDB();
+
+    if(!cliente){
+
+      lista.innerHTML =
+        '<div class="empty">Supabase no está disponible.</div>';
+
+      return;
+    }
+
+
+    const resultado =
+      await cliente
+        .from(TABLE)
+        .select('*')
+        .order(
+          'created_at',
+          {
+            ascending:false
+          }
+        );
+
+
+    if(resultado.error){
+
+      lista.innerHTML =
+        '<div class="empty">No se pudieron cargar los consentimientos.<br><small>' +
+        escaparHTML(
+          resultado.error.message
+        ) +
+        '</small></div>';
+
+      return;
+    }
+
+
+    const registros =
+      resultado.data || [];
+
+
+    if(!registros.length){
+
+      lista.innerHTML =
+        '<div class="empty">Todavía no hay consentimientos registrados.</div>';
+
+      return;
+    }
+
+
+    lista.innerHTML =
+      registros.map(
+        function(registro,index){
+
+          const firma =
+            registro.tutor_signature;
+
+
+          return `
+
+            <div
+              class="card"
+              style="
+                margin-bottom:14px;
+                border:1px solid rgba(255,255,255,.10);
+              ">
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  gap:12px;
+                  flex-wrap:wrap;
+                ">
+
+                <div>
+
+                  <h4 style="margin:0 0 6px">
+
+                    👤
+                    ${escaparHTML(
+                      registro.minor_name
+                    )}
+
+                  </h4>
+
+                  <div class="small">
+
+                    <strong>Curso:</strong>
+                    ${escaparHTML(
+                      registro.course_name
+                    )}
+
+                    <br>
+
+                    <strong>Representante:</strong>
+                    ${escaparHTML(
+                      registro.tutor_name
+                    )}
+
+                    <br>
+
+                    <strong>Relación:</strong>
+                    ${escaparHTML(
+                      registro.tutor_relation
+                    )}
+
+                    <br>
+
+                    <strong>Teléfono:</strong>
+                    ${escaparHTML(
+                      registro.tutor_contact || '—'
+                    )}
+
+                    <br>
+
+                    <strong>Fecha:</strong>
+                    ${escaparHTML(
+                      registro.created_at || '—'
+                    )}
+
+                    <br>
+
+                    <strong>Estado:</strong>
+                    ${escaparHTML(
+                      registro.status || 'pending'
+                    )}
+
+                  </div>
+
+                </div>
+
+                <div>
+
+                  <span
+                    class="status"
+                    style="
+                      display:inline-block;
+                      margin:0;
+                    ">
+
+                    ${firma
+                      ? '✍️ Firmado'
+                      : '⚠️ Sin firma'}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <details
+                style="
+                  margin-top:14px;
+                ">
+
+                <summary
+                  style="
+                    cursor:pointer;
+                    font-weight:700;
+                  ">
+
+                  👁️ Ver consentimiento completo
+
+                </summary>
+
+
+                <div
+                  style="
+                    margin-top:14px;
+                    line-height:1.7;
+                  ">
+
+                  <strong>Alumno</strong>
+
+                  <p class="small">
+
+                    Nombre:
+                    ${escaparHTML(
+                      registro.minor_name
+                    )}
+
+                    <br>
+
+                    DNI:
+                    ${escaparHTML(
+                      registro.minor_dni || '—'
+                    )}
+
+                    <br>
+
+                    Fecha de nacimiento:
+                    ${escaparHTML(
+                      registro.birth_date || '—'
+                    )}
+
+                    <br>
+
+                    Curso:
+                    ${escaparHTML(
+                      registro.course_name || '—'
+                    )}
+
+                  </p>
+
+
+                  <strong>Representante legal</strong>
+
+                  <p class="small">
+
+                    Nombre:
+                    ${escaparHTML(
+                      registro.tutor_name
+                    )}
+
+                    <br>
+
+                    DNI:
+                    ${escaparHTML(
+                      registro.tutor_dni || '—'
+                    )}
+
+                    <br>
+
+                    Relación:
+                    ${escaparHTML(
+                      registro.tutor_relation
+                    )}
+
+                    <br>
+
+                    Teléfono:
+                    ${escaparHTML(
+                      registro.tutor_contact || '—'
+                    )}
+
+                    <br>
+
+                    Email:
+                    ${escaparHTML(
+                      registro.tutor_email || '—'
+                    )}
+
+                  </p>
+
+
+                  <strong>Declaraciones</strong>
+
+                  <p class="small">
+
+                    ✓ Autorización:
+                    ${registro.authorization_confirmed
+                      ? 'Sí'
+                      : 'No'}
+
+                    <br>
+
+                    ✓ Información:
+                    ${registro.information_confirmed
+                      ? 'Sí'
+                      : 'No'}
+
+                    <br>
+
+                    ✓ Contacto:
+                    ${registro.contact_confirmed
+                      ? 'Sí'
+                      : 'No'}
+
+                  </p>
+
+
+                  <strong>Observaciones</strong>
+
+                  <p class="small">
+
+                    ${escaparHTML(
+                      registro.observations ||
+                      'Sin observaciones.'
+                    )}
+
+                  </p>
+
+
+                  ${
+                    firma
+                    ? `
+
+                      <div
+                        style="
+                          margin-top:16px;
+                        ">
+
+                        <strong>
+                          ✍️ Firma del representante
+                        </strong>
+
+                        <div
+                          style="
+                            margin-top:10px;
+                            padding:12px;
+                            background:#fff;
+                            border-radius:12px;
+                            display:inline-block;
+                            max-width:100%;
+                          ">
+
+                          <img
+                            src="${escaparHTML(
+                              firma
+                            )}"
+                            alt="Firma del representante"
+                            style="
+                              display:block;
+                              max-width:100%;
+                              width:420px;
+                              height:auto;
+                              background:#fff;
+                            ">
+
+                        </div>
+
+                        <div
+                          class="small"
+                          style="margin-top:8px">
+
+                          Firmado:
+                          ${escaparHTML(
+                            registro.tutor_signature_signed_at ||
+                            '—'
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    `
+                    : ''
+
+                  }
+
+
+                  <div
+                    class="small"
+                    style="
+                      margin-top:15px;
+                      opacity:.7;
+                      word-break:break-all;
+                    ">
+
+                    ID:
+                    ${escaparHTML(
+                      registro.id
+                    )}
+
+                  </div>
+
+                </div>
+
+              </details>
+
+            </div>
+
+          `;
+
+        }
+      ).join('');
+
+  }
+
+
+  /* ============================================================
+     ARRANQUE
+     ============================================================ */
+
+  function instalar(){
+
+    instalarWhatsApp();
+    instalarAdmin();
+
+  }
+
+
+  /*
+   * El formulario de menores se crea dinámicamente.
+   * Por eso observamos el DOM hasta encontrarlo.
+   */
+
+  function iniciar(){
+
+    instalar();
+
+
+    const observer =
+      new MutationObserver(
+        function(){
+
+          instalar();
+
+          if(
+            instaladoWhatsApp &&
+            instaladoAdmin
+          ){
+
+            observer.disconnect();
+
+          }
+
+        }
+      );
+
+
+    if(document.body){
+
+      observer.observe(
+        document.body,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+
+    }
+
+
+    /*
+     * Último intento de seguridad.
+     */
+
+    setTimeout(
+      function(){
+
+        try{
+          observer.disconnect();
+        }catch(e){}
+
+        instalar();
+
+      },
+      15000
+    );
+
+  }
+
+
+  if(
+    document.readyState ===
+    'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      {once:true}
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN — CONSENTIMIENTO MENORES CLOUD + ADMIN
+     ============================================================ -->
 </body>
 </html>
