@@ -34128,7 +34128,22 @@ body.view-open:has(#store:not(.hidden)) #rxStoreCartButtonV13{
   visibility:visible !important;
   pointer-events:auto !important;
 }
+/* ROXTHAL SCHOOL ATELIER — ACCESOS SOLO EN MÓDULO 15 */
+#rxStudioFab,
+#rxConsentLauncher,
+#rsaLauncher{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
 
+body.view-open.school-atelier-open #rxStudioFab,
+body.view-open.school-atelier-open #rxConsentLauncher,
+body.view-open.school-atelier-open #rsaLauncher{
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
   /* Transición suave, sin modificar posiciones ni transforms. */
   #rxStudioFab,
   #rxToolsLauncher,
