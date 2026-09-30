@@ -23075,24 +23075,26 @@ const link =
 </script>     
 <style>
 /* ============================================================
-   ROXTHAL — POSICIÓN DEFINITIVA DE LOS TRES BOTONES
+   ROXTHAL — GRUPO DE ACCESOS FLOTANTES
+   Mi RoXThal + Herramientas
+   Mantiene exactamente sus posiciones actuales.
    ============================================================ */
 
-#rxStudioFab{
+#rxStudioFab,
+#rxToolsLauncher{
   position:fixed !important;
   top:0px !important;
-  left:50% !important;
   right:auto !important;
   bottom:auto !important;
+}
+
+#rxStudioFab{
+  left:50% !important;
   transform:translateX(calc(-50% - 4mm)) !important;
 }
 
 #rxToolsLauncher{
-  position:fixed !important;
-  top:0px !important;
   left:83.3333% !important;
-  right:auto !important;
-  bottom:auto !important;
   transform:translateX(calc(-50% - 2mm)) !important;
 }
 </style>
