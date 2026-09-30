@@ -63420,5 +63420,2708 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
 <!-- ============================================================
      FIN — CONSENTIMIENTO MENORES CLOUD + ADMIN
      ============================================================ -->
+<!-- =========================================================
+     ROXTHAL SCHOOL ATELIER — MÓDULO INDEPENDIENTE V2
+     No depende de Herramientas antiguo.
+     No modifica Pedidos, Supabase, Raffle ni otros módulos.
+     ========================================================= -->
+
+<style id="rsa-school-atelier-css">
+:root{
+  --rsa-bg:#080808;
+  --rsa-panel:#111111;
+  --rsa-panel2:#171717;
+  --rsa-gold:#d7ad55;
+  --rsa-gold2:#f0cf7a;
+  --rsa-text:#f5f1e8;
+  --rsa-muted:#aaa39a;
+  --rsa-line:rgba(215,173,85,.24);
+  --rsa-danger:#b94b4b;
+  --rsa-ok:#6da878;
+}
+
+#rsaLauncher{
+  position:fixed;
+  right:18px;
+  bottom:150px;
+  z-index:2147483000;
+  border:1px solid var(--rsa-gold);
+  border-radius:999px;
+  padding:11px 17px;
+  background:linear-gradient(135deg,#17130b,#080808);
+  color:var(--rsa-gold2);
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+#rsaLauncher:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 34px rgba(0,0,0,.7);
+}
+
+#rsaOverlay{
+  position:fixed;
+  inset:0;
+  z-index:2147483001;
+  display:none;
+  background:rgba(0,0,0,.84);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+
+#rsaOverlay.rsa-open{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#rsaPanel{
+  width:min(1250px,96vw);
+  height:min(900px,94vh);
+  background:var(--rsa-bg);
+  border:1px solid var(--rsa-line);
+  border-radius:22px;
+  box-shadow:0 25px 90px rgba(0,0,0,.85);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  color:var(--rsa-text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+#rsaHeader{
+  flex:0 0 auto;
+  min-height:66px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border-bottom:1px solid var(--rsa-line);
+  background:linear-gradient(180deg,#17130d,#0c0c0c);
+}
+
+#rsaBrand{
+  min-width:220px;
+}
+
+#rsaBrand strong{
+  display:block;
+  color:var(--rsa-gold2);
+  font-size:18px;
+  letter-spacing:.3px;
+}
+
+#rsaBrand small{
+  color:var(--rsa-muted);
+  font-size:11px;
+}
+
+#rsaClose{
+  margin-left:auto;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:1px solid var(--rsa-line);
+  background:#111;
+  color:var(--rsa-gold2);
+  cursor:pointer;
+  font-size:20px;
+}
+
+#rsaTabs{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:9px 12px;
+  border-bottom:1px solid var(--rsa-line);
+  background:#0b0b0b;
+  scrollbar-width:thin;
+}
+
+.rsa-tab{
+  flex:0 0 auto;
+  border:1px solid #292929;
+  background:#121212;
+  color:#bbb;
+  border-radius:11px;
+  padding:9px 12px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:12px;
+}
+
+.rsa-tab.rsa-active{
+  color:#080808;
+  background:var(--rsa-gold);
+  border-color:var(--rsa-gold);
+}
+
+#rsaContent{
+  flex:1;
+  overflow:auto;
+  padding:16px;
+  overscroll-behavior:contain;
+}
+
+.rsa-page{
+  display:none;
+}
+
+.rsa-page.rsa-active{
+  display:block;
+}
+
+.rsa-page-title{
+  margin:0 0 5px;
+  color:var(--rsa-gold2);
+  font-size:24px;
+}
+
+.rsa-page-subtitle{
+  margin:0 0 16px;
+  color:var(--rsa-muted);
+  font-size:13px;
+}
+
+.rsa-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+
+.rsa-card{
+  background:linear-gradient(145deg,#171717,#0f0f0f);
+  border:1px solid #272727;
+  border-radius:16px;
+  padding:15px;
+}
+
+.rsa-card h3{
+  margin:0 0 7px;
+  color:var(--rsa-gold2);
+  font-size:16px;
+}
+
+.rsa-card p{
+  color:#aaa;
+  font-size:12px;
+  line-height:1.45;
+  margin:0 0 12px;
+}
+
+.rsa-btn{
+  border:1px solid var(--rsa-line);
+  background:#151515;
+  color:var(--rsa-text);
+  border-radius:10px;
+  padding:9px 12px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:12px;
+}
+
+.rsa-btn:hover{
+  border-color:var(--rsa-gold);
+  color:var(--rsa-gold2);
+}
+
+.rsa-btn-primary{
+  background:var(--rsa-gold);
+  color:#080808;
+  border-color:var(--rsa-gold);
+}
+
+.rsa-btn-danger{
+  color:#f0a0a0;
+  border-color:rgba(185,75,75,.45);
+}
+
+.rsa-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.rsa-toolbar label{
+  color:#aaa;
+  font-size:11px;
+  font-weight:700;
+}
+
+.rsa-input,
+.rsa-select,
+.rsa-textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #303030;
+  border-radius:9px;
+  background:#0d0d0d;
+  color:#eee;
+  padding:9px 10px;
+  outline:none;
+}
+
+.rsa-input:focus,
+.rsa-select:focus,
+.rsa-textarea:focus{
+  border-color:var(--rsa-gold);
+}
+
+.rsa-color{
+  width:42px;
+  height:38px;
+  padding:3px;
+  border-radius:9px;
+  border:1px solid #444;
+  background:#111;
+}
+
+#rsaCanvasWrap{
+  position:relative;
+  width:100%;
+  min-height:350px;
+  background:#f7f4ed;
+  border:1px solid #383838;
+  border-radius:14px;
+  overflow:hidden;
+  touch-action:none;
+}
+
+#rsaCanvas{
+  display:block;
+  width:100%;
+  height:520px;
+  touch-action:none;
+  cursor:crosshair;
+}
+
+#rsaCanvasOverlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.rsa-status{
+  min-height:18px;
+  margin-top:8px;
+  color:var(--rsa-muted);
+  font-size:11px;
+}
+
+.rsa-control-row{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;
+  margin-bottom:10px;
+}
+
+.rsa-control-row>div{
+  min-width:0;
+}
+
+.rsa-check{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 10px;
+  background:#101010;
+  border:1px solid #292929;
+  border-radius:9px;
+  color:#ccc;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.rsa-reference{
+  width:100%;
+  min-height:160px;
+  max-height:360px;
+  object-fit:contain;
+  background:#080808;
+  border:1px solid #292929;
+  border-radius:12px;
+  display:block;
+}
+
+.rsa-palette{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.rsa-swatch{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  border:2px solid #333;
+  cursor:pointer;
+}
+
+.rsa-value-bars{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:4px;
+  margin-top:10px;
+}
+
+.rsa-value-bars span{
+  height:34px;
+  border-radius:5px;
+  border:1px solid #333;
+}
+
+.rsa-note-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px;
+}
+
+.rsa-note{
+  padding:10px;
+  border:1px solid #2b2b2b;
+  background:#101010;
+  border-radius:10px;
+  white-space:pre-wrap;
+  color:#ddd;
+  font-size:12px;
+}
+
+.rsa-note small{
+  display:block;
+  color:#777;
+  margin-top:6px;
+}
+
+.rsa-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+
+.rsa-preview-item{
+  position:relative;
+  border:1px solid #292929;
+  border-radius:10px;
+  overflow:hidden;
+  background:#080808;
+  aspect-ratio:1;
+}
+
+.rsa-preview-item img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.rsa-preview-item button{
+  position:absolute;
+  top:5px;
+  right:5px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(0,0,0,.75);
+  color:#fff;
+  cursor:pointer;
+}
+
+.rsa-kids-stage{
+  position:relative;
+  width:100%;
+  max-width:760px;
+  margin:auto;
+  background:#fff;
+  border:1px solid #444;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+#rsaKidsCanvas{
+  width:100%;
+  height:auto;
+  display:block;
+  touch-action:none;
+}
+
+.rsa-timer{
+  font-size:48px;
+  text-align:center;
+  color:var(--rsa-gold2);
+  font-variant-numeric:tabular-nums;
+  margin:8px 0 15px;
+}
+
+.rsa-idea{
+  min-height:90px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border:1px dashed var(--rsa-line);
+  border-radius:12px;
+  padding:18px;
+  color:var(--rsa-gold2);
+  font-size:18px;
+  line-height:1.4;
+}
+
+.rsa-mix-result{
+  height:100px;
+  border-radius:12px;
+  border:1px solid #333;
+  margin-top:10px;
+}
+
+.rsa-ruler{
+  height:4px;
+  background:var(--rsa-gold);
+  transform-origin:left center;
+  position:absolute;
+  left:10%;
+  top:50%;
+  width:80%;
+  display:none;
+}
+
+.rsa-message{
+  position:fixed;
+  left:50%;
+  bottom:25px;
+  transform:translateX(-50%) translateY(20px);
+  z-index:2147483647;
+  background:#151515;
+  color:#eee;
+  border:1px solid var(--rsa-line);
+  border-radius:12px;
+  padding:10px 14px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  font-size:12px;
+  box-shadow:0 10px 35px rgba(0,0,0,.6);
+}
+
+.rsa-message.rsa-show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.rsa-hidden{
+  display:none!important;
+}
+
+@media(max-width:850px){
+  #rsaPanel{
+    width:100vw;
+    height:100vh;
+    max-height:none;
+    border-radius:0;
+  }
+
+  #rsaLauncher{
+    right:10px;
+    bottom:105px;
+    font-size:12px;
+  }
+
+  #rsaBrand{
+    min-width:0;
+  }
+
+  .rsa-grid{
+    grid-template-columns:1fr;
+  }
+
+  .rsa-control-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  #rsaCanvas{
+    height:440px;
+  }
+
+  .rsa-preview-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
+@media(max-width:520px){
+  #rsaHeader{
+    min-height:58px;
+  }
+
+  #rsaBrand strong{
+    font-size:15px;
+  }
+
+  #rsaBrand small{
+    font-size:9px;
+  }
+
+  #rsaContent{
+    padding:10px;
+  }
+
+  #rsaCanvas{
+    height:390px;
+  }
+
+  .rsa-preview-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+</style>
+
+<button id="rsaLauncher" type="button" aria-label="Abrir RoXThal School Atelier">
+  🎨 RoXThal School Atelier
+</button>
+
+<div id="rsaOverlay" aria-hidden="true">
+  <section id="rsaPanel" role="dialog" aria-modal="true" aria-label="RoXThal School Atelier">
+
+    <header id="rsaHeader">
+      <div id="rsaBrand">
+        <strong>🎨 RoXThal School Atelier</strong>
+        <small>Espacio profesional de práctica, aprendizaje y creatividad</small>
+      </div>
+
+      <button id="rsaClose" type="button" aria-label="Cerrar">✕</button>
+    </header>
+
+    <nav id="rsaTabs" aria-label="Áreas del School Atelier">
+
+      <button class="rsa-tab rsa-active" data-rsa-page="atelier" type="button">🎨 Atelier</button>
+
+      <button class="rsa-tab" data-rsa-page="dibujo" type="button">✏️ Dibujo</button>
+
+      <button class="rsa-tab" data-rsa-page="pintura" type="button">🖌️ Pintura</button>
+
+      <button class="rsa-tab" data-rsa-page="tatuaje" type="button">🖋️ Tatuaje</button>
+
+      <button class="rsa-tab" data-rsa-page="profesional" type="button">🧰 Profesional</button>
+
+      <button class="rsa-tab" data-rsa-page="infantil" type="button">🧒 Arte Infantil</button>
+
+      <button class="rsa-tab" data-rsa-page="creatividad" type="button">💡 Creatividad</button>
+
+    </nav>
+
+    <main id="rsaContent">
+
+      <!-- =====================================================
+           ATELIER
+           ===================================================== -->
+
+      <section class="rsa-page rsa-active" id="rsaPageAtelier">
+
+        <h1 class="rsa-page-title">🎨 Atelier</h1>
+
+        <p class="rsa-page-subtitle">
+          Mesa de trabajo digital para estudiar, dibujar, observar y organizar proyectos.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+            <h3>🖼️ Mesa de trabajo</h3>
+            <p>Canvas de dibujo táctil para bocetos, estudios y composición.</p>
+            <button class="rsa-btn rsa-btn-primary" data-rsa-open-page="dibujo">
+              Abrir mesa de trabajo
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>📷 Referencias</h3>
+            <p>Cargá fotografías directamente desde el teléfono para utilizarlas como referencia.</p>
+            <button class="rsa-btn" id="rsaReferenceButton" type="button">
+              Cargar referencias
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🎨 Paletas</h3>
+            <p>Selector de color y paletas rápidas para trabajar estudios cromáticos.</p>
+            <button class="rsa-btn" data-rsa-open-page="pintura">
+              Abrir color
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>📝 Notas</h3>
+            <p>Guardá apuntes de clases, ideas, materiales o procesos.</p>
+            <button class="rsa-btn" id="rsaNotesButton" type="button">
+              Abrir notas
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🧩 Composición</h3>
+            <p>Usá cuadrícula, simetría, proporciones y perspectiva para construir una imagen.</p>
+            <button class="rsa-btn" data-rsa-open-page="dibujo">
+              Herramientas de composición
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>💾 Trabajo local</h3>
+            <p>El taller puede descargarse como imagen directamente desde el navegador.</p>
+            <button class="rsa-btn" id="rsaDownloadMain" type="button">
+              Descargar trabajo
+            </button>
+          </article>
+
+        </div>
+
+        <div class="rsa-card" style="margin-top:12px">
+
+          <h3>📷 Biblioteca de referencias</h3>
+
+          <input
+            id="rsaReferenceInput"
+            class="rsa-input"
+            type="file"
+            accept="image/*"
+            multiple
+            style="margin-bottom:10px"
+          >
+
+          <div id="rsaReferenceGallery" class="rsa-preview-grid"></div>
+
+        </div>
+
+        <div class="rsa-card" style="margin-top:12px">
+
+          <h3>📝 Notas del Atelier</h3>
+
+          <textarea
+            id="rsaNotes"
+            class="rsa-textarea"
+            rows="5"
+            placeholder="Escribí aquí apuntes, ideas, ejercicios, materiales..."
+          ></textarea>
+
+          <div class="rsa-toolbar" style="margin-top:8px">
+            <button class="rsa-btn rsa-btn-primary" id="rsaSaveNote" type="button">
+              Guardar nota
+            </button>
+
+            <button class="rsa-btn" id="rsaClearNotes" type="button">
+              Borrar notas
+            </button>
+          </div>
+
+          <div id="rsaNoteList" class="rsa-note-list"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           DIBUJO
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPageDibujo">
+
+        <h1 class="rsa-page-title">✏️ Dibujo</h1>
+
+        <p class="rsa-page-subtitle">
+          Herramientas de observación, estructura, proporción, simetría y construcción.
+        </p>
+
+        <div class="rsa-control-row">
+
+          <div>
+            <label>Tamaño</label>
+            <input id="rsaBrushSize" class="rsa-input" type="range" min="1" max="80" value="5">
+          </div>
+
+          <div>
+            <label>Color</label>
+            <input id="rsaBrushColor" class="rsa-color" type="color" value="#111111">
+          </div>
+
+          <div>
+            <label>Opacidad</label>
+            <input id="rsaBrushOpacity" class="rsa-input" type="range" min="0.05" max="1" step="0.05" value="1">
+          </div>
+
+          <div>
+            <label>Herramienta</label>
+            <select id="rsaBrushMode" class="rsa-select">
+              <option value="draw">Lápiz</option>
+              <option value="erase">Borrador</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="rsa-toolbar">
+
+          <label class="rsa-check">
+            <input id="rsaGridToggle" type="checkbox">
+            Cuadrícula
+          </label>
+
+          <label class="rsa-check">
+            <input id="rsaSymmetryToggle" type="checkbox">
+            Simetría
+          </label>
+
+          <label class="rsa-check">
+            <input id="rsaPerspectiveToggle" type="checkbox">
+            Perspectiva
+          </label>
+
+          <button class="rsa-btn" id="rsaUndo" type="button">↶ Deshacer</button>
+
+          <button class="rsa-btn" id="rsaRedo" type="button">↷ Rehacer</button>
+
+          <button class="rsa-btn" id="rsaClearCanvas" type="button">🗑️ Limpiar</button>
+
+          <button class="rsa-btn rsa-btn-primary" id="rsaDownloadCanvas" type="button">
+            💾 Descargar
+          </button>
+
+        </div>
+
+        <div id="rsaCanvasWrap">
+
+          <canvas id="rsaCanvas" width="1200" height="700"></canvas>
+
+          <div id="rsaCanvasOverlay"></div>
+
+        </div>
+
+        <div class="rsa-status" id="rsaCanvasStatus">
+          Lienzo listo.
+        </div>
+
+        <div class="rsa-grid" style="margin-top:12px">
+
+          <article class="rsa-card">
+            <h3>📐 Cuadrícula</h3>
+            <p>
+              Útil para proporciones, transferencia de referencias y estudios de composición.
+            </p>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🪞 Simetría</h3>
+            <p>
+              Cada trazo se refleja automáticamente respecto del eje central.
+            </p>
+          </article>
+
+          <article class="rsa-card">
+            <h3>📏 Perspectiva</h3>
+            <p>
+              Superposición visual para estudiar líneas horizontales y puntos de fuga.
+            </p>
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           PINTURA
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPagePintura">
+
+        <h1 class="rsa-page-title">🖌️ Pintura</h1>
+
+        <p class="rsa-page-subtitle">
+          Color, mezclas, paletas, valores y contraste.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+
+            <h3>🎨 Selector de color</h3>
+
+            <input id="rsaPaintColor" class="rsa-color" type="color" value="#d7ad55">
+
+            <div class="rsa-palette" id="rsaMainPalette">
+
+              <button class="rsa-swatch" type="button" style="background:#000000" data-rsa-color="#000000"></button>
+              <button class="rsa-swatch" type="button" style="background:#ffffff" data-rsa-color="#ffffff"></button>
+              <button class="rsa-swatch" type="button" style="background:#d7ad55" data-rsa-color="#d7ad55"></button>
+              <button class="rsa-swatch" type="button" style="background:#c0392b" data-rsa-color="#c0392b"></button>
+              <button class="rsa-swatch" type="button" style="background:#2980b9" data-rsa-color="#2980b9"></button>
+              <button class="rsa-swatch" type="button" style="background:#27ae60" data-rsa-color="#27ae60"></button>
+              <button class="rsa-swatch" type="button" style="background:#8e44ad" data-rsa-color="#8e44ad"></button>
+              <button class="rsa-swatch" type="button" style="background:#e67e22" data-rsa-color="#e67e22"></button>
+
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🧪 Mezcla de colores</h3>
+
+            <div class="rsa-control-row">
+
+              <div>
+                <label>Color A</label>
+                <input id="rsaMixA" class="rsa-color" type="color" value="#ff0000">
+              </div>
+
+              <div>
+                <label>Color B</label>
+                <input id="rsaMixB" class="rsa-color" type="color" value="#0000ff">
+              </div>
+
+            </div>
+
+            <div id="rsaMixResult" class="rsa-mix-result"></div>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaMixButton" type="button" style="margin-top:8px">
+              Mezclar
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>⚫ Valores</h3>
+
+            <p>
+              Escala rápida de valores para estudiar luces y sombras.
+            </p>
+
+            <div class="rsa-value-bars" id="rsaValueBars"></div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>♟️ Contraste</h3>
+
+            <p>
+              El contraste puede analizarse por valor, temperatura, saturación y complementarios.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+
+              <div style="height:55px;background:#000;border-radius:8px"></div>
+
+              <div style="height:55px;background:#fff;border-radius:8px;border:1px solid #555"></div>
+
+              <div style="height:55px;background:#d7ad55;border-radius:8px"></div>
+
+              <div style="height:55px;background:#111;border-radius:8px"></div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           TATUAJE
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPageTatuaje">
+
+        <h1 class="rsa-page-title">🖋️ Tatuaje</h1>
+
+        <p class="rsa-page-subtitle">
+          Preparación visual para escala, proporción, espejo, regla, stencil y composición.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+
+            <h3>📏 Escala y proporción</h3>
+
+            <p>
+              Definí un tamaño de referencia para estudiar cómo cambia el diseño.
+            </p>
+
+            <label>Escala</label>
+
+            <input
+              id="rsaTattooScale"
+              class="rsa-input"
+              type="range"
+              min="25"
+              max="200"
+              value="100"
+            >
+
+            <strong id="rsaTattooScaleValue">100%</strong>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🪞 Espejo</h3>
+
+            <p>
+              Activá simetría para construir diseños equilibrados.
+            </p>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaTattooMirror" type="button">
+              Activar espejo
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>📐 Regla</h3>
+
+            <p>
+              Superpone una regla visual sobre la mesa de trabajo.
+            </p>
+
+            <button class="rsa-btn" id="rsaTattooRuler" type="button">
+              Mostrar regla
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🖨️ Stencil</h3>
+
+            <p>
+              Cargá una referencia y estudiá el diseño antes de preparar el stencil.
+            </p>
+
+            <button class="rsa-btn" id="rsaTattooReference" type="button">
+              Abrir referencias
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🧩 Composición</h3>
+
+            <p>
+              Pensá el diseño en relación con forma, superficie, orientación y flujo corporal.
+            </p>
+
+            <button class="rsa-btn" data-rsa-open-page="dibujo">
+              Abrir mesa
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>⬛ Preparación</h3>
+
+            <p>
+              El diseño digital es una herramienta de estudio; no sustituye las medidas,
+              higiene ni preparación profesional del procedimiento.
+            </p>
+
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           HERRAMIENTAS PROFESIONALES
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPageProfesional">
+
+        <h1 class="rsa-page-title">🧰 Herramientas profesionales</h1>
+
+        <p class="rsa-page-subtitle">
+          Espacio de trabajo para artistas. Esta sección pertenece exclusivamente al nuevo Atelier.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+            <h3>📐 Regla visual</h3>
+            <p>Medición visual sobre la mesa de trabajo.</p>
+            <button class="rsa-btn" id="rsaProfessionalRuler" type="button">
+              Activar regla
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🪞 Simetría</h3>
+            <p>Estudios simétricos para dibujo, tatuaje y diseño.</p>
+            <button class="rsa-btn" data-rsa-open-page="dibujo">
+              Abrir
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🖼️ Referencias</h3>
+            <p>Biblioteca temporal de imágenes cargadas desde el dispositivo.</p>
+            <button class="rsa-btn" id="rsaProfessionalReference" type="button">
+              Abrir
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>🎨 Paleta</h3>
+            <p>Acceso rápido al laboratorio de color.</p>
+            <button class="rsa-btn" data-rsa-open-page="pintura">
+              Abrir
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>💾 Exportación</h3>
+            <p>Descargá tu trabajo como PNG desde el navegador.</p>
+            <button class="rsa-btn" id="rsaProfessionalDownload" type="button">
+              Descargar
+            </button>
+          </article>
+
+          <article class="rsa-card">
+            <h3>📝 Bitácora</h3>
+            <p>Tomá notas del proceso y guardalas localmente.</p>
+            <button class="rsa-btn" id="rsaProfessionalNotes" type="button">
+              Abrir notas
+            </button>
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           ARTE INFANTIL
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPageInfantil">
+
+        <h1 class="rsa-page-title">🧒 Arte Infantil</h1>
+
+        <p class="rsa-page-subtitle">
+          Un espacio lúdico para explorar dibujo, color, formas, personajes y desafíos creativos.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+
+            <h3>🎨 Pintar y colorear</h3>
+
+            <p>
+              Elegí un color y dibujá libremente sobre la lámina.
+            </p>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaKidsPaint" type="button">
+              Abrir lámina
+            </button>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>✏️ Dibujar paso a paso</h3>
+
+            <p>
+              Generador de pasos sencillos para construir dibujos.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsStep" type="button">
+              Nuevo dibujo
+            </button>
+
+            <div id="rsaKidsStepResult" class="rsa-idea" style="margin-top:9px">
+              Presioná para comenzar.
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🔺 Formas y figuras</h3>
+
+            <p>
+              Explorá círculos, cuadrados, triángulos, estrellas y combinaciones.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsShape" type="button">
+              Nueva forma
+            </button>
+
+            <div id="rsaKidsShapeResult" class="rsa-idea" style="margin-top:9px">
+              ¿Qué vamos a dibujar?
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🌈 Colores y mezclas</h3>
+
+            <p>
+              Descubrí qué ocurre cuando combinamos colores.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsColor" type="button">
+              Nueva mezcla
+            </button>
+
+            <div id="rsaKidsColorResult" class="rsa-idea" style="margin-top:9px">
+              🎨
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🐾 Animales y personajes</h3>
+
+            <p>
+              Generá una propuesta para dibujar.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsCharacter" type="button">
+              Elegir personaje
+            </button>
+
+            <div id="rsaKidsCharacterResult" class="rsa-idea" style="margin-top:9px">
+              🐾
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🎲 Juegos creativos</h3>
+
+            <p>
+              Combiná una forma, un color y un personaje para inventar algo nuevo.
+            </p>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaKidsGame" type="button">
+              Crear desafío
+            </button>
+
+            <div id="rsaKidsGameResult" class="rsa-idea" style="margin-top:9px">
+              Listo para jugar.
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>⏱️ Temporizador</h3>
+
+            <div id="rsaKidsTimer" class="rsa-timer">
+              05:00
+            </div>
+
+            <div class="rsa-toolbar">
+
+              <button class="rsa-btn rsa-btn-primary" id="rsaTimerStart" type="button">
+                ▶ Iniciar
+              </button>
+
+              <button class="rsa-btn" id="rsaTimerPause" type="button">
+                ⏸ Pausar
+              </button>
+
+              <button class="rsa-btn" id="rsaTimerReset" type="button">
+                ↺ Reiniciar
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🏆 Retos de dibujo</h3>
+
+            <p>
+              Un reto diferente cada vez.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsChallenge" type="button">
+              Nuevo reto
+            </button>
+
+            <div id="rsaKidsChallengeResult" class="rsa-idea" style="margin-top:9px">
+              🎯
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>⭐ Desafíos artísticos</h3>
+
+            <p>
+              Propuestas más abiertas para estimular imaginación y observación.
+            </p>
+
+            <button class="rsa-btn" id="rsaKidsArtChallenge" type="button">
+              Nuevo desafío
+            </button>
+
+            <div id="rsaKidsArtChallengeResult" class="rsa-idea" style="margin-top:9px">
+              ⭐
+            </div>
+
+          </article>
+
+        </div>
+
+
+        <div class="rsa-card" id="rsaKidsDrawingCard" style="margin-top:12px">
+
+          <h3>🖍️ Mesa infantil</h3>
+
+          <div class="rsa-toolbar">
+
+            <input
+              id="rsaKidsColorPicker"
+              class="rsa-color"
+              type="color"
+              value="#e74c3c"
+            >
+
+            <input
+              id="rsaKidsBrush"
+              class="rsa-input"
+              type="range"
+              min="2"
+              max="45"
+              value="12"
+              style="max-width:160px"
+            >
+
+            <button class="rsa-btn" id="rsaKidsClear" type="button">
+              🗑️ Limpiar
+            </button>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaKidsDownload" type="button">
+              💾 Guardar dibujo
+            </button>
+
+          </div>
+
+          <div class="rsa-kids-stage">
+
+            <canvas
+              id="rsaKidsCanvas"
+              width="1000"
+              height="650"
+            ></canvas>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           CREATIVIDAD
+           ===================================================== -->
+
+      <section class="rsa-page" id="rsaPageCreatividad">
+
+        <h1 class="rsa-page-title">💡 Creatividad</h1>
+
+        <p class="rsa-page-subtitle">
+          Generadores rápidos para romper el bloqueo creativo y producir nuevas ideas.
+        </p>
+
+        <div class="rsa-grid">
+
+          <article class="rsa-card">
+
+            <h3>💡 Generador de ideas</h3>
+
+            <p>
+              Combina sujeto, técnica, atmósfera y restricción.
+            </p>
+
+            <button class="rsa-btn rsa-btn-primary" id="rsaIdeaButton" type="button">
+              Generar idea
+            </button>
+
+            <div id="rsaIdeaResult" class="rsa-idea" style="margin-top:10px">
+              Tu próxima idea aparecerá aquí.
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🎨 Pinta y Crea</h3>
+
+            <p>
+              Propuesta automática para comenzar una obra.
+            </p>
+
+            <button class="rsa-btn" id="rsaPaintCreate" type="button">
+              Crear propuesta
+            </button>
+
+            <div id="rsaPaintCreateResult" class="rsa-idea" style="margin-top:10px">
+              🎨
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🧩 Composición</h3>
+
+            <p>
+              Generá una consigna compositiva.
+            </p>
+
+            <button class="rsa-btn" id="rsaCompositionButton" type="button">
+              Generar composición
+            </button>
+
+            <div id="rsaCompositionResult" class="rsa-idea" style="margin-top:10px">
+              🧩
+            </div>
+
+          </article>
+
+
+          <article class="rsa-card">
+
+            <h3>🔥 Reto artístico</h3>
+
+            <p>
+              Una restricción puede convertirse en una herramienta creativa.
+            </p>
+
+            <button class="rsa-btn" id="rsaCreativeChallenge" type="button">
+              Nuevo reto
+            </button>
+
+            <div id="rsaCreativeChallengeResult" class="rsa-idea" style="margin-top:10px">
+              🔥
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </section>
+</div>
+
+<div id="rsaMessage" class="rsa-message" role="status"></div>
+
+
+<script id="rsa-school-atelier-js">
+(function(){
+
+  "use strict";
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+
+  const $ = id => document.getElementById(id);
+
+  const rsaState = {
+    page:"atelier",
+    drawing:false,
+    lastX:0,
+    lastY:0,
+    history:[],
+    historyIndex:-1,
+    timerSeconds:300,
+    timerRunning:false,
+    timerInterval:null,
+    rulerVisible:false,
+    tattooMirror:false
+  };
+
+  function rsaMessage(message){
+
+    const el=$("rsaMessage");
+
+    if(!el)return;
+
+    el.textContent=message;
+
+    el.classList.add("rsa-show");
+
+    clearTimeout(el._rsaTimer);
+
+    el._rsaTimer=setTimeout(function(){
+      el.classList.remove("rsa-show");
+    },2200);
+  }
+
+
+  /* ==========================================================
+     APERTURA / CIERRE
+     ========================================================== */
+
+  function rsaOpen(){
+
+    $("rsaOverlay").classList.add("rsa-open");
+
+    $("rsaOverlay").setAttribute("aria-hidden","false");
+
+    document.body.style.overflow="hidden";
+
+  }
+
+  function rsaClose(){
+
+    $("rsaOverlay").classList.remove("rsa-open");
+
+    $("rsaOverlay").setAttribute("aria-hidden","true");
+
+    document.body.style.overflow="";
+
+  }
+
+  $("rsaLauncher").addEventListener("click",rsaOpen);
+
+  $("rsaClose").addEventListener("click",rsaClose);
+
+  $("rsaOverlay").addEventListener("click",function(e){
+
+    if(e.target===this){
+      rsaClose();
+    }
+
+  });
+
+  document.addEventListener("keydown",function(e){
+
+    if(e.key==="Escape" && $("rsaOverlay").classList.contains("rsa-open")){
+      rsaClose();
+    }
+
+  });
+
+
+  /* ==========================================================
+     NAVEGACIÓN
+     ========================================================== */
+
+  function rsaShowPage(page){
+
+    document.querySelectorAll(".rsa-page").forEach(function(el){
+      el.classList.remove("rsa-active");
+    });
+
+    document.querySelectorAll(".rsa-tab").forEach(function(el){
+      el.classList.remove("rsa-active");
+    });
+
+    const pageEl=$("rsaPage"+page.charAt(0).toUpperCase()+page.slice(1));
+
+    const tab=document.querySelector('[data-rsa-page="'+page+'"]');
+
+    if(pageEl){
+      pageEl.classList.add("rsa-active");
+    }
+
+    if(tab){
+      tab.classList.add("rsa-active");
+    }
+
+    rsaState.page=page;
+
+    $("rsaContent").scrollTop=0;
+
+  }
+
+  document.querySelectorAll(".rsa-tab").forEach(function(tab){
+
+    tab.addEventListener("click",function(){
+
+      rsaShowPage(this.dataset.rsaPage);
+
+    });
+
+  });
+
+  document.querySelectorAll("[data-rsa-open-page]").forEach(function(button){
+
+    button.addEventListener("click",function(){
+
+      rsaShowPage(this.dataset.rsaOpenPage);
+
+    });
+
+  });
+
+
+  /* ==========================================================
+     CANVAS PRINCIPAL
+     ========================================================== */
+
+  const canvas=$("rsaCanvas");
+
+  const ctx=canvas.getContext("2d");
+
+  function rsaCanvasBackground(){
+
+    ctx.save();
+
+    ctx.fillStyle="#f7f4ed";
+
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.restore();
+
+  }
+
+  function rsaPointerPosition(event){
+
+    const rect=canvas.getBoundingClientRect();
+
+    return {
+      x:(event.clientX-rect.left)*(canvas.width/rect.width),
+      y:(event.clientY-rect.top)*(canvas.height/rect.height)
+    };
+
+  }
+
+  function rsaSaveHistory(){
+
+    try{
+
+      if(rsaState.historyIndex < rsaState.history.length-1){
+
+        rsaState.history=rsaState.history.slice(0,rsaState.historyIndex+1);
+
+      }
+
+      rsaState.history.push(canvas.toDataURL("image/png"));
+
+      if(rsaState.history.length>25){
+
+        rsaState.history.shift();
+
+      }
+
+      rsaState.historyIndex=rsaState.history.length-1;
+
+    }catch(error){
+
+      console.warn("RoXThal School Atelier history:",error);
+
+    }
+
+  }
+
+  function rsaRestoreHistory(index){
+
+    if(index<0 || index>=rsaState.history.length)return;
+
+    const img=new Image();
+
+    img.onload=function(){
+
+      rsaCanvasBackground();
+
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+    };
+
+    img.src=rsaState.history[index];
+
+  }
+
+  function rsaBrushSettings(){
+
+    const size=Number($("rsaBrushSize").value);
+
+    const color=$("rsaBrushColor").value;
+
+    const opacity=Number($("rsaBrushOpacity").value);
+
+    const mode=$("rsaBrushMode").value;
+
+    ctx.lineWidth=size;
+
+    ctx.lineCap="round";
+
+    ctx.lineJoin="round";
+
+    ctx.globalAlpha=opacity;
+
+    if(mode==="erase"){
+
+      ctx.globalCompositeOperation="destination-out";
+
+    }else{
+
+      ctx.globalCompositeOperation="source-over";
+
+      ctx.strokeStyle=color;
+
+    }
+
+  }
+
+  function rsaDrawSegment(x1,y1,x2,y2){
+
+    rsaBrushSettings();
+
+    ctx.beginPath();
+
+    ctx.moveTo(x1,y1);
+
+    ctx.lineTo(x2,y2);
+
+    ctx.stroke();
+
+    if($("rsaSymmetryToggle").checked){
+
+      const sx=canvas.width-x1;
+
+      const ex=canvas.width-x2;
+
+      ctx.beginPath();
+
+      ctx.moveTo(sx,y1);
+
+      ctx.lineTo(ex,y2);
+
+      ctx.stroke();
+
+    }
+
+    ctx.globalAlpha=1;
+
+    ctx.globalCompositeOperation="source-over";
+
+  }
+
+  canvas.addEventListener("pointerdown",function(event){
+
+    event.preventDefault();
+
+    canvas.setPointerCapture(event.pointerId);
+
+    const p=rsaPointerPosition(event);
+
+    rsaState.drawing=true;
+
+    rsaState.lastX=p.x;
+
+    rsaState.lastY=p.y;
+
+    rsaDrawSegment(p.x,p.y,p.x+0.1,p.y+0.1);
+
+  });
+
+  canvas.addEventListener("pointermove",function(event){
+
+    if(!rsaState.drawing)return;
+
+    event.preventDefault();
+
+    const p=rsaPointerPosition(event);
+
+    rsaDrawSegment(rsaState.lastX,rsaState.lastY,p.x,p.y);
+
+    rsaState.lastX=p.x;
+
+    rsaState.lastY=p.y;
+
+  });
+
+  function rsaEndDrawing(){
+
+    if(!rsaState.drawing)return;
+
+    rsaState.drawing=false;
+
+    rsaSaveHistory();
+
+    $("rsaCanvasStatus").textContent="Trazo guardado en el historial.";
+
+  }
+
+  canvas.addEventListener("pointerup",rsaEndDrawing);
+
+  canvas.addEventListener("pointercancel",rsaEndDrawing);
+
+  canvas.addEventListener("lostpointercapture",rsaEndDrawing);
+
+
+  $("rsaClearCanvas").addEventListener("click",function(){
+
+    rsaCanvasBackground();
+
+    rsaSaveHistory();
+
+    $("rsaCanvasStatus").textContent="Lienzo limpiado.";
+
+  });
+
+
+  $("rsaUndo").addEventListener("click",function(){
+
+    if(rsaState.historyIndex<=0){
+
+      rsaMessage("No hay más acciones para deshacer.");
+
+      return;
+
+    }
+
+    rsaState.historyIndex--;
+
+    rsaRestoreHistory(rsaState.historyIndex);
+
+  });
+
+
+  $("rsaRedo").addEventListener("click",function(){
+
+    if(rsaState.historyIndex>=rsaState.history.length-1){
+
+      rsaMessage("No hay acciones para rehacer.");
+
+      return;
+
+    }
+
+    rsaState.historyIndex++;
+
+    rsaRestoreHistory(rsaState.historyIndex);
+
+  });
+
+
+  function rsaDownloadCanvas(){
+
+    const link=document.createElement("a");
+
+    link.download="roxthal-school-atelier-"+Date.now()+".png";
+
+    link.href=canvas.toDataURL("image/png");
+
+    link.click();
+
+    rsaMessage("Trabajo descargado.");
+
+  }
+
+  $("rsaDownloadCanvas").addEventListener("click",rsaDownloadCanvas);
+
+  $("rsaDownloadMain").addEventListener("click",rsaDownloadCanvas);
+
+  $("rsaProfessionalDownload").addEventListener("click",rsaDownloadCanvas);
+
+
+  /* ==========================================================
+     CUADRÍCULA / PERSPECTIVA
+     ========================================================== */
+
+  function rsaRedrawGuides(){
+
+    const overlay=$("rsaCanvasOverlay");
+
+    overlay.innerHTML="";
+
+    if($("rsaGridToggle").checked){
+
+      const grid=document.createElement("div");
+
+      grid.style.position="absolute";
+
+      grid.style.inset="0";
+
+      grid.style.backgroundImage=
+        "linear-gradient(rgba(120,120,120,.25) 1px,transparent 1px),"+
+        "linear-gradient(90deg,rgba(120,120,120,.25) 1px,transparent 1px)";
+
+      grid.style.backgroundSize="10% 10%";
+
+      overlay.appendChild(grid);
+
+    }
+
+    if($("rsaPerspectiveToggle").checked){
+
+      const perspective=document.createElement("div");
+
+      perspective.style.position="absolute";
+
+      perspective.style.inset="0";
+
+      perspective.style.backgroundImage=
+        "linear-gradient(0deg,transparent 49.7%,rgba(180,60,60,.35) 50%,transparent 50.3%),"+
+        "linear-gradient(12deg,transparent 49.7%,rgba(60,100,180,.25) 50%,transparent 50.3%),"+
+        "linear-gradient(-12deg,transparent 49.7%,rgba(60,100,180,.25) 50%,transparent 50.3%)";
+
+      overlay.appendChild(perspective);
+
+    }
+
+  }
+
+  $("rsaGridToggle").addEventListener("change",rsaRedrawGuides);
+
+  $("rsaPerspectiveToggle").addEventListener("change",rsaRedrawGuides);
+
+
+  /* ==========================================================
+     REFERENCIAS
+     ========================================================== */
+
+  const referenceInput=$("rsaReferenceInput");
+
+  const referenceGallery=$("rsaReferenceGallery");
+
+  let rsaReferences=[];
+
+  function rsaRenderReferences(){
+
+    referenceGallery.innerHTML="";
+
+    rsaReferences.forEach(function(src,index){
+
+      const item=document.createElement("div");
+
+      item.className="rsa-preview-item";
+
+      const img=document.createElement("img");
+
+      img.src=src;
+
+      img.alt="Referencia "+(index+1);
+
+      const remove=document.createElement("button");
+
+      remove.type="button";
+
+      remove.textContent="×";
+
+      remove.title="Eliminar referencia";
+
+      remove.addEventListener("click",function(){
+
+        rsaReferences.splice(index,1);
+
+        rsaRenderReferences();
+
+      });
+
+      item.appendChild(img);
+
+      item.appendChild(remove);
+
+      referenceGallery.appendChild(item);
+
+    });
+
+  }
+
+  referenceInput.addEventListener("change",function(){
+
+    const files=Array.from(this.files||[]);
+
+    if(!files.length)return;
+
+    files.slice(0,12).forEach(function(file){
+
+      if(!file.type.startsWith("image/"))return;
+
+      const reader=new FileReader();
+
+      reader.onload=function(){
+
+        rsaReferences.push(reader.result);
+
+        rsaRenderReferences();
+
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+
+    this.value="";
+
+  });
+
+  function rsaOpenReferences(){
+
+    rsaShowPage("atelier");
+
+    setTimeout(function(){
+
+      referenceInput.click();
+
+    },100);
+
+  }
+
+  $("rsaReferenceButton").addEventListener("click",rsaOpenReferences);
+
+  $("rsaTattooReference").addEventListener("click",rsaOpenReferences);
+
+  $("rsaProfessionalReference").addEventListener("click",rsaOpenReferences);
+
+
+  /* ==========================================================
+     NOTAS
+     ========================================================== */
+
+  const RSA_NOTES_KEY="roxthal_school_atelier_notes_v2";
+
+  function rsaLoadNotes(){
+
+    let notes=[];
+
+    try{
+
+      notes=JSON.parse(localStorage.getItem(RSA_NOTES_KEY)||"[]");
+
+      if(!Array.isArray(notes))notes=[];
+
+    }catch(e){
+
+      notes=[];
+
+    }
+
+    const list=$("rsaNoteList");
+
+    list.innerHTML="";
+
+    notes.forEach(function(note,index){
+
+      const item=document.createElement("div");
+
+      item.className="rsa-note";
+
+      item.textContent=note.text;
+
+      const small=document.createElement("small");
+
+      small.textContent=note.date;
+
+      item.appendChild(small);
+
+      const button=document.createElement("button");
+
+      button.className="rsa-btn rsa-btn-danger";
+
+      button.type="button";
+
+      button.textContent="Eliminar";
+
+      button.style.marginTop="7px";
+
+      button.addEventListener("click",function(){
+
+        notes.splice(index,1);
+
+        localStorage.setItem(RSA_NOTES_KEY,JSON.stringify(notes));
+
+        rsaLoadNotes();
+
+      });
+
+      item.appendChild(button);
+
+      list.appendChild(item);
+
+    });
+
+  }
+
+  $("rsaSaveNote").addEventListener("click",function(){
+
+    const text=$("rsaNotes").value.trim();
+
+    if(!text){
+
+      rsaMessage("Escribí una nota antes de guardar.");
+
+      return;
+
+    }
+
+    let notes=[];
+
+    try{
+
+      notes=JSON.parse(localStorage.getItem(RSA_NOTES_KEY)||"[]");
+
+      if(!Array.isArray(notes))notes=[];
+
+    }catch(e){
+
+      notes=[];
+
+    }
+
+    notes.unshift({
+      text:text,
+      date:new Date().toLocaleString()
+    });
+
+    localStorage.setItem(RSA_NOTES_KEY,JSON.stringify(notes));
+
+    $("rsaNotes").value="";
+
+    rsaLoadNotes();
+
+    rsaMessage("Nota guardada.");
+
+  });
+
+  $("rsaClearNotes").addEventListener("click",function(){
+
+    if(!confirm("¿Eliminar todas las notas guardadas en este dispositivo?"))return;
+
+    localStorage.removeItem(RSA_NOTES_KEY);
+
+    rsaLoadNotes();
+
+  });
+
+  function rsaOpenNotes(){
+
+    rsaShowPage("atelier");
+
+    setTimeout(function(){
+
+      $("rsaNotes").focus();
+
+    },100);
+
+  }
+
+  $("rsaNotesButton").addEventListener("click",rsaOpenNotes);
+
+  $("rsaProfessionalNotes").addEventListener("click",rsaOpenNotes);
+
+
+  /* ==========================================================
+     PALETAS
+     ========================================================== */
+
+  document.querySelectorAll("[data-rsa-color]").forEach(function(button){
+
+    button.addEventListener("click",function(){
+
+      $("rsaPaintColor").value=this.dataset.rsaColor;
+
+      $("rsaBrushColor").value=this.dataset.rsaColor;
+
+      rsaMessage("Color seleccionado.");
+
+    });
+
+  });
+
+
+  /* ==========================================================
+     MEZCLA DE COLORES
+     ========================================================== */
+
+  function rsaHexToRgb(hex){
+
+    const clean=hex.replace("#","");
+
+    return {
+      r:parseInt(clean.substring(0,2),16),
+      g:parseInt(clean.substring(2,4),16),
+      b:parseInt(clean.substring(4,6),16)
+    };
+
+  }
+
+  function rsaRgbToHex(r,g,b){
+
+    return "#"+
+      [r,g,b].map(function(v){
+
+        return Math.max(0,Math.min(255,Math.round(v)))
+          .toString(16)
+          .padStart(2,"0");
+
+      }).join("");
+
+  }
+
+  $("rsaMixButton").addEventListener("click",function(){
+
+    const a=rsaHexToRgb($("rsaMixA").value);
+
+    const b=rsaHexToRgb($("rsaMixB").value);
+
+    const mixed=rsaRgbToHex(
+      (a.r+b.r)/2,
+      (a.g+b.g)/2,
+      (a.b+b.b)/2
+    );
+
+    $("rsaMixResult").style.background=mixed;
+
+    rsaMessage("Mezcla creada: "+mixed);
+
+  });
+
+
+  /* ==========================================================
+     VALORES
+     ========================================================== */
+
+  for(let i=0;i<10;i++){
+
+    const bar=document.createElement("span");
+
+    const v=Math.round((i/9)*255);
+
+    bar.style.background=
+      "rgb("+v+","+v+","+v+")";
+
+    $("rsaValueBars").appendChild(bar);
+
+  }
+
+
+  /* ==========================================================
+     TATUAJE
+     ========================================================== */
+
+  $("rsaTattooScale").addEventListener("input",function(){
+
+    $("rsaTattooScaleValue").textContent=this.value+"%";
+
+    canvas.style.transform="scale("+(this.value/100)+")";
+
+    canvas.style.transformOrigin="center center";
+
+  });
+
+  $("rsaTattooMirror").addEventListener("click",function(){
+
+    rsaState.tattooMirror=!rsaState.tattooMirror;
+
+    $("rsaSymmetryToggle").checked=rsaState.tattooMirror;
+
+    rsaRedrawGuides();
+
+    this.textContent=
+      rsaState.tattooMirror
+      ?"Desactivar espejo"
+      :"Activar espejo";
+
+  });
+
+
+  function rsaToggleRuler(){
+
+    rsaState.rulerVisible=!rsaState.rulerVisible;
+
+    let ruler=document.querySelector(".rsa-ruler");
+
+    if(!ruler){
+
+      ruler=document.createElement("div");
+
+      ruler.className="rsa-ruler";
+
+      $("rsaCanvasWrap").appendChild(ruler);
+
+    }
+
+    ruler.style.display=
+      rsaState.rulerVisible
+      ?"block"
+      :"none";
+
+  }
+
+  $("rsaTattooRuler").addEventListener("click",rsaToggleRuler);
+
+  $("rsaProfessionalRuler").addEventListener("click",rsaToggleRuler);
+
+
+  /* ==========================================================
+     ARTE INFANTIL — GENERADORES
+     ========================================================== */
+
+  const rsaRandom=array=>
+    array[Math.floor(Math.random()*array.length)];
+
+  const rsaSteps=[
+    "Dibujá un círculo grande.",
+    "Agregá dos círculos pequeños.",
+    "Sumá una forma para el cuerpo.",
+    "Agregá brazos o patas.",
+    "Inventá una expresión.",
+    "Terminá con detalles y colores."
+  ];
+
+  const rsaShapes=[
+    "un círculo gigante",
+    "una estrella con cara",
+    "un robot hecho de cuadrados",
+    "una casa de formas geométricas",
+    "un animal usando círculos",
+    "un monstruo divertido",
+    "un cohete con triángulos"
+  ];
+
+  const rsaKidsColors=[
+    "rojo + amarillo",
+    "azul + amarillo",
+    "rojo + azul",
+    "amarillo + azul",
+    "blanco + un color intenso",
+    "tres colores que nunca hayas usado juntos"
+  ];
+
+  const rsaCharacters=[
+    "un gato astronauta",
+    "un dragón pequeño",
+    "un robot jardinero",
+    "un monstruo que tiene miedo de los lápices",
+    "una tortuga superhéroe",
+    "un pez que vive en el espacio",
+    "un zorro inventor"
+  ];
+
+  const rsaChallenges=[
+    "Dibujá sin levantar el lápiz.",
+    "Dibujá usando solamente círculos.",
+    "Dibujá un personaje con tres ojos.",
+    "Dibujá algo sin usar negro.",
+    "Dibujá una historia en una sola imagen.",
+    "Dibujá un animal que no existe.",
+    "Dibujá usando solamente tres colores."
+  ];
+
+  const rsaArtChallenges=[
+    "Convertí una forma geométrica en un personaje.",
+    "Creá una criatura combinando dos animales.",
+    "Inventá un lugar donde nadie haya estado.",
+    "Dibujá cómo sería una ciudad del futuro.",
+    "Creá un objeto que todavía no existe.",
+    "Representá una emoción sin dibujar una cara."
+  ];
+
+  $("rsaKidsStep").addEventListener("click",function(){
+
+    $("rsaKidsStepResult").textContent=
+      rsaRandom(rsaSteps);
+
+  });
+
+  $("rsaKidsShape").addEventListener("click",function(){
+
+    $("rsaKidsShapeResult").textContent=
+      "Hoy dibujamos "+rsaRandom(rsaShapes)+".";
+
+  });
+
+  $("rsaKidsColor").addEventListener("click",function(){
+
+    $("rsaKidsColorResult").textContent=
+      "Probá mezclar "+rsaRandom(rsaKidsColors)+".";
+
+  });
+
+  $("rsaKidsCharacter").addEventListener("click",function(){
+
+    $("rsaKidsCharacterResult").textContent=
+      rsaRandom(rsaCharacters);
+
+  });
+
+  $("rsaKidsChallenge").addEventListener("click",function(){
+
+    $("rsaKidsChallengeResult").textContent=
+      rsaRandom(rsaChallenges);
+
+  });
+
+  $("rsaKidsArtChallenge").addEventListener("click",function(){
+
+    $("rsaKidsArtChallengeResult").textContent=
+      rsaRandom(rsaArtChallenges);
+
+  });
+
+  $("rsaKidsGame").addEventListener("click",function(){
+
+    const shape=rsaRandom(rsaShapes);
+
+    const character=rsaRandom(rsaCharacters);
+
+    const challenge=rsaRandom(rsaChallenges);
+
+    $("rsaKidsGameResult").textContent=
+      "Dibujá "+shape+", usando como personaje "+character+
+      ". Regla: "+challenge;
+
+  });
+
+
+  /* ==========================================================
+     CANVAS INFANTIL
+     ========================================================== */
+
+  const kidsCanvas=$("rsaKidsCanvas");
+
+  const kidsCtx=kidsCanvas.getContext("2d");
+
+  let kidsDrawing=false;
+
+  let kidsLastX=0;
+
+  let kidsLastY=0;
+
+  function rsaKidsPosition(event){
+
+    const rect=kidsCanvas.getBoundingClientRect();
+
+    return {
+      x:(event.clientX-rect.left)*(kidsCanvas.width/rect.width),
+      y:(event.clientY-rect.top)*(kidsCanvas.height/rect.height)
+    };
+
+  }
+
+  kidsCanvas.addEventListener("pointerdown",function(event){
+
+    event.preventDefault();
+
+    kidsCanvas.setPointerCapture(event.pointerId);
+
+    const p=rsaKidsPosition(event);
+
+    kidsDrawing=true;
+
+    kidsLastX=p.x;
+
+    kidsLastY=p.y;
+
+  });
+
+  kidsCanvas.addEventListener("pointermove",function(event){
+
+    if(!kidsDrawing)return;
+
+    event.preventDefault();
+
+    const p=rsaKidsPosition(event);
+
+    kidsCtx.beginPath();
+
+    kidsCtx.moveTo(kidsLastX,kidsLastY);
+
+    kidsCtx.lineTo(p.x,p.y);
+
+    kidsCtx.strokeStyle=$("rsaKidsColorPicker").value;
+
+    kidsCtx.lineWidth=Number($("rsaKidsBrush").value);
+
+    kidsCtx.lineCap="round";
+
+    kidsCtx.lineJoin="round";
+
+    kidsCtx.stroke();
+
+    kidsLastX=p.x;
+
+    kidsLastY=p.y;
+
+  });
+
+  function rsaKidsEnd(){
+
+    kidsDrawing=false;
+
+  }
+
+  kidsCanvas.addEventListener("pointerup",rsaKidsEnd);
+
+  kidsCanvas.addEventListener("pointercancel",rsaKidsEnd);
+
+  kidsCanvas.addEventListener("lostpointercapture",rsaKidsEnd);
+
+  $("rsaKidsClear").addEventListener("click",function(){
+
+    kidsCtx.clearRect(0,0,kidsCanvas.width,kidsCanvas.height);
+
+  });
+
+  $("rsaKidsDownload").addEventListener("click",function(){
+
+    const link=document.createElement("a");
+
+    link.download="roxthal-arte-infantil-"+Date.now()+".png";
+
+    link.href=kidsCanvas.toDataURL("image/png");
+
+    link.click();
+
+    rsaMessage("Dibujo infantil guardado.");
+
+  });
+
+  $("rsaKidsPaint").addEventListener("click",function(){
+
+    rsaShowPage("infantil");
+
+    setTimeout(function(){
+
+      $("rsaKidsCanvas").scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+
+    },100);
+
+  });
+
+
+  /* ==========================================================
+     TEMPORIZADOR INFANTIL
+     ========================================================== */
+
+  function rsaUpdateTimer(){
+
+    const min=Math.floor(rsaState.timerSeconds/60);
+
+    const sec=rsaState.timerSeconds%60;
+
+    $("rsaKidsTimer").textContent=
+      String(min).padStart(2,"0")+":"+
+      String(sec).padStart(2,"0");
+
+  }
+
+  $("rsaTimerStart").addEventListener("click",function(){
+
+    if(rsaState.timerRunning)return;
+
+    rsaState.timerRunning=true;
+
+    rsaState.timerInterval=setInterval(function(){
+
+      if(rsaState.timerSeconds<=0){
+
+        clearInterval(rsaState.timerInterval);
+
+        rsaState.timerRunning=false;
+
+        rsaMessage("⏰ ¡Tiempo terminado!");
+
+        return;
+
+      }
+
+      rsaState.timerSeconds--;
+
+      rsaUpdateTimer();
+
+    },1000);
+
+  });
+
+  $("rsaTimerPause").addEventListener("click",function(){
+
+    clearInterval(rsaState.timerInterval);
+
+    rsaState.timerRunning=false;
+
+  });
+
+  $("rsaTimerReset").addEventListener("click",function(){
+
+    clearInterval(rsaState.timerInterval);
+
+    rsaState.timerRunning=false;
+
+    rsaState.timerSeconds=300;
+
+    rsaUpdateTimer();
+
+  });
+
+
+  /* ==========================================================
+     CREATIVIDAD
+     ========================================================== */
+
+  const rsaSubjects=[
+    "un retrato imaginario",
+    "un animal fantástico",
+    "una máquina imposible",
+    "un paisaje de otro planeta",
+    "una escena urbana",
+    "un personaje misterioso",
+    "una criatura mitológica"
+  ];
+
+  const rsaTechniques=[
+    "línea continua",
+    "alto contraste",
+    "tinta negra",
+    "paleta limitada",
+    "formas geométricas",
+    "manchas de color",
+    "estilo gráfico"
+  ];
+
+  const rsaAtmospheres=[
+    "misteriosa",
+    "alegre",
+    "oscura",
+    "onírica",
+    "futurista",
+    "surrealista",
+    "minimalista"
+  ];
+
+  const rsaRestrictions=[
+    "sin usar círculos",
+    "usando solamente tres colores",
+    "sin borrar",
+    "trabajando únicamente con líneas",
+    "usando simetría",
+    "sin utilizar negro",
+    "en menos de 15 minutos"
+  ];
+
+  $("rsaIdeaButton").addEventListener("click",function(){
+
+    const idea=
+      "Creá "+rsaRandom(rsaSubjects)+
+      " con "+rsaRandom(rsaTechniques)+
+      ", en una atmósfera "+rsaRandom(rsaAtmospheres)+
+      ", "+rsaRandom(rsaRestrictions)+".";
+
+    $("rsaIdeaResult").textContent=idea;
+
+  });
+
+
+  $("rsaPaintCreate").addEventListener("click",function(){
+
+    $("rsaPaintCreateResult").textContent=
+      "Pintá "+rsaRandom(rsaSubjects)+
+      " usando "+rsaRandom(rsaTechniques)+
+      ". Incorporá "+rsaRandom(rsaAtmospheres)+" como sensación principal.";
+
+  });
+
+
+  const rsaCompositions=[
+    "Colocá el elemento principal fuera del centro.",
+    "Construí una composición triangular.",
+    "Usá una diagonal dominante.",
+    "Trabajá con un elemento grande y varios pequeños.",
+    "Dejá una zona importante de espacio negativo.",
+    "Construí profundidad con tres planos."
+  ];
+
+  $("rsaCompositionButton").addEventListener("click",function(){
+
+    $("rsaCompositionResult").textContent=
+      rsaRandom(rsaCompositions);
+
+  });
+
+
+  const rsaCreativeChallenges=[
+    "Creá una obra utilizando solamente 2 formas geométricas.",
+    "Transformá una palabra en una imagen.",
+    "Dibujá un objeto desde tres puntos de vista.",
+    "Inventá un símbolo para una emoción.",
+    "Creá un personaje usando solamente líneas rectas.",
+    "Diseñá un tatuaje inspirado en una textura natural.",
+    "Convertí una mancha aleatoria en un personaje."
+  ];
+
+  $("rsaCreativeChallenge").addEventListener("click",function(){
+
+    $("rsaCreativeChallengeResult").textContent=
+      rsaRandom(rsaCreativeChallenges);
+
+  });
+
+
+  /* ==========================================================
+     INICIALIZACIÓN
+     ========================================================== */
+
+  rsaCanvasBackground();
+
+  rsaSaveHistory();
+
+  rsaUpdateTimer();
+
+  rsaLoadNotes();
+
+  rsaRedrawGuides();
+
+  rsaRenderReferences();
+
+  $("rsaCanvasStatus").textContent=
+    "Mesa de trabajo lista. Podés comenzar a dibujar.";
+
+})();
+</script>
+
+<!-- =========================================================
+     FIN ROXTHAL SCHOOL ATELIER
+     ========================================================= -->
+   
 </body>
 </html>
