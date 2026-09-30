@@ -4843,16 +4843,18 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
   const close = RX.$("rxToolsClose");
 
   function openTools(){
-    overlay.classList.add("rx-open");
-    overlay.setAttribute("aria-hidden","false");
-    document.body.style.overflow="hidden";
-  }
+  overlay.classList.add("rx-open");
+  overlay.setAttribute("aria-hidden","false");
+  document.body.classList.add("rx-tools-open");
+  document.body.style.overflow="hidden";
+}
 
-  function closeTools(){
-    overlay.classList.remove("rx-open");
-    overlay.setAttribute("aria-hidden","true");
-    document.body.style.overflow="";
-  }
+function closeTools(){
+  overlay.classList.remove("rx-open");
+  overlay.setAttribute("aria-hidden","true");
+  document.body.classList.remove("rx-tools-open");
+  document.body.style.overflow="";
+}
 
   launcher.addEventListener("click",openTools);
   close.addEventListener("click",closeTools);
