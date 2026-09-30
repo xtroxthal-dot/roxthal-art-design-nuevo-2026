@@ -1444,7 +1444,7 @@ body{
 const SUPABASE_URL='https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
 const SUPABASE_KEY='sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
 const LOGO='https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+window.db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let adminUser=null, moduleAssets={};
 const $=id=>document.getElementById(id);
 function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.add('hidden'),2800)}
