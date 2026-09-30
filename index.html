@@ -34049,6 +34049,12 @@ body.view-open .rx-hide-in-module {
   pointer-events: none !important;
 }
 
+   
+body.view-open:has(#store:not(.hidden)) #rxStoreCartButtonV13{
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
 
   /* Transición suave, sin modificar posiciones ni transforms. */
   #rxStudioFab,
