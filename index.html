@@ -7486,14 +7486,7 @@ window.RoXThalStudio={
   }
 
   /* Seguro: el botón siempre puede abrir el Studio */
-  if(!fab.dataset.rxRepairBound){
-  fab.dataset.rxRepairBound='1';
-  fab.addEventListener('click',function(){
-    if(window.RoXThalStudio && typeof window.RoXThalStudio.open==='function'){
-      window.RoXThalStudio.open();
-    }
-  });
-}
+  
 })();
 </script>
    <script src="./roxthal-repair.js"></script>
