@@ -1385,7 +1385,7 @@ function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt
 /* =========================================================
    NAVEGACIÓN / VISTAS
    ========================================================= */
-const publicViews=['home','services','gallery','school','radio','media','reviews','raffle','payments','search','contact','visits','about','ai','admin','students'];
+const publicViews=['home','services','gallery','school','radio','reviews','raffle','payments','search','contact','visits','about','ai','admin','students'];
 function showView(id){if(!publicViews.includes(id))return;if(id==='students'&&!adminUser){toast('Este módulo es privado. Entra primero al Administrador.');return}publicViews.forEach(v=>{const el=$(v);if(el)el.classList.toggle('hidden',v!==id)});const target=$(id);document.body.classList.toggle('view-open',id!=='home');if(id!=='home'&&target&&!target.querySelector('.view-back')){const back=document.createElement('button');back.className='view-back';back.type='button';back.dataset.go='home';back.innerHTML='← <span>Volver a RoXThal</span>';target.prepend(back)}window.scrollTo(0,0);if(target)target.scrollTop=0;if(id==='gallery'){loadGallery();loadMedia();}if(id==='school')loadCourses();if(id==='services')loadServices();if(id==='radio')loadRadio();if(id==='media')loadMedia();if(id==='reviews')loadReviews();if(id==='raffle')loadRaffles();if(id==='visits')loadVisits();if(id==='payments')loadSiteSettings();if(id==='admin')prepareAdmin();}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)showView(b.dataset.go)});
 $('enterApp').onclick=()=>{$('welcome').classList.add('welcome-hide');setTimeout(()=>$('welcome').remove(),650)};
