@@ -58598,7 +58598,684 @@ body.view-open.school-atelier-open #miRoxthalIndependentButton{
 </script>
 <!-- FIN SOLICITUD ROXTHAL -->
 
-   
+   <!-- ============================================================
+     ROXTHAL MÓDULO 15 — CONTROL DEFINITIVO
+     Corrige:
+     - encabezados ocultos por body.view-open
+     - botones superpuestos
+     - ausencia de botones de regreso
+     - apertura simultánea de accesos
+     - Mi RoXThal dinámico
+     - retorno limpio al Módulo 15
+
+     NO modifica:
+     - navegación general
+     - Administrador
+     - Alumnos
+     - Tienda
+     - carrito
+     - Supabase
+     - contenido interno de las herramientas
+============================================================ -->
+
+<style id="roxthal-m15-final-control">
+
+/* ============================================================
+   1. LOS TRES ACCESOS SOLO EXISTEN VISUALMENTE EN MÓDULO 15
+============================================================ */
+
+#rsaLauncher,
+#rxConsentLauncher,
+#miRoxthalIndependentButton{
+  position:fixed !important;
+  left:auto !important;
+  right:14px !important;
+  z-index:2147483647 !important;
+  box-sizing:border-box !important;
+  max-width:calc(100vw - 28px) !important;
+  white-space:normal !important;
+}
+
+/* School Atelier */
+#rsaLauncher{
+  bottom:18px !important;
+}
+
+/* Consentimiento */
+#rxConsentLauncher{
+  bottom:72px !important;
+}
+
+/* Mi RoXThal */
+#miRoxthalIndependentButton{
+  bottom:126px !important;
+}
+
+/* Solo aparecen en Módulo 15 */
+body:not(.view-open.school-atelier-open) #rsaLauncher,
+body:not(.view-open.school-atelier-open) #rxConsentLauncher,
+body:not(.view-open.school-atelier-open) #miRoxthalIndependentButton{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* ============================================================
+   2. CUANDO UNO DE LOS TRES ESTÁ ABIERTO,
+      DESAPARECEN LOS OTROS LANZADORES
+============================================================ */
+
+body.rx-m15-subopen #rsaLauncher,
+body.rx-m15-subopen #rxConsentLauncher,
+body.rx-m15-subopen #miRoxthalIndependentButton{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* ============================================================
+   3. CORRECCIÓN DEL CONFLICTO PRINCIPAL
+
+   El index tiene:
+   body.view-open header{
+      visibility:hidden;
+      opacity:0;
+      pointer-events:none;
+   }
+
+   Esa regla estaba ocultando los encabezados de los
+   tres paneles del Módulo 15.
+============================================================ */
+
+body.view-open #rsaOverlay #rsaHeader,
+body.view-open #rxConsentApp .rx-consent-header,
+body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader{
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+
+/* También aseguramos que los controles internos sean utilizables */
+
+body.view-open #rsaOverlay #rsaHeader *,
+body.view-open #rxConsentApp .rx-consent-header *,
+body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
+  pointer-events:auto;
+}
+
+/* ============================================================
+   4. BOTONES DE REGRESO
+============================================================ */
+
+.rx-m15-final-back{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+
+  min-height:42px !important;
+  padding:0 13px !important;
+
+  border:1px solid rgba(215,173,85,.55) !important;
+  border-radius:11px !important;
+
+  background:#111 !important;
+  color:#f0cf7a !important;
+
+  font-size:12px !important;
+  font-weight:900 !important;
+
+  cursor:pointer !important;
+  flex:0 0 auto !important;
+}
+
+.rx-m15-final-back:hover{
+  background:#1b1b1b !important;
+  border-color:#f0cf7a !important;
+}
+
+/* ============================================================
+   5. DISTRIBUCIÓN DEL HEADER DEL SCHOOL ATELIER
+============================================================ */
+
+#rsaHeader{
+  position:relative !important;
+  flex-wrap:wrap !important;
+}
+
+#rsaHeader .rx-m15-final-back{
+  order:2;
+}
+
+#rsaHeader #rsaClose{
+  order:3;
+}
+
+/* ============================================================
+   6. DISTRIBUCIÓN DEL HEADER DE CONSENTIMIENTO
+============================================================ */
+
+#rxConsentApp .rx-consent-header-row{
+  flex-wrap:wrap !important;
+}
+
+#rxConsentApp .rx-m15-final-back{
+  order:2;
+}
+
+#rxConsentApp #rxConsentClose{
+  order:3;
+}
+
+/* ============================================================
+   7. DISTRIBUCIÓN DEL HEADER DE MI ROXTHAL
+============================================================ */
+
+#miRoxthalIndependentHeader{
+  flex-wrap:wrap !important;
+}
+
+#miRoxthalIndependentHeader .rx-m15-final-back{
+  order:2;
+}
+
+#miRoxthalIndependentHeader #miRoxthalIndependentClose{
+  order:3;
+}
+
+/* ============================================================
+   8. EN MÓVIL
+============================================================ */
+
+@media(max-width:600px){
+
+  #rsaLauncher,
+  #rxConsentLauncher,
+  #miRoxthalIndependentButton{
+    right:10px !important;
+    max-width:calc(100vw - 20px) !important;
+    font-size:12px !important;
+  }
+
+  #rsaLauncher{
+    bottom:12px !important;
+  }
+
+  #rxConsentLauncher{
+    bottom:66px !important;
+  }
+
+  #miRoxthalIndependentButton{
+    bottom:120px !important;
+  }
+
+  .rx-m15-final-back{
+    min-height:40px !important;
+    padding:0 10px !important;
+    font-size:11px !important;
+  }
+
+}
+
+</style>
+
+<script id="roxthal-m15-final-control-script">
+(function(){
+
+  "use strict";
+
+  if(window.__ROXTHAL_M15_FINAL_CONTROL__) return;
+  window.__ROXTHAL_M15_FINAL_CONTROL__=true;
+
+  function byId(id){
+    return document.getElementById(id);
+  }
+
+  /* ==========================================================
+     MUESTRA / OCULTA LOS TRES ACCESOS
+  ========================================================== */
+
+  function syncLaunchers(){
+
+    const m15 =
+      document.body.classList.contains("school-atelier-open") &&
+      document.body.classList.contains("view-open");
+
+    const subOpen =
+      document.body.classList.contains("rx-m15-subopen");
+
+    const ids=[
+      "rsaLauncher",
+      "rxConsentLauncher",
+      "miRoxthalIndependentButton"
+    ];
+
+    ids.forEach(function(id){
+
+      const el=byId(id);
+
+      if(!el) return;
+
+      if(!m15 || subOpen){
+
+        el.style.setProperty(
+          "opacity",
+          "0",
+          "important"
+        );
+
+        el.style.setProperty(
+          "visibility",
+          "hidden",
+          "important"
+        );
+
+        el.style.setProperty(
+          "pointer-events",
+          "none",
+          "important"
+        );
+
+      }else{
+
+        el.style.removeProperty("opacity");
+        el.style.removeProperty("visibility");
+        el.style.removeProperty("pointer-events");
+
+      }
+
+    });
+
+  }
+
+  /* ==========================================================
+     CREA BOTÓN DE REGRESO SOLO UNA VEZ
+  ========================================================== */
+
+  function createBackButton(header,closeId){
+
+    if(!header) return;
+
+    if(
+      header.querySelector(
+        ".rx-m15-final-back"
+      )
+    ){
+      return;
+    }
+
+    const button=document.createElement("button");
+
+    button.type="button";
+    button.className="rx-m15-final-back";
+
+    button.textContent=
+      "← Volver al Módulo 15";
+
+    button.setAttribute(
+      "aria-label",
+      "Volver al Módulo 15"
+    );
+
+    button.addEventListener(
+      "click",
+      function(event){
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        closeSubModule(closeId);
+
+      }
+    );
+
+    const closeButton=
+      byId(closeId);
+
+    if(closeButton){
+
+      header.insertBefore(
+        button,
+        closeButton
+      );
+
+    }else{
+
+      header.appendChild(button);
+
+    }
+
+  }
+
+  /* ==========================================================
+     PREPARA LOS TRES PANELES
+  ========================================================== */
+
+  function preparePanels(){
+
+    const rsaHeader=
+      byId("rsaHeader");
+
+    createBackButton(
+      rsaHeader,
+      "rsaClose"
+    );
+
+    const consentHeader=
+      document.querySelector(
+        "#rxConsentApp .rx-consent-header-row"
+      );
+
+    createBackButton(
+      consentHeader,
+      "rxConsentClose"
+    );
+
+    const miHeader=
+      byId("miRoxthalIndependentHeader");
+
+    createBackButton(
+      miHeader,
+      "miRoxthalIndependentClose"
+    );
+
+  }
+
+  /* ==========================================================
+     CIERRA CUALQUIERA DE LOS TRES SISTEMAS
+  ========================================================== */
+
+  function closeSubModule(closeId){
+
+    const closeButton=
+      byId(closeId);
+
+    if(closeButton){
+
+      try{
+        closeButton.click();
+      }catch(error){
+        console.warn(
+          "RoXThal M15 cierre:",
+          error
+        );
+      }
+
+    }
+
+    /* Seguridad adicional para overlays */
+
+    const rsa=
+      byId("rsaOverlay");
+
+    if(rsa){
+
+      rsa.classList.remove("rsa-open");
+      rsa.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+    }
+
+    const consent=
+      byId("rxConsentApp");
+
+    if(consent){
+
+      consent.classList.remove("rx-open");
+      consent.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+    }
+
+    const mi=
+      byId("miRoxthalIndependentOverlay");
+
+    if(mi){
+
+      mi.classList.remove(
+        "mi-rx-independent-open"
+      );
+
+      mi.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+    }
+
+    document.body.classList.remove(
+      "rx-m15-subopen"
+    );
+
+    document.body.style.overflow="";
+
+    /* Volvemos expresamente al Módulo 15 */
+
+    if(
+      typeof window.showView === "function"
+    ){
+
+      window.showView(
+        "schoolAtelier"
+      );
+
+    }else{
+
+      const views=
+        document.querySelectorAll(
+          ".view"
+        );
+
+      views.forEach(function(view){
+
+        view.classList.toggle(
+          "hidden",
+          view.id!=="schoolAtelier"
+        );
+
+      });
+
+      document.body.classList.add(
+        "view-open"
+      );
+
+      document.body.classList.add(
+        "school-atelier-open"
+      );
+
+    }
+
+    syncLaunchers();
+
+    setTimeout(function(){
+
+      preparePanels();
+      syncLaunchers();
+
+    },50);
+
+  }
+
+  /* ==========================================================
+     DETECTA CUANDO SE ABRE UNO DE LOS TRES
+  ========================================================== */
+
+  document.addEventListener(
+    "click",
+    function(event){
+
+      const launcher=
+        event.target.closest(
+          "#rsaLauncher,#rxConsentLauncher,#miRoxthalIndependentButton"
+        );
+
+      if(!launcher) return;
+
+      /*
+       * Este listener está en captura.
+       * El sistema original todavía puede ejecutar
+       * su propio evento de apertura.
+       */
+
+      setTimeout(function(){
+
+        document.body.classList.add(
+          "rx-m15-subopen"
+        );
+
+        preparePanels();
+        syncLaunchers();
+
+      },0);
+
+    },
+    true
+  );
+
+  /* ==========================================================
+     SI EL USUARIO CIERRA CON LOS BOTONES X
+     VOLVEMOS A MOSTRAR LOS TRES ACCESOS
+  ========================================================== */
+
+  document.addEventListener(
+    "click",
+    function(event){
+
+      const close=
+        event.target.closest(
+          "#rsaClose,#rxConsentClose,#miRoxthalIndependentClose"
+        );
+
+      if(!close) return;
+
+      setTimeout(function(){
+
+        document.body.classList.remove(
+          "rx-m15-subopen"
+        );
+
+        document.body.style.overflow="";
+
+        preparePanels();
+        syncLaunchers();
+
+      },20);
+
+    },
+    true
+  );
+
+  /* ==========================================================
+     ESC
+  ========================================================== */
+
+  document.addEventListener(
+    "keydown",
+    function(event){
+
+      if(event.key!=="Escape") return;
+
+      setTimeout(function(){
+
+        const rsaOpen=
+          byId("rsaOverlay") &&
+          byId("rsaOverlay").classList.contains(
+            "rsa-open"
+          );
+
+        const consentOpen=
+          byId("rxConsentApp") &&
+          byId("rxConsentApp").classList.contains(
+            "rx-open"
+          );
+
+        const miOpen=
+          byId("miRoxthalIndependentOverlay") &&
+          byId("miRoxthalIndependentOverlay").classList.contains(
+            "mi-rx-independent-open"
+          );
+
+        if(
+          !rsaOpen &&
+          !consentOpen &&
+          !miOpen
+        ){
+
+          document.body.classList.remove(
+            "rx-m15-subopen"
+          );
+
+          document.body.style.overflow="";
+
+          syncLaunchers();
+
+        }
+
+      },30);
+
+    }
+  );
+
+  /* ==========================================================
+     OBSERVADOR
+
+     Mi RoXThal crea su botón y su overlay dinámicamente.
+     Por eso no podemos depender de que existan al arrancar.
+  ========================================================== */
+
+  const observer=
+    new MutationObserver(function(){
+
+      preparePanels();
+      syncLaunchers();
+
+    });
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+  /* ==========================================================
+     INICIO
+  ========================================================== */
+
+  function init(){
+
+    preparePanels();
+    syncLaunchers();
+
+  }
+
+  if(
+    document.readyState==="loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN — CONTROL DEFINITIVO MÓDULO 15
+============================================================ -->
    
 </body>
 </html>
