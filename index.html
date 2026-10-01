@@ -60023,6 +60023,325 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
 })();
 </script>
+
+   <!-- ROXTHAL — BORRAR CONSENTIMIENTOS ADMIN V1 -->
+<script id="roxthal-admin-delete-consents-v1">
+(function(){
+  'use strict';
+
+  if(window.__ROXTHAL_ADMIN_DELETE_CONSENTS_V1__){
+    return;
+  }
+
+  window.__ROXTHAL_ADMIN_DELETE_CONSENTS_V1__ = true;
+
+  function db(){
+    return window.db &&
+      typeof window.db.from === 'function'
+      ? window.db
+      : null;
+  }
+
+  async function comprobarAdmin(){
+
+    if(typeof requireAdmin === 'function'){
+
+      const admin =
+        await requireAdmin();
+
+      if(!admin){
+        throw new Error(
+          'Acceso restringido al administrador.'
+        );
+      }
+
+      return admin;
+    }
+
+    const cliente=db();
+
+    if(!cliente){
+      throw new Error(
+        'Supabase no está disponible.'
+      );
+    }
+
+    const usuario =
+      await cliente.auth.getUser();
+
+    const meta =
+      usuario?.data?.user?.app_metadata || {};
+
+    if(
+      meta.role !== 'admin' &&
+      meta.is_admin !== true &&
+      meta.is_admin !== 'true'
+    ){
+      throw new Error(
+        'Acceso restringido al administrador.'
+      );
+    }
+
+    return usuario.data.user;
+  }
+
+  function recargar(tipo){
+
+    const id =
+      tipo === 'minor'
+        ? 'rxMinorAdminRefresh'
+        : 'rxProfessionalConsentRefresh';
+
+    const boton =
+      document.getElementById(id);
+
+    if(boton){
+      boton.click();
+    }
+  }
+
+  async function borrar(tabla,id,tipo){
+
+    if(!id){
+
+      alert(
+        'No se encontró el ID del consentimiento.'
+      );
+
+      return;
+    }
+
+    if(!window.confirm(
+      '¿Seguro que quieres borrar este consentimiento?\n\n' +
+      'Esta acción eliminará el registro de Supabase y no se puede deshacer.'
+    )){
+      return;
+    }
+
+    await comprobarAdmin();
+
+    const cliente=db();
+
+    if(!cliente){
+      throw new Error(
+        'Supabase no está disponible.'
+      );
+    }
+
+    const resultado =
+      await cliente
+        .from(tabla)
+        .delete()
+        .eq('id',id);
+
+    if(resultado.error){
+      throw resultado.error;
+    }
+
+    alert(
+      '✓ Consentimiento borrado correctamente.'
+    );
+
+    recargar(tipo);
+  }
+
+  function extraerId(card){
+
+    const texto =
+      card.textContent || '';
+
+    const match =
+      texto.match(
+        /ID:\s*([0-9a-f]{8}-[0-9a-f-]{27,})/i
+      );
+
+    return match
+      ? match[1]
+      : '';
+  }
+
+  function crearBoton(tipo,id){
+
+    const boton =
+      document.createElement('button');
+
+    boton.type='button';
+
+    boton.className='btn';
+
+    boton.dataset.rxDeleteConsent =
+      tipo;
+
+    boton.dataset.rxConsentId =
+      id;
+
+    boton.style.cssText =
+      'margin-top:12px;' +
+      'background:#8b1e1e;' +
+      'color:#fff;' +
+      'border:1px solid rgba(255,255,255,.18);' +
+      'font-weight:900;';
+
+    boton.textContent =
+      '🗑️ Borrar consentimiento';
+
+    return boton;
+  }
+
+  function instalarEnLista(
+    selector,
+    tipo
+  ){
+
+    document
+      .querySelectorAll(selector)
+      .forEach(function(card){
+
+        if(
+          card.querySelector(
+            '[data-rx-delete-consent]'
+          )
+        ){
+          return;
+        }
+
+        const id =
+          extraerId(card);
+
+        if(!id){
+          return;
+        }
+
+        const boton =
+          crearBoton(
+            tipo,
+            id
+          );
+
+        const details =
+          card.querySelector('details');
+
+        if(details){
+
+          details.insertAdjacentElement(
+            'afterend',
+            boton
+          );
+
+        }else{
+
+          card.appendChild(
+            boton
+          );
+
+        }
+
+      });
+  }
+
+  function instalarBotones(){
+
+    instalarEnLista(
+      '#rxMinorAdminList > .card',
+      'minor'
+    );
+
+    instalarEnLista(
+      '#rxProfessionalConsentList .rx-admin-consent-card',
+      'professional'
+    );
+
+  }
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const boton =
+        event.target.closest(
+          '[data-rx-delete-consent]'
+        );
+
+      if(!boton){
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if(
+        boton.dataset.rxBusy === '1'
+      ){
+        return;
+      }
+
+      boton.dataset.rxBusy='1';
+      boton.disabled=true;
+
+      const textoOriginal =
+        boton.innerHTML;
+
+      boton.innerHTML =
+        '⏳ Borrando…';
+
+      borrar(
+        boton.dataset.rxDeleteConsent === 'minor'
+          ? 'minor_student_consents'
+          : 'tattoo_consents',
+
+        boton.dataset.rxConsentId,
+
+        boton.dataset.rxDeleteConsent
+
+      ).catch(function(error){
+
+        console.error(
+          'RoXThal — error borrando consentimiento:',
+          error
+        );
+
+        alert(
+          'No se pudo borrar el consentimiento.\n\n' +
+          (
+            error?.message ||
+            'Error desconocido.'
+          )
+        );
+
+      }).finally(function(){
+
+        boton.dataset.rxBusy='0';
+        boton.disabled=false;
+        boton.innerHTML =
+          textoOriginal;
+
+      });
+
+    },
+    true
+  );
+
+  const observer =
+    new MutationObserver(
+      instalarBotones
+    );
+
+  if(document.body){
+
+    observer.observe(
+      document.body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+  }
+
+  instalarBotones();
+
+})();
+</script>
    
 </body>
 </html>
