@@ -56418,6 +56418,7 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
      ========================================================== */
 
   async function rxWithTimeout(promise,ms=8000){return await Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("La conexión está tardando demasiado. Comprobá tu conexión e intentá nuevamente.")),ms))])}
+  
   async function findStudent(email,phone){
 
     if(!window.db){
@@ -56444,43 +56445,34 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
       );
     }
 
-    /*
-      Primero buscamos por correo.
-      Después verificamos el teléfono localmente.
-      Así evitamos depender de una consulta con formatos
-      telefónicos diferentes.
-    */
-
-    const result=await rxWithTimeout(window.db
-  .from("students")
-  .select("*")
-  .eq("email",cleanEmail)
-  .limit(20));
+    const result=await rxWithTimeout(
+      window.db.functions.invoke(
+        "mi-roxthal-login",
+        {
+          body:{
+            email:cleanEmail,
+            phone:cleanPhone
+          }
+        }
+      )
+    );
 
     if(result.error){
       throw result.error;
     }
 
-    const students=result.data||[];
-
-    const student=students.find(function(item){
-
-      return rxNormalizePhone(item.phone)===cleanPhone;
-
-    });
-
-    if(!student){
-
+    if(!result.data?.student){
       throw new Error(
+        result.data?.error ||
         "No encontramos una ficha que coincida con ese correo y teléfono."
       );
-
     }
 
-    return student;
+    window.__rxMiRoxthalLastLoginData=result.data;
+
+    return result.data.student;
 
   }
-
 
   async function loadStudentData(student){
 
