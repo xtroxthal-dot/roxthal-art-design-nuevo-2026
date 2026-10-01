@@ -1152,3 +1152,1098 @@
   }
 
 })();
+/* ============================================================
+   ROXTHAL — MI ROXTHAL V1
+   Portal personal independiente del alumno.
+   ============================================================ */
+(function(){
+  'use strict';
+
+  if(window.__ROXTHAL_MI_ROXTHAL_V1__) return;
+  window.__ROXTHAL_MI_ROXTHAL_V1__=true;
+
+  function esc(v){
+    return String(v ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  function cleanPhone(v){
+    return String(v ?? '').replace(/\D/g,'');
+  }
+
+  function dateText(v){
+    if(!v) return '—';
+    const d=new Date(v);
+    if(Number.isNaN(d.getTime())) return esc(v);
+    return d.toLocaleDateString('es-AR',{
+      day:'2-digit',
+      month:'2-digit',
+      year:'numeric'
+    });
+  }
+
+  function money(v){
+    if(v===null || v===undefined || v==='') return '—';
+    const n=Number(v);
+    if(!Number.isFinite(n)) return esc(v);
+    return new Intl.NumberFormat('es-AR',{
+      style:'currency',
+      currency:'ARS'
+    }).format(n);
+  }
+
+  function ensureUI(){
+    if(document.getElementById('rxMiRoxthalOverlay')) return;
+
+    const style=document.createElement('style');
+
+    style.textContent=`
+      #rxMiRoxthalOverlay{
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:999990;
+        background:rgba(0,0,0,.84);
+        backdrop-filter:blur(8px);
+        overflow:auto;
+        padding:10px;
+      }
+
+      #rxMiRoxthalOverlay.rx-open{
+        display:block;
+      }
+
+      #rxMiRoxthalModal{
+        width:min(960px,100%);
+        margin:10px auto 30px;
+        background:#111;
+        color:#fff;
+        border:1px solid #333;
+        border-radius:20px;
+        overflow:hidden;
+        box-shadow:0 25px 90px #000;
+      }
+
+      #rxMiRoxthalHead{
+        position:sticky;
+        top:0;
+        z-index:5;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding:14px 16px;
+        background:#151515ee;
+        border-bottom:1px solid #333;
+      }
+
+      #rxMiRoxthalHead strong{
+        font-size:18px;
+      }
+
+      #rxMiRoxthalClose{
+        width:42px;
+        height:42px;
+        border:0;
+        border-radius:11px;
+        background:#292929;
+        color:#fff;
+        font-size:23px;
+        cursor:pointer;
+      }
+
+      #rxMiRoxthalBody{
+        padding:16px;
+      }
+
+      .rxMiCard{
+        background:#181818;
+        border:1px solid #303030;
+        border-radius:16px;
+        padding:16px;
+        margin-bottom:12px;
+      }
+
+      .rxMiGrid{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+      }
+
+      .rxMiStat{
+        background:#101010;
+        border:1px solid #292929;
+        border-radius:13px;
+        padding:14px;
+      }
+
+      .rxMiStat b{
+        display:block;
+        font-size:26px;
+        color:#ffd400;
+      }
+
+      .rxMiMuted{
+        color:#999;
+        font-size:13px;
+      }
+
+      .rxMiRow{
+        padding:10px 0;
+        border-bottom:1px solid #292929;
+      }
+
+      .rxMiRow:last-child{
+        border-bottom:0;
+      }
+
+      .rxMiActions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top:12px;
+      }
+
+      .rxMiBtn{
+        border:1px solid #3b3b3b;
+        border-radius:11px;
+        padding:11px 14px;
+        background:#252525;
+        color:#fff;
+        font-weight:800;
+        cursor:pointer;
+      }
+
+      .rxMiBtn.primary{
+        background:#ffd400;
+        color:#080808;
+        border-color:#ffd400;
+      }
+
+      .rxMiBtn.danger{
+        background:#551b1b;
+        border-color:#773030;
+      }
+
+      .rxMiField{
+        display:grid;
+        gap:6px;
+        margin-bottom:12px;
+      }
+
+      .rxMiField label{
+        font-size:12px;
+        color:#aaa;
+        font-weight:800;
+      }
+
+      .rxMiField input{
+        width:100%;
+        box-sizing:border-box;
+        background:#0b0b0b;
+        color:#fff;
+        border:1px solid #383838;
+        border-radius:10px;
+        padding:12px;
+        outline:0;
+      }
+
+      .rxMiField input:focus{
+        border-color:#ffd400;
+      }
+
+      .rxMiNotice{
+        padding:12px 14px;
+        border-radius:11px;
+        background:#191919;
+        border:1px solid #333;
+        color:#bbb;
+        font-size:13px;
+        line-height:1.5;
+      }
+
+      .rxMiNotice.err{
+        border-color:#713232;
+        color:#ffb2b2;
+      }
+
+      .rxMiNotice.ok{
+        border-color:#285c3c;
+        color:#b4f3c9;
+      }
+
+      @media(max-width:650px){
+        #rxMiRoxthalOverlay{
+          padding:5px;
+        }
+
+        #rxMiRoxthalModal{
+          border-radius:17px;
+        }
+
+        #rxMiRoxthalBody{
+          padding:10px;
+        }
+
+        .rxMiGrid{
+          grid-template-columns:1fr;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+
+    const overlay=document.createElement('div');
+
+    overlay.id='rxMiRoxthalOverlay';
+    overlay.setAttribute('aria-hidden','true');
+
+    overlay.innerHTML=`
+      <div id="rxMiRoxthalModal"
+           role="dialog"
+           aria-modal="true">
+
+        <div id="rxMiRoxthalHead">
+          <strong>👤 Mi RoXThal</strong>
+
+          <button
+            id="rxMiRoxthalClose"
+            type="button"
+            aria-label="Cerrar">
+            ×
+          </button>
+        </div>
+
+        <div id="rxMiRoxthalBody"></div>
+
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById(
+      'rxMiRoxthalClose'
+    ).onclick=close;
+
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay){
+        close();
+      }
+    });
+  }
+
+  function open(){
+    ensureUI();
+
+    const overlay=
+      document.getElementById(
+        'rxMiRoxthalOverlay'
+      );
+
+    overlay.classList.add('rx-open');
+    overlay.setAttribute(
+      'aria-hidden',
+      'false'
+    );
+
+    document.body.style.overflow='hidden';
+
+    renderLogin();
+  }
+
+  function close(){
+    const overlay=
+      document.getElementById(
+        'rxMiRoxthalOverlay'
+      );
+
+    if(!overlay) return;
+
+    overlay.classList.remove('rx-open');
+
+    overlay.setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+    document.body.style.overflow='';
+  }
+
+  function body(){
+    return document.getElementById(
+      'rxMiRoxthalBody'
+    );
+  }
+
+  function saved(){
+    try{
+      const raw=
+        localStorage.getItem(
+          'roxthal_mi_roxthal_session_v1'
+        );
+
+      return raw ? JSON.parse(raw) : null;
+
+    }catch(_){
+      return null;
+    }
+  }
+
+  function save(email,phone){
+    try{
+      localStorage.setItem(
+        'roxthal_mi_roxthal_session_v1',
+        JSON.stringify({
+          email:email,
+          phone:phone
+        })
+      );
+    }catch(_){}
+  }
+
+  function clearSaved(){
+    try{
+      localStorage.removeItem(
+        'roxthal_mi_roxthal_session_v1'
+      );
+    }catch(_){}
+  }
+
+  function renderLogin(message='',type=''){
+
+    const s=saved();
+
+    body().innerHTML=`
+
+      <div class="rxMiCard">
+        <h2>Tu espacio personal</h2>
+
+        <p class="rxMiMuted">
+          Consultá tu ficha de alumno, formación,
+          asistencia y pagos desde un único lugar.
+        </p>
+      </div>
+
+      <div class="rxMiCard">
+
+        <h3>🔐 Acceso de alumno</h3>
+
+        ${
+          message
+          ?
+          `<div class="rxMiNotice ${type}"
+                style="margin-bottom:12px">
+             ${esc(message)}
+           </div>`
+          :
+          ''
+        }
+
+        <form id="rxMiLoginForm">
+
+          <div class="rxMiField">
+            <label>
+              Correo electrónico
+            </label>
+
+            <input
+              id="rxMiEmail"
+              type="email"
+              autocomplete="email"
+              required
+              value="${esc(s?.email||'')}"
+            >
+          </div>
+
+          <div class="rxMiField">
+            <label>
+              Teléfono registrado
+            </label>
+
+            <input
+              id="rxMiPhone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              required
+              value="${esc(s?.phone||'')}"
+            >
+          </div>
+
+          <div class="rxMiActions">
+
+            <button
+              id="rxMiLoginButton"
+              class="rxMiBtn primary"
+              type="submit">
+              Entrar a Mi RoXThal
+            </button>
+
+            <button
+              id="rxMiAdminButton"
+              class="rxMiBtn"
+              type="button">
+              🛠️ Administrador
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+      <div class="rxMiNotice">
+        El acceso comprueba conjuntamente
+        el correo y el teléfono registrados.
+      </div>
+    `;
+
+    document.getElementById(
+      'rxMiLoginForm'
+    ).onsubmit=login;
+
+    document.getElementById(
+      'rxMiAdminButton'
+    ).onclick=openAdmin;
+  }
+
+  async function login(e){
+
+    e.preventDefault();
+
+    const email=
+      String(
+        document.getElementById(
+          'rxMiEmail'
+        ).value||''
+      )
+      .trim()
+      .toLowerCase();
+
+    const phone=
+      cleanPhone(
+        document.getElementById(
+          'rxMiPhone'
+        ).value
+      );
+
+    if(!email || !phone){
+
+      renderLogin(
+        'Correo y teléfono son obligatorios.',
+        'err'
+      );
+
+      return;
+    }
+
+    const button=
+      document.getElementById(
+        'rxMiLoginButton'
+      );
+
+    button.disabled=true;
+    button.textContent='Comprobando…';
+
+    try{
+
+      if(
+        !window.db ||
+        !window.db.functions ||
+        typeof window.db.functions.invoke!=='function'
+      ){
+        throw new Error(
+          'La conexión segura de RoXThal no está disponible.'
+        );
+      }
+
+      const result=
+        await window.db.functions.invoke(
+          'mi-roxthal-login',
+          {
+            body:{
+              email:email,
+              phone:phone
+            }
+          }
+        );
+
+      if(result.error){
+        throw new Error(
+          result.error.message ||
+          'No se pudo comprobar el acceso.'
+        );
+      }
+
+      if(!result.data?.student){
+
+        throw new Error(
+          result.data?.error ||
+          'No encontramos una ficha que coincida con ese correo y teléfono.'
+        );
+      }
+
+      save(email,phone);
+
+      renderDashboard(
+        result.data
+      );
+
+    }catch(error){
+
+      renderLogin(
+        error?.message ||
+        'No se pudo acceder a Mi RoXThal.',
+        'err'
+      );
+    }
+  }
+
+  function renderDashboard(payload){
+
+    const s=
+      payload.student || {};
+
+    const attendance=
+      Array.isArray(payload.attendance)
+      ? payload.attendance
+      : [];
+
+    const payments=
+      Array.isArray(payload.payments)
+      ? payload.payments
+      : [];
+
+    const course=
+      payload.course || null;
+
+    const present=
+      attendance.filter(
+        x=>x.present===true
+      ).length;
+
+    const courseName=
+      course?.name ||
+      s.course ||
+      'Sin curso informado';
+
+    body().innerHTML=`
+
+      <div class="rxMiCard">
+
+        <div class="rxMiMuted">
+          MI ROXTHAL
+        </div>
+
+        <h2>
+          Hola, ${esc(s.name||'Alumno')} 👋
+        </h2>
+
+        <p class="rxMiMuted">
+          ${esc(courseName)}
+          · Estado:
+          ${esc(s.status||'—')}
+        </p>
+
+        <div class="rxMiActions">
+
+          <button
+            id="rxMiRefresh"
+            class="rxMiBtn"
+            type="button">
+            🔄 Actualizar
+          </button>
+
+          <button
+            id="rxMiCardLink"
+            class="rxMiBtn"
+            type="button">
+            🎓 Ver Carné oficial
+          </button>
+
+          <button
+            id="rxMiLogout"
+            class="rxMiBtn danger"
+            type="button">
+            Cerrar Mi RoXThal
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="rxMiGrid">
+
+        <div class="rxMiStat">
+          <b>${attendance.length}</b>
+          <span class="rxMiMuted">
+            Registros de asistencia
+          </span>
+        </div>
+
+        <div class="rxMiStat">
+          <b>${present}</b>
+          <span class="rxMiMuted">
+            Presentes
+          </span>
+        </div>
+
+        <div class="rxMiStat">
+          <b>${payments.length}</b>
+          <span class="rxMiMuted">
+            Pagos registrados
+          </span>
+        </div>
+
+        <div class="rxMiStat">
+          <b>${esc(s.status||'—')}</b>
+          <span class="rxMiMuted">
+            Estado del alumno
+          </span>
+        </div>
+
+      </div>
+
+      <div class="rxMiCard">
+
+        <h3>👤 Mis datos</h3>
+
+        <div class="rxMiRow">
+          <b>Nombre</b><br>
+          <span class="rxMiMuted">
+            ${esc(s.name||'—')}
+          </span>
+        </div>
+
+        <div class="rxMiRow">
+          <b>Correo</b><br>
+          <span class="rxMiMuted">
+            ${esc(s.email||'—')}
+          </span>
+        </div>
+
+        <div class="rxMiRow">
+          <b>Teléfono</b><br>
+          <span class="rxMiMuted">
+            ${esc(s.phone||'—')}
+          </span>
+        </div>
+
+        <div class="rxMiRow">
+          <b>Inscripción</b><br>
+          <span class="rxMiMuted">
+            ${dateText(s.enrollment_date)}
+          </span>
+        </div>
+
+      </div>
+
+      <div class="rxMiCard">
+
+        <h3>🎨 Mi formación</h3>
+
+        <p class="rxMiMuted">
+          ${esc(courseName)}
+        </p>
+
+        ${
+          course
+          ?
+          `
+          <div class="rxMiRow">
+            <b>Descripción</b><br>
+            <span class="rxMiMuted">
+              ${esc(course.description||'—')}
+            </span>
+          </div>
+
+          <div class="rxMiRow">
+            <b>Duración</b><br>
+            <span class="rxMiMuted">
+              ${esc(course.duration||'—')}
+            </span>
+          </div>
+
+          <div class="rxMiRow">
+            <b>Horario</b><br>
+            <span class="rxMiMuted">
+              ${esc(course.schedule||'—')}
+            </span>
+          </div>
+
+          <div class="rxMiRow">
+            <b>Modalidad</b><br>
+            <span class="rxMiMuted">
+              ${esc(course.modality||'—')}
+            </span>
+          </div>
+          `
+          :
+          ''
+        }
+
+      </div>
+
+      <div class="rxMiCard">
+
+        <h3>📅 Mi asistencia</h3>
+
+        ${
+          attendance.length
+          ?
+          attendance.map(x=>`
+            <div class="rxMiRow">
+              <b>
+                ${dateText(x.attendance_date)}
+              </b><br>
+
+              <span class="rxMiMuted">
+                ${
+                  x.present
+                  ? '✅ Presente'
+                  : '❌ Ausente'
+                }
+
+                ${
+                  x.notes
+                  ? ' · '+esc(x.notes)
+                  : ''
+                }
+              </span>
+            </div>
+          `).join('')
+          :
+          `
+          <div class="rxMiNotice">
+            Sin registros de asistencia.
+          </div>
+          `
+        }
+
+      </div>
+
+      <div class="rxMiCard">
+
+        <h3>💳 Mi estado de pagos</h3>
+
+        ${
+          payments.length
+          ?
+          payments.map(x=>`
+            <div class="rxMiRow">
+
+              <b>
+                ${dateText(x.payment_date)}
+              </b><br>
+
+              <span class="rxMiMuted">
+                ${money(
+                  x.amount ??
+                  x.payment_amount
+                )}
+
+                ·
+
+                ${esc(
+                  x.status ??
+                  x.payment_status ??
+                  'Registrado'
+                )}
+
+                ${
+                  x.notes
+                  ? ' · '+esc(x.notes)
+                  : ''
+                }
+
+              </span>
+
+            </div>
+          `).join('')
+          :
+          `
+          <div class="rxMiNotice">
+            Sin pagos registrados.
+          </div>
+          `
+        }
+
+      </div>
+
+      <div class="rxMiNotice">
+        Tus datos, asistencia y pagos son administrados
+        desde RoXThal. Los cambios aparecerán al actualizar.
+      </div>
+    `;
+
+    document.getElementById(
+      'rxMiRefresh'
+    ).onclick=loadSaved;
+
+    document.getElementById(
+      'rxMiLogout'
+    ).onclick=function(){
+
+      clearSaved();
+
+      renderLogin(
+        'Sesión cerrada.',
+        'ok'
+      );
+    };
+
+    document.getElementById(
+      'rxMiCardLink'
+    ).onclick=openOfficialCard;
+  }
+
+  async function loadSaved(){
+
+    const s=saved();
+
+    if(!s?.email || !s?.phone){
+
+      renderLogin();
+
+      return;
+    }
+
+    try{
+
+      const result=
+        await window.db.functions.invoke(
+          'mi-roxthal-login',
+          {
+            body:{
+              email:s.email,
+              phone:s.phone
+            }
+          }
+        );
+
+      if(
+        result.error ||
+        !result.data?.student
+      ){
+
+        clearSaved();
+
+        renderLogin(
+          result.data?.error ||
+          result.error?.message ||
+          'No encontramos una ficha que coincida con ese correo y teléfono.',
+          'err'
+        );
+
+        return;
+      }
+
+      renderDashboard(
+        result.data
+      );
+
+    }catch(error){
+
+      renderLogin(
+        error?.message ||
+        'No se pudo actualizar Mi RoXThal.',
+        'err'
+      );
+    }
+  }
+
+  function openOfficialCard(){
+
+    close();
+
+    const consent=
+      document.getElementById(
+        'rxConsentLauncher'
+      );
+
+    if(consent){
+
+      consent.click();
+
+      setTimeout(function(){
+
+        const card=
+          document.getElementById(
+            'rxStudentCardOpen'
+          );
+
+        if(card) card.click();
+
+      },300);
+
+      return;
+    }
+
+    if(
+      window.RoXThalStudentCard &&
+      typeof window.RoXThalStudentCard.open==='function'
+    ){
+
+      window.RoXThalStudentCard.open();
+
+      return;
+    }
+
+    if(typeof window.toast==='function'){
+
+      window.toast(
+        'Abrí Consentimiento profesional para acceder al Carné de Estudiante.'
+      );
+    }
+  }
+
+  function openAdmin(){
+
+    close();
+
+    const admin=
+      document.querySelector(
+        '[data-go="admin"]'
+      );
+
+    if(admin){
+
+      admin.click();
+
+      return;
+    }
+
+    const section=
+      document.getElementById('admin');
+
+    if(section){
+
+      document.querySelectorAll(
+        '.view'
+      ).forEach(
+        v=>v.classList.add('hidden')
+      );
+
+      section.classList.remove('hidden');
+    }
+  }
+
+  function installButton(){
+
+    if(
+      document.getElementById(
+        'rxMiRoxthalFab'
+      )
+    ) return;
+
+    const atelier=
+      document.getElementById(
+        'rxStudioFab'
+      );
+
+    if(!atelier) return;
+
+    const button=
+      document.createElement('button');
+
+    button.id='rxMiRoxthalFab';
+
+    button.type='button';
+
+    button.textContent=
+      '👤 Mi RoXThal';
+
+    button.setAttribute(
+      'aria-label',
+      'Abrir Mi RoXThal'
+    );
+
+    button.style.cssText=
+      'display:inline-flex;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'margin:8px 4px 0;' +
+      'border:1px solid #ffd400;' +
+      'background:#111;' +
+      'color:#ffd400;' +
+      'border-radius:999px;' +
+      'padding:13px 17px;' +
+      'font-weight:900;' +
+      'box-shadow:0 10px 35px #0008;' +
+      'cursor:pointer;' +
+      'font-family:inherit;';
+
+    button.onclick=open;
+
+    atelier.insertAdjacentElement(
+      'afterend',
+      button
+    );
+  }
+
+  document.addEventListener(
+    'keydown',
+    function(e){
+
+      if(
+        e.key==='Escape' &&
+        document
+          .getElementById(
+            'rxMiRoxthalOverlay'
+          )
+          ?.classList
+          .contains('rx-open')
+      ){
+
+        close();
+      }
+
+    },
+    true
+  );
+
+  window.RoXThalMiRoxthal={
+    open:open,
+    close:close,
+    refresh:loadSaved
+  };
+
+  function boot(){
+    ensureUI();
+    installButton();
+  }
+
+  if(
+    document.readyState==='loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      boot,
+      {once:true}
+    );
+
+  }else{
+
+    boot();
+
+  }
+
+  const observer=
+    new MutationObserver(
+      installButton
+    );
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+})();
