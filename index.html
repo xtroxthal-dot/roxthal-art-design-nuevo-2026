@@ -60152,7 +60152,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
     const match =
       texto.match(
-        /ID:\s*([0-9a-f]{8}-[0-9a-f-]{27,})/i
+                /ID:\s*((?:RX-\d{8}-[A-Z0-9]+)|(?:[0-9a-f]{8}-[0-9a-f-]{27,}))/i
       );
 
     return match
