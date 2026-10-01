@@ -58181,6 +58181,422 @@ body.view-open.school-atelier-open #miRoxthalIndependentButton{
 <!-- ============================================================
      FIN — MI ROXTHAL INDEPENDIENTE
 ============================================================ -->
+
+   <!-- =========================================================
+     ROXTHAL ART DESIGN — SOLICITUD DE CLIENTE POR WHATSAPP
+     PEGAR UNA SOLA VEZ ANTES DE </body>
+     ========================================================= -->
+
+<style id="roxthal-solicitud-styles">
+  #rxSolicitudButton {
+    border: 1px solid #f2c400;
+    background: #181818;
+    color: #f2c400;
+  }
+
+  #rxSolicitudButton:hover {
+    background: #f2c400;
+    color: #080808;
+  }
+
+  #rxSolicitudOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(0,0,0,.86);
+    overflow-y: auto;
+  }
+
+  #rxSolicitudOverlay.rx-solicitud-open {
+    display: flex;
+  }
+
+  #rxSolicitudPanel {
+    width: min(100%, 680px);
+    max-height: 94dvh;
+    overflow-y: auto;
+    background: #101010;
+    color: #f5f5f5;
+    border: 1px solid #8e7410;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 15px 60px rgba(0,0,0,.7);
+  }
+
+  #rxSolicitudPanel h2 {
+    color: #f2c400;
+    font-size: 25px;
+    margin: 0 42px 8px 0;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-intro {
+    color: #bbb;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-close {
+    float: right;
+    width: 38px;
+    height: 38px;
+    border: 1px solid #555;
+    border-radius: 50%;
+    background: #202020;
+    color: #fff;
+    font-size: 23px;
+    cursor: pointer;
+  }
+
+  #rxSolicitudPanel .rx-field {
+    margin: 0 0 15px;
+  }
+
+  #rxSolicitudPanel label {
+    display: block;
+    color: #f2c400;
+    font-size: 14px;
+    font-weight: 650;
+    margin-bottom: 6px;
+  }
+
+  #rxSolicitudPanel input,
+  #rxSolicitudPanel select,
+  #rxSolicitudPanel textarea {
+    display: block;
+    width: 100%;
+    min-height: 45px;
+    padding: 11px 12px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #191919;
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  #rxSolicitudPanel textarea {
+    min-height: 105px;
+    resize: vertical;
+  }
+
+  #rxSolicitudPanel input:focus,
+  #rxSolicitudPanel select:focus,
+  #rxSolicitudPanel textarea:focus {
+    border-color: #f2c400;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-help {
+    display: block;
+    color: #999;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 16px 0;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-check input {
+    width: 18px;
+    min-height: 18px;
+    margin-top: 2px;
+    flex: 0 0 auto;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-submit {
+    width: 100%;
+    min-height: 49px;
+    border: 0;
+    border-radius: 9px;
+    background: #f2c400;
+    color: #080808;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-submit:hover {
+    background: #ffe04a;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-cancel {
+    width: 100%;
+    margin-top: 9px;
+    min-height: 42px;
+    border: 1px solid #555;
+    border-radius: 9px;
+    background: transparent;
+    color: #ddd;
+    cursor: pointer;
+  }
+
+  @media(max-width:520px) {
+    #rxSolicitudPanel {
+      padding: 17px;
+      max-height: 96dvh;
+    }
+
+    #rxSolicitudPanel .rx-solicitud-grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+</style>
+
+<script id="roxthal-solicitud-whatsapp-v1">
+(function () {
+  'use strict';
+
+  const WHATSAPP_NUMBER = '5491169633376';
+
+  function instalarSolicitudRoXThal() {
+    if (document.getElementById('rxSolicitudButton')) return;
+
+    const home = document.getElementById('home');
+    if (!home) return;
+
+    const actions = home.querySelector('.hero .actions');
+    if (!actions) return;
+
+    /* Botón junto a los accesos del inicio */
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = 'rxSolicitudButton';
+    button.className = 'btn';
+    button.textContent = 'Solicitud';
+    button.setAttribute('aria-haspopup', 'dialog');
+    button.setAttribute('aria-controls', 'rxSolicitudOverlay');
+
+    actions.appendChild(button);
+
+    /* Formulario */
+    const overlay = document.createElement('div');
+    overlay.id = 'rxSolicitudOverlay';
+    overlay.innerHTML = `
+      <div id="rxSolicitudPanel" role="dialog"
+           aria-modal="true" aria-labelledby="rxSolicitudTitle">
+
+        <button type="button" class="rx-solicitud-close"
+                id="rxSolicitudClose" aria-label="Cerrar">×</button>
+
+        <h2 id="rxSolicitudTitle">Solicitud de cliente</h2>
+        <p class="rx-solicitud-intro">
+          Completá tus datos y contanos qué necesitás.
+          Tu solicitud se preparará para enviarla directamente
+          al WhatsApp de RoXThal Art Design.
+        </p>
+
+        <form id="rxSolicitudForm">
+
+          <div class="rx-solicitud-grid">
+            <div class="rx-field">
+              <label for="rxSolNombre">Nombre y apellido *</label>
+              <input id="rxSolNombre" name="nombre" type="text"
+                     autocomplete="name" maxlength="100" required
+                     placeholder="Tu nombre completo">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxSolTelefono">Tu teléfono / WhatsApp *</label>
+              <input id="rxSolTelefono" name="telefono" type="tel"
+                     autocomplete="tel" maxlength="35" required
+                     placeholder="Código de área y número">
+            </div>
+          </div>
+
+          <div class="rx-field">
+            <label for="rxSolEmail">Correo electrónico (opcional)</label>
+            <input id="rxSolEmail" name="email" type="email"
+                   autocomplete="email" maxlength="120"
+                   placeholder="tunombre@correo.com">
+          </div>
+
+          <div class="rx-field">
+            <label for="rxSolTipo">¿Qué tipo de solicitud querés realizar? *</label>
+            <select id="rxSolTipo" name="tipo" required>
+              <option value="">Seleccioná una opción</option>
+              <option>Tatuaje — consulta o presupuesto</option>
+              <option>Tatuaje — diseño personalizado</option>
+              <option>Tatuaje — turno</option>
+              <option>Piercing — colocación</option>
+              <option>Dibujo y pintura profesional</option>
+              <option>Iniciación al tatuaje</option>
+              <option>Fileteado</option>
+              <option>Taller de arte para niños</option>
+              <option>Murales</option>
+              <option>Trampantojos</option>
+              <option>Diseño artístico / ilustración</option>
+              <option>Formación o capacitación artística</option>
+              <option>Otra consulta</option>
+            </select>
+          </div>
+
+          <div class="rx-field">
+            <label for="rxSolDetalle">Contanos para qué necesitás la solicitud *</label>
+            <textarea id="rxSolDetalle" name="detalle" required
+                      maxlength="2500"
+                      placeholder="Describí tu idea, consulta o necesidad con todos los detalles que consideres importantes..."></textarea>
+            <small class="rx-solicitud-help">
+              Cuanto más detallada sea la información, mejor podremos orientarte.
+            </small>
+          </div>
+
+          <div class="rx-solicitud-grid">
+            <div class="rx-field">
+              <label for="rxSolFecha">¿Para cuándo lo necesitás?</label>
+              <input id="rxSolFecha" name="fecha" type="text"
+                     maxlength="100"
+                     placeholder="Fecha o disponibilidad">
+            </div>
+
+            <div class="rx-field">
+              <label for="rxSolLugar">Localidad / lugar</label>
+              <input id="rxSolLugar" name="lugar" type="text"
+                     maxlength="120"
+                     placeholder="Tu localidad">
+            </div>
+          </div>
+
+          <div class="rx-field">
+            <label for="rxSolPresupuesto">Presupuesto aproximado (opcional)</label>
+            <input id="rxSolPresupuesto" name="presupuesto" type="text"
+                   maxlength="100"
+                   placeholder="Si tenés uno definido">
+          </div>
+
+          <div class="rx-field">
+            <label for="rxSolReferencia">¿Tenés una imagen o referencia?</label>
+            <textarea id="rxSolReferencia" name="referencia"
+                      maxlength="1000"
+                      placeholder="Podés indicar qué imagen, estilo, tamaño, zona del cuerpo o referencia querés compartir. La imagen podrás enviarla luego por WhatsApp."></textarea>
+          </div>
+
+          <label class="rx-solicitud-check">
+            <input type="checkbox" id="rxSolAcepto" required>
+            <span>Confirmo que los datos son correctos y autorizo que se utilicen para responder esta solicitud. *</span>
+          </label>
+
+          <button type="submit" class="rx-solicitud-submit">
+            Enviar solicitud por WhatsApp
+          </button>
+
+          <button type="button" class="rx-solicitud-cancel"
+                  id="rxSolicitudCancel">
+            Cancelar
+          </button>
+
+          <small class="rx-solicitud-help" style="text-align:center;margin-top:12px">
+            Al pulsar enviar se abrirá WhatsApp con el mensaje preparado.
+            Deberás confirmar el envío desde WhatsApp.
+          </small>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const form = document.getElementById('rxSolicitudForm');
+
+    function abrir() {
+      overlay.classList.add('rx-solicitud-open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(function () {
+        const first = document.getElementById('rxSolNombre');
+        if (first) first.focus();
+      }, 50);
+    }
+
+    function cerrar() {
+      overlay.classList.remove('rx-solicitud-open');
+      document.body.style.overflow = '';
+      button.focus();
+    }
+
+    button.addEventListener('click', abrir);
+    document.getElementById('rxSolicitudClose').addEventListener('click', cerrar);
+    document.getElementById('rxSolicitudCancel').addEventListener('click', cerrar);
+
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) cerrar();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && overlay.classList.contains('rx-solicitud-open')) {
+        cerrar();
+      }
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      if (!form.reportValidity()) return;
+
+      const valor = function (id) {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+
+      const mensaje = [
+        '📩 *NUEVA SOLICITUD — ROXTHAL ART DESIGN*',
+        '',
+        '*DATOS DEL CLIENTE*',
+        'Nombre: ' + valor('rxSolNombre'),
+        'Teléfono: ' + valor('rxSolTelefono'),
+        'Correo: ' + (valor('rxSolEmail') || 'No informado'),
+        '',
+        '*TIPO DE SOLICITUD*',
+        valor('rxSolTipo'),
+        '',
+        '*¿QUÉ NECESITA?*',
+        valor('rxSolDetalle'),
+        '',
+        '*INFORMACIÓN ADICIONAL*',
+        'Fecha / disponibilidad: ' + (valor('rxSolFecha') || 'No indicada'),
+        'Localidad / lugar: ' + (valor('rxSolLugar') || 'No indicado'),
+        'Presupuesto aproximado: ' + (valor('rxSolPresupuesto') || 'No indicado'),
+        '',
+        '*IMAGEN O REFERENCIA*',
+        valor('rxSolReferencia') || 'No indicada',
+        '',
+        'Enviado desde la app de RoXThal Art Design.'
+      ].join('\n');
+
+      const url = 'https://wa.me/' + WHATSAPP_NUMBER +
+                  '?text=' + encodeURIComponent(mensaje);
+
+      /* Se abre directamente desde la acción del usuario */
+      const whatsappWindow = window.open(url, '_blank');
+
+      if (!whatsappWindow) {
+        window.location.href = url;
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', instalarSolicitudRoXThal, { once: true });
+  } else {
+    instalarSolicitudRoXThal();
+  }
+})();
+</script>
+<!-- FIN SOLICITUD ROXTHAL -->
    
 </body>
 </html>
