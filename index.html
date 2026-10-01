@@ -60143,6 +60143,35 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       throw resultado.error;
     }
 
+       try{
+      const claveLocal =
+        'roxthal_consentimientos_profesionales_v1';
+
+      const rawLocal =
+        localStorage.getItem(claveLocal);
+
+      if(rawLocal){
+        const registrosLocales =
+          JSON.parse(rawLocal);
+
+        if(Array.isArray(registrosLocales)){
+          const restantes =
+            registrosLocales.filter(function(registro){
+              return String(registro?.id || '') !== String(id);
+            });
+
+          localStorage.setItem(
+            claveLocal,
+            JSON.stringify(restantes)
+          );
+        }
+      }
+    }catch(error){
+      console.warn(
+        'RoXThal — no se pudo limpiar el consentimiento local:',
+        error
+      );
+    }
     alert(
       '✓ Consentimiento borrado correctamente.'
     );
