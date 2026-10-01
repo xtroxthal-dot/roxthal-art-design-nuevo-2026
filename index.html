@@ -58603,7 +58603,339 @@ body.view-open.school-atelier-open #miRoxthalIndependentButton{
      POSICIÓN: justo antes de </body>
 ============================================================ -->
 
+<!-- ============================================================
+     ROXTHAL — CONTROL ÚNICO MÓDULO 15
+     Botones contextuales + retorno al Módulo 15
+     ============================================================ -->
+<style id="roxthal-m15-unified-control">
 
+/* ============================================================
+   BOTONES DEL MÓDULO 15
+   ============================================================ */
+
+#rsaLauncher,
+#miRoxthalIndependentButton,
+#rxConsentLauncher{
+  position:fixed !important;
+  right:12px !important;
+  left:auto !important;
+  z-index:2147483002 !important;
+  box-sizing:border-box !important;
+  max-width:calc(100vw - 24px) !important;
+  min-height:46px !important;
+  margin:0 !important;
+  transform:none !important;
+}
+
+/* Solo visibles dentro del Módulo 15 */
+body.view-open.school-atelier-open #rsaLauncher,
+body.view-open.school-atelier-open #miRoxthalIndependentButton,
+body.view-open.school-atelier-open #rxConsentLauncher{
+  display:flex !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* Posición vertical independiente: nunca se montan */
+body.view-open.school-atelier-open #rxConsentLauncher{
+  bottom:12px !important;
+}
+
+body.view-open.school-atelier-open #miRoxthalIndependentButton{
+  bottom:68px !important;
+}
+
+body.view-open.school-atelier-open #rsaLauncher{
+  bottom:124px !important;
+}
+
+/* Cuando se abre cualquiera de los tres paneles,
+   desaparecen los tres botones */
+body.view-open.school-atelier-open:has(#rsaOverlay.rsa-open) #rsaLauncher,
+body.view-open.school-atelier-open:has(#rsaOverlay.rsa-open) #miRoxthalIndependentButton,
+body.view-open.school-atelier-open:has(#rsaOverlay.rsa-open) #rxConsentLauncher,
+
+body.view-open.school-atelier-open:has(#rxConsentApp.rx-open) #rsaLauncher,
+body.view-open.school-atelier-open:has(#rxConsentApp.rx-open) #miRoxthalIndependentButton,
+body.view-open.school-atelier-open:has(#rxConsentApp.rx-open) #rxConsentLauncher,
+
+body.view-open.school-atelier-open:has(#miRoxthalIndependentOverlay.mi-rx-independent-open) #rsaLauncher,
+body.view-open.school-atelier-open:has(#miRoxthalIndependentOverlay.mi-rx-independent-open) #miRoxthalIndependentButton,
+body.view-open.school-atelier-open:has(#miRoxthalIndependentOverlay.mi-rx-independent-open) #rxConsentLauncher{
+  display:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* ============================================================
+   BOTONES VOLVER
+   ============================================================ */
+
+.rx-m15-return{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  box-sizing:border-box !important;
+  min-height:42px !important;
+  padding:9px 14px !important;
+  border:1px solid rgba(215,173,85,.45) !important;
+  border-radius:10px !important;
+  background:#111 !important;
+  color:#fff !important;
+  font:600 13px/1.2 Arial,sans-serif !important;
+  cursor:pointer !important;
+  white-space:nowrap !important;
+  flex:0 0 auto !important;
+}
+
+.rx-m15-return:hover{
+  background:#1c1c1c !important;
+}
+
+@media(max-width:520px){
+  #rsaLauncher,
+  #miRoxthalIndependentButton,
+  #rxConsentLauncher{
+    right:10px !important;
+    max-width:calc(100vw - 20px) !important;
+  }
+
+  body.view-open.school-atelier-open #rxConsentLauncher{
+    bottom:10px !important;
+  }
+
+  body.view-open.school-atelier-open #miRoxthalIndependentButton{
+    bottom:66px !important;
+  }
+
+  body.view-open.school-atelier-open #rsaLauncher{
+    bottom:122px !important;
+  }
+
+  .rx-m15-return{
+    min-height:40px !important;
+    padding:8px 11px !important;
+    font-size:12px !important;
+  }
+}
+
+</style>
+
+<script id="roxthal-m15-unified-control-script">
+(function(){
+
+  'use strict';
+
+  /* ------------------------------------------------------------
+     UTILIDADES
+     ------------------------------------------------------------ */
+
+  function byId(id){
+    return document.getElementById(id);
+  }
+
+  function isM15(){
+    return document.body.classList.contains('view-open') &&
+           document.body.classList.contains('school-atelier-open');
+  }
+
+  function restoreM15(){
+    closeAtelier();
+    closeConsent();
+    closeMiRoxthal();
+
+    if(typeof window.showView === 'function'){
+      window.showView('schoolAtelier');
+    }else{
+      document.body.classList.add('view-open');
+      document.body.classList.add('school-atelier-open');
+    }
+
+    window.scrollTo(0,0);
+  }
+
+  /* ------------------------------------------------------------
+     CIERRE SEGURO DE LOS TRES PANELES
+     ------------------------------------------------------------ */
+
+  function closeAtelier(){
+    var overlay=byId('rsaOverlay');
+
+    if(overlay){
+      overlay.classList.remove('rsa-open');
+      overlay.setAttribute('aria-hidden','true');
+    }
+
+    document.body.style.overflow='';
+  }
+
+  function closeConsent(){
+    var app=byId('rxConsentApp');
+
+    if(app){
+      app.classList.remove('rx-open');
+      app.setAttribute('aria-hidden','true');
+    }
+
+    document.body.style.overflow='';
+  }
+
+  function closeMiRoxthal(){
+    var overlay=byId('miRoxthalIndependentOverlay');
+
+    if(overlay){
+      overlay.classList.remove('mi-rx-independent-open');
+      overlay.setAttribute('aria-hidden','true');
+    }
+
+    document.body.style.overflow='';
+  }
+
+  /* ------------------------------------------------------------
+     CREACIÓN DEL BOTÓN VOLVER — ATELIER
+     ------------------------------------------------------------ */
+
+  function installAtelierReturn(){
+
+    var header=byId('rsaHeader');
+
+    if(!header || byId('rxM15ReturnAtelier')){
+      return;
+    }
+
+    var close=byId('rsaClose');
+
+    var button=document.createElement('button');
+
+    button.id='rxM15ReturnAtelier';
+    button.type='button';
+    button.className='rx-m15-return';
+    button.textContent='← Volver al Módulo 15';
+
+    button.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      restoreM15();
+    });
+
+    if(close){
+      header.insertBefore(button,close);
+    }else{
+      header.appendChild(button);
+    }
+  }
+
+  /* ------------------------------------------------------------
+     CREACIÓN DEL BOTÓN VOLVER — CONSENTIMIENTO
+     ------------------------------------------------------------ */
+
+  function installConsentReturn(){
+
+    var row=document.querySelector('#rxConsentApp .rx-consent-header-row');
+
+    if(!row || byId('rxM15ReturnConsent')){
+      return;
+    }
+
+    var close=byId('rxConsentClose');
+
+    var button=document.createElement('button');
+
+    button.id='rxM15ReturnConsent';
+    button.type='button';
+    button.className='rx-m15-return';
+    button.textContent='← Volver al Módulo 15';
+
+    button.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      restoreM15();
+    });
+
+    if(close){
+      row.insertBefore(button,close);
+    }else{
+      row.appendChild(button);
+    }
+  }
+
+  /* ------------------------------------------------------------
+     CREACIÓN DEL BOTÓN VOLVER — MI ROXTHAL
+     ------------------------------------------------------------ */
+
+  function installMiRoxthalReturn(){
+
+    var header=byId('miRoxthalIndependentHeader');
+
+    if(!header || byId('rxM15ReturnMiRoxthal')){
+      return;
+    }
+
+    var close=byId('miRoxthalIndependentClose');
+
+    var button=document.createElement('button');
+
+    button.id='rxM15ReturnMiRoxthal';
+    button.type='button';
+    button.className='rx-m15-return';
+    button.textContent='← Volver al Módulo 15';
+
+    button.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      restoreM15();
+    });
+
+    if(close){
+      header.insertBefore(button,close);
+    }else{
+      header.appendChild(button);
+    }
+  }
+
+  /* ------------------------------------------------------------
+     INSTALACIÓN
+     ------------------------------------------------------------ */
+
+  function installAll(){
+
+    installAtelierReturn();
+    installConsentReturn();
+    installMiRoxthalReturn();
+  }
+
+  /* ------------------------------------------------------------
+     OBSERVADOR ÚNICAMENTE PARA ELEMENTOS DINÁMICOS
+     ------------------------------------------------------------ */
+
+  var observer=new MutationObserver(function(){
+    installAll();
+  });
+
+  function start(){
+
+    installAll();
+
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+
+})();
+</script>
+<!-- FIN CONTROL ÚNICO MÓDULO 15 -->
    
 </body>
 </html>
