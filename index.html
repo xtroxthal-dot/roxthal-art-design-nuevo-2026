@@ -57749,6 +57749,438 @@ Este mensaje constituye el envío del consentimiento para su revisión y registr
      FIN — MI ROXTHAL NUEVO
      ============================================================ -->
 
+         
+<!-- ============================================================
+     ROXTHAL — MI ROXTHAL INDEPENDIENTE
+     CORRECCIÓN DEFINITIVA
+     - Acceso fuera del School Atelier
+     - No usa rsaTabs
+     - No usa rsaOverlay
+     - Conserva la interfaz y lógica existente de Mi RoXThal
+============================================================ -->
+
+<style id="mi-roxthal-independent-fix">
+
+#miRoxthalIndependentButton{
+  position:fixed;
+  left:16px;
+  bottom:78px;
+  z-index:2147483002;
+
+  min-height:50px;
+  padding:0 18px;
+
+  border:1px solid rgba(215,173,85,.65);
+  border-radius:999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(23,19,11,.98),
+      rgba(8,8,8,.98)
+    );
+
+  color:#f0cf7a;
+  font-weight:950;
+  letter-spacing:.3px;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.55),
+    0 0 25px rgba(215,173,85,.12);
+
+  cursor:pointer;
+  display:none;
+}
+
+body.view-open.school-atelier-open #miRoxthalIndependentButton{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:auto;
+}
+
+#miRoxthalIndependentButton:hover{
+  transform:translateY(-2px);
+  border-color:#d7ad55;
+}
+
+#miRoxthalIndependentOverlay{
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+
+  display:none;
+
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(215,173,85,.09),
+      transparent 32%
+    ),
+    rgba(5,5,5,.97);
+
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+#miRoxthalIndependentOverlay.mi-rx-independent-open{
+  display:block;
+}
+
+#miRoxthalIndependentShell{
+  width:min(1180px,94%);
+  min-height:100%;
+  margin:0 auto;
+  padding:18px 0 50px;
+  box-sizing:border-box;
+}
+
+#miRoxthalIndependentHeader{
+  position:sticky;
+  top:0;
+  z-index:20;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  margin-bottom:14px;
+  padding:12px 14px;
+
+  border:1px solid rgba(215,173,85,.25);
+  border-radius:16px;
+
+  background:rgba(8,8,8,.95);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+#miRoxthalIndependentHeader strong{
+  color:#f0cf7a;
+  font-size:15px;
+}
+
+#miRoxthalIndependentClose{
+  width:44px;
+  height:44px;
+
+  border:1px solid rgba(215,173,85,.25);
+  border-radius:12px;
+
+  background:#111;
+  color:#f0cf7a;
+
+  font-size:20px;
+  cursor:pointer;
+}
+
+#miRoxthalIndependentContent{
+  width:100%;
+}
+
+#miRoxthalIndependentContent #miRoxthalPage{
+  display:block !important;
+  padding:0 !important;
+}
+
+@media(max-width:520px){
+
+  #miRoxthalIndependentButton{
+    left:10px;
+    bottom:66px;
+
+    min-height:46px;
+    padding:0 14px;
+
+    font-size:12px;
+  }
+
+  #miRoxthalIndependentShell{
+    width:94%;
+    padding-top:10px;
+  }
+
+}
+
+</style>
+
+<script id="mi-roxthal-independent-fix-script">
+(function(){
+
+  "use strict";
+
+  if(window.__ROXTHAL_MI_ROXTHAL_INDEPENDENT_FIX__) return;
+  window.__ROXTHAL_MI_ROXTHAL_INDEPENDENT_FIX__=true;
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+  function install(){
+
+    /*
+     * Esperamos a que el sistema original de Mi RoXThal
+     * haya creado su interfaz.
+     */
+    const originalEntry=$("miRoxthalEntry");
+    const page=$("miRoxthalPage");
+
+    if(!originalEntry || !page){
+      setTimeout(install,300);
+      return;
+    }
+
+    /*
+     * Eliminamos la pestaña interna del School Atelier.
+     */
+    const oldTab=$("miRoxthalTab");
+
+    if(oldTab){
+      oldTab.remove();
+    }
+
+    /*
+     * Eliminamos el antiguo botón interno.
+     */
+    originalEntry.remove();
+
+    /*
+     * Creamos el nuevo acceso independiente.
+     */
+    let button=$("miRoxthalIndependentButton");
+
+    if(!button){
+
+      button=document.createElement("button");
+
+      button.id="miRoxthalIndependentButton";
+      button.type="button";
+      button.setAttribute(
+        "aria-label",
+        "Abrir Mi RoXThal"
+      );
+
+      button.innerHTML="👤 Mi RoXThal";
+
+      document.body.appendChild(button);
+    }
+
+    /*
+     * Creamos el contenedor independiente.
+     */
+    let overlay=$("miRoxthalIndependentOverlay");
+
+    if(!overlay){
+
+      overlay=document.createElement("div");
+
+      overlay.id="miRoxthalIndependentOverlay";
+
+      overlay.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      overlay.innerHTML=`
+
+        <div id="miRoxthalIndependentShell">
+
+          <header id="miRoxthalIndependentHeader">
+
+            <strong>
+              👤 Mi RoXThal
+            </strong>
+
+            <button
+              id="miRoxthalIndependentClose"
+              type="button"
+              aria-label="Cerrar Mi RoXThal"
+            >
+              ✕
+            </button>
+
+          </header>
+
+          <main id="miRoxthalIndependentContent"></main>
+
+        </div>
+
+      `;
+
+      document.body.appendChild(overlay);
+    }
+
+    const content=$("miRoxthalIndependentContent");
+
+    /*
+     * Movemos la interfaz REAL existente.
+     *
+     * No la reconstruimos.
+     * No duplicamos formularios.
+     * No duplicamos eventos.
+     * Se conserva toda la lógica original.
+     */
+    if(
+      content &&
+      page.parentElement!==content
+    ){
+      content.appendChild(page);
+    }
+
+    /*
+     * Abrir.
+     */
+    button.onclick=function(){
+
+      overlay.classList.add(
+        "mi-rx-independent-open"
+      );
+
+      overlay.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+      document.body.style.overflow="hidden";
+
+      /*
+       * Dejamos visible la página real.
+       */
+      page.classList.add("mi-rx-active");
+
+      /*
+       * Si existe la función original,
+       * cargamos el alumno guardado.
+       */
+      try{
+
+        if(
+          typeof window.loadSavedStudent==="function"
+        ){
+          window.loadSavedStudent();
+        }
+
+      }catch(error){
+
+        console.warn(
+          "Mi RoXThal independiente:",
+          error
+        );
+
+      }
+
+    };
+
+    /*
+     * Cerrar.
+     */
+    const close=$("miRoxthalIndependentClose");
+
+    if(close){
+
+      close.onclick=function(){
+
+        overlay.classList.remove(
+          "mi-rx-independent-open"
+        );
+
+        overlay.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+        document.body.style.overflow="";
+
+      };
+
+    }
+
+    /*
+     * Cerrar tocando fuera del contenido.
+     */
+    overlay.onclick=function(event){
+
+      if(
+        event.target===overlay
+      ){
+
+        overlay.classList.remove(
+          "mi-rx-independent-open"
+        );
+
+        overlay.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+        document.body.style.overflow="";
+
+      }
+
+    };
+
+    /*
+     * ESC.
+     */
+    document.addEventListener(
+      "keydown",
+      function(event){
+
+        if(
+          event.key==="Escape" &&
+          overlay.classList.contains(
+            "mi-rx-independent-open"
+          )
+        ){
+
+          overlay.classList.remove(
+            "mi-rx-independent-open"
+          );
+
+          overlay.setAttribute(
+            "aria-hidden",
+            "true"
+          );
+
+          document.body.style.overflow="";
+
+        }
+
+      }
+    );
+
+    console.log(
+      "RoXThal: Mi RoXThal independiente instalado correctamente."
+    );
+
+  }
+
+  /*
+   * Esperamos a que el DOM esté listo.
+   */
+  if(
+    document.readyState==="loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      install,
+      {once:true}
+    );
+
+  }else{
+
+    install();
+
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN — MI ROXTHAL INDEPENDIENTE
+============================================================ -->
    
 </body>
 </html>
