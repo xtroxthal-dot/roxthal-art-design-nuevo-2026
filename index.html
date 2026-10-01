@@ -58921,6 +58921,190 @@ body:has(#miRoxthalIndependentOverlay.mi-rx-independent-open) #rxConsentLauncher
 
 <!-- FIN CONTROL DEFINITIVO MÓDULO 15 -->
 
-   
+   <!-- ============================================================
+     ROXTHAL — REGRESO A LA PORTADA DEL MÓDULO 15
+============================================================ -->
+<script id="roxthal-m15-return-control">
+(function(){
+
+  function closeAtelier(){
+    const overlay = document.getElementById('rsaOverlay');
+    if(!overlay) return;
+
+    overlay.classList.remove('rsa-open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  function closeConsent(){
+    const app = document.getElementById('rxConsentApp');
+    if(!app) return;
+
+    app.classList.remove('rx-open');
+    app.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  function closeMiRoxthal(){
+    const overlay = document.getElementById('miRoxthalIndependentOverlay');
+    if(!overlay) return;
+
+    overlay.classList.remove('mi-rx-independent-open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  function addBackButton(){
+
+    /* ---------- ATELIER ---------- */
+    const atelierHeader = document.getElementById('rsaHeader');
+
+    if(atelierHeader && !document.getElementById('rxM15ReturnAtelier')){
+      const btn = document.createElement('button');
+
+      btn.id='rxM15ReturnAtelier';
+      btn.type='button';
+      btn.className='rx-m15-back';
+      btn.textContent='← Volver al Módulo 15';
+
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeAtelier();
+      });
+
+      const close=document.getElementById('rsaClose');
+
+      if(close){
+        atelierHeader.insertBefore(btn,close);
+      }else{
+        atelierHeader.appendChild(btn);
+      }
+    }
+
+    /* ---------- CONSENTIMIENTO ---------- */
+    const consentHeader=document.querySelector('.rx-consent-header-row');
+
+    if(consentHeader && !document.getElementById('rxM15ReturnConsent')){
+      const btn=document.createElement('button');
+
+      btn.id='rxM15ReturnConsent';
+      btn.type='button';
+      btn.className='rx-m15-back';
+      btn.textContent='← Volver al Módulo 15';
+
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeConsent();
+      });
+
+      const close=document.getElementById('rxConsentClose');
+
+      if(close){
+        consentHeader.insertBefore(btn,close);
+      }else{
+        consentHeader.appendChild(btn);
+      }
+    }
+
+    /* ---------- MI ROXTHAL ---------- */
+    const miHeader=document.querySelector(
+      '#miRoxthalIndependentShell header'
+    );
+
+    if(miHeader && !document.getElementById('rxM15ReturnMiRoxthal')){
+      const btn=document.createElement('button');
+
+      btn.id='rxM15ReturnMiRoxthal';
+      btn.type='button';
+      btn.className='rx-m15-back';
+      btn.textContent='← Volver al Módulo 15';
+
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeMiRoxthal();
+      });
+
+      const close=document.getElementById('miRoxthalIndependentClose');
+
+      if(close){
+        miHeader.insertBefore(btn,close);
+      }else{
+        miHeader.appendChild(btn);
+      }
+    }
+  }
+
+  function installStyle(){
+
+    if(document.getElementById('rxM15ReturnStyle')) return;
+
+    const style=document.createElement('style');
+
+    style.id='rxM15ReturnStyle';
+
+    style.textContent=`
+      .rx-m15-back{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:6px !important;
+        min-height:38px !important;
+        padding:8px 12px !important;
+        margin:0 6px 0 0 !important;
+        border:1px solid rgba(255,255,255,.28) !important;
+        border-radius:10px !important;
+        background:rgba(0,0,0,.35) !important;
+        color:#fff !important;
+        font-size:14px !important;
+        font-weight:600 !important;
+        line-height:1.2 !important;
+        cursor:pointer !important;
+        white-space:nowrap !important;
+        box-sizing:border-box !important;
+      }
+
+      .rx-m15-back:hover{
+        filter:brightness(1.12) !important;
+      }
+
+      .rx-m15-back:active{
+        transform:translateY(1px);
+      }
+
+      @media(max-width:520px){
+        .rx-m15-back{
+          min-height:36px !important;
+          padding:7px 9px !important;
+          font-size:13px !important;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function start(){
+    installStyle();
+    addBackButton();
+  }
+
+  start();
+
+  const observer=new MutationObserver(function(){
+    addBackButton();
+  });
+
+  observer.observe(document.body,{
+    childList:true,
+    subtree:true
+  });
+
+  setInterval(addBackButton,500);
+
+})();
+</script>
 </body>
 </html>
