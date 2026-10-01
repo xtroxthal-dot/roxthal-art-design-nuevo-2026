@@ -58597,6 +58597,385 @@ body.view-open.school-atelier-open #miRoxthalIndependentButton{
 })();
 </script>
 <!-- FIN SOLICITUD ROXTHAL -->
+<!-- ============================================================
+     ROXTHAL — REPARACIÓN MÓDULO 15
+     Separación y ocultación de botones flotantes
+     ============================================================ -->
+<style id="roxthal-module15-buttons-fix">
+
+/* ============================================================
+   1. POSICIÓN CORRECTA DE LOS TRES BOTONES
+   ============================================================ */
+
+/* Mi RoXThal */
+#rxStudioFab{
+  position:fixed !important;
+  left:12px !important;
+  right:auto !important;
+  bottom:76px !important;
+  top:auto !important;
+  z-index:99980 !important;
+}
+
+/* Consentimiento */
+#rxConsentLauncher{
+  position:fixed !important;
+  left:12px !important;
+  right:auto !important;
+  bottom:14px !important;
+  top:auto !important;
+  z-index:99979 !important;
+}
+
+/* School Atelier:
+   se detectará automáticamente por su texto */
+.rx15-school-button{
+  position:fixed !important;
+  right:12px !important;
+  left:auto !important;
+  bottom:14px !important;
+  top:auto !important;
+  z-index:99979 !important;
+}
+
+
+/* ============================================================
+   2. CUANDO SE ABRE UNO DE LOS TRES,
+      DESAPARECEN LOS TRES
+   ============================================================ */
+
+body.rx15-action-open #rxStudioFab,
+body.rx15-action-open #rxConsentLauncher,
+body.rx15-action-open .rx15-school-button{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+
+/* ============================================================
+   3. EVITAR QUE LAS REGLAS ANTIGUAS LOS VUELVAN A MOSTRAR
+   ============================================================ */
+
+body.rx15-action-open #rxStudioFab,
+body.rx15-action-open #rxConsentLauncher,
+body.rx15-action-open .rx15-school-button{
+  display:none !important;
+}
+
+
+/* ============================================================
+   4. MÓVIL
+   ============================================================ */
+
+@media(max-width:600px){
+
+  #rxStudioFab{
+    left:10px !important;
+    bottom:76px !important;
+  }
+
+  #rxConsentLauncher{
+    left:10px !important;
+    bottom:12px !important;
+  }
+
+  .rx15-school-button{
+    right:10px !important;
+    bottom:12px !important;
+  }
+
+}
+
+</style>
+
+<script id="roxthal-module15-buttons-fix-script">
+(function(){
+
+  'use strict';
+
+  const STUDIO_ID = 'rxStudioFab';
+  const CONSENT_ID = 'rxConsentLauncher';
+
+  let schoolButtons = [];
+
+  /* ============================================================
+     BUSCAR BOTÓN SCHOOL ATELIER
+     ============================================================ */
+
+  function findSchoolButton(){
+
+    const buttons = document.querySelectorAll('button');
+
+    schoolButtons = [];
+
+    buttons.forEach(function(button){
+
+      if(
+        button.id === STUDIO_ID ||
+        button.id === CONSENT_ID
+      ){
+        return;
+      }
+
+      const text =
+        (button.textContent || '')
+        .replace(/\s+/g,' ')
+        .trim()
+        .toLowerCase();
+
+      if(
+        text.includes('roxthal school atelier') ||
+        text.includes('school atelier')
+      ){
+
+        button.classList.add('rx15-school-button');
+
+        schoolButtons.push(button);
+      }
+
+    });
+
+  }
+
+
+  /* ============================================================
+     LOS TRES BOTONES
+     ============================================================ */
+
+  function getButtons(){
+
+    findSchoolButton();
+
+    const result = [];
+
+    const studio =
+      document.getElementById(STUDIO_ID);
+
+    const consent =
+      document.getElementById(CONSENT_ID);
+
+    if(studio) result.push(studio);
+    if(consent) result.push(consent);
+
+    schoolButtons.forEach(function(button){
+      if(button && !result.includes(button)){
+        result.push(button);
+      }
+    });
+
+    return result;
+  }
+
+
+  /* ============================================================
+     OCULTAR
+     ============================================================ */
+
+  function hideButtons(){
+
+    document.body.classList.add('rx15-action-open');
+
+  }
+
+
+  /* ============================================================
+     MOSTRAR
+     ============================================================ */
+
+  function showButtons(){
+
+    document.body.classList.remove('rx15-action-open');
+
+    findSchoolButton();
+
+  }
+
+
+  /* ============================================================
+     DETECTAR SI ALGÚN PANEL ESTÁ ABIERTO
+     ============================================================ */
+
+  function somethingIsOpen(){
+
+    const studio =
+      document.getElementById('rxStudioOverlay');
+
+    const consent =
+      document.getElementById('rxConsentApp');
+
+    if(
+      studio &&
+      (
+        studio.classList.contains('rx-open') ||
+        studio.getAttribute('aria-hidden') === 'false'
+      )
+    ){
+      return true;
+    }
+
+    if(
+      consent &&
+      (
+        consent.classList.contains('rx-open') ||
+        consent.getAttribute('aria-hidden') === 'false'
+      )
+    ){
+      return true;
+    }
+
+    /*
+     * También comprobamos overlays que puedan pertenecer
+     * al School Atelier.
+     */
+    const overlays =
+      document.querySelectorAll(
+        '[role="dialog"], [aria-modal="true"]'
+      );
+
+    for(const el of overlays){
+
+      if(
+        el === studio ||
+        el === consent
+      ){
+        continue;
+      }
+
+      const hidden =
+        el.getAttribute('aria-hidden');
+
+      if(
+        hidden === 'false' ||
+        el.classList.contains('open') ||
+        el.classList.contains('rx-open')
+      ){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  }
+
+
+  /* ============================================================
+     CONTROL DE CLICS
+     ============================================================ */
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const button =
+        event.target.closest('button');
+
+      if(!button){
+        return;
+      }
+
+      const buttons = getButtons();
+
+      if(buttons.includes(button)){
+
+        hideButtons();
+
+        /*
+         * Esperamos a que el módulo/overlay termine de abrir.
+         */
+        setTimeout(function(){
+
+          if(somethingIsOpen()){
+            hideButtons();
+          }
+
+        },100);
+
+      }
+
+    },
+    true
+  );
+
+
+  /* ============================================================
+     DETECTAR CIERRE DE PANELES
+     ============================================================ */
+
+  const observer =
+    new MutationObserver(function(){
+
+      findSchoolButton();
+
+      /*
+       * Si estamos dentro de una acción abierta,
+       * mantenemos los botones ocultos.
+       */
+      if(
+        document.body.classList.contains(
+          'rx15-action-open'
+        )
+      ){
+
+        if(somethingIsOpen()){
+          hideButtons();
+        }
+
+      }
+
+    });
+
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:[
+        'class',
+        'aria-hidden',
+        'style'
+      ]
+    }
+  );
+
+
+  /* ============================================================
+     CUANDO SE PULSA VOLVER A ROXTHAL
+     ============================================================ */
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const back =
+        event.target.closest('.view-back');
+
+      if(!back){
+        return;
+      }
+
+      setTimeout(function(){
+        showButtons();
+      },150);
+
+    },
+    true
+  );
+
+
+  /* ============================================================
+     INICIALIZACIÓN
+     ============================================================ */
+
+  findSchoolButton();
+
+})();
+
+</script>
+   
    
 </body>
 </html>
