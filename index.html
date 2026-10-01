@@ -24493,8 +24493,10 @@ import { createClient } from
 
     for (const boton of botones) {
       if (boton.textContent.trim() === "🎰 Máquina RoXThal") {
-        boton.style.setProperty("right", "auto", "important");
-        boton.style.setProperty("left", "14px", "important");
+        boton.style.setProperty("left", "auto", "important");
+boton.style.setProperty("right", "14px", "important");
+boton.style.setProperty("bottom", "auto", "important");
+boton.style.setProperty("top", "14px", "important");
         return;
       }
     }
