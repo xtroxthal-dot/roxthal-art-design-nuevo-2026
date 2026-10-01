@@ -59276,6 +59276,30 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 <!-- ============================================================
      FIN — CONTROL DEFINITIVO MÓDULO 15
 ============================================================ -->
+
+   <style id="roxthal-m15-top-black-fix">
+#rsaOverlay.rsa-open{
+  align-items:flex-start !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+  box-sizing:border-box !important;
+}
+
+#rsaPanel{
+  max-height:calc(100vh - 16px) !important;
+}
+
+@media(max-width:600px){
+  #rsaOverlay.rsa-open{
+    align-items:stretch !important;
+    padding:0 !important;
+  }
+
+  #rsaPanel{
+    max-height:100vh !important;
+  }
+}
+</style>
    
 </body>
 </html>
