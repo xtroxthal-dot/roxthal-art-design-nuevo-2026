@@ -60132,7 +60132,12 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       await cliente
         .from(tabla)
         .delete()
-        .eq('id',id);
+                .eq(
+          tipo === 'professional'
+            ? 'consent_id'
+            : 'id',
+          id
+        );
 
     if(resultado.error){
       throw resultado.error;
