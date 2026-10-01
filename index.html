@@ -59280,23 +59280,34 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
    <style id="roxthal-m15-top-black-fix">
 #rsaOverlay.rsa-open{
   align-items:flex-start !important;
-  padding-top:8px !important;
-  padding-bottom:8px !important;
+  justify-content:flex-start !important;
+  padding:0 !important;
   box-sizing:border-box !important;
 }
 
 #rsaPanel{
-  max-height:calc(100vh - 16px) !important;
+  width:100vw !important;
+  height:100vh !important;
+  max-width:none !important;
+  max-height:100vh !important;
+  margin:0 !important;
+  border-radius:0 !important;
 }
 
 @media(max-width:600px){
   #rsaOverlay.rsa-open{
-    align-items:stretch !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
     padding:0 !important;
   }
 
   #rsaPanel{
+    width:100vw !important;
+    height:100vh !important;
+    max-width:none !important;
     max-height:100vh !important;
+    margin:0 !important;
+    border-radius:0 !important;
   }
 }
 </style>
