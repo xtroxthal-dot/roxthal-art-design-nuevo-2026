@@ -62691,6 +62691,239 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
 })();
 </script>
+<!-- =========================================================
+     ROXTHAL — UBICACIÓN Y CONTACTO
+     INTEGRAR:
+     - ROXTHAL EN TU TELÉFONO
+     - PAGOS
+     QUITAR AMBOS DE LA PÁGINA PRINCIPAL
+     ========================================================= -->
+<style id="roxthal-contact-integrated-modules-style">
+
+  /* Los módulos dejan de ocupar un lugar independiente */
+  #roxthalAppModule,
+  #payments{
+    display:none !important;
+  }
+
+  /* Contenedores integrados dentro de Ubicación y Contacto */
+  #contact .rx-contact-integrated{
+    margin-top:16px;
+  }
+
+  #contact .rx-contact-integrated > .rx-integrated-card{
+    margin-top:16px;
+  }
+
+  #contact .rx-contact-integrated .rx-integrated-title{
+    margin-bottom:10px;
+  }
+
+  /* El contenido de RoXThal en tu teléfono conserva su diseño */
+  #contact .rx-contact-integrated #roxthalAppModule{
+    display:block !important;
+    padding:0;
+  }
+
+  #contact .rx-contact-integrated #roxthalAppModule .rox-app-card{
+    margin:0;
+  }
+
+  /* El contenido de Pagos conserva su funcionamiento */
+  #contact .rx-contact-integrated #payments{
+    display:block !important;
+    position:static !important;
+    inset:auto !important;
+    min-height:0 !important;
+    padding:0 !important;
+    overflow:visible !important;
+    background:transparent !important;
+    animation:none !important;
+  }
+
+  #contact .rx-contact-integrated #payments > .container{
+    width:100%;
+    margin:0;
+  }
+
+  #contact .rx-contact-integrated #payments .section-head{
+    margin-bottom:16px;
+  }
+
+</style>
+
+<script id="roxthal-contact-integrated-modules">
+(function(){
+
+  'use strict';
+
+  if(window.__ROXTHAL_CONTACT_INTEGRATED_MODULES__){
+    return;
+  }
+
+  window.__ROXTHAL_CONTACT_INTEGRATED_MODULES__ = true;
+
+  function integrateModules(){
+
+    const contact =
+      document.getElementById('contact');
+
+    const app =
+      document.getElementById('roxthalAppModule');
+
+    const payments =
+      document.getElementById('payments');
+
+    if(!contact){
+      return false;
+    }
+
+    /*
+     * Creamos un único contenedor dentro de
+     * Ubicación y Contacto.
+     */
+    let integrated =
+      contact.querySelector(
+        ':scope > .container > .rx-contact-integrated'
+      );
+
+    if(!integrated){
+
+      const contactContainer =
+        contact.querySelector(':scope > .container');
+
+      if(!contactContainer){
+        return false;
+      }
+
+      integrated =
+        document.createElement('div');
+
+      integrated.className =
+        'rx-contact-integrated';
+
+      contactContainer.appendChild(
+        integrated
+      );
+
+    }
+
+    /*
+     * ROXTHAL EN TU TELÉFONO
+     *
+     * Movemos el módulo existente.
+     * NO lo clonamos.
+     *
+     * Así sus botones y su lógica original
+     * continúan funcionando.
+     */
+    if(
+      app &&
+      !integrated.contains(app)
+    ){
+
+      integrated.appendChild(app);
+
+    }
+
+    /*
+     * PAGOS
+     *
+     * Movemos el módulo existente.
+     * NO lo clonamos.
+     *
+     * De esta manera #mercadoPagoLink
+     * continúa siendo único y su configuración
+     * desde Supabase sigue funcionando.
+     */
+    if(
+      payments &&
+      !integrated.contains(payments)
+    ){
+
+      integrated.appendChild(payments);
+
+    }
+
+    /*
+     * Quitamos únicamente PAGOS de la cuadrícula
+     * principal.
+     *
+     * NO tocamos Administrador ni ningún otro módulo.
+     */
+    try{
+
+      if(
+        typeof moduleDefinitions !== 'undefined' &&
+        Array.isArray(moduleDefinitions)
+      ){
+
+        for(
+          let i = moduleDefinitions.length - 1;
+          i >= 0;
+          i--
+        ){
+
+          if(
+            moduleDefinitions[i] &&
+            moduleDefinitions[i][1] === 'payments'
+          ){
+
+            moduleDefinitions.splice(i,1);
+
+          }
+
+        }
+
+      }
+
+      /*
+       * Volvemos a pintar solamente la cuadrícula
+       * principal para eliminar la tarjeta de Pagos.
+       */
+      if(
+        typeof renderModuleGrid === 'function'
+      ){
+
+        renderModuleGrid();
+
+      }
+
+    }catch(error){
+
+      console.warn(
+        'RoXThal: no se pudo actualizar la cuadrícula principal.',
+        error
+      );
+
+    }
+
+    return true;
+
+  }
+
+  /*
+   * Esperamos a que el documento esté preparado.
+   */
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      integrateModules,
+      {once:true}
+    );
+
+  }else{
+
+    integrateModules();
+
+  }
+
+})();
+</script>
+   
    
 </body>
 </html>
