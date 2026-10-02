@@ -61501,7 +61501,9 @@ const apuntes = $('rx-apuntes-module-card');
     if(rsa.parentElement !== entry){
       entry.appendChild(rsa);
     }
-
+if(apuntes.parentElement !== entry){
+  entry.appendChild(apuntes);
+}
     /*
      * El estado visual lo controla este contenedor.
      */
