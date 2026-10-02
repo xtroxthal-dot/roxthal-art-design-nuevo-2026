@@ -62371,8 +62371,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
    <!-- =========================================================
      ROXTHAL — MÓDULO 04 ESCUELA
-     ACORDEÓN + WHATSAPP
-     NO MODIFICA EL ADMINISTRADOR
+     ACORDEÓN + WHATSAPP — FICHA COMPLETA
      ========================================================= -->
 <style id="roxthal-school-accordion-style">
 
@@ -62446,6 +62445,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
   }
 
   @media(max-width:700px){
+
     #coursesList{
       grid-template-columns:1fr;
     }
@@ -62458,6 +62458,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     .rx-school-body{
       padding:0 16px 17px;
     }
+
   }
 
 </style>
@@ -62473,7 +62474,9 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
   function createSchoolAccordion(){
 
-    const cards = [...box.querySelectorAll(":scope > article.card")];
+    const cards = [
+      ...box.querySelectorAll(":scope > article.card")
+    ];
 
     if(!cards.length) return;
 
@@ -62482,9 +62485,11 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       if(card.dataset.rxSchoolAccordion === "1") return;
 
       const titleElement = card.querySelector("h3");
+
       if(!titleElement) return;
 
-      const descriptionElement = card.querySelector("p.muted");
+      const descriptionElement =
+        card.querySelector("p.muted");
 
       const title =
         titleElement.textContent.trim();
@@ -62494,29 +62499,71 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
           ? descriptionElement.textContent.trim()
           : "";
 
+      /*
+       * Guardamos TODO el texto visible de la ficha
+       * antes de transformar la tarjeta.
+       *
+       * De esta manera WhatsApp incluirá:
+       * - nombre
+       * - descripción
+       * - precio
+       * - duración
+       * - horario
+       * - modalidad
+       * - cualquier otro dato visible
+       */
+      const completeFicha =
+        card.innerText
+          .replace(/\n{3,}/g,"\n\n")
+          .trim();
+
       const details =
-        card.querySelector("div[style*='margin-top']");
+        card.querySelector(
+          "div[style*='margin-top']"
+        );
 
-      const item = document.createElement("article");
-      item.className = "rx-school-item";
+      const item =
+        document.createElement("article");
 
-      const titleButton = document.createElement("button");
+      item.className =
+        "rx-school-item";
+
+      const titleButton =
+        document.createElement("button");
+
       titleButton.type = "button";
-      titleButton.className = "rx-school-title";
-      titleButton.setAttribute("aria-expanded","false");
 
-      const titleText = document.createElement("span");
-      titleText.textContent = title;
+      titleButton.className =
+        "rx-school-title";
 
-      const arrow = document.createElement("span");
-      arrow.className = "rx-school-arrow";
-      arrow.textContent = "▼";
+      titleButton.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+      const titleText =
+        document.createElement("span");
+
+      titleText.textContent =
+        title;
+
+      const arrow =
+        document.createElement("span");
+
+      arrow.className =
+        "rx-school-arrow";
+
+      arrow.textContent =
+        "▼";
 
       titleButton.appendChild(titleText);
       titleButton.appendChild(arrow);
 
-      const body = document.createElement("div");
-      body.className = "rx-school-body";
+      const body =
+        document.createElement("div");
+
+      body.className =
+        "rx-school-body";
 
       if(description){
 
@@ -62549,67 +62596,96 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       const whatsapp =
         document.createElement("button");
 
-      whatsapp.type = "button";
+      whatsapp.type =
+        "button";
+
       whatsapp.className =
         "btn rx-school-whatsapp";
 
       whatsapp.textContent =
-        "🟢 Compartir explicación por WhatsApp";
+        "🟢 Compartir ficha completa por WhatsApp";
 
-      whatsapp.addEventListener("click", function(event){
+      whatsapp.addEventListener(
+        "click",
+        function(event){
 
-        event.stopPropagation();
+          event.stopPropagation();
 
-        if(!description) return;
+          if(!completeFicha) return;
 
-        const url =
-          "https://wa.me/?text=" +
-          encodeURIComponent(description);
+          const url =
+            "https://wa.me/?text=" +
+            encodeURIComponent(
+              completeFicha
+            );
 
-        window.open(
-          url,
-          "_blank",
-          "noopener,noreferrer"
-        );
+          window.open(
+            url,
+            "_blank",
+            "noopener,noreferrer"
+          );
 
-      });
+        }
+      );
 
-      body.appendChild(whatsapp);
+      body.appendChild(
+        whatsapp
+      );
 
-      titleButton.addEventListener("click", function(){
+      titleButton.addEventListener(
+        "click",
+        function(){
 
-        const open =
-          item.classList.toggle("open");
+          const open =
+            item.classList.toggle(
+              "open"
+            );
 
-        titleButton.setAttribute(
-          "aria-expanded",
-          open ? "true" : "false"
-        );
+          titleButton.setAttribute(
+            "aria-expanded",
+            open
+              ? "true"
+              : "false"
+          );
 
-      });
+        }
+      );
 
-      item.appendChild(titleButton);
-      item.appendChild(body);
+      item.appendChild(
+        titleButton
+      );
 
-      card.dataset.rxSchoolAccordion = "1";
+      item.appendChild(
+        body
+      );
 
-      card.replaceWith(item);
+      card.dataset.rxSchoolAccordion =
+        "1";
+
+      card.replaceWith(
+        item
+      );
 
     });
 
   }
 
   const observer =
-    new MutationObserver(function(){
+    new MutationObserver(
+      function(){
 
-      createSchoolAccordion();
+        createSchoolAccordion();
 
-    });
+      }
+    );
 
-  observer.observe(box,{
-    childList:true,
-    subtree:false
-  });
+  observer.observe(
+    box,
+    {
+      childList:true,
+      subtree:false
+    }
+  );
 
   createSchoolAccordion();
 
