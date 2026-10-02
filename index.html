@@ -62179,66 +62179,26 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
      FIN REPARACIÓN APUNTES + ACADEMIA
      ============================================================ -->
 
-   <!-- ============================================================
+<!-- ============================================================
      ROXTHAL SCHOOL ATELIER
-     APERTURA DIRECTA — APUNTES + ACADEMIA ROXTHAL
+     APUNTES + ACADEMIA — ENTRADA INTERNA
      
-     Corrige exclusivamente:
-     📚 Apuntes
-     🎓 Academia RoXThal
-
-     No modifica los demás botones ni módulos.
+     IMPORTANTE:
+     Sustituye COMPLETAMENTE el bloque anterior
+     rx-school-atelier-apuntes-academia-final
 ============================================================ -->
 
-<script id="rx-school-atelier-apuntes-academia-final">
+<script id="rx-school-atelier-apuntes-academia-final-v2">
 (function(){
 
   'use strict';
 
-  if(window.__RX_SCHOOL_ATELIER_APUNTES_ACADEMIA_FINAL__) return;
-  window.__RX_SCHOOL_ATELIER_APUNTES_ACADEMIA_FINAL__ = true;
-
-
-  /* ==========================================================
-     UTILIDAD — ACTIVAR UNA VISTA REAL
-  ========================================================== */
-
-  function activateView(id){
-
-    document.querySelectorAll('.view').forEach(function(view){
-
-      view.classList.toggle(
-        'hidden',
-        view.id !== id
-      );
-
-    });
-
-    document.body.classList.add('view-open');
-
-    if(id === 'schoolAtelier'){
-      document.body.classList.add('school-atelier-open');
-    }else{
-      document.body.classList.remove('school-atelier-open');
-    }
-
-    window.scrollTo(0,0);
-
-    const target=document.getElementById(id);
-
-    if(target){
-      target.scrollTop=0;
-    }
-
-  }
+  if(window.__RX_SCHOOL_ATELIER_APUNTES_ACADEMIA_FINAL_V2__) return;
+  window.__RX_SCHOOL_ATELIER_APUNTES_ACADEMIA_FINAL_V2__ = true;
 
 
   /* ==========================================================
      📚 APUNTES
-     
-     Apuntes NO utiliza showView().
-     Utiliza su propia apertura:
-     window.RoXThalApuntes.open()
   ========================================================== */
 
   function openApuntes(){
@@ -62247,9 +62207,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       window.RoXThalApuntes &&
       typeof window.RoXThalApuntes.open === 'function'
     ){
-
       window.RoXThalApuntes.open();
-
       return true;
     }
 
@@ -62259,37 +62217,42 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
   /* ==========================================================
      🎓 ACADEMIA ROXTHAL
-     
-     Academia tampoco debe pasar por showView().
-     Se abre directamente y se convierte en la única
-     vista visible.
   ========================================================== */
 
   function openAcademia(){
 
-    const academia=document.getElementById('academia');
+    const academia =
+      document.getElementById('academia');
 
     if(!academia){
       return false;
     }
 
-    /* Ocultar todas las vistas normales */
-    document.querySelectorAll('.view').forEach(function(view){
 
-      view.classList.add('hidden');
+    /* Ocultar todas las vistas */
 
-    });
+    document
+      .querySelectorAll('.view')
+      .forEach(function(view){
 
-    /* Abrir Academia */
+        view.classList.add('hidden');
+
+      });
+
+
+    /* Mostrar Academia */
+
     academia.classList.remove('hidden');
 
     document.body.classList.add('view-open');
-
     document.body.classList.remove('school-atelier-open');
+
+
+    /* Evitar que otro contenedor quede por encima */
 
     academia.style.setProperty(
       'z-index',
-      '100000',
+      '2147483640',
       'important'
     );
 
@@ -62305,12 +62268,13 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       'important'
     );
 
-    academia.scrollTop=0;
 
     window.scrollTo(0,0);
 
+    academia.scrollTop = 0;
 
-    /* Utilizar el sistema existente de Academia */
+
+    /* Utilizar la implementación existente */
 
     if(
       window.RoXThalAcademia &&
@@ -62339,60 +62303,94 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
 
   /* ==========================================================
-     INTERCEPTOR PRINCIPAL
+     IDENTIFICAR SOLO BOTONES DENTRO DEL SCHOOL ATELIER
      
-     CAPTURE = true
+     Esto evita tocar los accesos que existen en Inicio.
+  ========================================================== */
+
+  function getAtelierButton(target){
+
+    if(!target) return null;
+
+    const button =
+      target.closest &&
+      target.closest('button');
+
+    if(!button) return null;
+
+    const atelier =
+      document.getElementById('schoolAtelier');
+
+    if(!atelier) return null;
+
+    if(!atelier.contains(button)){
+      return null;
+    }
+
+    return button;
+  }
+
+
+  /* ==========================================================
+     IDENTIFICACIÓN DE APUNTES
+  ========================================================== */
+
+  function isApuntes(button){
+
+    if(!button) return false;
+
+    const text =
+      (button.textContent || '')
+        .replace(/\s+/g,' ')
+        .trim()
+        .toLowerCase();
+
+    return (
+      text === 'apuntes' ||
+      text === '📚 apuntes' ||
+      text.includes('📚 apuntes')
+    );
+  }
+
+
+  /* ==========================================================
+     IDENTIFICACIÓN DE ACADEMIA
+  ========================================================== */
+
+  function isAcademia(button){
+
+    if(!button) return false;
+
+    return (
+      button.matches('[data-go="academia"]') ||
+      button.getAttribute('data-module') === 'academia' ||
+      button.getAttribute('data-module-id') === 'academia'
+    );
+  }
+
+
+  /* ==========================================================
+     INTERCEPTOR EN CAPTURA
      
-     Esto hace que Apuntes y Academia sean interceptados
-     ANTES del listener global que ejecuta showView().
+     Solo funciona para los botones que están dentro
+     de #schoolAtelier.
   ========================================================== */
 
   document.addEventListener(
     'click',
     function(event){
 
-      const element=event.target.closest?.('button');
+      const button =
+        getAtelierButton(event.target);
 
-      if(!element) return;
-
-
-      /* ======================================================
-         🎓 ACADEMIA
-      ====================================================== */
-
-      const academiaButton=
-        element.matches('[data-go="academia"]');
-
-      if(academiaButton){
-
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-
-        openAcademia();
-
-        return;
-      }
+      if(!button) return;
 
 
       /* ======================================================
          📚 APUNTES
-         
-         Solo interceptamos el botón cuyo texto corresponde
-         a Apuntes.
       ====================================================== */
 
-      const text=(element.textContent || '')
-        .replace(/\s+/g,' ')
-        .trim()
-        .toLowerCase();
-
-      const isApuntesButton=
-        text === '📚 apuntes' ||
-        text === 'apuntes' ||
-        text.includes('📚 apuntes');
-
-      if(isApuntesButton){
+      if(isApuntes(button)){
 
         event.preventDefault();
         event.stopPropagation();
@@ -62403,52 +62401,74 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
         return;
       }
 
+
+      /* ======================================================
+         🎓 ACADEMIA
+      ====================================================== */
+
+      if(isAcademia(button)){
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        openAcademia();
+
+        return;
+      }
+
     },
     true
   );
 
 
   /* ==========================================================
-     SEGURIDAD ADICIONAL
+     SEGURIDAD PARA ACADEMIA
      
-     Si algún código vuelve a intentar llevar Academia
-     al Módulo 15 después del clic, lo corregimos.
+     Evita que un listener posterior vuelva a ocultarla.
   ========================================================== */
 
   document.addEventListener(
     'click',
     function(event){
 
-      const element=event.target.closest?.(
-        '[data-go="academia"]'
-      );
+      const button =
+        getAtelierButton(event.target);
 
-      if(!element) return;
+      if(!isAcademia(button)) return;
 
       setTimeout(function(){
 
-        const academia=document.getElementById('academia');
+        const academia =
+          document.getElementById('academia');
+
+        if(!academia) return;
 
         if(
-          academia &&
           !academia.classList.contains('hidden')
         ){
 
-          document.querySelectorAll('.view').forEach(function(view){
+          document
+            .querySelectorAll('.view')
+            .forEach(function(view){
 
-            view.classList.toggle(
-              'hidden',
-              view.id !== 'academia'
-            );
+              if(view.id !== 'academia'){
+                view.classList.add('hidden');
+              }
 
-          });
+            });
 
-          document.body.classList.add('view-open');
-          document.body.classList.remove('school-atelier-open');
+          document.body.classList.add(
+            'view-open'
+          );
+
+          document.body.classList.remove(
+            'school-atelier-open'
+          );
 
         }
 
-      },100);
+      },150);
 
     },
     false
