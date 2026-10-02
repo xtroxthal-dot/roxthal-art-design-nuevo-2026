@@ -61401,6 +61401,427 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 <!-- ============================================================
      FIN — ROXTHAL SCHOOL ATELIER ACCESS HUB
 ============================================================ -->
+   <!-- =========================================================
+     ROXTHAL · MÓDULO 15 · ENTRADA SEPARADA
+     
+     ENTRADA:
+       📋 Consentimiento
+       🎨 RoXThal School Atelier
+
+     DENTRO DE SCHOOL ATELIER:
+       Mi RoXThal + resto de accesos existentes
+
+     NO CREA DUPLICADOS.
+     REUTILIZA LOS LANZADORES ORIGINALES.
+     ========================================================= -->
+
+<style id="rx-m15-entry-final-fix">
+
+  /* =========================================================
+     CONTENEDOR DE LOS DOS BOTONES DE LA ENTRADA DEL MÓDULO 15
+     ========================================================= */
+
+  #rxM15EntryOnly{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin:18px 0 24px;
+    box-sizing:border-box;
+  }
+
+  /*
+     Los lanzadores originales dejan de comportarse como
+     botones flotantes cuando están dentro de esta entrada.
+  */
+  #rxM15EntryOnly #rxConsentLauncher,
+  #rxM15EntryOnly #rsaLauncher{
+    position:relative !important;
+    left:auto !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:auto !important;
+
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+
+    margin:0 !important;
+
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+
+    transform:none !important;
+
+    box-sizing:border-box !important;
+  }
+
+  /*
+     Evita que las reglas antiguas de body.view-open
+     vuelvan a esconder estos dos botones.
+  */
+  body.view-open #rxM15EntryOnly #rxConsentLauncher,
+  body.view-open #rxM15EntryOnly #rsaLauncher,
+  body.view-open.school-atelier-open #rxM15EntryOnly #rxConsentLauncher,
+  body.view-open.school-atelier-open #rxM15EntryOnly #rsaLauncher{
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+  }
+
+  /*
+     Cuando estamos dentro de una aplicación secundaria
+     (Consentimiento, etc.), la entrada del Módulo 15 no
+     debe quedar encima.
+  */
+  #rxConsentApp.rx-open ~ *,
+  #rxM15EntryOnly.rx-m15-entry-hidden{
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  @media(max-width:600px){
+
+    #rxM15EntryOnly{
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    #rxM15EntryOnly #rxConsentLauncher,
+    #rxM15EntryOnly #rsaLauncher{
+      width:100% !important;
+      min-height:50px !important;
+      font-size:13px !important;
+    }
+
+  }
+
+</style>
+
+<script id="rx-m15-entry-final-fix-script">
+(function(){
+
+  'use strict';
+
+  const RX_M15_ENTRY_ID = 'rxM15EntryOnly';
+
+  /*
+   * Estos son EXACTAMENTE los módulos que ahora deben
+   * permanecer accesibles desde School Atelier y no como
+   * tarjetas independientes en "Todo RoXThal".
+   *
+   * NO eliminamos sus vistas.
+   * Solo ocultamos sus TARJETAS del inicio.
+   */
+  const RX_INTEGRATED_MODULE_IDS = [
+    'search',
+    'ai',
+    'rxtpTattooPreview',
+    'roxthalNewsModule',
+    'rxqQuiz',
+    'academia'
+  ];
+
+  /*
+   * Mi RoXThal puede tener diferentes identificadores según
+   * la integración instalada. Solo se comprueba el elemento
+   * que tenga realmente un data-go correspondiente.
+   */
+  const RX_MI_ROXTHAL_IDS = [
+    'miRoxthal',
+    'miRoxthalView',
+    'miRoxthalModule'
+  ];
+
+  function $(id){
+    return document.getElementById(id);
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * CREA LA ENTRADA USANDO LOS BOTONES ORIGINALES
+   * ---------------------------------------------------------
+   */
+  function ensureM15Entry(){
+
+    const school = $('schoolAtelier');
+    const consent = $('rxConsentLauncher');
+    const rsa = $('rsaLauncher');
+
+    if(!school || !consent || !rsa){
+      return false;
+    }
+
+    let entry = $(RX_M15_ENTRY_ID);
+
+    /*
+     * Si ya existe, no lo vuelve a crear.
+     */
+    if(!entry){
+
+      entry = document.createElement('div');
+      entry.id = RX_M15_ENTRY_ID;
+      entry.setAttribute(
+        'aria-label',
+        'Accesos principales del Módulo 15'
+      );
+
+      /*
+       * Lo colocamos dentro de la entrada del Módulo 15,
+       * antes del contenido normal del módulo.
+       */
+      const container = school.querySelector('.container');
+
+      if(!container){
+        return false;
+      }
+
+      const sectionHead = container.querySelector('.section-head');
+
+      if(sectionHead){
+        sectionHead.insertAdjacentElement(
+          'afterend',
+          entry
+        );
+      }else{
+        container.prepend(entry);
+      }
+    }
+
+    /*
+     * IMPORTANTE:
+     * Movemos LOS BOTONES ORIGINALES.
+     *
+     * No se crean clones.
+     * Sus listeners originales permanecen conectados.
+     */
+    if(consent.parentElement !== entry){
+      entry.appendChild(consent);
+    }
+
+    if(rsa.parentElement !== entry){
+      entry.appendChild(rsa);
+    }
+
+    /*
+     * El estado visual lo controla este contenedor.
+     */
+    entry.classList.remove('rx-m15-entry-hidden');
+
+    consent.style.setProperty(
+      'display',
+      'inline-flex',
+      'important'
+    );
+
+    rsa.style.setProperty(
+      'display',
+      'inline-flex',
+      'important'
+    );
+
+    consent.style.setProperty(
+      'opacity',
+      '1',
+      'important'
+    );
+
+    rsa.style.setProperty(
+      'opacity',
+      '1',
+      'important'
+    );
+
+    consent.style.setProperty(
+      'visibility',
+      'visible',
+      'important'
+    );
+
+    rsa.style.setProperty(
+      'visibility',
+      'visible',
+      'important'
+    );
+
+    consent.style.setProperty(
+      'pointer-events',
+      'auto',
+      'important'
+    );
+
+    rsa.style.setProperty(
+      'pointer-events',
+      'auto',
+      'important'
+    );
+
+    return true;
+  }
+
+
+  /*
+   * ---------------------------------------------------------
+   * OCULTAR TARJETAS INTEGRADAS DE "TODO ROXTHAL"
+   *
+   * Solo article.module con data-go EXACTO.
+   *
+   * NO usamos búsqueda por texto.
+   * NO tocamos vistas.
+   * NO tocamos botones internos.
+   * ---------------------------------------------------------
+   */
+  function hideIntegratedHomeCards(){
+
+    const ids = RX_INTEGRATED_MODULE_IDS.concat(
+      RX_MI_ROXTHAL_IDS
+    );
+
+    ids.forEach(function(id){
+
+      document
+        .querySelectorAll(
+          'article.module[data-go="' + id + '"]'
+        )
+        .forEach(function(card){
+
+          /*
+           * Jamás tocar una tarjeta que esté dentro
+           * del School Atelier.
+           */
+          if(
+            card.closest('#rsaOverlay') ||
+            card.closest('#rsaPanel') ||
+            card.closest('#rsaContent')
+          ){
+            return;
+          }
+
+          card.setAttribute(
+            'data-rx-m15-integrated',
+            'true'
+          );
+
+          card.style.setProperty(
+            'display',
+            'none',
+            'important'
+          );
+        });
+
+    });
+
+  }
+
+
+  /*
+   * ---------------------------------------------------------
+   * MANTENER OCULTAS LAS TARJETAS INTEGRADAS DESPUÉS DE
+   * renderModuleGrid()
+   * ---------------------------------------------------------
+   */
+  function refresh(){
+
+    ensureM15Entry();
+    hideIntegratedHomeCards();
+
+  }
+
+
+  /*
+   * ---------------------------------------------------------
+   * CUANDO SE ABRE EL MÓDULO 15
+   * ---------------------------------------------------------
+   */
+  document.addEventListener(
+    'click',
+    function(e){
+
+      const button = e.target.closest(
+        '[data-go="schoolAtelier"]'
+      );
+
+      if(!button){
+        return;
+      }
+
+      /*
+       * showView() se ejecuta mediante el listener original.
+       * Esperamos a que termine y luego restauramos la entrada.
+       */
+      setTimeout(refresh,50);
+      setTimeout(refresh,250);
+      setTimeout(refresh,700);
+
+    },
+    true
+  );
+
+
+  /*
+   * ---------------------------------------------------------
+   * CUANDO SE VUELVE A INICIO Y DESPUÉS SE REGRESA AL MÓDULO 15
+   * ---------------------------------------------------------
+   */
+  document.addEventListener(
+    'click',
+    function(e){
+
+      const button = e.target.closest(
+        '[data-go="home"]'
+      );
+
+      if(!button){
+        return;
+      }
+
+      /*
+       * No modificamos el regreso.
+       * Solo dejamos preparado el próximo acceso.
+       */
+      setTimeout(refresh,150);
+      setTimeout(refresh,500);
+
+    },
+    true
+  );
+
+
+  /*
+   * ---------------------------------------------------------
+   * PRIMERA CARGA
+   * ---------------------------------------------------------
+   */
+  function init(){
+
+    refresh();
+
+    setTimeout(refresh,300);
+    setTimeout(refresh,1000);
+    setTimeout(refresh,2000);
+    setTimeout(refresh,4000);
+
+  }
+
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+</script>
    
 </body>
 </html>
