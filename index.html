@@ -10003,8 +10003,7 @@ overlay.style.display = "block";
             rows.length
               ? rows.map(function (item) {
                   const name =
-                    item.label ??
-item.name ??
+                    item.name ??
                     item.module_name ??
                     item.module_id ??
                     item.action_target ??
@@ -61446,8 +61445,8 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     const school = $('schoolAtelier');
     const consent = $('rxConsentLauncher');
     const rsa = $('rsaLauncher');
-const apuntes = $('rx-apuntes-module-card');
-    if(!school || !consent || !rsa || !apuntes){
+
+    if(!school || !consent || !rsa){
       return false;
     }
 
@@ -61501,9 +61500,7 @@ const apuntes = $('rx-apuntes-module-card');
     if(rsa.parentElement !== entry){
       entry.appendChild(rsa);
     }
-if(apuntes.parentElement !== entry){
-  entry.appendChild(apuntes);
-}
+
     /*
      * El estado visual lo controla este contenedor.
      */
@@ -61556,29 +61553,7 @@ if(apuntes.parentElement !== entry){
       'auto',
       'important'
     );
-    apuntes.style.setProperty(
-      'display',
-      'inline-flex',
-      'important'
-    );
 
-    apuntes.style.setProperty(
-      'opacity',
-      '1',
-      'important'
-    );
-
-    apuntes.style.setProperty(
-      'visibility',
-      'visible',
-      'important'
-    );
-
-    apuntes.style.setProperty(
-      'pointer-events',
-      'auto',
-      'important'
-    );
     return true;
   }
 
