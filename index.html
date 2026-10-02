@@ -62368,6 +62368,253 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 <!-- =========================================================
      FIN — MÓDULO 02 SERVICIOS
      ========================================================= -->
+
+   <!-- =========================================================
+     ROXTHAL — MÓDULO 04 ESCUELA
+     ACORDEÓN + WHATSAPP
+     NO MODIFICA EL ADMINISTRADOR
+     ========================================================= -->
+<style id="roxthal-school-accordion-style">
+
+  #coursesList{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+  }
+
+  .rx-school-item{
+    background:linear-gradient(145deg,var(--surface2),var(--surface));
+    border:1px solid var(--border);
+    border-radius:17px;
+    overflow:hidden;
+  }
+
+  .rx-school-title{
+    width:100%;
+    min-height:64px;
+    padding:16px 20px;
+    border:0;
+    background:transparent;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    text-align:left;
+    font-size:20px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .rx-school-title:hover{
+    color:var(--yellow);
+  }
+
+  .rx-school-arrow{
+    flex:0 0 auto;
+    font-size:18px;
+    transition:transform .2s ease;
+  }
+
+  .rx-school-item.open .rx-school-arrow{
+    transform:rotate(180deg);
+  }
+
+  .rx-school-body{
+    display:none;
+    padding:0 20px 20px;
+  }
+
+  .rx-school-item.open .rx-school-body{
+    display:block;
+  }
+
+  .rx-school-description{
+    color:var(--muted);
+    line-height:1.65;
+    margin:4px 0 18px;
+    white-space:pre-wrap;
+  }
+
+  .rx-school-details{
+    margin-top:10px;
+  }
+
+  .rx-school-whatsapp{
+    margin-top:18px;
+    width:100%;
+  }
+
+  @media(max-width:700px){
+    #coursesList{
+      grid-template-columns:1fr;
+    }
+
+    .rx-school-title{
+      font-size:18px;
+      padding:15px 16px;
+    }
+
+    .rx-school-body{
+      padding:0 16px 17px;
+    }
+  }
+
+</style>
+
+<script id="roxthal-school-accordion-script">
+(function(){
+
+  "use strict";
+
+  const box = document.getElementById("coursesList");
+
+  if(!box) return;
+
+  function createSchoolAccordion(){
+
+    const cards = [...box.querySelectorAll(":scope > article.card")];
+
+    if(!cards.length) return;
+
+    cards.forEach(card => {
+
+      if(card.dataset.rxSchoolAccordion === "1") return;
+
+      const titleElement = card.querySelector("h3");
+      if(!titleElement) return;
+
+      const descriptionElement = card.querySelector("p.muted");
+
+      const title =
+        titleElement.textContent.trim();
+
+      const description =
+        descriptionElement
+          ? descriptionElement.textContent.trim()
+          : "";
+
+      const details =
+        card.querySelector("div[style*='margin-top']");
+
+      const item = document.createElement("article");
+      item.className = "rx-school-item";
+
+      const titleButton = document.createElement("button");
+      titleButton.type = "button";
+      titleButton.className = "rx-school-title";
+      titleButton.setAttribute("aria-expanded","false");
+
+      const titleText = document.createElement("span");
+      titleText.textContent = title;
+
+      const arrow = document.createElement("span");
+      arrow.className = "rx-school-arrow";
+      arrow.textContent = "▼";
+
+      titleButton.appendChild(titleText);
+      titleButton.appendChild(arrow);
+
+      const body = document.createElement("div");
+      body.className = "rx-school-body";
+
+      if(description){
+
+        const descriptionBox =
+          document.createElement("div");
+
+        descriptionBox.className =
+          "rx-school-description";
+
+        descriptionBox.textContent =
+          description;
+
+        body.appendChild(descriptionBox);
+      }
+
+      if(details){
+
+        const detailsBox =
+          document.createElement("div");
+
+        detailsBox.className =
+          "rx-school-details";
+
+        detailsBox.innerHTML =
+          details.innerHTML;
+
+        body.appendChild(detailsBox);
+      }
+
+      const whatsapp =
+        document.createElement("button");
+
+      whatsapp.type = "button";
+      whatsapp.className =
+        "btn rx-school-whatsapp";
+
+      whatsapp.textContent =
+        "🟢 Compartir explicación por WhatsApp";
+
+      whatsapp.addEventListener("click", function(event){
+
+        event.stopPropagation();
+
+        if(!description) return;
+
+        const url =
+          "https://wa.me/?text=" +
+          encodeURIComponent(description);
+
+        window.open(
+          url,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+      });
+
+      body.appendChild(whatsapp);
+
+      titleButton.addEventListener("click", function(){
+
+        const open =
+          item.classList.toggle("open");
+
+        titleButton.setAttribute(
+          "aria-expanded",
+          open ? "true" : "false"
+        );
+
+      });
+
+      item.appendChild(titleButton);
+      item.appendChild(body);
+
+      card.dataset.rxSchoolAccordion = "1";
+
+      card.replaceWith(item);
+
+    });
+
+  }
+
+  const observer =
+    new MutationObserver(function(){
+
+      createSchoolAccordion();
+
+    });
+
+  observer.observe(box,{
+    childList:true,
+    subtree:false
+  });
+
+  createSchoolAccordion();
+
+})();
+</script>
    
 </body>
 </html>
