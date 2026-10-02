@@ -61989,6 +61989,195 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 <!-- ============================================================
      FIN — OCULTAR SOLO ROXTHAL NEWS / QUIZ / ACADEMIA
      ============================================================ -->
+
+   <!-- ============================================================
+     ROXTHAL — REPARACIÓN FINAL
+     APUNTES + ACADEMIA ROXTHAL
+     ============================================================ -->
+<style id="rx-fix-apuntes-academia-final">
+  /* Apuntes NO debe aparecer en la portada */
+  #moduleGrid > #rx-apuntes-repair-card{
+    display:none !important;
+  }
+</style>
+
+<script id="rx-fix-apuntes-academia-final-script">
+(function(){
+  'use strict';
+
+  const GRID_ID = 'moduleGrid';
+
+  /* ==========================================================
+     1. OCULTAR APUNTES DE LA PORTADA
+     ========================================================== */
+  function hideApuntesHome(){
+    const grid = document.getElementById(GRID_ID);
+    if(!grid) return;
+
+    const card = document.getElementById('rx-apuntes-repair-card');
+
+    if(card && card.parentElement === grid){
+      card.style.setProperty(
+        'display',
+        'none',
+        'important'
+      );
+    }
+  }
+
+
+  /* ==========================================================
+     2. ABRIR APUNTES DE FORMA DIRECTA
+     ========================================================== */
+  function openApuntes(){
+    hideApuntesHome();
+
+    if(
+      window.RoXThalApuntes &&
+      typeof window.RoXThalApuntes.open === 'function'
+    ){
+      window.RoXThalApuntes.open();
+      return true;
+    }
+
+    return false;
+  }
+
+
+  /* ==========================================================
+     3. ABRIR ACADEMIA DE FORMA DIRECTA
+     ========================================================== */
+  function openAcademia(){
+    hideApuntesHome();
+
+    if(
+      window.RoXThalAcademia &&
+      typeof window.RoXThalAcademia.open === 'function'
+    ){
+      window.RoXThalAcademia.open();
+      return true;
+    }
+
+    return false;
+  }
+
+
+  /* ==========================================================
+     4. INTERCEPTAR LOS DOS BOTONES
+     ========================================================== */
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const academia = event.target.closest(
+        '[data-go="academia"]'
+      );
+
+      if(academia){
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        openAcademia();
+
+        return;
+      }
+
+
+      /*
+       * Apuntes:
+       * admitimos tanto la tarjeta reparada como
+       * cualquier botón que lleve explícitamente
+       * a Apuntes.
+       */
+      const apuntes = event.target.closest(
+        '#rx-apuntes-repair-card,' +
+        '[data-go="apuntes"],' +
+        '[data-go="rxApuntes"],' +
+        '[data-go="rx-apuntes"]'
+      );
+
+      if(apuntes){
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        openApuntes();
+
+        return;
+      }
+
+    },
+    true
+  );
+
+
+  /* ==========================================================
+     5. SI APUNTES SE RECONSTRUYE, VOLVER A OCULTARLO
+     ========================================================== */
+  function startObserver(){
+
+    const grid = document.getElementById(GRID_ID);
+
+    if(!grid) return;
+
+    hideApuntesHome();
+
+    const observer = new MutationObserver(
+      function(){
+        hideApuntesHome();
+      }
+    );
+
+    observer.observe(
+      grid,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+  }
+
+
+  /* ==========================================================
+     6. INICIALIZACIÓN
+     ========================================================== */
+  function init(){
+
+    hideApuntesHome();
+
+    /*
+     * Esperamos por si moduleGrid todavía
+     * no ha sido construido.
+     */
+    setTimeout(hideApuntesHome,100);
+    setTimeout(hideApuntesHome,500);
+    setTimeout(hideApuntesHome,1000);
+    setTimeout(hideApuntesHome,2000);
+
+    startObserver();
+  }
+
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+</script>
+<!-- ============================================================
+     FIN REPARACIÓN APUNTES + ACADEMIA
+     ============================================================ -->
    
 </body>
 </html>
