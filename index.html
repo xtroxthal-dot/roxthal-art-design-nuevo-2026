@@ -61886,7 +61886,488 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
      FIN — OCULTAR SOLO ROXTHAL NEWS / QUIZ / ACADEMIA
      ============================================================ -->
 
+<!-- =========================================================
+     RoXThal Art Design — MÓDULO 02 SERVICIOS
+     Títulos desplegables + compartir explicación por WhatsApp
+     
+     NO modifica el Administrador.
+     NO modifica Supabase.
+     NO modifica la tabla services.
+     ========================================================= -->
 
+<style id="roxthal-services-accordion-style">
+
+  #servicesList.rox-services-accordion{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-item{
+    overflow:hidden;
+    border:1px solid var(--border, rgba(255,255,255,.12));
+    border-radius:16px;
+    background:var(--card, rgba(255,255,255,.04));
+  }
+
+  #servicesList.rox-services-accordion .rox-service-title{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    border:0;
+    background:transparent;
+    color:var(--text, #fff);
+    padding:18px 18px;
+    text-align:left;
+    cursor:pointer;
+    font:inherit;
+    font-weight:700;
+    font-size:20px;
+    line-height:1.3;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-title:hover{
+    background:rgba(255,255,255,.04);
+  }
+
+  #servicesList.rox-services-accordion .rox-service-arrow{
+    flex:0 0 auto;
+    font-size:18px;
+    transition:transform .2s ease;
+  }
+
+  #servicesList.rox-services-accordion
+  .rox-service-item.open
+  .rox-service-arrow{
+    transform:rotate(180deg);
+  }
+
+  #servicesList.rox-services-accordion .rox-service-content{
+    display:none;
+    padding:0 18px 18px;
+  }
+
+  #servicesList.rox-services-accordion
+  .rox-service-item.open
+  .rox-service-content{
+    display:block;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-description{
+    margin:0;
+    color:var(--muted, #bbb);
+    line-height:1.7;
+    white-space:pre-line;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-share{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:18px;
+    padding:11px 16px;
+    border:0;
+    border-radius:12px;
+    background:#25D366;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    font-size:15px;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-share:hover{
+    filter:brightness(1.08);
+  }
+
+  #servicesList.rox-services-accordion .rox-service-share:active{
+    transform:scale(.98);
+  }
+
+  @media(max-width:600px){
+    #servicesList.rox-services-accordion .rox-service-title{
+      font-size:18px;
+      padding:16px;
+    }
+
+    #servicesList.rox-services-accordion .rox-service-content{
+      padding:0 16px 16px;
+    }
+
+    #servicesList.rox-services-accordion .rox-service-share{
+      width:100%;
+    }
+  }
+
+</style>
+
+<script id="roxthal-services-accordion-script">
+(function(){
+
+  'use strict';
+
+  /*
+   * Esperamos a que la aplicación tenga definido
+   * el cliente Supabase y el contenedor público.
+   */
+  function initRoXThalServices(){
+
+    if(
+      typeof window.db === 'undefined' ||
+      !window.db ||
+      typeof window.db.from !== 'function'
+    ){
+      return false;
+    }
+
+    const box = document.getElementById('servicesList');
+
+    if(!box){
+      return false;
+    }
+
+    /*
+     * Guardamos la función pública original solamente
+     * como referencia. El Administrador NO utiliza esta
+     * función: tiene su propio loadServices dentro de
+     * su módulo administrativo.
+     */
+    const originalPublicLoadServices =
+      window.loadServices;
+
+    /*
+     * Evitamos instalar el parche varias veces.
+     */
+    if(window.__roxthalServicesAccordionInstalled){
+      return true;
+    }
+
+    window.__roxthalServicesAccordionInstalled = true;
+
+    /*
+     * Escapado seguro para textos procedentes de Supabase.
+     */
+    function escapeHTML(value){
+
+      return String(value == null ? '' : value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+
+    }
+
+    /*
+     * Comparte ÚNICAMENTE la explicación.
+     */
+    function shareServiceDescription(description){
+
+      const text = String(description || '').trim();
+
+      if(!text){
+        if(typeof window.toast === 'function'){
+          window.toast('Este servicio no tiene explicación para compartir.');
+        }else{
+          alert('Este servicio no tiene explicación para compartir.');
+        }
+        return;
+      }
+
+      const whatsappURL =
+        'https://wa.me/?text=' +
+        encodeURIComponent(text);
+
+      /*
+       * En móviles abre WhatsApp.
+       */
+      window.open(
+        whatsappURL,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
+    }
+
+    /*
+     * Render público de Servicios.
+     */
+    async function renderServicesAccordion(){
+
+      const currentBox =
+        document.getElementById('servicesList');
+
+      if(!currentBox){
+        return;
+      }
+
+      currentBox.classList.add('rox-services-accordion');
+
+      currentBox.innerHTML =
+        '<div class="empty">Cargando servicios...</div>';
+
+      try{
+
+        const response =
+          await window.db
+            .from('services')
+            .select('*')
+            .eq('active',true)
+            .order('created_at',{ascending:false});
+
+        if(response.error){
+          throw response.error;
+        }
+
+        const services =
+          response.data || [];
+
+        if(!services.length){
+
+          currentBox.innerHTML =
+            '<div class="empty">Aún no hay servicios publicados.</div>';
+
+          return;
+        }
+
+        currentBox.innerHTML =
+          services.map(function(service,index){
+
+            const name =
+              String(service.name || 'Servicio');
+
+            const description =
+              String(service.description || '').trim();
+
+            const safeName =
+              escapeHTML(name);
+
+            const safeDescription =
+              escapeHTML(description);
+
+            return `
+              <article
+                class="rox-service-item"
+                data-rox-service-index="${index}"
+              >
+
+                <button
+                  type="button"
+                  class="rox-service-title"
+                  aria-expanded="false"
+                >
+
+                  <span>${safeName}</span>
+
+                  <span
+                    class="rox-service-arrow"
+                    aria-hidden="true"
+                  >▼</span>
+
+                </button>
+
+                <div class="rox-service-content">
+
+                  <p class="rox-service-description">
+                    ${safeDescription}
+                  </p>
+
+                  ${
+                    description
+                      ? `
+                        <button
+                          type="button"
+                          class="rox-service-share"
+                          data-rox-share-description
+                        >
+                          🟢 Compartir por WhatsApp
+                        </button>
+                      `
+                      : ''
+                  }
+
+                </div>
+
+              </article>
+            `;
+
+          }).join('');
+
+        /*
+         * Desplegar / cerrar servicios.
+         */
+        currentBox
+          .querySelectorAll('.rox-service-title')
+          .forEach(function(button){
+
+            button.addEventListener(
+              'click',
+              function(){
+
+                const item =
+                  button.closest('.rox-service-item');
+
+                if(!item){
+                  return;
+                }
+
+                const wasOpen =
+                  item.classList.contains('open');
+
+                /*
+                 * Cerramos todos los demás.
+                 */
+                currentBox
+                  .querySelectorAll('.rox-service-item.open')
+                  .forEach(function(other){
+
+                    if(other !== item){
+
+                      other.classList.remove('open');
+
+                      const otherButton =
+                        other.querySelector(
+                          '.rox-service-title'
+                        );
+
+                      if(otherButton){
+                        otherButton.setAttribute(
+                          'aria-expanded',
+                          'false'
+                        );
+                      }
+
+                    }
+
+                  });
+
+                /*
+                 * Alternamos el seleccionado.
+                 */
+                item.classList.toggle(
+                  'open',
+                  !wasOpen
+                );
+
+                button.setAttribute(
+                  'aria-expanded',
+                  String(!wasOpen)
+                );
+
+              }
+            );
+
+          });
+
+        /*
+         * Botones WhatsApp.
+         */
+        currentBox
+          .querySelectorAll('[data-rox-share-description]')
+          .forEach(function(button){
+
+            button.addEventListener(
+              'click',
+              function(event){
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const item =
+                  button.closest('.rox-service-item');
+
+                if(!item){
+                  return;
+                }
+
+                const descriptionElement =
+                  item.querySelector(
+                    '.rox-service-description'
+                  );
+
+                if(!descriptionElement){
+                  return;
+                }
+
+                /*
+                 * textContent garantiza que WhatsApp
+                 * reciba únicamente la explicación.
+                 */
+                shareServiceDescription(
+                  descriptionElement.textContent
+                );
+
+              }
+            );
+
+          });
+
+      }catch(error){
+
+        console.error(
+          'RoXThal Servicios:',
+          error
+        );
+
+        currentBox.innerHTML =
+          '<div class="empty">No se pudieron cargar los servicios.</div>';
+
+      }
+
+    }
+
+    /*
+     * Reemplazamos únicamente la carga PÚBLICA.
+     *
+     * El Administrador tiene su propio sistema y
+     * continúa trabajando directamente con services.
+     */
+    window.loadServices =
+      renderServicesAccordion;
+
+    /*
+     * Si el módulo ya está visible, actualizamos ahora.
+     */
+    if(!box.classList.contains('hidden')){
+
+      renderServicesAccordion();
+
+    }
+
+    return true;
+
+  }
+
+  /*
+   * La app puede inicializar Supabase después.
+   * Comprobamos varias veces sin tocar ningún otro módulo.
+   */
+  let attempts = 0;
+
+  const timer =
+    setInterval(function(){
+
+      attempts++;
+
+      if(
+        initRoXThalServices() ||
+        attempts >= 40
+      ){
+
+        clearInterval(timer);
+
+      }
+
+    },500);
+
+})();
+</script>
+
+<!-- =========================================================
+     FIN — MÓDULO 02 SERVICIOS
+     ========================================================= -->
    
 </body>
 </html>
