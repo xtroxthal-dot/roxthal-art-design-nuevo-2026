@@ -10003,7 +10003,8 @@ overlay.style.display = "block";
             rows.length
               ? rows.map(function (item) {
                   const name =
-                    item.name ??
+                    item.label ??
+item.name ??
                     item.module_name ??
                     item.module_id ??
                     item.action_target ??
