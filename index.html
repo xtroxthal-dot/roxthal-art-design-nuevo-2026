@@ -6717,34 +6717,138 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
     "apuntes-fotos";
 
 
-  /* ==========================================================
-     COMPROBACIÓN SUPABASE
+    /* ==========================================================
+     INICIALIZACIÓN SEGURA DE SUPABASE
+
+     Apuntes no debe abortar si Supabase tarda en cargar.
+     La interfaz debe quedar registrada igualmente.
      ========================================================== */
 
-  
-if(
-  !window.supabase ||
-  typeof window.supabase.createClient !== "function"
-){
+  let sb = null;
 
-  console.error(
-    "[RoXThal Apuntes] Supabase JS no está disponible."
-  );
+  function createSupabaseClient(){
 
-  return;
-}
+    if(
+      window.supabase &&
+      typeof window.supabase.createClient === "function"
+    ){
 
-  const sb =
-    window.supabase.createClient(
-      RX_AP_SUPABASE_URL,
-      RX_AP_SUPABASE_KEY,
-      {
-        auth:{
-          persistSession:true,
-          autoRefreshToken:true
+      sb =
+        window.supabase.createClient(
+          RX_AP_SUPABASE_URL,
+          RX_AP_SUPABASE_KEY,
+          {
+            auth:{
+              persistSession:true,
+              autoRefreshToken:true
+            }
+          }
+        );
+
+      return true;
+
+    }
+
+    return false;
+
+  }
+
+
+  async function ensureSupabase(){
+
+    if(sb){
+      return true;
+    }
+
+    if(createSupabaseClient()){
+      return true;
+    }
+
+    await new Promise(function(resolve){
+
+      let finished = false;
+
+      function finish(){
+
+        if(finished){
+          return;
         }
+
+        finished = true;
+        resolve();
+
       }
-    );
+
+      const existing =
+        document.querySelector(
+          'script[src*="supabase-js"]'
+        );
+
+      if(existing){
+
+        existing.addEventListener(
+          'load',
+          finish,
+          {once:true}
+        );
+
+      }
+
+      const retryTimer =
+        setInterval(function(){
+
+          if(createSupabaseClient()){
+
+            clearInterval(retryTimer);
+            finish();
+
+          }
+
+        },100);
+
+      setTimeout(function(){
+
+        clearInterval(retryTimer);
+
+        if(!sb){
+
+          const script =
+            document.createElement("script");
+
+          script.src =
+            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+
+          script.onload = function(){
+
+            createSupabaseClient();
+            finish();
+
+          };
+
+          script.onerror = function(){
+            finish();
+          };
+
+          document.head.appendChild(script);
+
+        }else{
+
+          finish();
+
+        }
+
+      },1000);
+
+      setTimeout(
+        finish,
+        5000
+      );
+
+    });
+
+    return !!sb;
+
+  }
 
 
   /* ==========================================================
@@ -8746,7 +8850,27 @@ overlay.style.display = "block";
       "aria-hidden",
       "false"
     );
+    const supabaseReady =
+      await ensureSupabase();
 
+    if(!supabaseReady){
+
+      console.error(
+        "[RoXThal Apuntes] No se pudo inicializar Supabase."
+      );
+
+      adminView.style.display = "none";
+      studentView.style.display = "block";
+
+      showStatus(
+        loginStatus,
+        "Apuntes no pudo conectar con el servidor. Intenta nuevamente.",
+        "error"
+      );
+
+      return;
+
+    }
 
     rxIsAdmin =
       await checkAdmin();
