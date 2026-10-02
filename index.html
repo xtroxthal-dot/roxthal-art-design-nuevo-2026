@@ -60376,6 +60376,1031 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
 })();
 </script>
+
+   <!-- ============================================================
+     ROXTHAL SCHOOL ATELIER
+     HUB DE ACCESOS — VERSIÓN QUIRÚRGICA
+     
+     Ubicación:
+     Dentro de #rsaPageAtelier
+
+     NO modifica:
+     - Administrador
+     - Supabase
+     - Pedidos Tienda
+     - contenido interno de los módulos
+     - lógica original de Mi RoXThal
+     - lógica original de Consentimiento
+     - lógica original de School Atelier
+============================================================ -->
+
+<style id="roxthal-atelier-access-hub">
+
+/* ============================================================
+   CONTENEDOR PRINCIPAL
+============================================================ */
+
+#rxM15AccessHub{
+  width:100%;
+  box-sizing:border-box;
+  margin:28px 0 10px;
+  padding:0;
+}
+
+#rxM15AccessHub .rx-m15-access-title{
+  margin:0 0 14px;
+  color:#f2c400;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+}
+
+#rxM15AccessHub .rx-m15-access-subtitle{
+  margin:0 0 18px;
+  color:rgba(255,255,255,.68);
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* ============================================================
+   CUADRÍCULA
+============================================================ */
+
+#rxM15AccessGrid{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:11px;
+  box-sizing:border-box;
+}
+
+/* ============================================================
+   TODOS LOS BOTONES
+============================================================ */
+
+#rxM15AccessGrid .rx-m15-access-btn{
+  width:100%;
+  min-width:0;
+  min-height:52px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+
+  padding:10px 12px;
+
+  box-sizing:border-box;
+
+  border:1px solid rgba(215,173,85,.42);
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #181818,
+      #0e0e0e
+    );
+
+  color:#f5f5f5;
+
+  font-size:12px;
+  font-weight:900;
+  line-height:1.25;
+
+  text-align:center;
+
+  cursor:pointer;
+
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    background .16s ease,
+    box-shadow .16s ease;
+}
+
+#rxM15AccessGrid .rx-m15-access-btn:hover{
+  transform:translateY(-2px);
+  border-color:#f2c400;
+
+  background:
+    linear-gradient(
+      145deg,
+      #202020,
+      #111
+    );
+
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.28);
+}
+
+#rxM15AccessGrid .rx-m15-access-btn:active{
+  transform:translateY(0);
+}
+
+#rxM15AccessGrid .rx-m15-access-btn:focus-visible{
+  outline:2px solid #f2c400;
+  outline-offset:2px;
+}
+
+/* ============================================================
+   LOS TRES ACCESOS PRINCIPALES
+============================================================ */
+
+#rxM15AccessGrid .rx-m15-primary{
+  border-color:rgba(242,196,0,.62);
+
+  background:
+    linear-gradient(
+      145deg,
+      #202020,
+      #101010
+    );
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media(max-width:850px){
+
+  #rxM15AccessGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+}
+
+@media(max-width:520px){
+
+  #rxM15AccessGrid{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+
+  #rxM15AccessGrid .rx-m15-access-btn{
+    min-height:50px;
+    font-size:12px;
+  }
+
+}
+
+</style>
+
+
+<script id="roxthal-atelier-access-hub-script">
+
+(function(){
+
+  'use strict';
+
+
+  /* ==========================================================
+     CONFIGURACIÓN
+  ========================================================== */
+
+  const HUB_ID = 'rxM15AccessHub';
+  const GRID_ID = 'rxM15AccessGrid';
+
+
+  /* ==========================================================
+     UTILIDADES
+  ========================================================== */
+
+  function el(id){
+
+    return document.getElementById(id);
+
+  }
+
+
+  function closeSchoolAtelier(){
+
+    const closeButton =
+      el('rsaClose');
+
+    if(closeButton){
+
+      closeButton.click();
+
+    }
+
+  }
+
+
+  function openNormalView(viewId){
+
+    closeSchoolAtelier();
+
+    setTimeout(function(){
+
+      if(
+        typeof window.showView === 'function'
+      ){
+
+        try{
+
+          window.showView(viewId);
+
+          return;
+
+        }catch(error){
+
+          console.warn(
+            '[RoXThal Atelier] showView() no pudo abrir:',
+            viewId,
+            error
+          );
+
+        }
+
+      }
+
+      /*
+       * Fallback extremadamente limitado.
+       * Solo se utiliza si showView todavía no está disponible.
+       */
+
+      const target =
+        el(viewId);
+
+      if(!target){
+
+        console.warn(
+          '[RoXThal Atelier] No se encontró:',
+          viewId
+        );
+
+        return;
+
+      }
+
+      document
+        .querySelectorAll('.view')
+        .forEach(function(view){
+
+          view.classList.add('hidden');
+
+        });
+
+      target.classList.remove('hidden');
+
+      document.body.classList.add('view-open');
+
+      window.scrollTo(0,0);
+
+    },80);
+
+  }
+
+
+  /* ==========================================================
+     CREAR BOTÓN
+  ========================================================== */
+
+  function createButton(id,icon,text,handler,primary){
+
+    const button =
+      document.createElement('button');
+
+    button.type='button';
+
+    button.id=id;
+
+    button.className =
+      'rx-m15-access-btn' +
+      (primary ? ' rx-m15-primary' : '');
+
+    button.innerHTML =
+      '<span aria-hidden="true">' +
+      icon +
+      '</span>' +
+      '<span>' +
+      text +
+      '</span>';
+
+    button.addEventListener(
+      'click',
+      function(event){
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        try{
+
+          handler();
+
+        }catch(error){
+
+          console.error(
+            '[RoXThal Atelier] Error al abrir ' +
+            text,
+            error
+          );
+
+        }
+
+      }
+    );
+
+    return button;
+
+  }
+
+
+  /* ==========================================================
+     MI ROXTHAL
+     
+     Utilizamos el botón original existente.
+     No recreamos su sistema de acceso.
+  ========================================================== */
+
+  function openMiRoxthal(){
+
+    const independent =
+      el('miRoxthalIndependentButton');
+
+    if(independent){
+
+      /*
+       * Su listener original conserva toda la conexión
+       * con Mi RoXThal y Administrador.
+       */
+
+      independent.click();
+
+      return;
+
+    }
+
+
+    /*
+     * Compatibilidad con la interfaz dinámica anterior.
+     */
+
+    const internal =
+      el('miRoxthalEntry');
+
+    if(internal){
+
+      internal.click();
+
+      return;
+
+    }
+
+
+    console.warn(
+      '[RoXThal Atelier] Mi RoXThal todavía no está disponible.'
+    );
+
+  }
+
+
+  /* ==========================================================
+     CONSENTIMIENTO
+     
+     Utilizamos el launcher original.
+  ========================================================== */
+
+  function openConsent(){
+
+    const launcher =
+      el('rxConsentLauncher');
+
+    if(!launcher){
+
+      console.warn(
+        '[RoXThal Atelier] No se encontró rxConsentLauncher.'
+      );
+
+      return;
+
+    }
+
+    closeSchoolAtelier();
+
+    setTimeout(function(){
+
+      launcher.click();
+
+    },80);
+
+  }
+
+
+  /* ==========================================================
+     SCHOOL ATELIER
+     
+     Estamos dentro de Atelier.
+     Volvemos directamente a la pestaña Atelier.
+  ========================================================== */
+
+  function openSchoolAtelier(){
+
+    const atelierTab =
+      document.querySelector(
+        '#rsaTabs [data-rsa-page="atelier"]'
+      );
+
+    if(atelierTab){
+
+      atelierTab.click();
+
+      return;
+
+    }
+
+
+    /*
+     * Si por algún motivo la pestaña no existe,
+     * usamos el launcher original.
+     */
+
+    const launcher =
+      el('rsaLauncher');
+
+    if(launcher){
+
+      launcher.click();
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     BUSCADORES
+  ========================================================== */
+
+  function openSearch(){
+
+    openNormalView('search');
+
+  }
+
+
+  /* ==========================================================
+     ROXTHAL IA
+  ========================================================== */
+
+  function openAI(){
+
+    openNormalView('ai');
+
+  }
+
+
+  /* ==========================================================
+     TATTOO PREVIEW
+     
+     ID verificado:
+     rxtpTattooPreview
+  ========================================================== */
+
+  function openTattooPreview(){
+
+    openNormalView(
+      'rxtpTattooPreview'
+    );
+
+  }
+
+
+  /* ==========================================================
+     ROXTHAL NEWS
+     
+     Este módulo NO utiliza correctamente el showView()
+     general. Su propio sistema ya trabaja con:
+     
+     [data-go="roxthalNewsModule"]
+  ========================================================== */
+
+  function openNews(){
+
+    closeSchoolAtelier();
+
+    setTimeout(function(){
+
+      const newsButton =
+        document.querySelector(
+          '[data-go="roxthalNewsModule"]'
+        );
+
+      if(newsButton){
+
+        newsButton.click();
+
+        return;
+
+      }
+
+
+      /*
+       * Fallback directo para el sistema de News.
+       */
+
+      const target =
+        el('roxthalNewsModule');
+
+      if(!target){
+
+        console.warn(
+          '[RoXThal Atelier] RoXThal News todavía no está disponible.'
+        );
+
+        return;
+
+      }
+
+      document
+        .querySelectorAll('.view')
+        .forEach(function(view){
+
+          view.classList.add('hidden');
+
+        });
+
+      target.classList.remove('hidden');
+
+      if(
+        typeof window.loadRoXThalNews ===
+        'function'
+      ){
+
+        window.loadRoXThalNews();
+
+      }
+
+    },80);
+
+  }
+
+
+  /* ==========================================================
+     APUNTES
+     
+     Utiliza la API pública real del módulo.
+  ========================================================== */
+
+  function openNotes(){
+
+    closeSchoolAtelier();
+
+    setTimeout(function(){
+
+      if(
+        window.RoXThalApuntes &&
+        typeof window.RoXThalApuntes.open ===
+        'function'
+      ){
+
+        window.RoXThalApuntes.open();
+
+        return;
+
+      }
+
+
+      /*
+       * Si el módulo todavía está terminando
+       * de inicializarse, esperamos un instante.
+       */
+
+      setTimeout(function(){
+
+        if(
+          window.RoXThalApuntes &&
+          typeof window.RoXThalApuntes.open ===
+          'function'
+        ){
+
+          window.RoXThalApuntes.open();
+
+        }else{
+
+          console.warn(
+            '[RoXThal Atelier] Apuntes todavía no está disponible.'
+          );
+
+        }
+
+      },300);
+
+    },80);
+
+  }
+
+
+  /* ==========================================================
+     QUIZ DEL ARTE
+     
+     Utiliza la función original verificada:
+     rxqOpenQuiz()
+  ========================================================== */
+
+  function openQuiz(){
+
+    closeSchoolAtelier();
+
+    setTimeout(function(){
+
+      if(
+        typeof window.rxqOpenQuiz ===
+        'function'
+      ){
+
+        window.rxqOpenQuiz();
+
+        return;
+
+      }
+
+
+      /*
+       * En el index actual la función está definida
+       * globalmente. Este segundo intento cubre el caso
+       * de carga ligeramente retardada.
+       */
+
+      if(
+        typeof rxqOpenQuiz ===
+        'function'
+      ){
+
+        rxqOpenQuiz();
+
+        return;
+
+      }
+
+
+      const quizCard =
+        el('rxqModuleCard');
+
+      if(quizCard){
+
+        quizCard.click();
+
+        return;
+
+      }
+
+
+      console.warn(
+        '[RoXThal Atelier] Quiz del Arte todavía no está disponible.'
+      );
+
+    },80);
+
+  }
+
+
+  /* ==========================================================
+     ACADEMIA ROXTHAL
+     
+     Utiliza el sistema showView() ya integrado.
+  ========================================================== */
+
+  function openAcademia(){
+
+    openNormalView('academia');
+
+  }
+
+
+  /* ==========================================================
+     CREACIÓN DEL HUB
+  ========================================================== */
+
+  function buildHub(){
+
+    const atelierPage =
+      el('rsaPageAtelier');
+
+    if(!atelierPage){
+
+      return false;
+
+    }
+
+
+    let hub =
+      el(HUB_ID);
+
+
+    /*
+     * Si ya existe, no lo duplicamos.
+     */
+
+    if(hub){
+
+      return true;
+
+    }
+
+
+    hub =
+      document.createElement('div');
+
+    hub.id =
+      HUB_ID;
+
+
+    hub.innerHTML = `
+
+      <div class="rx-m15-access-title">
+        ✦ Accesos de RoXThal
+      </div>
+
+      <p class="rx-m15-access-subtitle">
+        Herramientas y espacios profesionales de
+        RoXThal Art Design.
+      </p>
+
+      <div id="${GRID_ID}"></div>
+
+    `;
+
+
+    const grid =
+      hub.querySelector(
+        '#' + GRID_ID
+      );
+
+
+    /*
+     * ========================================================
+     * LOS 10 BOTONES
+     * ========================================================
+     */
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnMiRoxthal',
+        '👤',
+        'Mi RoXThal',
+        openMiRoxthal,
+        true
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnConsentimiento',
+        '📋',
+        'Consentimiento',
+        openConsent,
+        true
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnSchoolAtelier',
+        '🎨',
+        'RoXThal School Atelier',
+        openSchoolAtelier,
+        true
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnBuscadores',
+        '🔎',
+        'Buscadores',
+        openSearch,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnIA',
+        '🤖',
+        'RoXThal IA',
+        openAI,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnTattooPreview',
+        '🖋️',
+        'Tattoo Preview',
+        openTattooPreview,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnNews',
+        '📰',
+        'RoXThal News',
+        openNews,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnApuntes',
+        '📚',
+        'Apuntes',
+        openNotes,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnQuiz',
+        '🎨',
+        'Quiz del Arte',
+        openQuiz,
+        false
+      )
+    );
+
+
+    grid.appendChild(
+      createButton(
+        'rxM15BtnAcademia',
+        '🎓',
+        'Academia RoXThal',
+        openAcademia,
+        false
+      )
+    );
+
+
+    /*
+     * Lo colocamos AL FINAL de Atelier.
+     * No toca las pestañas originales ni las
+     * secciones internas existentes.
+     */
+
+    atelierPage.appendChild(hub);
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     OCULTAR LOS TRES LANZADORES FLOTANTES
+     
+     IMPORTANTE:
+     NO eliminamos los elementos.
+     Sus listeners y lógica siguen intactos.
+  ========================================================== */
+
+  function hideOriginalFloatingLaunchers(){
+
+    const styleId =
+      'roxthal-m15-access-original-launchers';
+
+
+    if(
+      el(styleId)
+    ){
+
+      return;
+
+    }
+
+
+    const style =
+      document.createElement('style');
+
+    style.id =
+      styleId;
+
+
+    style.textContent = `
+
+      /*
+       * Los accesos originales ya no se muestran
+       * flotando encima de la pantalla.
+       */
+
+      #rsaLauncher,
+      #rxConsentLauncher,
+      #miRoxthalIndependentButton{
+
+        opacity:0 !important;
+        visibility:hidden !important;
+        pointer-events:none !important;
+
+      }
+
+    `;
+
+
+    document.head.appendChild(style);
+
+  }
+
+
+  /* ==========================================================
+     INICIALIZACIÓN
+     
+     No usamos MutationObserver sobre todo el BODY.
+     Solo esperamos hasta que School Atelier exista.
+  ========================================================== */
+
+  function init(){
+
+    if(
+      buildHub()
+    ){
+
+      hideOriginalFloatingLaunchers();
+
+      return;
+
+    }
+
+
+    let attempts=0;
+
+    const timer =
+      setInterval(function(){
+
+        attempts++;
+
+
+        if(
+          buildHub()
+        ){
+
+          clearInterval(timer);
+
+          hideOriginalFloatingLaunchers();
+
+          return;
+
+        }
+
+
+        /*
+         * 50 intentos × 100 ms = 5 segundos.
+         */
+
+        if(attempts>=50){
+
+          clearInterval(timer);
+
+          console.warn(
+            '[RoXThal Atelier] No se pudo localizar rsaPageAtelier.'
+          );
+
+        }
+
+      },100);
+
+  }
+
+
+  /*
+   * Esperamos al DOM completo.
+   */
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      {once:true}
+    );
+
+  }else{
+
+    init();
+
+  }
+
+})();
+
+</script>
+
+<!-- ============================================================
+     FIN — ROXTHAL SCHOOL ATELIER ACCESS HUB
+============================================================ -->
    
 </body>
 </html>
