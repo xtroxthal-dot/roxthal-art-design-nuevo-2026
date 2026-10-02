@@ -6721,18 +6721,18 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
      COMPROBACIÓN SUPABASE
      ========================================================== */
 
-  if(
-    !window.supabase ||
-    typeof window.supabase.createClient !== "function"
-  ){
+  
+if(
+  !window.supabase ||
+  typeof window.supabase.createClient !== "function"
+){
 
-    console.error(
-      "[RoXThal Apuntes] Supabase JS no está disponible."
-    );
+  console.error(
+    "[RoXThal Apuntes] Supabase JS no está disponible."
+  );
 
-    return;
-  }
-
+  return;
+}
 
   const sb =
     window.supabase.createClient(
