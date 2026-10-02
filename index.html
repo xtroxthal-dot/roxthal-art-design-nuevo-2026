@@ -5917,7 +5917,7 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 #rx-apuntes-overlay{
   position:fixed;
   inset:0;
-  z-index:999999;
+   z-index:2147483647 !important;
   display:none;
   overflow:auto;
   padding:18px;
@@ -60670,8 +60670,6 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
      * abrimos Apuntes.
      * ========================================================
      */
-
-    closeSchoolAtelier();
 
 
     /*
