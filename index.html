@@ -61822,6 +61822,173 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
 })();
 </script>
+
+   <!-- ============================================================
+     ROXTHAL — OCULTAR SOLO 3 TARJETAS DEL INICIO
+     RoXThal News + Quiz del Arte + Academia RoXThal
+     NO elimina ni desactiva los módulos.
+     ============================================================ -->
+
+<style id="rx-hide-three-home-cards">
+  /* RoXThal News */
+  #moduleGrid > [data-roxthal-news-module]{
+    display:none !important;
+  }
+
+  /* Quiz del Arte */
+  #moduleGrid > #rxqModuleCard{
+    display:none !important;
+  }
+
+  /* Academia RoXThal */
+  #moduleGrid > div:has(> button[data-go="academia"]){
+    display:none !important;
+  }
+</style>
+
+<script id="rx-hide-three-home-cards-script">
+(function(){
+
+  'use strict';
+
+  function hideOnlyThreeHomeCards(){
+
+    const grid = document.getElementById('moduleGrid');
+
+    if(!grid){
+      return;
+    }
+
+    /* ========================================================
+       1. ROXTHAL NEWS
+       ======================================================== */
+
+    grid
+      .querySelectorAll('[data-roxthal-news-module]')
+      .forEach(function(card){
+        card.style.setProperty(
+          'display',
+          'none',
+          'important'
+        );
+      });
+
+
+    /* ========================================================
+       2. QUIZ DEL ARTE
+       ======================================================== */
+
+    const quizCard =
+      document.getElementById('rxqModuleCard');
+
+    if(quizCard && quizCard.parentElement === grid){
+
+      quizCard.style.setProperty(
+        'display',
+        'none',
+        'important'
+      );
+
+    }
+
+
+    /* ========================================================
+       3. ACADEMIA ROXTHAL
+
+       La tarjeta es un DIV que contiene el botón
+       data-go="academia".
+       ======================================================== */
+
+    grid
+      .querySelectorAll(
+        'div:has(> button[data-go="academia"])'
+      )
+      .forEach(function(card){
+
+        card.style.setProperty(
+          'display',
+          'none',
+          'important'
+        );
+
+      });
+
+  }
+
+
+  /* Ejecutar al cargar */
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      hideOnlyThreeHomeCards,
+      {once:true}
+    );
+
+  }else{
+
+    hideOnlyThreeHomeCards();
+
+  }
+
+
+  /*
+   * Estos tres módulos se crean dinámicamente.
+   * Por eso vigilamos únicamente la aparición de nuevas
+   * tarjetas dentro del grid, sin modificar las demás.
+   */
+
+  const gridObserver =
+    new MutationObserver(function(){
+
+      hideOnlyThreeHomeCards();
+
+    });
+
+
+  function startObserver(){
+
+    const grid =
+      document.getElementById('moduleGrid');
+
+    if(!grid){
+      return;
+    }
+
+    gridObserver.observe(
+      grid,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+    hideOnlyThreeHomeCards();
+
+  }
+
+
+  if(document.readyState === 'loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      startObserver,
+      {once:true}
+    );
+
+  }else{
+
+    startObserver();
+
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN — OCULTAR SOLO ROXTHAL NEWS / QUIZ / ACADEMIA
+     ============================================================ -->
    
 </body>
 </html>
