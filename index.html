@@ -60643,46 +60643,102 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
   }
 
 
-    /* ==========================================================
+     /* ==========================================================
      APUNTES
+
+     Abre el módulo Apuntes desde el Hub del Módulo 15.
+
+     El módulo Apuntes ya existe más arriba en este mismo
+     index.html y expone:
      
-     Abre directamente el módulo Apuntes desde Módulo 15.
-     No cierra la portada del School Atelier antes de abrirlo.
+       window.RoXThalApuntes.open()
+
+     No se crea otro módulo ni otro cliente Supabase.
   ========================================================== */
 
   function openNotes(){
 
+    /*
+     * 1. Si el módulo ya está inicializado,
+     *    usamos directamente su API oficial.
+     */
     if(
       window.RoXThalApuntes &&
       typeof window.RoXThalApuntes.open ===
       'function'
     ){
 
-      window.RoXThalApuntes.open();
+      try{
+
+        window.RoXThalApuntes.open();
+
+      }catch(error){
+
+        console.error(
+          '[RoXThal Atelier] Error al abrir Apuntes:',
+          error
+        );
+
+      }
 
       return;
 
     }
 
-    setTimeout(function(){
 
-      if(
-        window.RoXThalApuntes &&
-        typeof window.RoXThalApuntes.open ===
-        'function'
-      ){
+    /*
+     * 2. El módulo puede estar terminando de inicializarse.
+     *    Esperamos un instante y volvemos a comprobarlo.
+     */
+    let attempts = 0;
 
-        window.RoXThalApuntes.open();
+    const retry = setInterval(
+      function(){
 
-      }else{
+        attempts++;
 
-        console.warn(
-          '[RoXThal Atelier] Apuntes todavía no está disponible.'
-        );
+        if(
+          window.RoXThalApuntes &&
+          typeof window.RoXThalApuntes.open ===
+          'function'
+        ){
 
-      }
+          clearInterval(retry);
 
-    },300);
+          try{
+
+            window.RoXThalApuntes.open();
+
+          }catch(error){
+
+            console.error(
+              '[RoXThal Atelier] Error al abrir Apuntes:',
+              error
+            );
+
+          }
+
+          return;
+
+        }
+
+
+        /*
+         * 30 intentos × 100 ms = 3 segundos.
+         */
+        if(attempts >= 30){
+
+          clearInterval(retry);
+
+          console.error(
+            '[RoXThal Atelier] El módulo Apuntes no terminó de inicializarse.'
+          );
+
+        }
+
+      },
+      100
+    );
 
   }
 
