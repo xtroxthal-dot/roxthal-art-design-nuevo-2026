@@ -24946,7 +24946,92 @@ function getDB(){
 
     stopLights();
   }
+  /* =======================================================
+     TIRADA GRATIS — UNA VEZ POR TOKEN
+     NUNCA PUEDE DAR PREMIO
+     ======================================================= */
 
+  async function freePlay(){
+
+    if(free.disabled || demoMode) return;
+
+    free.disabled=true;
+
+    try{
+
+      const database=getDB();
+
+      if(!database){
+        throw new Error(
+          'No se encontró la conexión de la aplicación.'
+        );
+      }
+
+      setStatus('🎁 Preparando tu tirada gratis…');
+
+      const token=playerToken();
+
+      const {data,error}=await database.rpc(
+        'roxthal_machine_free_play',
+        {
+          p_player_token:token
+        }
+      );
+
+      if(error) throw error;
+
+      if(data?.already_used){
+
+        setStatus(
+          '🎁 Ya utilizaste tu tirada gratis. Puedes comprar 3 tiradas por $1.500.'
+        );
+
+        return;
+      }
+
+      await animateMachine();
+
+      /*
+       * La tirada gratuita NUNCA puede ganar.
+       * El resultado visual se fuerza a no ganador.
+       */
+
+      setReelSymbols(
+        reels[0],'💀','⚓','🐍'
+      );
+
+      setReelSymbols(
+        reels[1],'🗡️','❤️','⭐'
+      );
+
+      setReelSymbols(
+        reels[2],'🐍','💀','⚓'
+      );
+
+      win.classList.remove('show');
+
+      setStatus(
+        '🎁 TIRADA GRATIS · SIN PREMIO · Ya utilizaste tu oportunidad gratuita.'
+      );
+
+    }catch(error){
+
+      console.error(
+        'Error en la tirada gratis:',
+        error
+      );
+
+      setStatus(
+        error?.message ||
+        'No se pudo realizar la tirada gratis.'
+      );
+
+    }finally{
+
+      free.disabled=false;
+
+    }
+  }
   /* =======================================================
      RESULTADO VISUAL
      ======================================================= */
