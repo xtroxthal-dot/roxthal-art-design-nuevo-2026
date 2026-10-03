@@ -24946,14 +24946,29 @@ function getDB(){
 
     stopLights();
   }
-  /* =======================================================
-     TIRADA GRATIS — UNA VEZ POR TOKEN
-     NUNCA PUEDE DAR PREMIO
-     ======================================================= */
 
-  async function freePlay(){
+     async function freePlay(){
 
     if(free.disabled || demoMode) return;
+
+    const token=playerToken();
+    const freeUsedKey='rxsd_free_used_'+token;
+
+    /*
+     * Primera barrera local:
+     * si este token ya consumió la tirada,
+     * no permitimos otra ejecución desde esta interfaz.
+     */
+    if(localStorage.getItem(freeUsedKey)==='1'){
+
+      free.disabled=true;
+
+      setStatus(
+        '🎁 Ya utilizaste tu tirada gratis. Puedes comprar 3 tiradas por $1.500.'
+      );
+
+      return;
+    }
 
     free.disabled=true;
 
@@ -24967,9 +24982,9 @@ function getDB(){
         );
       }
 
-      setStatus('🎁 Preparando tu tirada gratis…');
-
-      const token=playerToken();
+      setStatus(
+        '🎁 Preparando tu tirada gratis…'
+      );
 
       const {data,error}=await database.rpc(
         'roxthal_machine_free_play',
@@ -24980,7 +24995,17 @@ function getDB(){
 
       if(error) throw error;
 
+      /*
+       * Segunda barrera:
+       * Supabase determina si este token ya utilizó
+       * su oportunidad gratuita.
+       */
       if(data?.already_used){
+
+        localStorage.setItem(
+          freeUsedKey,
+          '1'
+        );
 
         setStatus(
           '🎁 Ya utilizaste tu tirada gratis. Puedes comprar 3 tiradas por $1.500.'
@@ -24988,6 +25013,16 @@ function getDB(){
 
         return;
       }
+
+      /*
+       * El registro fue aceptado por Supabase.
+       * Marcamos inmediatamente esta oportunidad
+       * como consumida en esta sesión/navegador.
+       */
+      localStorage.setItem(
+        freeUsedKey,
+        '1'
+      );
 
       await animateMachine();
 
@@ -25028,7 +25063,13 @@ function getDB(){
 
     }finally{
 
-      free.disabled=false;
+      /*
+       * No se vuelve a habilitar después de una
+       * tirada gratuita consumida.
+       */
+      if(localStorage.getItem(freeUsedKey)!=='1'){
+        free.disabled=false;
+      }
 
     }
   }
