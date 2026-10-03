@@ -25135,11 +25135,7 @@ function getDB(){
     return false;
   }
 
-  /* =======================================================
-     GIRAR
-     ======================================================= */
-
-  async function play(){
+    async function play(){
 
     if(spin.disabled) return;
 
@@ -25147,20 +25143,20 @@ function getDB(){
 
     try{
 
-      await animateMachine();
-
       /* -----------------------------------------------
-         DEMO ADMIN:
-         NUNCA toca Supabase
-         NUNCA toca pagos
-         NUNCA registra jugadas
+         DEMO ADMINISTRADOR:
+         puede probar la máquina libremente.
+         No registra jugadas ni pagos.
          ----------------------------------------------- */
 
       if(demoMode){
 
+        await animateMachine();
+
         const winDemo=Math.random()<.22;
 
         if(winDemo){
+
           setReelSymbols(
             reels[0],'🌹','🌹','🌹'
           );
@@ -25185,6 +25181,7 @@ function getDB(){
           setStatus(
             'DEMO · resultado simulado · ningún registro real'
           );
+
         }
 
         return;
@@ -25199,11 +25196,16 @@ function getDB(){
       }
 
       /*
-       * Antes de jugar actualizamos el estado.
-       * Esto evita enviar una tirada con entryId inexistente.
+       * Primero comprobamos la entrada.
+       * La máquina NO gira antes de validar
+       * que exista una tirada disponible.
        */
 
       const token=playerToken();
+
+      setStatus(
+        'Comprobando tu entrada…'
+      );
 
       const statusResponse=await database.rpc(
         'roxthal_machine_status',
@@ -25223,9 +25225,11 @@ function getDB(){
       const entryId=currentStatus?.entryId;
 
       if(!entryId){
+
         setStatus(
           'No tienes una entrada activa. Compra 3 tiradas para jugar.'
         );
+
         return;
       }
 
@@ -25248,7 +25252,13 @@ function getDB(){
         return;
       }
 
-      setStatus('Registrando tirada…');
+      /*
+       * Solo ahora registramos la tirada.
+       */
+
+      setStatus(
+        'Registrando tirada…'
+      );
 
       const {data,error}=await database.rpc(
         'roxthal_machine_play',
@@ -25261,6 +25271,13 @@ function getDB(){
 
       if(error) throw error;
 
+      /*
+       * La jugada fue aceptada por Supabase.
+       * Ahora sí comienza el giro visual.
+       */
+
+      await animateMachine();
+
       const winner=!!(
         data?.winner ||
         data?.result==='winner' ||
@@ -25268,11 +25285,6 @@ function getDB(){
       );
 
       if(winner){
-
-        /*
-         * Refuerzo visual:
-         * el resultado real viene del backend.
-         */
 
         setReelSymbols(
           reels[0],'🌹','🌹','🌹'
@@ -25298,6 +25310,7 @@ function getDB(){
         setStatus(
           'Tirada realizada correctamente.'
         );
+
       }
 
       await refresh();
@@ -25317,6 +25330,7 @@ function getDB(){
     }finally{
 
       spin.disabled=false;
+
     }
   }
 
