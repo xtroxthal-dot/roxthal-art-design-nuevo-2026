@@ -24894,7 +24894,12 @@ function getDB(){
   function animateReel(reel,duration,index){
     return new Promise(resolve=>{
 
-      reel.classList.add('spinning');
+      reel.classList.remove('spinning');
+reel.classList.remove('stopped');
+
+void reel.offsetWidth;
+
+reel.classList.add('spinning');
 
       const interval=setInterval(()=>{
         setReelSymbols(
