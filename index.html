@@ -8942,7 +8942,7 @@ overlay.style.display = "block";
     );
 
     overlay.hidden = true;
-
+overlay.style.display = "none";
 
     overlay.setAttribute(
       "aria-hidden",
@@ -9113,198 +9113,8 @@ overlay.style.display = "block";
      ========================================================== */
 
   function installModuleCard(){
-
-    const grid =
-      document.getElementById(
-        "moduleGrid"
-      );
-
-
-    if(!grid){
-      return false;
-    }
-
-
-    if(
-      document.getElementById(
-        "rx-apuntes-module-card"
-      )
-    ){
-
-      return true;
-
-    }
-
-
-    const card =
-      document.createElement(
-        "button"
-      );
-
-
-    card.type =
-      "button";
-
-    card.id =
-      "rx-apuntes-module-card";
-
-
-    card.style.cssText = `
-
-      all:unset;
-
-      box-sizing:border-box;
-
-      display:flex;
-
-      flex-direction:column;
-
-      gap:8px;
-
-      cursor:pointer;
-
-      padding:18px;
-
-      min-height:135px;
-
-      border-radius:18px;
-
-      background:
-        var(--surface2,#181818);
-
-      border:
-        1px solid var(--border,#333);
-
-      color:
-        var(--text,#fff);
-
-      transition:
-        transform .15s ease,
-        filter .15s ease;
-
-    `;
-
-
-    card.innerHTML = `
-
-      <div style="
-        width:45px;
-        height:45px;
-        border-radius:13px;
-        display:grid;
-        place-items:center;
-        background:var(--yellow,#ffd400);
-        color:#111;
-        font-size:23px;
-      ">
-        📝
-      </div>
-
-
-      <div style="
-        font-size:17px;
-        font-weight:900;
-      ">
-        Apuntes
-      </div>
-
-
-      <div style="
-        font-size:12px;
-        color:var(--muted,#999);
-        line-height:1.4;
-      ">
-        Apuntes privados para alumnos
-      </div>
-
-    `;
-
-
-    card.addEventListener(
-      "mouseenter",
-      function(){
-
-        card.style.transform =
-          "translateY(-2px)";
-
-        card.style.filter =
-          "brightness(1.08)";
-
-      }
-    );
-
-
-    card.addEventListener(
-      "mouseleave",
-      function(){
-
-        card.style.transform =
-          "";
-
-        card.style.filter =
-          "";
-
-      }
-    );
-
-
-    card.addEventListener(
-      "click",
-      openModule
-    );
-
-
-    grid.appendChild(
-      card
-    );
-
-
-    return true;
-
-  }
-
-
-  /* ==========================================================
-     ESPERAR A MODULEGRID
-     ========================================================== */
-
-  if(!installModuleCard()){
-
-    const observer =
-      new MutationObserver(
-        function(){
-
-          if(
-            installModuleCard()
-          ){
-
-            observer.disconnect();
-
-          }
-
-        }
-      );
-
-
-    observer.observe(
-      document.body,
-      {
-        childList:true,
-        subtree:true
-      }
-    );
-
-
-    setTimeout(
-      function(){
-
-        observer.disconnect();
-
-      },
-      30000
-    );
-
-  }
+  return true;
+}
 
 
   /* ==========================================================
@@ -60449,113 +60259,57 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
      No se crea otro módulo ni otro cliente Supabase.
   ========================================================== */
 
-    function openNotes(){
-closeSchoolAtelier();
-    /*
-     * ========================================================
-     * APUNTES
-     *
-     * El botón está dentro de #rsaOverlay.
-     * #rsaOverlay tiene un z-index superior al overlay
-     * de Apuntes.
-     *
-     * Por eso primero cerramos School Atelier y después
-     * abrimos Apuntes.
-     * ========================================================
-     */
+    
+function openNotes(){
 
+  const rsa =
+    document.getElementById("rsaOverlay");
 
-    /*
-     * Esperamos a que el cierre original del Atelier
-     * termine antes de mostrar Apuntes.
-     */
+  if(rsa){
 
-    setTimeout(
-      function(){
+    rsa.classList.remove("rsa-open");
 
-        if(
-          window.RoXThalApuntes &&
-          typeof window.RoXThalApuntes.open ===
-          'function'
-        ){
-
-          try{
-
-            window.RoXThalApuntes.open();
-
-          }catch(error){
-
-            console.error(
-              '[RoXThal Atelier] Error al abrir Apuntes:',
-              error
-            );
-
-          }
-
-          return;
-
-        }
-
-
-        /*
-         * El módulo Apuntes ya debería estar cargado,
-         * pero dejamos una pequeña espera de seguridad.
-         */
-
-        let attempts = 0;
-
-        const retry =
-          setInterval(
-            function(){
-
-              attempts++;
-
-              if(
-                window.RoXThalApuntes &&
-                typeof window.RoXThalApuntes.open ===
-                'function'
-              ){
-
-                clearInterval(retry);
-
-                try{
-
-                  window.RoXThalApuntes.open();
-
-                }catch(error){
-
-                  console.error(
-                    '[RoXThal Atelier] Error al abrir Apuntes:',
-                    error
-                  );
-
-                }
-
-                return;
-
-              }
-
-
-              if(attempts >= 30){
-
-                clearInterval(retry);
-
-                console.error(
-                  '[RoXThal Atelier] El módulo Apuntes no terminó de inicializarse.'
-                );
-
-              }
-
-            },
-            100
-          );
-
-      },
-      100
+    rsa.setAttribute(
+      "aria-hidden",
+      "true"
     );
 
   }
 
+  document.body.classList.remove(
+    "rx-m15-subopen"
+  );
+
+  document.body.style.overflow = "";
+
+  if(
+    window.RoXThalApuntes &&
+    typeof window.RoXThalApuntes.open ===
+    "function"
+  ){
+
+    try{
+
+      window.RoXThalApuntes.open();
+
+    }catch(error){
+
+      console.error(
+        "[RoXThal Atelier] Error al abrir Apuntes:",
+        error
+      );
+
+    }
+
+    return;
+
+  }
+
+  console.error(
+    "[RoXThal Atelier] El módulo Apuntes no está disponible."
+  );
+
+}
 
   /* ==========================================================
      QUIZ DEL ARTE
