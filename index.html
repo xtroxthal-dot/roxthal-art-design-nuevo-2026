@@ -60262,25 +60262,9 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     
 function openNotes(){
 
-  const rsa =
-    document.getElementById("rsaOverlay");
-
-  if(rsa){
-
-    rsa.classList.remove("rsa-open");
-
-    rsa.setAttribute(
-      "aria-hidden",
-      "true"
-    );
-
-  }
-
-  document.body.classList.remove(
-    "rx-m15-subopen"
-  );
-
-  document.body.style.overflow = "";
+    /* Apuntes se abre como overlay independiente.
+     No cerramos School Atelier ni modificamos
+     el estado de M15. */
 
   if(
     window.RoXThalApuntes &&
