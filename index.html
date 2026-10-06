@@ -62331,6 +62331,1235 @@ function openNotes(){
 })();
 </script>
    
+<!-- =========================================================
+     RoXThal · TAXÍMETRO TATTOO
+     Bloque autónomo · Administración
+     ========================================================= -->
+<script>
+(function(){
+  'use strict';
 
+  if(window.__ROXTHAL_TATTOO_TAXIMETER_V1__) return;
+  window.__ROXTHAL_TATTOO_TAXIMETER_V1__ = true;
+
+  const PRICE_KEY = 'roxthal_tattoo_taximeter_prices_v1';
+
+  const DEFAULTS = {
+    lineas: 35000,
+    sombras: 50000,
+    color: 65000
+  };
+
+  const MODES = {
+    lineas: {
+      key: 'lineas',
+      icon: '✒️',
+      name: 'Líneas',
+      description: 'Línea, fine line y trabajos lineales',
+      base: 35000
+    },
+    sombras: {
+      key: 'sombras',
+      icon: '🌑',
+      name: 'Sombras',
+      description: 'Black & grey, sombras y grises',
+      base: 50000
+    },
+    color: {
+      key: 'color',
+      icon: '🎨',
+      name: 'Color',
+      description: 'Color, saturación y trabajos policromáticos',
+      base: 65000
+    }
+  };
+
+  let prices = loadPrices();
+
+  let state = {
+    mode: null,
+    running: false,
+    startMs: null,
+    accumulatedMs: 0,
+    finished: false,
+    finishMs: null
+  };
+
+  let overlay = null;
+  let configModal = null;
+  let renderTimer = null;
+
+  function money(n){
+    return '$' + Math.round(Number(n) || 0).toLocaleString('es-AR');
+  }
+
+  function loadPrices(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(PRICE_KEY) || '{}');
+      return {
+        lineas: validPrice(raw.lineas) ? Number(raw.lineas) : DEFAULTS.lineas,
+        sombras: validPrice(raw.sombras) ? Number(raw.sombras) : DEFAULTS.sombras,
+        color: validPrice(raw.color) ? Number(raw.color) : DEFAULTS.color
+      };
+    }catch(e){
+      return {...DEFAULTS};
+    }
+  }
+
+  function validPrice(v){
+    return Number.isFinite(Number(v)) && Number(v) > 0;
+  }
+
+  function savePrices(){
+    localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+  }
+
+  function getBase(){
+    return state.mode ? Number(prices[state.mode]) : 0;
+  }
+
+  function elapsedMs(){
+    let total = state.accumulatedMs;
+
+    if(state.running && state.startMs){
+      total += Date.now() - state.startMs;
+    }
+
+    return Math.max(0,total);
+  }
+
+  function elapsedSeconds(){
+    return Math.floor(elapsedMs()/1000);
+  }
+
+  function calculatePrice(seconds, base){
+    const firstHour = 3600;
+    const excess = Math.max(0, seconds - firstHour);
+
+    return base + (excess * base / firstHour);
+  }
+
+  function formatTime(seconds){
+    seconds = Math.max(0, Math.floor(seconds));
+
+    const h = Math.floor(seconds/3600);
+    const m = Math.floor((seconds%3600)/60);
+    const s = seconds%60;
+
+    return [
+      String(h).padStart(2,'0'),
+      String(m).padStart(2,'0'),
+      String(s).padStart(2,'0')
+    ].join(':');
+  }
+
+  function formatHoursMinutes(seconds){
+    const h = Math.floor(seconds/3600);
+    const m = Math.floor((seconds%3600)/60);
+    const s = seconds%60;
+
+    if(h > 0){
+      return h + ' h ' + String(m).padStart(2,'0') + ' min ' +
+             String(s).padStart(2,'0') + ' s';
+    }
+
+    return m + ' min ' + String(s).padStart(2,'0') + ' s';
+  }
+
+  function injectStyles(){
+    if(document.getElementById('rxTattooTaximeterStyles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'rxTattooTaximeterStyles';
+
+    style.textContent = `
+      #adminTattooTaximeter{
+        position:relative;
+      }
+
+      .rx-tax-admin-card{
+        position:relative;
+        overflow:hidden;
+        border:1px solid rgba(215,173,85,.38);
+        border-radius:24px;
+        padding:24px;
+        background:
+          radial-gradient(circle at 50% 0%,rgba(215,173,85,.18),transparent 38%),
+          linear-gradient(145deg,#080808,#15110a 52%,#050505);
+        box-shadow:0 0 35px rgba(215,173,85,.08);
+        color:#f5e8c5;
+      }
+
+      .rx-tax-admin-card:before{
+        content:'';
+        position:absolute;
+        width:240px;
+        height:240px;
+        right:-100px;
+        top:-120px;
+        border-radius:50%;
+        border:1px solid rgba(215,173,85,.18);
+        box-shadow:0 0 50px rgba(215,173,85,.12);
+      }
+
+      .rx-tax-brand{
+        display:flex;
+        align-items:center;
+        gap:14px;
+        margin-bottom:10px;
+      }
+
+      .rx-tax-brand-icon{
+        width:58px;
+        height:58px;
+        display:grid;
+        place-items:center;
+        border-radius:18px;
+        font-size:30px;
+        background:linear-gradient(145deg,#241d0c,#080808);
+        border:1px solid rgba(215,173,85,.55);
+        box-shadow:0 0 25px rgba(215,173,85,.12);
+      }
+
+      .rx-tax-admin-card h2{
+        margin:0;
+        font-size:clamp(1.45rem,5vw,2.2rem);
+        color:#d7ad55;
+      }
+
+      .rx-tax-admin-card p{
+        margin:5px 0 0;
+        opacity:.78;
+      }
+
+      .rx-tax-mode-grid{
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:12px;
+        margin-top:24px;
+      }
+
+      .rx-tax-mode-btn{
+        position:relative;
+        overflow:hidden;
+        min-height:150px;
+        padding:18px 12px;
+        border-radius:20px;
+        border:1px solid rgba(215,173,85,.32);
+        background:linear-gradient(145deg,#151515,#080808);
+        color:#f7e8bf;
+        cursor:pointer;
+        transition:.22s ease;
+      }
+
+      .rx-tax-mode-btn:hover{
+        transform:translateY(-3px);
+        border-color:#d7ad55;
+        box-shadow:0 0 25px rgba(215,173,85,.16);
+      }
+
+      .rx-tax-mode-btn .icon{
+        font-size:34px;
+        display:block;
+        margin-bottom:10px;
+      }
+
+      .rx-tax-mode-btn strong{
+        display:block;
+        font-size:1.05rem;
+      }
+
+      .rx-tax-mode-btn small{
+        display:block;
+        opacity:.62;
+        margin-top:5px;
+        line-height:1.3;
+      }
+
+      .rx-tax-mode-price{
+        display:block;
+        color:#d7ad55;
+        font-size:1.2rem;
+        font-weight:800;
+        margin-top:12px;
+      }
+
+      .rx-tax-config-btn{
+        margin-top:18px;
+        border:1px solid rgba(215,173,85,.4);
+        background:#0d0d0d;
+        color:#d7ad55;
+        border-radius:14px;
+        padding:12px 16px;
+        cursor:pointer;
+        font-weight:700;
+      }
+
+      #rxTattooTaximeterOverlay{
+        position:fixed;
+        inset:0;
+        z-index:2147483000;
+        display:none;
+        overflow:auto;
+        color:#f5e8c5;
+        background:
+          radial-gradient(circle at 50% 25%,rgba(215,173,85,.12),transparent 28%),
+          radial-gradient(circle at 20% 80%,rgba(120,80,20,.08),transparent 25%),
+          #050505;
+      }
+
+      #rxTattooTaximeterOverlay.rx-open{
+        display:block;
+      }
+
+      .rx-tax-full{
+        min-height:100dvh;
+        min-height:100vh;
+        display:flex;
+        flex-direction:column;
+        position:relative;
+        overflow:hidden;
+      }
+
+      .rx-tax-full:before{
+        content:'';
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        opacity:.18;
+        background-image:
+          linear-gradient(rgba(215,173,85,.045) 1px,transparent 1px),
+          linear-gradient(90deg,rgba(215,173,85,.045) 1px,transparent 1px);
+        background-size:32px 32px;
+      }
+
+      .rx-tax-top{
+        position:relative;
+        z-index:2;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding:15px 16px;
+        border-bottom:1px solid rgba(215,173,85,.22);
+        background:rgba(5,5,5,.84);
+        backdrop-filter:blur(12px);
+      }
+
+      .rx-tax-top-title{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        min-width:0;
+      }
+
+      .rx-tax-top-title .machine{
+        font-size:27px;
+        filter:drop-shadow(0 0 8px rgba(215,173,85,.55));
+      }
+
+      .rx-tax-top-title strong{
+        color:#d7ad55;
+        font-size:clamp(.9rem,4vw,1.15rem);
+      }
+
+      .rx-tax-top-title span{
+        display:block;
+        font-size:.72rem;
+        opacity:.58;
+      }
+
+      .rx-tax-top-actions{
+        display:flex;
+        gap:7px;
+      }
+
+      .rx-tax-icon-btn{
+        width:42px;
+        height:42px;
+        display:grid;
+        place-items:center;
+        border:1px solid rgba(215,173,85,.32);
+        border-radius:12px;
+        background:#0d0d0d;
+        color:#d7ad55;
+        cursor:pointer;
+        font-size:18px;
+      }
+
+      .rx-tax-content{
+        position:relative;
+        z-index:1;
+        flex:1;
+        width:100%;
+        max-width:900px;
+        margin:0 auto;
+        padding:20px 16px 24px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+      }
+
+      .rx-tax-machine{
+        position:relative;
+        width:min(170px,42vw);
+        aspect-ratio:1;
+        margin:0 auto 10px;
+        display:grid;
+        place-items:center;
+      }
+
+      .rx-tax-ring{
+        position:absolute;
+        inset:0;
+        border-radius:50%;
+        border:1px solid rgba(215,173,85,.28);
+        box-shadow:
+          0 0 20px rgba(215,173,85,.08),
+          inset 0 0 25px rgba(215,173,85,.06);
+        animation:rxTaxPulse 2.8s ease-in-out infinite;
+      }
+
+      .rx-tax-ring:before,
+      .rx-tax-ring:after{
+        content:'';
+        position:absolute;
+        inset:12%;
+        border-radius:50%;
+        border:1px dashed rgba(215,173,85,.24);
+      }
+
+      .rx-tax-ring:after{
+        inset:24%;
+        border-style:solid;
+        opacity:.45;
+      }
+
+      .rx-tax-machine svg{
+        width:62%;
+        height:62%;
+        fill:none;
+        stroke:#d7ad55;
+        stroke-width:2.2;
+        filter:drop-shadow(0 0 7px rgba(215,173,85,.35));
+      }
+
+      @keyframes rxTaxPulse{
+        0%,100%{transform:scale(1);opacity:.7}
+        50%{transform:scale(1.035);opacity:1}
+      }
+
+      .rx-tax-mode-label{
+        text-align:center;
+        font-size:.82rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        color:#d7ad55;
+        opacity:.82;
+      }
+
+      .rx-tax-clock{
+        text-align:center;
+        font-size:clamp(3.2rem,16vw,8rem);
+        line-height:.95;
+        letter-spacing:.035em;
+        font-weight:900;
+        font-variant-numeric:tabular-nums;
+        color:#fff7df;
+        text-shadow:
+          0 0 12px rgba(215,173,85,.28),
+          0 0 40px rgba(215,173,85,.12);
+        margin:8px 0 5px;
+      }
+
+      .rx-tax-price-label{
+        text-align:center;
+        font-size:.72rem;
+        text-transform:uppercase;
+        letter-spacing:.28em;
+        opacity:.48;
+      }
+
+      .rx-tax-price{
+        text-align:center;
+        font-size:clamp(3rem,13vw,6.5rem);
+        line-height:1;
+        font-weight:950;
+        color:#d7ad55;
+        margin:6px 0 15px;
+        text-shadow:
+          0 0 12px rgba(215,173,85,.32),
+          0 0 45px rgba(215,173,85,.14);
+        font-variant-numeric:tabular-nums;
+      }
+
+      .rx-tax-progress{
+        width:min(620px,100%);
+        height:8px;
+        margin:0 auto 10px;
+        border-radius:999px;
+        overflow:hidden;
+        background:#161616;
+        border:1px solid rgba(215,173,85,.16);
+      }
+
+      .rx-tax-progress span{
+        display:block;
+        width:0%;
+        height:100%;
+        background:linear-gradient(90deg,#8c681f,#d7ad55,#ffe8a5);
+        box-shadow:0 0 15px rgba(215,173,85,.45);
+        transition:width .25s linear;
+      }
+
+      .rx-tax-info{
+        text-align:center;
+        font-size:.82rem;
+        opacity:.65;
+        min-height:20px;
+      }
+
+      .rx-tax-controls{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        margin:22px auto 0;
+        width:min(700px,100%);
+      }
+
+      .rx-tax-control{
+        min-height:56px;
+        border-radius:15px;
+        border:1px solid rgba(215,173,85,.34);
+        background:linear-gradient(145deg,#171717,#090909);
+        color:#f8e8c1;
+        font-size:1rem;
+        font-weight:800;
+        cursor:pointer;
+      }
+
+      .rx-tax-control.primary{
+        color:#080706;
+        background:linear-gradient(145deg,#ffe5a0,#d7ad55);
+        border-color:#ffe8a8;
+        box-shadow:0 0 20px rgba(215,173,85,.17);
+      }
+
+      .rx-tax-control:disabled{
+        opacity:.3;
+        cursor:not-allowed;
+      }
+
+      .rx-tax-bottom{
+        margin-top:16px;
+        text-align:center;
+        font-size:.72rem;
+        opacity:.4;
+      }
+
+      .rx-tax-finished{
+        text-align:center;
+        border:1px solid rgba(215,173,85,.35);
+        background:rgba(10,10,10,.82);
+        border-radius:22px;
+        padding:20px;
+        margin-top:15px;
+      }
+
+      .rx-tax-finished .check{
+        font-size:36px;
+      }
+
+      .rx-tax-finished h3{
+        color:#d7ad55;
+        margin:8px 0;
+      }
+
+      .rx-tax-finished .final-time{
+        font-size:1rem;
+        opacity:.7;
+      }
+
+      .rx-tax-finished .final-price{
+        color:#d7ad55;
+        font-size:clamp(2.5rem,12vw,5rem);
+        line-height:1;
+        font-weight:950;
+        margin:10px 0;
+      }
+
+      .rx-tax-modal-wrap{
+        position:fixed;
+        inset:0;
+        z-index:2147483100;
+        display:none;
+        place-items:center;
+        padding:18px;
+        background:rgba(0,0,0,.78);
+        backdrop-filter:blur(10px);
+      }
+
+      .rx-tax-modal-wrap.open{
+        display:grid;
+      }
+
+      .rx-tax-modal{
+        width:min(520px,100%);
+        max-height:90dvh;
+        overflow:auto;
+        border:1px solid rgba(215,173,85,.42);
+        border-radius:22px;
+        padding:22px;
+        background:
+          radial-gradient(circle at 50% 0%,rgba(215,173,85,.12),transparent 40%),
+          #0b0b0b;
+        box-shadow:0 20px 80px rgba(0,0,0,.7);
+      }
+
+      .rx-tax-modal h3{
+        margin:0 0 5px;
+        color:#d7ad55;
+        font-size:1.4rem;
+      }
+
+      .rx-tax-modal p{
+        margin:0 0 18px;
+        opacity:.62;
+        font-size:.84rem;
+      }
+
+      .rx-tax-field{
+        margin-bottom:14px;
+      }
+
+      .rx-tax-field label{
+        display:block;
+        margin-bottom:6px;
+        color:#e8d6ab;
+        font-weight:700;
+      }
+
+      .rx-tax-field input{
+        width:100%;
+        box-sizing:border-box;
+        border:1px solid rgba(215,173,85,.32);
+        border-radius:12px;
+        background:#050505;
+        color:#fff;
+        padding:13px 14px;
+        font-size:1rem;
+        outline:none;
+      }
+
+      .rx-tax-field input:focus{
+        border-color:#d7ad55;
+        box-shadow:0 0 0 3px rgba(215,173,85,.08);
+      }
+
+      .rx-tax-modal-actions{
+        display:flex;
+        gap:9px;
+        margin-top:18px;
+      }
+
+      .rx-tax-modal-actions button{
+        flex:1;
+        min-height:48px;
+        border-radius:13px;
+        border:1px solid rgba(215,173,85,.34);
+        background:#101010;
+        color:#e9d7ac;
+        font-weight:800;
+        cursor:pointer;
+      }
+
+      .rx-tax-modal-actions .save{
+        color:#090806;
+        background:linear-gradient(145deg,#ffe6a1,#d7ad55);
+      }
+
+      @media(max-width:650px){
+        .rx-tax-mode-grid{
+          grid-template-columns:1fr;
+        }
+
+        .rx-tax-mode-btn{
+          min-height:112px;
+          text-align:left;
+          display:grid;
+          grid-template-columns:52px 1fr auto;
+          align-items:center;
+          gap:10px;
+        }
+
+        .rx-tax-mode-btn .icon{
+          margin:0;
+        }
+
+        .rx-tax-mode-price{
+          margin:0;
+        }
+
+        .rx-tax-controls{
+          grid-template-columns:1fr;
+        }
+
+        .rx-tax-control{
+          min-height:52px;
+        }
+
+        .rx-tax-content{
+          padding-top:12px;
+        }
+      }
+
+      @media(min-width:651px){
+        .rx-tax-mode-grid{
+          grid-template-columns:repeat(3,1fr);
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function machineSvg(){
+    return `
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M35 35 L70 22 Q82 20 89 29 L95 38 Q99 44 94 49 L81 62 L64 58 L51 71 L37 58 L50 45 Z"/>
+        <path d="M50 45 L63 58"/>
+        <path d="M81 62 L91 72"/>
+        <path d="M91 72 L104 87"/>
+        <path d="M104 87 L108 99"/>
+        <path d="M30 28 L20 20"/>
+        <path d="M20 20 L13 26"/>
+        <path d="M35 58 L24 69"/>
+        <circle cx="68" cy="39" r="7"/>
+        <circle cx="68" cy="39" r="2"/>
+        <path d="M22 70 Q39 90 59 86"/>
+        <path d="M59 86 L75 77"/>
+      </svg>
+    `;
+  }
+
+  function createAdminModule(){
+    if(!document.getElementById('adminTabs') || !document.getElementById('adminPanel')){
+      return false;
+    }
+
+    injectStyles();
+
+    const tabs = document.getElementById('adminTabs');
+    const panel = document.getElementById('adminPanel');
+
+    if(!document.querySelector('[data-admin-tab="tattooTaximeter"]')){
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'admin-tab';
+      button.dataset.adminTab = 'tattooTaximeter';
+      button.innerHTML = '🎨 Taxímetro Tattoo RoXThal';
+      tabs.appendChild(button);
+    }
+
+    if(!document.getElementById('adminTattooTaximeter')){
+      const section = document.createElement('section');
+      section.id = 'adminTattooTaximeter';
+      section.className = 'admin-tab-panel hidden';
+
+      section.innerHTML = `
+        <div class="rx-tax-admin-card">
+          <div class="rx-tax-brand">
+            <div class="rx-tax-brand-icon">🎨</div>
+            <div>
+              <h2>Taxímetro Tattoo RoXThal</h2>
+              <p>Calculador profesional de tiempo y valor del tatuaje.</p>
+            </div>
+          </div>
+
+          <div class="rx-tax-mode-grid">
+            ${Object.values(MODES).map(m => `
+              <button type="button"
+                      class="rx-tax-mode-btn"
+                      data-rx-tax-start="${m.key}">
+                <span class="icon">${m.icon}</span>
+                <span>
+                  <strong>${m.name}</strong>
+                  <small>${m.description}</small>
+                </span>
+                <span class="rx-tax-mode-price"
+                      data-rx-tax-admin-price="${m.key}">
+                  ${money(prices[m.key])}
+                </span>
+              </button>
+            `).join('')}
+          </div>
+
+          <button type="button" class="rx-tax-config-btn" id="rxTaxOpenConfig">
+            ⚙️ Configurar tarifas
+          </button>
+        </div>
+      `;
+
+      panel.appendChild(section);
+    }
+
+    updateAdminPrices();
+    return true;
+  }
+
+  function updateAdminPrices(){
+    document.querySelectorAll('[data-rx-tax-admin-price]').forEach(el=>{
+      const key = el.dataset.rxTaxAdminPrice;
+      el.textContent = money(prices[key]);
+    });
+  }
+
+  function createOverlay(){
+    if(document.getElementById('rxTattooTaximeterOverlay')) return;
+
+    overlay = document.createElement('div');
+    overlay.id = 'rxTattooTaximeterOverlay';
+
+    overlay.innerHTML = `
+      <div class="rx-tax-full">
+
+        <div class="rx-tax-top">
+          <div class="rx-tax-top-title">
+            <span class="machine">⚡</span>
+            <div>
+              <strong>Taxímetro Tattoo RoXThal</strong>
+              <span>Tiempo real · cálculo automático</span>
+            </div>
+          </div>
+
+          <div class="rx-tax-top-actions">
+            <button type="button"
+                    class="rx-tax-icon-btn"
+                    id="rxTaxSettings"
+                    aria-label="Configurar tarifas">⚙️</button>
+            <button type="button"
+                    class="rx-tax-icon-btn"
+                    id="rxTaxExit"
+                    aria-label="Salir">✕</button>
+          </div>
+        </div>
+
+        <div class="rx-tax-content">
+
+          <div class="rx-tax-machine">
+            <div class="rx-tax-ring"></div>
+            ${machineSvg()}
+          </div>
+
+          <div class="rx-tax-mode-label" id="rxTaxModeLabel">—</div>
+
+          <div class="rx-tax-clock" id="rxTaxClock">00:00:00</div>
+
+          <div class="rx-tax-price-label">valor actual</div>
+          <div class="rx-tax-price" id="rxTaxPrice">$0</div>
+
+          <div class="rx-tax-progress">
+            <span id="rxTaxProgress"></span>
+          </div>
+
+          <div class="rx-tax-info" id="rxTaxInfo">
+            Primeros 60 minutos: tarifa base.
+          </div>
+
+          <div class="rx-tax-controls">
+            <button type="button"
+                    class="rx-tax-control primary"
+                    id="rxTaxStart">▶ Iniciar</button>
+
+            <button type="button"
+                    class="rx-tax-control"
+                    id="rxTaxPause"
+                    disabled>⏸ Pausar</button>
+
+            <button type="button"
+                    class="rx-tax-control"
+                    id="rxTaxFinish"
+                    disabled>🏁 Finalizar</button>
+          </div>
+
+          <div id="rxTaxFinished"></div>
+
+          <div class="rx-tax-bottom">
+            Cálculo después de la primera hora: precio base + tiempo excedente proporcional.
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    configModal = document.createElement('div');
+    configModal.className = 'rx-tax-modal-wrap';
+    configModal.id = 'rxTaxConfigModal';
+
+    configModal.innerHTML = `
+      <div class="rx-tax-modal">
+        <h3>⚙️ Configurar tarifas</h3>
+        <p>
+          Cada modalidad es independiente. El importe indicado corresponde
+          a la primera hora y también determina el valor proporcional por segundo.
+        </p>
+
+        <div class="rx-tax-field">
+          <label>✒️ Líneas — primera hora</label>
+          <input id="rxTaxPriceLineas" type="number" min="1" step="1">
+        </div>
+
+        <div class="rx-tax-field">
+          <label>🌑 Sombras — primera hora</label>
+          <input id="rxTaxPriceSombras" type="number" min="1" step="1">
+        </div>
+
+        <div class="rx-tax-field">
+          <label>🎨 Color — primera hora</label>
+          <input id="rxTaxPriceColor" type="number" min="1" step="1">
+        </div>
+
+        <div class="rx-tax-modal-actions">
+          <button type="button" id="rxTaxRestore">↺ Restaurar</button>
+          <button type="button" id="rxTaxCancel">Cancelar</button>
+          <button type="button" class="save" id="rxTaxSave">Guardar</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(configModal);
+
+    bindOverlayEvents();
+  }
+
+  function openConfig(){
+    document.getElementById('rxTaxPriceLineas').value = prices.lineas;
+    document.getElementById('rxTaxPriceSombras').value = prices.sombras;
+    document.getElementById('rxTaxPriceColor').value = prices.color;
+    configModal.classList.add('open');
+  }
+
+  function closeConfig(){
+    configModal.classList.remove('open');
+  }
+
+  function saveConfig(){
+    const l = Number(document.getElementById('rxTaxPriceLineas').value);
+    const s = Number(document.getElementById('rxTaxPriceSombras').value);
+    const c = Number(document.getElementById('rxTaxPriceColor').value);
+
+    if(!validPrice(l) || !validPrice(s) || !validPrice(c)){
+      alert('Ingresá valores válidos mayores a cero para las tres modalidades.');
+      return;
+    }
+
+    prices = {
+      lineas:l,
+      sombras:s,
+      color:c
+    };
+
+    savePrices();
+    updateAdminPrices();
+    closeConfig();
+    render();
+  }
+
+  function restoreDefaults(){
+    document.getElementById('rxTaxPriceLineas').value = DEFAULTS.lineas;
+    document.getElementById('rxTaxPriceSombras').value = DEFAULTS.sombras;
+    document.getElementById('rxTaxPriceColor').value = DEFAULTS.color;
+  }
+
+  function bindOverlayEvents(){
+    document.addEventListener('click', function(e){
+
+      const startMode = e.target.closest('[data-rx-tax-start]');
+      if(startMode){
+        e.preventDefault();
+        openTaximeter(startMode.dataset.rxTaxStart);
+        return;
+      }
+
+      if(e.target.closest('#rxTaxOpenConfig') ||
+         e.target.closest('#rxTaxSettings')){
+        e.preventDefault();
+        openConfig();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxConfigModal') &&
+         !e.target.closest('.rx-tax-modal')){
+        closeConfig();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxCancel')){
+        closeConfig();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxRestore')){
+        restoreDefaults();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxSave')){
+        saveConfig();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxStart')){
+        startSession();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxPause')){
+        pauseSession();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxFinish')){
+        finishSession();
+        return;
+      }
+
+      if(e.target.closest('#rxTaxExit')){
+        closeTaximeter();
+        return;
+      }
+    });
+
+    document.addEventListener('keydown',function(e){
+      if(e.key === 'Escape' && configModal?.classList.contains('open')){
+        closeConfig();
+        return;
+      }
+
+      if(e.key === 'Escape' &&
+         overlay?.classList.contains('rx-open')){
+        closeTaximeter();
+      }
+    });
+  }
+
+  function openTaximeter(mode){
+    if(!MODES[mode]) return;
+
+    createOverlay();
+
+    state = {
+      mode:mode,
+      running:false,
+      startMs:null,
+      accumulatedMs:0,
+      finished:false,
+      finishMs:null
+    };
+
+    overlay.classList.add('rx-open');
+
+    render();
+  }
+
+  function closeTaximeter(){
+    if(configModal) closeConfig();
+
+    if(overlay){
+      overlay.classList.remove('rx-open');
+    }
+  }
+
+  function startSession(){
+    if(!state.mode || state.finished) return;
+
+    if(!state.running){
+      state.startMs = Date.now();
+      state.running = true;
+    }
+
+    render();
+  }
+
+  function pauseSession(){
+    if(!state.running) return;
+
+    state.accumulatedMs += Date.now() - state.startMs;
+    state.startMs = null;
+    state.running = false;
+
+    render();
+  }
+
+  function finishSession(){
+    if(!state.mode) return;
+
+    if(state.running){
+      state.accumulatedMs += Date.now() - state.startMs;
+      state.startMs = null;
+      state.running = false;
+    }
+
+    state.finished = true;
+    state.finishMs = Date.now();
+
+    render();
+  }
+
+  function newSession(){
+    if(!state.mode) return;
+
+    state = {
+      mode:state.mode,
+      running:false,
+      startMs:null,
+      accumulatedMs:0,
+      finished:false,
+      finishMs:null
+    };
+
+    render();
+  }
+
+  function chooseAnotherMode(){
+    state = {
+      mode:null,
+      running:false,
+      startMs:null,
+      accumulatedMs:0,
+      finished:false,
+      finishMs:null
+    };
+
+    closeTaximeter();
+  }
+
+  function render(){
+    if(!overlay || !state.mode) return;
+
+    const mode = MODES[state.mode];
+    const seconds = elapsedSeconds();
+    const base = getBase();
+    const total = calculatePrice(seconds,base);
+
+    const clock = document.getElementById('rxTaxClock');
+    const price = document.getElementById('rxTaxPrice');
+    const label = document.getElementById('rxTaxModeLabel');
+    const progress = document.getElementById('rxTaxProgress');
+    const info = document.getElementById('rxTaxInfo');
+    const startBtn = document.getElementById('rxTaxStart');
+    const pauseBtn = document.getElementById('rxTaxPause');
+    const finishBtn = document.getElementById('rxTaxFinish');
+    const finishedBox = document.getElementById('rxTaxFinished');
+
+    if(!clock || !price) return;
+
+    label.textContent =
+      mode.icon + ' ' + mode.name + ' · ' + money(base) + ' / primera hora';
+
+    clock.textContent = formatTime(seconds);
+    price.textContent = money(total);
+
+    const firstHourProgress = Math.min(100,(seconds/3600)*100);
+    progress.style.width = firstHourProgress + '%';
+
+    if(seconds <= 3600){
+      info.textContent =
+        'Primeros 60 minutos: tarifa base ' + money(base) + '.';
+    }else{
+      const extra = seconds - 3600;
+      const extraPrice = total - base;
+
+      info.textContent =
+        'Tiempo excedente: ' + formatHoursMinutes(extra) +
+        ' · adicional: ' + money(extraPrice);
+    }
+
+    startBtn.disabled = state.running || state.finished;
+    pauseBtn.disabled = !state.running || state.finished;
+    finishBtn.disabled = state.finished || seconds <= 0;
+
+    startBtn.textContent =
+      seconds > 0 && !state.running && !state.finished
+        ? '▶ Continuar'
+        : '▶ Iniciar';
+
+    if(state.finished){
+      finishedBox.innerHTML = `
+        <div class="rx-tax-finished">
+          <div class="check">✓</div>
+          <h3>Sesión finalizada</h3>
+          <div class="final-time">
+            Tiempo total: <strong>${formatHoursMinutes(seconds)}</strong>
+          </div>
+          <div class="final-price">${money(total)}</div>
+          <div class="final-time">
+            Tarifa: ${mode.name} · base ${money(base)}
+          </div>
+          <div class="rx-tax-controls" style="margin-top:18px">
+            <button type="button"
+                    class="rx-tax-control primary"
+                    id="rxTaxNewSession">↻ Nueva sesión</button>
+            <button type="button"
+                    class="rx-tax-control"
+                    id="rxTaxAnotherMode">🎨 Otra modalidad</button>
+          </div>
+        </div>
+      `;
+    }else{
+      finishedBox.innerHTML = '';
+    }
+
+    const newBtn = document.getElementById('rxTaxNewSession');
+    const anotherBtn = document.getElementById('rxTaxAnotherMode');
+
+    if(newBtn){
+      newBtn.onclick = newSession;
+    }
+
+    if(anotherBtn){
+      anotherBtn.onclick = chooseAnotherMode;
+    }
+  }
+
+  function ensureRenderLoop(){
+    if(renderTimer) return;
+
+    renderTimer = setInterval(function(){
+      if(overlay?.classList.contains('rx-open') &&
+         state.mode){
+        render();
+      }
+    },250);
+  }
+
+  function boot(){
+    injectStyles();
+
+    let tries = 0;
+
+    const timer = setInterval(function(){
+      tries++;
+
+      if(createAdminModule()){
+        clearInterval(timer);
+        createOverlay();
+        ensureRenderLoop();
+        return;
+      }
+
+      if(tries >= 120){
+        clearInterval(timer);
+      }
+    },250);
+  }
+
+  boot();
+
+})();
+</script>
+   
 </body>
 </html>
