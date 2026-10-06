@@ -62331,6 +62331,124 @@ function openNotes(){
 })();
 </script>
    
-   
+   <!-- ROXTHAL — APUNTES INDEPENDIENTE DESDE INICIO -->
+<style id="roxthal-apuntes-independent-home-style">
+#rxM15BtnApuntes{
+  display:none!important;
+}
+</style>
+
+<script id="roxthal-apuntes-independent-home-script">
+(function(){
+
+  "use strict";
+
+  function abrirApuntes(){
+
+    if(
+      window.RoXThalApuntes &&
+      typeof window.RoXThalApuntes.open === "function"
+    ){
+
+      window.RoXThalApuntes.open();
+      return;
+
+    }
+
+    console.warn(
+      "[RoXThal] Apuntes todavía no está disponible."
+    );
+
+  }
+
+  function instalarApuntes(){
+
+    const grid =
+      document.getElementById("moduleGrid");
+
+    if(!grid) return false;
+
+    if(
+      document.getElementById(
+        "rox-apuntes-home-module"
+      )
+    ){
+      return true;
+    }
+
+    const card =
+      document.createElement("article");
+
+    card.id =
+      "rox-apuntes-home-module";
+
+    card.className =
+      "module";
+
+    card.innerHTML = `
+      <div class="module-content">
+        <div class="module-num">
+          MÓDULO INDEPENDIENTE
+        </div>
+
+        <h3>Apuntes</h3>
+
+        <p>
+          Apuntes y material de estudio de RoXThal.
+        </p>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-small"
+        >
+          Entrar
+        </button>
+      </div>
+    `;
+
+    card.addEventListener(
+      "click",
+      function(event){
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        abrirApuntes();
+
+      }
+    );
+
+    grid.appendChild(card);
+
+    return true;
+
+  }
+
+  function iniciar(){
+
+    if(instalarApuntes()) return;
+
+    setTimeout(iniciar,250);
+
+  }
+
+  if(
+    document.readyState === "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      iniciar,
+      {once:true}
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+})();
+</script>
 </body>
 </html>
