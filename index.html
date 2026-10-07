@@ -67874,6 +67874,290 @@ if(quick){
 
 })();
 </script>
-   
+
+  <!-- ============================================================
+     ROXTHAL — COMPARTIR CONVOCATORIA DE COLABORADORES
+     ENLACE DIRECTO AL MÓDULO 16
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__RX_COLLABORATOR_RECRUIT_SHARE_V1__) return;
+  window.__RX_COLLABORATOR_RECRUIT_SHARE_V1__ = true;
+
+  var ROXTHAL_URL =
+    'https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/';
+
+  var COLLAB_URL =
+    ROXTHAL_URL + '#trabaja-con-nosotros';
+
+  var SHARE_TEXT =
+    '🤝 ¡RoXThal Art Design busca colaboradores!\n\n' +
+    '¿Te gusta el arte, el diseño o el tatuaje?\n\n' +
+    'Buscamos personas que quieran recomendar nuestros servicios, cursos y productos y generar comisiones por las ventas cerradas.\n\n' +
+    '🎨 Servicios\n' +
+    '🎓 Cursos\n' +
+    '🛍️ Productos\n' +
+    '💰 Comisiones\n\n' +
+    'Entrá directamente al programa de colaboradores de RoXThal:\n' +
+    COLLAB_URL;
+
+  /*
+   * ------------------------------------------------------------
+   * ABRIR MÓDULO 16
+   * ------------------------------------------------------------
+   */
+  function openCollaboratorsDirect() {
+
+    var target =
+      document.getElementById('collaborators');
+
+    if (!target) return false;
+
+    document
+      .querySelectorAll('.view')
+      .forEach(function (view) {
+        view.classList.add('hidden');
+      });
+
+    target.classList.remove('hidden');
+
+    document.body.classList.add('view-open');
+    document.body.classList.remove(
+      'school-atelier-open'
+    );
+
+    window.scrollTo(0, 0);
+
+    target.scrollTop = 0;
+
+    /*
+     * Abrir directamente el registro.
+     */
+    setTimeout(function () {
+
+      if (
+        typeof window.rxCollabOpenTab ===
+        'function'
+      ) {
+        window.rxCollabOpenTab('register');
+      }
+
+    }, 80);
+
+    return true;
+  }
+
+  /*
+   * ------------------------------------------------------------
+   * DETECTAR ENLACE COMPARTIDO
+   * ------------------------------------------------------------
+   *
+   * Si alguien entra mediante:
+   *
+   * #trabaja-con-nosotros
+   *
+   * se abre automáticamente el Módulo 16.
+   */
+  function checkCollaboratorLink() {
+
+    if (
+      window.location.hash !==
+      '#trabaja-con-nosotros'
+    ) {
+      return;
+    }
+
+    var attempts = 0;
+
+    var timer =
+      setInterval(function () {
+
+        attempts++;
+
+        if (
+          openCollaboratorsDirect()
+        ) {
+          clearInterval(timer);
+        }
+
+        if (attempts >= 30) {
+          clearInterval(timer);
+        }
+
+      }, 250);
+  }
+
+  /*
+   * ------------------------------------------------------------
+   * COMPARTIR CONVOCATORIA
+   * ------------------------------------------------------------
+   */
+  window.rxShareCollaboratorRecruitment =
+    async function () {
+
+      /*
+       * Si el dispositivo permite compartir
+       * directamente, utilizamos el menú nativo.
+       */
+      if (
+        navigator.share
+      ) {
+
+        try {
+
+          await navigator.share({
+            title:
+              '🤝 Trabaja con nosotros — RoXThal Art Design',
+
+            text:
+              SHARE_TEXT,
+
+            url:
+              COLLAB_URL
+          });
+
+          return;
+
+        } catch (error) {
+
+          /*
+           * Si el usuario cancela el menú,
+           * no hacemos nada.
+           */
+          if (
+            error &&
+            error.name === 'AbortError'
+          ) {
+            return;
+          }
+
+        }
+      }
+
+      /*
+       * Si no existe Web Share,
+       * abrir WhatsApp directamente.
+       */
+      var whatsappURL =
+        'https://wa.me/?text=' +
+        encodeURIComponent(
+          SHARE_TEXT
+        );
+
+      window.open(
+        whatsappURL,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    };
+
+  /*
+   * ------------------------------------------------------------
+   * INSERTAR BOTÓN EN EL MÓDULO
+   * ------------------------------------------------------------
+   */
+  function installRecruitmentButton() {
+
+    var view =
+      document.getElementById(
+        'collaborators'
+      );
+
+    if (!view) return;
+
+    /*
+     * Evitar duplicados.
+     */
+    if (
+      view.querySelector(
+        '.rx-collaborator-recruit-button'
+      )
+    ) {
+      return;
+    }
+
+    /*
+     * Buscar la zona de botones del encabezado.
+     */
+    var actions =
+      view.querySelector(
+        '.rx-collab-actions'
+      );
+
+    if (!actions) return;
+
+    var button =
+      document.createElement('button');
+
+    button.type = 'button';
+
+    button.className =
+      'btn btn-primary rx-collaborator-recruit-button';
+
+    button.innerHTML =
+      '📣 Buscamos colaboradores';
+
+    button.addEventListener(
+      'click',
+      function () {
+
+        window.rxShareCollaboratorRecruitment();
+
+      }
+    );
+
+    actions.appendChild(button);
+  }
+
+  /*
+   * ------------------------------------------------------------
+   * INICIO
+   * ------------------------------------------------------------
+   */
+  function init() {
+
+    installRecruitmentButton();
+
+    checkCollaboratorLink();
+
+    /*
+     * El módulo puede terminar de construirse
+     * después de este script.
+     */
+    setTimeout(
+      installRecruitmentButton,
+      500
+    );
+
+    setTimeout(
+      installRecruitmentButton,
+      1500
+    );
+
+    setTimeout(
+      installRecruitmentButton,
+      3000
+    );
+  }
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init
+    );
+
+  } else {
+
+    init();
+  }
+
+})();
+</script> 
 </body>
 </html>
