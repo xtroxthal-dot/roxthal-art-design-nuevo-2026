@@ -64764,6 +64764,554 @@ if(quick){
 <!-- ============================================================
      FIN — CENTRO DE CONTROL ROXTHAL
      ============================================================ -->
+     <!-- =========================================================
+     ROXTHAL CENTRO DE CONTROL — PREMIUM EXPERIENCE
+     No modifica módulos ni navegación existente
+========================================================= -->
+<style id="roxthal-control-premium-style">
+
+#rxUniversalControl{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.09),transparent 32%),
+    radial-gradient(circle at 90% 20%,rgba(130,90,255,.12),transparent 30%),
+    linear-gradient(145deg,#09090d,#11111a 55%,#09090d);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:28px;
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+#rxUniversalControl::before{
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  top:-150px;
+  right:-100px;
+  border-radius:50%;
+  background:rgba(170,120,255,.14);
+  filter:blur(60px);
+  z-index:-1;
+  pointer-events:none;
+}
+
+#rxUniversalControl::after{
+  content:"";
+  position:absolute;
+  width:220px;
+  height:220px;
+  bottom:-130px;
+  left:-80px;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  filter:blur(60px);
+  z-index:-1;
+  pointer-events:none;
+}
+
+.rx-premium-head{
+  padding:30px 24px 18px;
+  text-align:center;
+}
+
+.rx-premium-kicker{
+  font-size:.72rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  opacity:.55;
+  margin-bottom:8px;
+}
+
+.rx-premium-title{
+  margin:0;
+  font-size:clamp(1.7rem,5vw,2.5rem);
+  font-weight:800;
+  letter-spacing:-.04em;
+}
+
+.rx-premium-subtitle{
+  margin:10px auto 0;
+  max-width:620px;
+  opacity:.68;
+  line-height:1.5;
+}
+
+.rx-premium-search{
+  margin:18px auto 24px;
+  max-width:720px;
+  position:relative;
+}
+
+.rx-premium-search input{
+  width:100%;
+  box-sizing:border-box;
+  min-height:56px;
+  padding:0 20px 0 50px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.055);
+  color:inherit;
+  outline:none;
+  font-size:1rem;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.rx-premium-search input:focus{
+  border-color:rgba(255,255,255,.28);
+  background:rgba(255,255,255,.075);
+}
+
+.rx-premium-search span{
+  position:absolute;
+  left:18px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:1.25rem;
+  opacity:.65;
+  pointer-events:none;
+}
+
+.rx-today-title{
+  margin:4px 0 14px;
+  padding:0 4px;
+  font-size:1.05rem;
+  font-weight:750;
+}
+
+.rx-today-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:26px;
+}
+
+.rx-today-card{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.055);
+  color:inherit;
+  border-radius:20px;
+  min-height:100px;
+  padding:16px 12px;
+  cursor:pointer;
+  transition:
+    transform .18s ease,
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.rx-today-card:hover{
+  transform:translateY(-3px);
+  background:rgba(255,255,255,.09);
+  border-color:rgba(255,255,255,.22);
+  box-shadow:0 12px 30px rgba(0,0,0,.22);
+}
+
+.rx-today-card:active{
+  transform:scale(.97);
+}
+
+.rx-today-icon{
+  display:block;
+  font-size:1.65rem;
+  margin-bottom:8px;
+}
+
+.rx-today-label{
+  display:block;
+  font-weight:750;
+  font-size:.9rem;
+}
+
+.rx-today-small{
+  display:block;
+  margin-top:3px;
+  font-size:.7rem;
+  opacity:.55;
+}
+
+.rx-feature-title{
+  margin:0 0 14px;
+  padding:0 4px;
+  font-size:1.05rem;
+  font-weight:750;
+}
+
+.rx-feature-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:24px;
+}
+
+.rx-feature-card{
+  position:relative;
+  overflow:hidden;
+  min-height:145px;
+  padding:20px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.09),
+      rgba(255,255,255,.035));
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.rx-feature-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,255,255,.22);
+  box-shadow:0 18px 45px rgba(0,0,0,.25);
+}
+
+.rx-feature-card:active{
+  transform:scale(.98);
+}
+
+.rx-feature-card::after{
+  content:"";
+  position:absolute;
+  width:130px;
+  height:130px;
+  right:-55px;
+  bottom:-65px;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  filter:blur(8px);
+}
+
+.rx-feature-icon{
+  font-size:2rem;
+  display:block;
+  margin-bottom:12px;
+}
+
+.rx-feature-name{
+  display:block;
+  font-size:1.05rem;
+  font-weight:800;
+}
+
+.rx-feature-desc{
+  display:block;
+  margin-top:5px;
+  opacity:.58;
+  font-size:.78rem;
+  line-height:1.4;
+}
+
+.rx-feature-arrow{
+  position:absolute;
+  right:17px;
+  top:17px;
+  opacity:.45;
+  font-size:1.1rem;
+}
+
+.rx-premium-hidden{
+  display:none!important;
+}
+
+@media(max-width:700px){
+
+  #rxUniversalControl{
+    border-radius:22px;
+  }
+
+  .rx-premium-head{
+    padding:24px 16px 14px;
+  }
+
+  .rx-today-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .rx-feature-grid{
+    grid-template-columns:1fr;
+  }
+
+  .rx-feature-card{
+    min-height:125px;
+  }
+
+}
+
+@media(max-width:390px){
+
+  .rx-today-card{
+    min-height:92px;
+    padding:13px 8px;
+  }
+
+  .rx-today-icon{
+    font-size:1.4rem;
+  }
+
+}
+
+</style>
+
+<script id="roxthal-control-premium-script">
+(function(){
+
+  function iniciar(){
+
+    const control=document.getElementById('rxUniversalControl');
+
+    if(!control)return;
+
+    if(control.dataset.rxPremiumReady==='1')return;
+
+    control.dataset.rxPremiumReady='1';
+
+    /* ---------------------------------------------
+       CABECERA
+    --------------------------------------------- */
+
+    const head=document.createElement('div');
+    head.className='rx-premium-head';
+
+    const ahora=new Date();
+    const hora=ahora.getHours();
+
+    let saludo='Bienvenido a RoXThal';
+
+    if(hora>=5 && hora<12){
+      saludo='Buenos días · RoXThal';
+    }else if(hora>=12 && hora<19){
+      saludo='Buenas tardes · RoXThal';
+    }else{
+      saludo='Buenas noches · RoXThal';
+    }
+
+    head.innerHTML=
+      '<div class="rx-premium-kicker">ROXTHAL ART DESIGN</div>'+
+      '<h2 class="rx-premium-title">'+saludo+'</h2>'+
+      '<p class="rx-premium-subtitle">'+
+      'Todo tu universo creativo, reunido en un solo lugar.'+
+      '</p>';
+
+    control.insertBefore(head,control.firstChild);
+
+
+    /* ---------------------------------------------
+       BUSCADOR
+    --------------------------------------------- */
+
+    const search=document.createElement('div');
+    search.className='rx-premium-search';
+
+    search.innerHTML=
+      '<span>⌕</span>'+
+      '<input type="search" '+
+      'placeholder="¿Qué estás buscando en RoXThal?" '+
+      'autocomplete="off">';
+
+    head.insertAdjacentElement('afterend',search);
+
+
+    /* ---------------------------------------------
+       ZONA ¿QUÉ QUIERES HACER HOY?
+    --------------------------------------------- */
+
+    const todayTitle=document.createElement('div');
+    todayTitle.className='rx-today-title';
+    todayTitle.textContent='¿Qué quieres hacer hoy?';
+
+    search.insertAdjacentElement('afterend',todayTitle);
+
+    const today=document.createElement('div');
+    today.className='rx-today-grid';
+
+    today.innerHTML=
+      '<button class="rx-today-card" type="button" data-rx-premium-go="school">'+
+        '<span class="rx-today-icon">🎨</span>'+
+        '<span class="rx-today-label">Crear</span>'+
+        '<span class="rx-today-small">Cursos y aprendizaje</span>'+
+      '</button>'+
+
+      '<button class="rx-today-card" type="button" data-rx-premium-go="gallery">'+
+        '<span class="rx-today-icon">✨</span>'+
+        '<span class="rx-today-label">Inspirarme</span>'+
+        '<span class="rx-today-small">Galería y multimedia</span>'+
+      '</button>'+
+
+      '<button class="rx-today-card" type="button" data-rx-premium-go="store">'+
+        '<span class="rx-today-icon">🛒</span>'+
+        '<span class="rx-today-label">Comprar</span>'+
+        '<span class="rx-today-small">Tienda RoXThal</span>'+
+      '</button>'+
+
+      '<button class="rx-today-card" type="button" data-rx-premium-go="contact">'+
+        '<span class="rx-today-icon">💬</span>'+
+        '<span class="rx-today-label">Contactar</span>'+
+        '<span class="rx-today-small">Ubicación y contacto</span>'+
+      '</button>';
+
+    todayTitle.insertAdjacentElement('afterend',today);
+
+
+    /* ---------------------------------------------
+       DESTACADOS
+    --------------------------------------------- */
+
+    const featureTitle=document.createElement('div');
+    featureTitle.className='rx-feature-title';
+    featureTitle.textContent='Destacados de RoXThal';
+
+    today.insertAdjacentElement('afterend',featureTitle);
+
+    const features=document.createElement('div');
+    features.className='rx-feature-grid';
+
+    features.innerHTML=
+      '<button class="rx-feature-card" type="button" data-rx-premium-go="school">'+
+        '<span class="rx-feature-arrow">↗</span>'+
+        '<span class="rx-feature-icon">🎓</span>'+
+        '<span class="rx-feature-name">RoXThal Escuela</span>'+
+        '<span class="rx-feature-desc">Cursos y talleres para desarrollar tu creatividad.</span>'+
+      '</button>'+
+
+      '<button class="rx-feature-card" type="button" data-rx-premium-go="schoolAtelier">'+
+        '<span class="rx-feature-arrow">↗</span>'+
+        '<span class="rx-feature-icon">🎨</span>'+
+        '<span class="rx-feature-name">School Atelier</span>'+
+        '<span class="rx-feature-desc">Herramientas profesionales para arte y tatuaje.</span>'+
+      '</button>'+
+
+      '<button class="rx-feature-card" type="button" data-rx-premium-go="gallery">'+
+        '<span class="rx-feature-arrow">↗</span>'+
+        '<span class="rx-feature-icon">🖼️</span>'+
+        '<span class="rx-feature-name">Galería y Multimedia</span>'+
+        '<span class="rx-feature-desc">Obras, tatuajes, fotografías y vídeos.</span>'+
+      '</button>'+
+
+      '<button class="rx-feature-card" type="button" data-rx-premium-go="ai">'+
+        '<span class="rx-feature-arrow">↗</span>'+
+        '<span class="rx-feature-icon">🤖</span>'+
+        '<span class="rx-feature-name">RoXThal IA</span>'+
+        '<span class="rx-feature-desc">Herramientas inteligentes para tu universo creativo.</span>'+
+      '</button>';
+
+    featureTitle.insertAdjacentElement('afterend',features);
+
+
+    /* ---------------------------------------------
+       NAVEGACIÓN SEGURA
+       Usa la navegación existente de RoXThal.
+    --------------------------------------------- */
+
+    control.addEventListener('click',function(e){
+
+      const boton=e.target.closest('[data-rx-premium-go]');
+
+      if(!boton)return;
+
+      const destino=boton.getAttribute('data-rx-premium-go');
+
+      const original=document.querySelector(
+        '[data-go="'+destino+'"]'
+      );
+
+      if(original){
+        original.click();
+        return;
+      }
+
+      if(typeof window.showView==='function'){
+        window.showView(destino);
+        return;
+      }
+
+      const vista=document.getElementById(destino);
+
+      if(vista){
+        vista.classList.remove('hidden');
+      }
+
+    });
+
+
+    /* ---------------------------------------------
+       BUSCADOR VISUAL
+    --------------------------------------------- */
+
+    const input=search.querySelector('input');
+
+    input.addEventListener('input',function(){
+
+      const termino=input.value.trim().toLowerCase();
+
+      if(!termino){
+
+        control
+          .querySelectorAll('.rx-feature-card,.rx-today-card')
+          .forEach(el=>{
+            el.classList.remove('rx-premium-hidden');
+          });
+
+        return;
+      }
+
+      control
+        .querySelectorAll('.rx-feature-card,.rx-today-card')
+        .forEach(el=>{
+
+          const texto=el.textContent.toLowerCase();
+
+          el.classList.toggle(
+            'rx-premium-hidden',
+            !texto.includes(termino)
+          );
+
+        });
+
+    });
+
+  }
+
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',iniciar);
+  }else{
+    iniciar();
+  }
+
+  /*
+     El Centro de Control se crea dinámicamente.
+     Esperamos hasta que exista.
+  */
+
+  const observer=new MutationObserver(function(){
+
+    const control=document.getElementById('rxUniversalControl');
+
+    if(control){
+      iniciar();
+    }
+
+  });
+
+  observer.observe(document.documentElement,{
+    childList:true,
+    subtree:true
+  });
+
+})();
+</script>
    
 </body>
 </html>
