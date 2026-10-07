@@ -64765,6 +64765,2818 @@ if(quick){
      FIN — CENTRO DE CONTROL ROXTHAL
      ============================================================ -->
 
-   
+   <!-- ============================================================
+     ROXTHAL ART DESIGN — TRABAJA CON NOSOTROS
+     MÓDULO DE COLABORADORES / REFERIDOS
+     V1 — BLOQUE AUTÓNOMO
+     PEGAR INMEDIATAMENTE ANTES DE </body>
+     ============================================================ -->
+
+<style>
+#rxCollaboratorsView{
+  padding-bottom:70px;
+}
+
+#rxCollaboratorsView .rx-collab-hero{
+  position:relative;
+  overflow:hidden;
+  padding:28px;
+  margin-bottom:18px;
+  border:1px solid var(--border);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(242,196,0,.16),transparent 35%),
+    linear-gradient(145deg,#171717,#0d0d0d);
+}
+
+#rxCollaboratorsView .rx-collab-hero h2{
+  font-size:clamp(30px,6vw,52px);
+  line-height:1;
+  margin:8px 0 12px;
+}
+
+#rxCollaboratorsView .rx-collab-hero p{
+  color:var(--muted);
+  max-width:760px;
+  line-height:1.6;
+}
+
+.rx-collab-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:18px;
+}
+
+.rx-collab-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.rx-collab-tabs button{
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--muted);
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:800;
+}
+
+.rx-collab-tabs button.active{
+  background:var(--yellow);
+  color:#080808;
+  border-color:var(--yellow);
+}
+
+.rx-collab-panel{
+  display:none;
+}
+
+.rx-collab-panel.active{
+  display:block;
+}
+
+.rx-collab-code{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 13px;
+  border-radius:10px;
+  border:1px solid rgba(242,196,0,.45);
+  background:rgba(242,196,0,.08);
+  color:var(--yellow);
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.rx-collab-link{
+  word-break:break-all;
+  padding:12px;
+  border-radius:10px;
+  background:#090909;
+  border:1px solid var(--border);
+  color:#ddd;
+  font-size:12px;
+  margin-top:8px;
+}
+
+.rx-collab-stat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+
+.rx-collab-stat{
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:var(--surface);
+}
+
+.rx-collab-stat b{
+  display:block;
+  font-size:25px;
+  color:var(--yellow);
+}
+
+.rx-collab-stat span{
+  color:var(--muted);
+  font-size:11px;
+}
+
+.rx-collab-product-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.rx-collab-product{
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+}
+
+.rx-collab-product img{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  display:block;
+  background:#050505;
+}
+
+.rx-collab-product-body{
+  padding:15px;
+}
+
+.rx-collab-product h3{
+  margin-bottom:7px;
+}
+
+.rx-collab-price{
+  font-size:20px;
+  font-weight:900;
+  margin:8px 0;
+}
+
+.rx-collab-commission{
+  padding:10px;
+  border-radius:10px;
+  background:rgba(242,196,0,.08);
+  border:1px solid rgba(242,196,0,.2);
+  color:#eee;
+  margin:10px 0;
+}
+
+.rx-collab-commission strong{
+  color:var(--yellow);
+}
+
+.rx-collab-history{
+  display:grid;
+  gap:9px;
+}
+
+.rx-collab-history-item{
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+}
+
+.rx-collab-history-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.rx-collab-status{
+  display:inline-flex;
+  padding:5px 9px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.rx-collab-status.pending{
+  background:#332900;
+  color:#ffd84d;
+}
+
+.rx-collab-status.approved{
+  background:#102f1d;
+  color:#8de2ae;
+}
+
+.rx-collab-status.paid{
+  background:#10252f;
+  color:#8bdcff;
+}
+
+.rx-collab-status.cancelled{
+  background:#321214;
+  color:#ff8b8f;
+}
+
+.rx-collab-admin-table{
+  overflow:auto;
+}
+
+.rx-collab-admin-table table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:760px;
+}
+
+.rx-collab-admin-table th,
+.rx-collab-admin-table td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  font-size:12px;
+  vertical-align:top;
+}
+
+.rx-collab-admin-table th{
+  color:var(--yellow);
+  font-size:11px;
+  text-transform:uppercase;
+}
+
+.rx-collab-mini-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.rx-collab-mini-actions .btn{
+  min-height:34px;
+  padding:0 9px;
+  font-size:11px;
+}
+
+.rx-collab-admin-section{
+  margin-bottom:18px;
+}
+
+.rx-collab-admin-section h3{
+  margin-bottom:12px;
+}
+
+.rx-collab-note{
+  padding:14px;
+  border:1px dashed var(--border);
+  border-radius:12px;
+  color:var(--muted);
+  line-height:1.55;
+  margin-bottom:15px;
+}
+
+.rx-collab-login-grid{
+  max-width:620px;
+}
+
+.rx-collab-hidden{
+  display:none!important;
+}
+
+@media(max-width:900px){
+  .rx-collab-product-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .rx-collab-stat-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  .rx-collab-product-grid{
+    grid-template-columns:1fr;
+  }
+  .rx-collab-stat-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+</style>
+
+<section id="collaborators" class="view hidden">
+  <div class="container" id="rxCollaboratorsView">
+
+    <div class="rx-collab-hero">
+      <div class="label">RoXThal Art Design</div>
+      <h2>🤝 Trabaja con nosotros</h2>
+      <p>
+        Compartí RoXThal, recomendá nuestros productos y servicios y generá
+        comisiones por las ventas atribuidas a tu código personal.
+      </p>
+
+      <div class="rx-collab-actions">
+        <button class="btn btn-primary" type="button"
+                onclick="rxCollabOpenTab('register')">
+          🚀 Quiero ser colaborador
+        </button>
+
+        <button class="btn" type="button"
+                onclick="rxCollabOpenTab('login')">
+          🔐 Acceso colaborador
+        </button>
+
+        <button class="btn" type="button"
+                onclick="rxCollabShareApp()">
+          📲 Compartir RoXThal
+        </button>
+      </div>
+    </div>
+
+    <div id="rxCollabStatus"></div>
+
+    <div class="rx-collab-tabs">
+      <button id="rxTabRegister"
+              type="button"
+              onclick="rxCollabOpenTab('register')">
+        🚀 Registrarme
+      </button>
+
+      <button id="rxTabLogin"
+              type="button"
+              onclick="rxCollabOpenTab('login')">
+        🔐 Acceder
+      </button>
+
+      <button id="rxTabDashboard"
+              type="button"
+              onclick="rxCollabOpenTab('dashboard')">
+        📊 Mi panel
+      </button>
+
+      <button id="rxTabAdmin"
+              type="button"
+              onclick="rxCollabOpenTab('admin')">
+        ⚙️ Administración
+      </button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="rxCollabRegisterPanel"
+         class="rx-collab-panel">
+
+      <div class="card">
+        <h3>🚀 Solicitar colaboración</h3>
+
+        <p class="muted" style="margin:8px 0 18px">
+          Completá tus datos. El administrador revisará y activará tu cuenta.
+        </p>
+
+        <div class="rx-collab-login-grid">
+
+          <div class="field">
+            <label>Nombre / empresa</label>
+            <input id="rxCollabRegName"
+                   type="text"
+                   autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label>WhatsApp</label>
+            <input id="rxCollabRegWhatsapp"
+                   type="tel"
+                   autocomplete="tel">
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <input id="rxCollabRegEmail"
+                   type="email"
+                   autocomplete="email">
+          </div>
+
+          <div class="field">
+            <label>Notas</label>
+            <textarea id="rxCollabRegNotes"
+                      placeholder="Contanos brevemente cómo pensás promocionar RoXThal."></textarea>
+          </div>
+
+          <button class="btn btn-primary"
+                  type="button"
+                  onclick="rxCollabRegister()">
+            Crear solicitud
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="rxCollabLoginPanel"
+         class="rx-collab-panel">
+
+      <div class="card">
+        <h3>🔐 Acceso colaborador</h3>
+
+        <div class="rx-collab-login-grid"
+             style="margin-top:16px">
+
+          <div class="field">
+            <label>Código personal</label>
+            <input id="rxCollabLoginCode"
+                   type="text"
+                   placeholder="RX-00027"
+                   autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label>Token de acceso</label>
+            <input id="rxCollabLoginToken"
+                   type="password"
+                   autocomplete="off">
+          </div>
+
+          <button class="btn btn-primary"
+                  type="button"
+                  onclick="rxCollabLogin()">
+            Entrar
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="rxCollabDashboardPanel"
+         class="rx-collab-panel">
+
+      <div id="rxCollabDashboard"></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="rxCollabAdminPanel"
+         class="rx-collab-panel">
+
+      <div id="rxCollabAdmin"></div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function(){
+
+  if(window.__ROXTHAL_COLLAB_V1__) return;
+  window.__ROXTHAL_COLLAB_V1__ = true;
+
+  /* ==========================================================
+     CONFIGURACIÓN
+     ========================================================== */
+
+  const SUPABASE_URL =
+    'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+
+  const SUPABASE_KEY =
+    'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+
+  const APP_URL =
+    window.location.origin + window.location.pathname;
+
+  const LS_REF =
+    'roxthal_collab_ref';
+
+  const LS_ITEM =
+    'roxthal_collab_item';
+
+  const LS_VISITOR =
+    'roxthal_collab_visitor';
+
+  const LS_SESSION =
+    'roxthal_collab_session';
+
+  const LS_CODE =
+    'roxthal_collab_code';
+
+  const LS_TOKEN =
+    'roxthal_collab_token';
+
+  let db = window.db;
+
+  if(!db && window.supabase){
+    db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+  }
+
+  if(!db){
+    console.error(
+      '[RoXThal Collaborators] Supabase no disponible.'
+    );
+    return;
+  }
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+
+  function rxUuid(){
+    try{
+      if(window.crypto &&
+         typeof crypto.randomUUID === 'function'){
+        return crypto.randomUUID();
+      }
+    }catch(e){}
+
+    return 'rx-' +
+      Date.now().toString(36) +
+      '-' +
+      Math.random().toString(36).slice(2,12);
+  }
+
+  function rxEscape(value){
+    return String(value ?? '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+  function rxMoney(value){
+    const n = Number(value || 0);
+
+    return n.toLocaleString(
+      'es-AR',
+      {
+        style:'currency',
+        currency:'ARS',
+        maximumFractionDigits:0
+      }
+    );
+  }
+
+  function rxDate(value){
+    if(!value) return '—';
+
+    try{
+      return new Date(value).toLocaleString(
+        'es-AR'
+      );
+    }catch(e){
+      return String(value);
+    }
+  }
+
+  function rxToast(message){
+    let el = document.getElementById(
+      'rxCollabToast'
+    );
+
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'rxCollabToast';
+      el.className = 'toast';
+      document.body.appendChild(el);
+    }
+
+    el.textContent = message;
+
+    clearTimeout(
+      window.__rxCollabToastTimer
+    );
+
+    window.__rxCollabToastTimer =
+      setTimeout(function(){
+        el.remove();
+      },3000);
+  }
+
+  function rxStatus(message,type){
+    const el = document.getElementById(
+      'rxCollabStatus'
+    );
+
+    if(!el) return;
+
+    el.innerHTML =
+      '<div class="status ' +
+      (type || '') +
+      '">' +
+      rxEscape(message) +
+      '</div>';
+  }
+
+  /* ==========================================================
+     VISITOR / SESSION
+     ========================================================== */
+
+  function rxEnsureTracking(){
+
+    let visitor =
+      localStorage.getItem(LS_VISITOR);
+
+    if(!visitor){
+      visitor = rxUuid();
+      localStorage.setItem(
+        LS_VISITOR,
+        visitor
+      );
+    }
+
+    let session =
+      sessionStorage.getItem(LS_SESSION);
+
+    if(!session){
+      session = rxUuid();
+
+      sessionStorage.setItem(
+        LS_SESSION,
+        session
+      );
+    }
+
+    return {
+      visitor,
+      session
+    };
+  }
+
+  const tracking =
+    rxEnsureTracking();
+
+  /* ==========================================================
+     REFERENCIA EN URL
+     ========================================================== */
+
+  async function rxCaptureReferral(){
+
+    try{
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const ref =
+        params.get('ref');
+
+      const item =
+        params.get('item');
+
+      if(ref){
+        localStorage.setItem(
+          LS_REF,
+          ref.trim().toUpperCase()
+        );
+      }
+
+      if(item){
+        localStorage.setItem(
+          LS_ITEM,
+          item
+        );
+      }
+
+      const storedRef =
+        localStorage.getItem(LS_REF);
+
+      if(!storedRef) return;
+
+      let sourceType = null;
+      let sourceId = null;
+
+      const storedItem =
+        localStorage.getItem(LS_ITEM);
+
+      if(storedItem &&
+         storedItem.includes(':')){
+
+        const parts =
+          storedItem.split(':');
+
+        sourceType =
+          parts.shift();
+
+        sourceId =
+          parts.join(':');
+      }
+
+      const landing =
+        window.location.pathname +
+        window.location.search;
+
+      const key =
+        'roxthal_collab_click_' +
+        storedRef +
+        '_' +
+        landing;
+
+      if(sessionStorage.getItem(key)){
+        return;
+      }
+
+      sessionStorage.setItem(
+        key,
+        '1'
+      );
+
+      await db.rpc(
+        'roxthal_record_referral_click_v2',
+        {
+          p_ref_code:storedRef,
+          p_landing_path:landing,
+          p_visitor_id:tracking.visitor,
+          p_session_id:tracking.session,
+          p_catalog_source_type:sourceType,
+          p_catalog_source_id:sourceId,
+          p_item_key:storedItem || null
+        }
+      );
+
+    }catch(error){
+
+      console.warn(
+        '[RoXThal Collaborators] referral:',
+        error
+      );
+
+    }
+
+  }
+
+  rxCaptureReferral();
+
+  /* ==========================================================
+     URLS DE REFERIDO
+     ========================================================== */
+
+  function rxReferralUrl(
+    code,
+    sourceType,
+    sourceId
+  ){
+
+    let url =
+      APP_URL +
+      '?ref=' +
+      encodeURIComponent(code);
+
+    if(sourceType &&
+       sourceId){
+
+      url +=
+        '&item=' +
+        encodeURIComponent(
+          sourceType +
+          ':' +
+          sourceId
+        );
+    }
+
+    return url;
+  }
+
+  window.rxCollabReferralUrl =
+    rxReferralUrl;
+
+  async function rxCopy(text){
+
+    try{
+
+      await navigator.clipboard.writeText(
+        text
+      );
+
+      rxToast(
+        'Enlace copiado.'
+      );
+
+      return true;
+
+    }catch(e){
+
+      window.prompt(
+        'Copiá este enlace:',
+        text
+      );
+
+      return false;
+    }
+  }
+
+  async function rxShare(
+    title,
+    text,
+    url
+  ){
+
+    try{
+
+      if(
+        navigator.share &&
+        /Android|iPhone|iPad|iPod/i.test(
+          navigator.userAgent
+        )
+      ){
+
+        await navigator.share({
+          title:title,
+          text:text,
+          url:url
+        });
+
+        return;
+      }
+
+    }catch(e){
+
+      if(e &&
+         e.name === 'AbortError'){
+        return;
+      }
+
+    }
+
+    await rxCopy(url);
+  }
+
+  window.rxCollabShareApp =
+    async function(){
+
+      const code =
+        localStorage.getItem(LS_CODE);
+
+      const url =
+        code ?
+        rxReferralUrl(code) :
+        APP_URL;
+
+      await rxShare(
+        'RoXThal Art Design',
+        'Conocé RoXThal Art Design.',
+        url
+      );
+    };
+
+  /* ==========================================================
+     VISTAS
+     ========================================================== */
+
+  function rxShowPanel(name){
+
+    [
+      'register',
+      'login',
+      'dashboard',
+      'admin'
+    ].forEach(function(id){
+
+      const panel =
+        document.getElementById(
+          'rxCollab' +
+          id.charAt(0).toUpperCase() +
+          id.slice(1) +
+          'Panel'
+        );
+
+      if(panel){
+        panel.classList.toggle(
+          'active',
+          id === name
+        );
+      }
+
+      const tab =
+        document.getElementById(
+          'rxTab' +
+          id.charAt(0).toUpperCase() +
+          id.slice(1)
+        );
+
+      if(tab){
+        tab.classList.toggle(
+          'active',
+          id === name
+        );
+      }
+
+    });
+
+  }
+
+  window.rxCollabOpenTab =
+    async function(name){
+
+      rxShowPanel(name);
+
+      if(name === 'dashboard'){
+        await rxLoadDashboard();
+      }
+
+      if(name === 'admin'){
+        await rxLoadAdmin();
+      }
+    };
+
+  /* ==========================================================
+     REGISTRO
+     ========================================================== */
+
+  window.rxCollabRegister =
+    async function(){
+
+      const name =
+        document.getElementById(
+          'rxCollabRegName'
+        ).value.trim();
+
+      const whatsapp =
+        document.getElementById(
+          'rxCollabRegWhatsapp'
+        ).value.trim();
+
+      const email =
+        document.getElementById(
+          'rxCollabRegEmail'
+        ).value.trim();
+
+      const notes =
+        document.getElementById(
+          'rxCollabRegNotes'
+        ).value.trim();
+
+      if(!name){
+        rxStatus(
+          'Ingresá tu nombre o empresa.',
+          'err'
+        );
+        return;
+      }
+
+      try{
+
+        rxStatus(
+          'Enviando solicitud...'
+        );
+
+        const {data,error} =
+          await db.rpc(
+            'roxthal_register_collaborator',
+            {
+              p_name:name,
+              p_whatsapp:whatsapp || null,
+              p_email:email || null,
+              p_notes:notes || null
+            }
+          );
+
+        if(error) throw error;
+
+        const result =
+          Array.isArray(data) ?
+          data[0] :
+          data;
+
+        if(result){
+
+          const code =
+            result.code ||
+            result.ref_code ||
+            result.collaborator_code ||
+            '';
+
+          const token =
+            result.access_token ||
+            result.token ||
+            '';
+
+          if(code){
+            localStorage.setItem(
+              LS_CODE,
+              code
+            );
+          }
+
+          if(token){
+            localStorage.setItem(
+              LS_TOKEN,
+              token
+            );
+          }
+
+          document.getElementById(
+            'rxCollabRegisterPanel'
+          ).innerHTML =
+
+            '<div class="card">' +
+              '<h3>✅ Solicitud creada</h3>' +
+
+              '<p class="muted" style="margin:10px 0 18px">' +
+                'Guardá estos datos. El administrador debe activar tu cuenta antes de comenzar a generar comisiones.' +
+              '</p>' +
+
+              (
+                code ?
+                '<div class="rx-collab-code">' +
+                  'Código: ' +
+                  rxEscape(code) +
+                '</div>' :
+                ''
+              ) +
+
+              (
+                token ?
+                '<div class="field" style="margin-top:16px">' +
+                  '<label>Token de acceso</label>' +
+                  '<div class="rx-collab-link">' +
+                    rxEscape(token) +
+                  '</div>' +
+                '</div>' :
+                ''
+              ) +
+
+              '<div class="rx-collab-actions">' +
+                '<button class="btn btn-primary" type="button" onclick="rxCollabOpenTab(\'dashboard\')">' +
+                  '📊 Abrir mi panel' +
+                '</button>' +
+                '<button class="btn" type="button" onclick="rxCopy(' +
+                  JSON.stringify(
+                    code
+                  ) +
+                ')">' +
+                  '📋 Copiar código' +
+                '</button>' +
+              '</div>' +
+
+            '</div>';
+
+          rxStatus(
+            'Solicitud registrada correctamente.',
+            'ok'
+          );
+
+        }else{
+
+          rxStatus(
+            'Solicitud creada correctamente. Esperá la activación del administrador.',
+            'ok'
+          );
+        }
+
+      }catch(error){
+
+        console.error(
+          '[RoXThal Collaborators] register:',
+          error
+        );
+
+        rxStatus(
+          error.message ||
+          'No se pudo crear la solicitud.',
+          'err'
+        );
+      }
+    };
+
+  /* ==========================================================
+     LOGIN
+     ========================================================== */
+
+  window.rxCollabLogin =
+    async function(){
+
+      const code =
+        document.getElementById(
+          'rxCollabLoginCode'
+        ).value.trim().toUpperCase();
+
+      const token =
+        document.getElementById(
+          'rxCollabLoginToken'
+        ).value.trim();
+
+      if(!code || !token){
+
+        rxStatus(
+          'Ingresá código y token.',
+          'err'
+        );
+
+        return;
+      }
+
+      try{
+
+        rxStatus(
+          'Comprobando acceso...'
+        );
+
+        const {data,error} =
+          await db.rpc(
+            'roxthal_collaborator_dashboard',
+            {
+              p_access_token:token
+            }
+          );
+
+        if(error) throw error;
+
+        if(!data){
+
+          throw new Error(
+            'No se encontró el colaborador.'
+          );
+        }
+
+        const profile =
+          Array.isArray(data) ?
+          data[0] :
+          data;
+
+        if(
+          profile.ref_code &&
+          String(profile.ref_code).toUpperCase() !== code
+        ){
+
+          throw new Error(
+            'El código no coincide con el token.'
+          );
+        }
+
+        if(
+          profile.status &&
+          profile.status !== 'active'
+        ){
+
+          throw new Error(
+            'La cuenta todavía no está activa.'
+          );
+        }
+
+        localStorage.setItem(
+          LS_CODE,
+          code
+        );
+
+        localStorage.setItem(
+          LS_TOKEN,
+          token
+        );
+
+        rxStatus(
+          'Acceso correcto.',
+          'ok'
+        );
+
+        await rxLoadDashboard();
+
+        rxShowPanel(
+          'dashboard'
+        );
+
+      }catch(error){
+
+        console.error(
+          '[RoXThal Collaborators] login:',
+          error
+        );
+
+        rxStatus(
+          error.message ||
+          'No se pudo iniciar sesión.',
+          'err'
+        );
+      }
+    };
+
+  /* ==========================================================
+     DASHBOARD
+     ========================================================== */
+
+  async function rxLoadDashboard(){
+
+    const root =
+      document.getElementById(
+        'rxCollabDashboard'
+      );
+
+    if(!root) return;
+
+    const token =
+      localStorage.getItem(
+        LS_TOKEN
+      );
+
+    const code =
+      localStorage.getItem(
+        LS_CODE
+      );
+
+    if(!token || !code){
+
+      root.innerHTML =
+        '<div class="card">' +
+          '<h3>🔐 Acceso requerido</h3>' +
+          '<p class="muted" style="margin:10px 0 18px">' +
+            'Ingresá con tu código y token de colaborador.' +
+          '</p>' +
+          '<button class="btn btn-primary" onclick="rxCollabOpenTab(\'login\')">' +
+            'Acceder' +
+          '</button>' +
+        '</div>';
+
+      return;
+    }
+
+    root.innerHTML =
+      '<div class="card">' +
+        '<div class="status">' +
+          'Cargando panel...' +
+        '</div>' +
+      '</div>';
+
+    try{
+
+      const {data,error} =
+        await db.rpc(
+          'roxthal_collaborator_dashboard',
+          {
+            p_access_token:token
+          }
+        );
+
+      if(error) throw error;
+
+      const profile =
+        Array.isArray(data) ?
+        data[0] :
+        data;
+
+      if(!profile){
+
+        throw new Error(
+          'No se encontró el colaborador.'
+        );
+      }
+
+      const clicks =
+        Array.isArray(profile.clicks) ?
+        profile.clicks :
+        [];
+
+      const commissions =
+        Array.isArray(profile.commissions) ?
+        profile.commissions :
+        [];
+
+      let totalSales = 0;
+      let totalCommission = 0;
+      let pending = 0;
+      let approved = 0;
+      let paid = 0;
+
+      commissions.forEach(function(c){
+
+        const sale =
+          Number(
+            c.sale_amount ||
+            c.amount ||
+            c.gross_amount ||
+            0
+          );
+
+        const commission =
+          Number(
+            c.commission_amount ||
+            c.amount_commission ||
+            c.commission ||
+            0
+          );
+
+        totalSales += sale;
+        totalCommission += commission;
+
+        const status =
+          String(
+            c.status || 'pending'
+          ).toLowerCase();
+
+        if(status === 'pending'){
+          pending += commission;
+        }
+
+        if(status === 'approved'){
+          approved += commission;
+        }
+
+        if(status === 'paid'){
+          paid += commission;
+        }
+
+      });
+
+      const shareUrl =
+        rxReferralUrl(
+          code
+        );
+
+      let html = '';
+
+      html +=
+        '<div class="rx-collab-hero">' +
+
+          '<div class="label">Panel del colaborador</div>' +
+
+          '<h2>' +
+            rxEscape(
+              profile.name ||
+              'Colaborador'
+            ) +
+          '</h2>' +
+
+          '<div class="rx-collab-code">' +
+            rxEscape(code) +
+          '</div>' +
+
+          '<div class="rx-collab-link">' +
+            rxEscape(shareUrl) +
+          '</div>' +
+
+          '<div class="rx-collab-actions">' +
+
+            '<button class="btn btn-primary" onclick="rxCollabShareApp()">' +
+              '📲 Compartir enlace' +
+            '</button>' +
+
+            '<button class="btn" onclick="rxCopy(' +
+              JSON.stringify(shareUrl) +
+            ')">' +
+              '📋 Copiar enlace' +
+            '</button>' +
+
+            '<button class="btn" onclick="rxCollabLogout()">' +
+              '🚪 Cerrar sesión' +
+            '</button>' +
+
+          '</div>' +
+
+        '</div>';
+
+      html +=
+        '<div class="rx-collab-stat-grid">' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              clicks.length +
+            '</b>' +
+            '<span>Visitas / referidos</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              rxMoney(totalSales) +
+            '</b>' +
+            '<span>Ventas atribuidas</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              rxMoney(totalCommission) +
+            '</b>' +
+            '<span>Comisión generada</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              rxMoney(paid) +
+            '</b>' +
+            '<span>Comisión pagada</span>' +
+          '</div>' +
+
+        '</div>';
+
+      html +=
+        '<div class="card" style="margin-bottom:18px">' +
+          '<h3>📖 Instrucciones</h3>' +
+          '<p class="muted" style="margin-top:10px">' +
+            'Compartí tu enlace personal o el enlace de un producto específico. Las visitas se registran con tu código y las ventas compatibles se atribuyen a tu colaboración.' +
+          '</p>' +
+        '</div>';
+
+      html +=
+        '<div class="section-head">' +
+          '<div class="label">Catálogo</div>' +
+          '<h3 class="section-title" style="font-size:32px">' +
+            'Productos y servicios para promocionar' +
+          '</h3>' +
+        '</div>';
+
+      html +=
+        '<div id="rxCollabCatalog" class="rx-collab-product-grid">' +
+          '<div class="card">' +
+            'Cargando catálogo...' +
+          '</div>' +
+        '</div>';
+
+      html +=
+        '<div class="section-head" style="margin-top:28px">' +
+          '<div class="label">Historial</div>' +
+          '<h3 class="section-title" style="font-size:32px">' +
+            'Mis comisiones' +
+          '</h3>' +
+        '</div>';
+
+      html +=
+        '<div class="rx-collab-history">';
+
+      if(!commissions.length){
+
+        html +=
+          '<div class="empty">' +
+            'Todavía no tenés comisiones registradas.' +
+          '</div>';
+
+      }else{
+
+        commissions.forEach(function(c){
+
+          const status =
+            String(
+              c.status ||
+              'pending'
+            ).toLowerCase();
+
+          const sale =
+            Number(
+              c.sale_amount ||
+              c.amount ||
+              c.gross_amount ||
+              0
+            );
+
+          const commission =
+            Number(
+              c.commission_amount ||
+              c.commission ||
+              0
+            );
+
+          const pct =
+            Number(
+              c.commission_pct ||
+              c.percentage ||
+              20
+            );
+
+          html +=
+            '<div class="rx-collab-history-item">' +
+
+              '<div class="rx-collab-history-top">' +
+
+                '<strong>' +
+                  rxEscape(
+                    c.catalog_title ||
+                    c.product_name ||
+                    c.description ||
+                    'Venta'
+                  ) +
+                '</strong>' +
+
+                '<span class="rx-collab-status ' +
+                  status +
+                '">' +
+                  rxEscape(status) +
+                '</span>' +
+
+              '</div>' +
+
+              '<div class="small" style="margin-top:8px">' +
+                'Venta: ' +
+                rxMoney(sale) +
+                ' · Comisión: ' +
+                pct +
+                '% · ' +
+                rxMoney(commission) +
+              '</div>' +
+
+              '<div class="small">' +
+                rxDate(
+                  c.created_at ||
+                  c.date
+                ) +
+              '</div>' +
+
+            '</div>';
+
+        });
+
+      }
+
+      html +=
+        '</div>';
+
+      root.innerHTML =
+        html;
+
+      await rxLoadCollaboratorCatalog(
+        code
+      );
+
+    }catch(error){
+
+      console.error(
+        '[RoXThal Collaborators] dashboard:',
+        error
+      );
+
+      root.innerHTML =
+        '<div class="card">' +
+          '<div class="status err">' +
+            rxEscape(
+              error.message ||
+              'No se pudo cargar el panel.'
+            ) +
+          '</div>' +
+        '</div>';
+    }
+  }
+
+  /* ==========================================================
+     CATÁLOGO
+     ========================================================== */
+
+  async function rxGetCatalog(){
+
+    const {data,error} =
+      await db.rpc(
+        'roxthal_collaborator_catalog'
+      );
+
+    if(error) throw error;
+
+    return Array.isArray(data) ?
+      data :
+      [];
+  }
+
+  async function rxLoadCollaboratorCatalog(
+    code
+  ){
+
+    const root =
+      document.getElementById(
+        'rxCollabCatalog'
+      );
+
+    if(!root) return;
+
+    try{
+
+      const catalog =
+        await rxGetCatalog();
+
+      if(!catalog.length){
+
+        root.innerHTML =
+          '<div class="empty">' +
+            'No hay productos disponibles para promocionar todavía.' +
+          '</div>';
+
+        return;
+      }
+
+      let html = '';
+
+      catalog.forEach(function(item){
+
+        const price =
+          Number(
+            item.price || 0
+          );
+
+        const pct =
+          Number(
+            item.commission_pct || 20
+          );
+
+        const commission =
+          price *
+          pct /
+          100;
+
+        const sourceType =
+          item.source_type ||
+          item.catalog_source_type ||
+          'manual';
+
+        const sourceId =
+          item.source_id ||
+          item.catalog_source_id ||
+          item.id ||
+          '';
+
+        const url =
+          rxReferralUrl(
+            code,
+            sourceType,
+            sourceId
+          );
+
+        html +=
+          '<article class="rx-collab-product">' +
+
+            (
+              item.image_url ?
+              '<img src="' +
+                rxEscape(item.image_url) +
+                '" alt="' +
+                rxEscape(item.title || '') +
+                '">' :
+              ''
+            ) +
+
+            '<div class="rx-collab-product-body">' +
+
+              '<div class="tag">' +
+                rxEscape(
+                  item.category ||
+                  sourceType
+                ) +
+              '</div>' +
+
+              '<h3>' +
+                rxEscape(
+                  item.title ||
+                  'Producto'
+                ) +
+              '</h3>' +
+
+              (
+                item.description ?
+                '<p class="small">' +
+                  rxEscape(
+                    item.description
+                  ) +
+                '</p>' :
+                ''
+              ) +
+
+              '<div class="rx-collab-price">' +
+                rxMoney(price) +
+              '</div>' +
+
+              '<div class="rx-collab-commission">' +
+                '<strong>' +
+                  pct +
+                  '%' +
+                '</strong>' +
+                ' de comisión · ' +
+                '<strong>' +
+                  rxMoney(commission) +
+                '</strong>' +
+                ' por venta' +
+              '</div>' +
+
+              '<div class="rx-collab-actions">' +
+
+                '<button class="btn btn-primary btn-small" onclick="rxShare(' +
+                  JSON.stringify(
+                    item.title || 'RoXThal'
+                  ) +
+                  ',' +
+                  JSON.stringify(
+                    'Conocé este producto de RoXThal.'
+                  ) +
+                  ',' +
+                  JSON.stringify(url) +
+                ')">' +
+                  '📲 Compartir' +
+                '</button>' +
+
+                '<button class="btn btn-small" onclick="rxCopy(' +
+                  JSON.stringify(url) +
+                ')">' +
+                  '🔗 Copiar enlace' +
+                '</button>' +
+
+              '</div>' +
+
+            '</div>' +
+
+          '</article>';
+
+      });
+
+      root.innerHTML =
+        html;
+
+    }catch(error){
+
+      root.innerHTML =
+        '<div class="status err">' +
+          rxEscape(
+            error.message ||
+            'No se pudo cargar el catálogo.'
+          ) +
+        '</div>';
+    }
+  }
+
+  window.rxShare = rxShare;
+  window.rxCopy = rxCopy;
+
+  /* ==========================================================
+     LOGOUT
+     ========================================================== */
+
+  window.rxCollabLogout =
+    function(){
+
+      localStorage.removeItem(
+        LS_CODE
+      );
+
+      localStorage.removeItem(
+        LS_TOKEN
+      );
+
+      rxStatus(
+        'Sesión cerrada.'
+      );
+
+      rxShowPanel(
+        'login'
+      );
+    };
+
+  /* ==========================================================
+     ADMIN
+     ========================================================== */
+
+  async function rxLoadAdmin(){
+
+    const root =
+      document.getElementById(
+        'rxCollabAdmin'
+      );
+
+    if(!root) return;
+
+    root.innerHTML =
+      '<div class="card">' +
+        '<div class="status">' +
+          'Comprobando permisos...' +
+        '</div>' +
+      '</div>';
+
+    try{
+
+      const {data:isAdmin,error:isAdminError} =
+        await db.rpc(
+          'roxthal_is_admin'
+        );
+
+      if(isAdminError) throw isAdminError;
+
+      if(!isAdmin){
+
+        root.innerHTML =
+          '<div class="card">' +
+            '<div class="status err">' +
+              'Acceso restringido. Esta sección requiere permisos de administrador.' +
+            '</div>' +
+          '</div>';
+
+        return;
+      }
+
+      const {data,error} =
+        await db.rpc(
+          'roxthal_collaborator_admin_v1'
+        );
+
+      if(error) throw error;
+
+      const payload =
+        Array.isArray(data) ?
+        data[0] :
+        data;
+
+      const collaborators =
+        payload &&
+        Array.isArray(
+          payload.collaborators
+        ) ?
+        payload.collaborators :
+        [];
+
+      const commissions =
+        payload &&
+        Array.isArray(
+          payload.commissions
+        ) ?
+        payload.commissions :
+        [];
+
+      const clicks =
+        payload &&
+        Array.isArray(
+          payload.referral_clicks
+        ) ?
+        payload.referral_clicks :
+        [];
+
+      const settings =
+        payload &&
+        payload.settings ?
+        payload.settings :
+        {};
+
+      const catalog =
+        await rxGetCatalog();
+
+      let html = '';
+
+      html +=
+        '<div class="rx-collab-hero">' +
+          '<div class="label">Administración</div>' +
+          '<h2>🤝 Colaboradores</h2>' +
+          '<p>Gestioná colaboradores, catálogo, comisiones y referencias.</p>' +
+        '</div>';
+
+      html +=
+        '<div class="rx-collab-stat-grid">' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              collaborators.length +
+            '</b>' +
+            '<span>Colaboradores</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              clicks.length +
+            '</b>' +
+            '<span>Referidos</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              commissions.length +
+            '</b>' +
+            '<span>Comisiones</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              catalog.length +
+            '</b>' +
+            '<span>Ítems comerciales</span>' +
+          '</div>' +
+
+        '</div>';
+
+      /* COLABORADORES */
+
+      html +=
+        '<div class="card rx-collab-admin-section">' +
+          '<h3>👥 Colaboradores</h3>' +
+
+          '<div class="rx-collab-admin-table">' +
+            '<table>' +
+              '<thead>' +
+                '<tr>' +
+                  '<th>Código</th>' +
+                  '<th>Nombre</th>' +
+                  '<th>Contacto</th>' +
+                  '<th>Estado</th>' +
+                  '<th>Acciones</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>';
+
+      if(!collaborators.length){
+
+        html +=
+          '<tr>' +
+            '<td colspan="5">No hay colaboradores.</td>' +
+          '</tr>';
+
+      }else{
+
+        collaborators.forEach(function(c){
+
+          const status =
+            String(
+              c.status || 'pending'
+            );
+
+          html +=
+            '<tr>' +
+
+              '<td><strong>' +
+                rxEscape(
+                  c.ref_code ||
+                  c.code ||
+                  '—'
+                ) +
+              '</strong></td>' +
+
+              '<td>' +
+                rxEscape(
+                  c.name || ''
+                ) +
+              '</td>' +
+
+              '<td>' +
+                rxEscape(
+                  c.whatsapp ||
+                  c.email ||
+                  ''
+                ) +
+              '</td>' +
+
+              '<td>' +
+                '<span class="rx-collab-status ' +
+                  (
+                    status === 'active' ?
+                    'approved' :
+                    'pending'
+                  ) +
+                '">' +
+                  rxEscape(status) +
+                '</span>' +
+              '</td>' +
+
+              '<td>' +
+                '<div class="rx-collab-mini-actions">' +
+
+                  (
+                    status !== 'active' ?
+                    '<button class="btn btn-small" onclick="rxAdminSetCollaboratorStatus(' +
+                      JSON.stringify(c.id) +
+                      ',\'active\')">' +
+                      'Activar' +
+                    '</button>' :
+                    ''
+                  ) +
+
+                  (
+                    status === 'active' ?
+                    '<button class="btn btn-small btn-danger" onclick="rxAdminSetCollaboratorStatus(' +
+                      JSON.stringify(c.id) +
+                      ',\'suspended\')">' +
+                      'Suspender' +
+                    '</button>' :
+                    ''
+                  ) +
+
+                '</div>' +
+              '</td>' +
+
+            '</tr>';
+
+        });
+
+      }
+
+      html +=
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>';
+
+      /* COMISIONES */
+
+      html +=
+        '<div class="card rx-collab-admin-section">' +
+          '<h3>💰 Comisiones</h3>' +
+
+          '<div class="rx-collab-admin-table">' +
+            '<table>' +
+              '<thead>' +
+                '<tr>' +
+                  '<th>Fecha</th>' +
+                  '<th>Colaborador</th>' +
+                  '<th>Venta</th>' +
+                  '<th>%</th>' +
+                  '<th>Comisión</th>' +
+                  '<th>Estado</th>' +
+                  '<th>Acciones</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>';
+
+      if(!commissions.length){
+
+        html +=
+          '<tr>' +
+            '<td colspan="7">No hay comisiones.</td>' +
+          '</tr>';
+
+      }else{
+
+        commissions.forEach(function(c){
+
+          const status =
+            String(
+              c.status ||
+              'pending'
+            ).toLowerCase();
+
+          const sale =
+            Number(
+              c.sale_amount ||
+              c.amount ||
+              c.gross_amount ||
+              0
+            );
+
+          const pct =
+            Number(
+              c.commission_pct ||
+              20
+            );
+
+          const commission =
+            Number(
+              c.commission_amount ||
+              c.commission ||
+              0
+            );
+
+          html +=
+            '<tr>' +
+
+              '<td>' +
+                rxDate(
+                  c.created_at
+                ) +
+              '</td>' +
+
+              '<td>' +
+                rxEscape(
+                  c.referral_code ||
+                  c.collaborator_code ||
+                  ''
+                ) +
+              '</td>' +
+
+              '<td>' +
+                rxMoney(sale) +
+              '</td>' +
+
+              '<td>' +
+                pct +
+                '%' +
+              '</td>' +
+
+              '<td><strong>' +
+                rxMoney(commission) +
+              '</strong></td>' +
+
+              '<td>' +
+                '<span class="rx-collab-status ' +
+                  status +
+                '">' +
+                  rxEscape(status) +
+                '</span>' +
+              '</td>' +
+
+              '<td>' +
+                '<div class="rx-collab-mini-actions">' +
+
+                  (
+                    status === 'pending' ?
+                    '<button class="btn btn-small" onclick="rxAdminCommissionStatus(' +
+                      JSON.stringify(c.id) +
+                      ',\'approved\')">' +
+                      'Aprobar' +
+                    '</button>' :
+                    ''
+                  ) +
+
+                  (
+                    status === 'approved' ?
+                    '<button class="btn btn-small" onclick="rxAdminCommissionStatus(' +
+                      JSON.stringify(c.id) +
+                      ',\'paid\')">' +
+                      'Marcar pagada' +
+                    '</button>' :
+                    ''
+                  ) +
+
+                  (
+                    status !== 'cancelled' &&
+                    status !== 'paid' ?
+                    '<button class="btn btn-small btn-danger" onclick="rxAdminCommissionStatus(' +
+                      JSON.stringify(c.id) +
+                      ',\'cancelled\')">' +
+                      'Cancelar' +
+                    '</button>' :
+                    ''
+                  ) +
+
+                '</div>' +
+              '</td>' +
+
+            '</tr>';
+
+        });
+
+      }
+
+      html +=
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>';
+
+      /* CONFIGURACIÓN */
+
+      html +=
+        '<div class="card rx-collab-admin-section">' +
+
+          '<h3>⚙️ Configuración general</h3>' +
+
+          '<div class="grid2">' +
+
+            '<div class="field">' +
+              '<label>Comisión general (%)</label>' +
+              '<input id="rxAdminGeneralCommission" type="number" min="0" max="100" step="0.01" value="' +
+                rxEscape(
+                  settings.general_commission_pct ??
+                  20
+                ) +
+              '">' +
+            '</div>' +
+
+            '<div></div>' +
+
+          '</div>' +
+
+          '<div class="field">' +
+            '<label>Instrucciones para colaboradores</label>' +
+            '<textarea id="rxAdminInstructions">' +
+              rxEscape(
+                settings.instructions ||
+                ''
+              ) +
+            '</textarea>' +
+          '</div>' +
+
+          '<button class="btn btn-primary" onclick="rxAdminSaveSettings()">' +
+            '💾 Guardar configuración' +
+          '</button>' +
+
+        '</div>';
+
+      /* CATÁLOGO */
+
+      html +=
+        '<div class="card rx-collab-admin-section">' +
+
+          '<h3>🛍️ Catálogo comercial</h3>' +
+
+          '<div class="rx-collab-note">' +
+            'El catálogo reúne cursos, servicios, productos de tienda y entradas manuales. Podés definir una comisión específica por cada ítem.' +
+          '</div>' +
+
+          '<div class="rx-collab-admin-table">' +
+            '<table>' +
+              '<thead>' +
+                '<tr>' +
+                  '<th>Producto</th>' +
+                  '<th>Categoría</th>' +
+                  '<th>Precio</th>' +
+                  '<th>Comisión</th>' +
+                  '<th>Comisión $</th>' +
+                  '<th>Origen</th>' +
+                  '<th>Acción</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>';
+
+      catalog.forEach(function(item){
+
+        const price =
+          Number(
+            item.price || 0
+          );
+
+        const pct =
+          Number(
+            item.commission_pct || 20
+          );
+
+        html +=
+          '<tr>' +
+
+            '<td>' +
+              '<strong>' +
+                rxEscape(
+                  item.title || ''
+                ) +
+              '</strong>' +
+            '</td>' +
+
+            '<td>' +
+              rxEscape(
+                item.category ||
+                ''
+              ) +
+            '</td>' +
+
+            '<td>' +
+              rxMoney(price) +
+            '</td>' +
+
+            '<td>' +
+              '<input id="rxPct_' +
+                rxEscape(
+                  String(
+                    item.source_type ||
+                    item.catalog_source_type ||
+                    'manual'
+                  )
+                ) +
+                '_' +
+                rxEscape(
+                  String(
+                    item.source_id ||
+                    item.catalog_source_id ||
+                    item.id ||
+                    ''
+                  )
+                ) +
+                '" type="number" min="0" max="100" step="0.01" value="' +
+                pct +
+                '" style="width:85px;background:#0b0b0b;color:#fff;border:1px solid var(--border);padding:8px;border-radius:8px">' +
+            '</td>' +
+
+            '<td>' +
+              rxMoney(
+                price *
+                pct /
+                100
+              ) +
+            '</td>' +
+
+            '<td>' +
+              rxEscape(
+                item.source_type ||
+                item.catalog_source_type ||
+                'manual'
+              ) +
+            '</td>' +
+
+            '<td>' +
+
+              '<button class="btn btn-small" onclick="rxAdminSaveCatalogCommission(' +
+                JSON.stringify(
+                  item.source_type ||
+                  item.catalog_source_type ||
+                  'manual'
+                ) +
+                ',' +
+                JSON.stringify(
+                  item.source_id ||
+                  item.catalog_source_id ||
+                  item.id
+                ) +
+                ')">' +
+                'Guardar' +
+              '</button>' +
+
+            '</td>' +
+
+          '</tr>';
+
+      });
+
+      html +=
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+
+        '</div>';
+
+      root.innerHTML =
+        html;
+
+    }catch(error){
+
+      console.error(
+        '[RoXThal Collaborators] admin:',
+        error
+      );
+
+      root.innerHTML =
+        '<div class="card">' +
+          '<div class="status err">' +
+            rxEscape(
+              error.message ||
+              'No se pudo cargar administración.'
+            ) +
+          '</div>' +
+        '</div>';
+    }
+  }
+
+  /* ==========================================================
+     ADMIN — ESTADO COLABORADOR
+     ========================================================== */
+
+  window.rxAdminSetCollaboratorStatus =
+    async function(id,status){
+
+      try{
+
+        const {error} =
+          await db.rpc(
+            'roxthal_collaborator_set_status_v1',
+            {
+              p_id:id,
+              p_status:status
+            }
+          );
+
+        if(error) throw error;
+
+        rxToast(
+          'Estado actualizado.'
+        );
+
+        await rxLoadAdmin();
+
+      }catch(error){
+
+        console.error(error);
+
+        rxToast(
+          error.message ||
+          'No se pudo actualizar.'
+        );
+      }
+    };
+
+  /* ==========================================================
+     ADMIN — ESTADO COMISIÓN
+     ========================================================== */
+
+  window.rxAdminCommissionStatus =
+    async function(id,status){
+
+      try{
+
+        const {error} =
+          await db.rpc(
+            'roxthal_collaborator_set_commission_status_v1',
+            {
+              p_id:id,
+              p_status:status
+            }
+          );
+
+        if(error) throw error;
+
+        rxToast(
+          'Comisión actualizada.'
+        );
+
+        await rxLoadAdmin();
+
+      }catch(error){
+
+        console.error(error);
+
+        rxToast(
+          error.message ||
+          'No se pudo actualizar la comisión.'
+        );
+      }
+    };
+
+  /* ==========================================================
+     ADMIN — CONFIGURACIÓN
+     ========================================================== */
+
+  window.rxAdminSaveSettings =
+    async function(){
+
+      const pct =
+        Number(
+          document.getElementById(
+            'rxAdminGeneralCommission'
+          ).value
+        );
+
+      const instructions =
+        document.getElementById(
+          'rxAdminInstructions'
+        ).value;
+
+      if(!Number.isFinite(pct) ||
+         pct < 0 ||
+         pct > 100){
+
+        rxToast(
+          'La comisión debe estar entre 0 y 100%.'
+        );
+
+        return;
+      }
+
+      try{
+
+        const {error} =
+          await db
+            .from(
+              'roxthal_collaborator_settings'
+            )
+            .upsert({
+              id:1,
+              general_commission_pct:pct,
+              instructions:instructions,
+              updated_at:new Date().toISOString()
+            });
+
+        if(error) throw error;
+
+        rxToast(
+          'Configuración guardada.'
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        rxToast(
+          error.message ||
+          'No se pudo guardar.'
+        );
+      }
+    };
+
+  /* ==========================================================
+     ADMIN — COMISIÓN POR PRODUCTO
+     ========================================================== */
+
+  window.rxAdminSaveCatalogCommission =
+    async function(
+      sourceType,
+      sourceId
+    ){
+
+      const id =
+        'rxPct_' +
+        sourceType +
+        '_' +
+        sourceId;
+
+      const input =
+        document.getElementById(id);
+
+      if(!input){
+
+        rxToast(
+          'No se encontró el campo.'
+        );
+
+        return;
+      }
+
+      const pct =
+        Number(
+          input.value
+        );
+
+      if(!Number.isFinite(pct) ||
+         pct < 0 ||
+         pct > 100){
+
+        rxToast(
+          'La comisión debe estar entre 0 y 100%.'
+        );
+
+        return;
+      }
+
+      try{
+
+        const {error} =
+          await db
+            .from(
+              'roxthal_collaborator_rules'
+            )
+            .upsert(
+              {
+                source_type:sourceType,
+                source_id:sourceId,
+                commission_pct:pct
+              },
+              {
+                onConflict:
+                  'source_type,source_id'
+              }
+            );
+
+        if(error) throw error;
+
+        rxToast(
+          'Comisión guardada.'
+        );
+
+        await rxLoadAdmin();
+
+      }catch(error){
+
+        console.error(error);
+
+        rxToast(
+          error.message ||
+          'No se pudo guardar la comisión.'
+        );
+      }
+    };
+
+  /* ==========================================================
+     ATRIBUCIÓN PARA TIENDA
+     ========================================================== */
+
+  if(
+    !window.__ROXTHAL_STORE_REFERRAL_FETCH_PATCH__
+  ){
+
+    window.__ROXTHAL_STORE_REFERRAL_FETCH_PATCH__ =
+      true;
+
+    const originalFetch =
+      window.fetch;
+
+    window.fetch =
+      async function(
+        input,
+        init
+      ){
+
+        try{
+
+          const url =
+            typeof input === 'string' ?
+            input :
+            (
+              input &&
+              input.url
+            ) ||
+            '';
+
+          const isStoreOrder =
+            url.indexOf(
+              '/functions/v1/roxthal-store-orders'
+            ) !== -1;
+
+          if(
+            isStoreOrder &&
+            init &&
+            typeof init.body === 'string'
+          ){
+
+            let payload;
+
+            try{
+              payload =
+                JSON.parse(
+                  init.body
+                );
+            }catch(e){
+              payload = null;
+            }
+
+            if(
+              payload &&
+              payload.action === 'create_order'
+            ){
+
+              const ref =
+                localStorage.getItem(
+                  LS_REF
+                );
+
+              if(
+                ref &&
+                !payload.referral_code
+              ){
+
+                payload.referral_code =
+                  ref;
+
+                init = Object.assign(
+                  {},
+                  init,
+                  {
+                    body:
+                      JSON.stringify(
+                        payload
+                      )
+                  }
+                );
+              }
+            }
+          }
+
+        }catch(error){
+
+          console.warn(
+            '[RoXThal Collaborators] store attribution:',
+            error
+          );
+
+        }
+
+        return originalFetch.apply(
+          this,
+          arguments
+        );
+      };
+  }
+
+  /* ==========================================================
+     INSERTAR EN LA CUADRÍCULA PRINCIPAL
+     ========================================================== */
+
+  function rxInstallHomeModule(){
+
+    try{
+
+      if(
+        Array.isArray(
+          window.moduleDefinitions
+        )
+      ){
+
+        const exists =
+          window.moduleDefinitions.some(
+            function(item){
+
+              return Array.isArray(item) &&
+                (
+                  item[1] ===
+                  'collaborators' ||
+                  item[0] ===
+                  '16'
+                );
+            }
+          );
+
+        if(!exists){
+
+          window.moduleDefinitions.unshift(
+            [
+              '16',
+              'collaborators',
+              '🤝 Trabaja con nosotros',
+              'Generá ventas, compartí RoXThal y cobrá tu comisión'
+            ]
+          );
+
+        }
+
+        if(
+          typeof window.renderModuleGrid ===
+          'function'
+        ){
+
+          window.renderModuleGrid();
+        }
+
+      }
+
+    }catch(error){
+
+      console.warn(
+        '[RoXThal Collaborators] home module:',
+        error
+      );
+    }
+
+  }
+
+  /* ==========================================================
+     VIEW / NAVEGACIÓN
+     ========================================================== */
+
+  function rxRegisterView(){
+
+    try{
+
+      if(
+        Array.isArray(
+          window.publicViews
+        ) &&
+        !window.publicViews.includes(
+          'collaborators'
+        )
+      ){
+
+        window.publicViews.push(
+          'collaborators'
+        );
+      }
+
+    }catch(error){}
+
+  }
+
+  /* ==========================================================
+     CLICK MANUAL DEL MÓDULO
+     ========================================================== */
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const target =
+        event.target.closest(
+          '[data-go="collaborators"]'
+        );
+
+      if(!target) return;
+
+      event.preventDefault();
+
+      if(
+        typeof window.showView ===
+        'function'
+      ){
+
+        window.showView(
+          'collaborators'
+        );
+
+        rxShowPanel(
+          'register'
+        );
+
+      }
+
+    },
+    true
+  );
+
+  /* ==========================================================
+     INICIO
+     ========================================================== */
+
+  function rxInit(){
+
+    rxRegisterView();
+
+    rxInstallHomeModule();
+
+    const code =
+      localStorage.getItem(
+        LS_CODE
+      );
+
+    const token =
+      localStorage.getItem(
+        LS_TOKEN
+      );
+
+    if(code && token){
+
+      const tab =
+        document.getElementById(
+          'rxTabDashboard'
+        );
+
+      if(tab){
+        tab.style.display =
+          'inline-flex';
+      }
+
+    }
+  }
+
+  if(
+    document.readyState ===
+    'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      rxInit
+    );
+
+  }else{
+
+    rxInit();
+  }
+
+})();
+</script>
 </body>
 </html>
