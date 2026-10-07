@@ -68633,5 +68633,244 @@ ${SOLICITUD_URL}`;
 <!-- ============================================================
      FIN — ROXTHAL COMPARTIR SOLICITUD
 ============================================================ -->
+
+       <script>
+/* ==========================================================
+   RoXThal — REPARADOR BOTONES COLABORADORES
+   No modifica login, token, Supabase ni Compartir enlace.
+   ========================================================== */
+(function(){
+
+  function rxFixCopy(text){
+    if(!text) return;
+
+    /* Clipboard moderno */
+    try{
+      if(
+        navigator.clipboard &&
+        window.isSecureContext
+      ){
+        navigator.clipboard.writeText(text)
+          .then(function(){
+            if(typeof window.rxToast === 'function'){
+              window.rxToast('Enlace copiado.');
+            }else{
+              alert('Enlace copiado.');
+            }
+          })
+          .catch(function(){
+            rxFixCopyFallback(text);
+          });
+
+        return;
+      }
+    }catch(e){}
+
+    rxFixCopyFallback(text);
+  }
+
+  function rxFixCopyFallback(text){
+    try{
+      var area = document.createElement('textarea');
+
+      area.value = text;
+      area.setAttribute('readonly','');
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      area.style.top = '0';
+      area.style.opacity = '0';
+
+      document.body.appendChild(area);
+
+      area.focus();
+      area.select();
+      area.setSelectionRange(0, area.value.length);
+
+      var ok = false;
+
+      try{
+        ok = document.execCommand('copy');
+      }catch(e){}
+
+      document.body.removeChild(area);
+
+      if(ok){
+        if(typeof window.rxToast === 'function'){
+          window.rxToast('Enlace copiado.');
+        }else{
+          alert('Enlace copiado.');
+        }
+        return;
+      }
+
+    }catch(e){}
+
+    window.prompt(
+      'Copiá este enlace:',
+      text
+    );
+  }
+
+
+  function rxGetButtonUrl(button){
+    if(!button) return '';
+
+    return (
+      button.getAttribute('data-url') ||
+      button.dataset.url ||
+      ''
+    );
+  }
+
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      var button =
+        event.target.closest(
+          '.rx-collab-actions button'
+        );
+
+      if(!button) return;
+
+      var label =
+        (button.textContent || '')
+          .trim()
+          .toLowerCase();
+
+      /*
+       * IMPORTANTE:
+       * El botón "Compartir enlace" del colaborador
+       * ya funciona. Lo dejamos completamente intacto.
+       */
+      if(
+        label.indexOf('compartir enlace') !== -1
+      ){
+        return;
+      }
+
+
+      /*
+       * COPIAR ENLACE
+       */
+      if(
+        label.indexOf('copiar enlace') !== -1
+      ){
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        var url =
+          rxGetButtonUrl(button);
+
+        /*
+         * Si el botón ya tiene data-url,
+         * usamos esa URL directamente.
+         */
+        if(url){
+          rxFixCopy(url);
+          return;
+        }
+
+        /*
+         * Si no tiene data-url, intentamos
+         * recuperar la URL del onclick existente.
+         */
+        var code =
+          button.getAttribute('onclick') || '';
+
+        var match =
+          code.match(
+            /rxCopy\(\s*(['"])(.*?)\1\s*\)/
+          );
+
+        if(match && match[2]){
+          rxFixCopy(match[2]);
+          return;
+        }
+
+        /*
+         * Último recurso:
+         * buscar la URL dentro del onclick.
+         */
+        var urlMatch =
+          code.match(
+            /(https?:\/\/[^\s'")]+)/
+          );
+
+        if(urlMatch && urlMatch[1]){
+          rxFixCopy(urlMatch[1]);
+        }
+
+        return;
+      }
+
+
+      /*
+       * COMPARTIR PRODUCTO / SERVICIO
+       */
+      if(
+        label === '📲 compartir' ||
+        label === 'compartir'
+      ){
+
+        /*
+         * Si existe el onclick original,
+         * dejamos que el código actual siga funcionando.
+         */
+        var original =
+          button.getAttribute('onclick') || '';
+
+        if(original){
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        var url =
+          rxGetButtonUrl(button);
+
+        if(!url) return;
+
+        if(
+          typeof navigator.share === 'function'
+        ){
+
+          navigator.share({
+            title:
+              button.getAttribute('data-title') ||
+              'RoXThal Art Design',
+
+            text:
+              button.getAttribute('data-text') ||
+              'Conocé este producto de RoXThal.',
+
+            url:url
+
+          }).catch(function(err){
+
+            if(
+              !err ||
+              err.name !== 'AbortError'
+            ){
+              rxFixCopy(url);
+            }
+
+          });
+
+          return;
+        }
+
+        rxFixCopy(url);
+      }
+
+    },
+    true
+  );
+
+})();
+</script>
 </body>
 </html>
