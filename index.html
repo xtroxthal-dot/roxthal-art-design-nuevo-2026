@@ -67579,229 +67579,298 @@ if(quick){
 })();
 </script>
 <!-- ============================================================
-     ROXTHAL — REPARADOR MÓDULO 16
+     ROXTHAL — REPARADOR REAL MÓDULO 16
      TRABAJA CON NOSOTROS
      ============================================================ -->
 <script>
 (function () {
   'use strict';
 
-  if (window.__RX_FIX_COLLABORATORS_V1__) return;
-  window.__RX_FIX_COLLABORATORS_V1__ = true;
+  if (window.__RX_COLLABORATORS_REPAIR_V2__) return;
+  window.__RX_COLLABORATORS_REPAIR_V2__ = true;
 
-  function rxFixCollaborators() {
-    try {
-      /* --------------------------------------------------------
-         1. Comprobar que el módulo real existe
-         -------------------------------------------------------- */
-      var module = document.getElementById('collaborators');
+  var MODULE_ID = 'collaborators';
 
-      if (!module) {
-        console.warn(
-          '[RoXThal] No se encontró #collaborators'
-        );
-        return;
-      }
+  function getModuleGrid() {
+    return document.getElementById('moduleGrid');
+  }
 
-      /* --------------------------------------------------------
-         2. Asegurar que el módulo está registrado como vista
-         -------------------------------------------------------- */
-      if (Array.isArray(window.publicViews)) {
-        if (!window.publicViews.includes('collaborators')) {
-          window.publicViews.push('collaborators');
-        }
-      }
+  function removeWrongCards() {
+    document
+      .querySelectorAll('.rx-collaborators-fix')
+      .forEach(function (el) {
+        el.remove();
+      });
+  }
 
-      /* --------------------------------------------------------
-         3. Asegurar entrada en moduleDefinitions
-         -------------------------------------------------------- */
-      if (Array.isArray(window.moduleDefinitions)) {
+  function createCollaboratorCard() {
+    var grid = getModuleGrid();
+    if (!grid) return null;
 
-        var exists = window.moduleDefinitions.some(function (item) {
-          if (!Array.isArray(item)) return false;
+    var existing =
+      grid.querySelector('[data-go="' + MODULE_ID + '"]');
 
-          return (
-            item[1] === 'collaborators' ||
-            String(item[0]) === '16'
-          );
-        });
+    if (existing) {
+      existing.classList.add('rx-collaborators-real-card');
+      return existing;
+    }
 
-        if (!exists) {
-          window.moduleDefinitions.push([
-            '16',
-            'collaborators',
-            '🤝 Trabaja con nosotros',
-            'Generá ventas, compartí RoXThal y cobrá tu comisión'
-          ]);
-        }
-      }
+    var article = document.createElement('article');
 
-      /* --------------------------------------------------------
-         4. Forzar renderizado de la cuadrícula si existe
-         -------------------------------------------------------- */
-      if (typeof window.renderModuleGrid === 'function') {
-        try {
-          window.renderModuleGrid();
-        } catch (e) {
-          console.warn(
-            '[RoXThal] renderModuleGrid:',
-            e
-          );
-        }
-      }
+    /*
+     * EXACTAMENTE la misma estructura que utiliza
+     * renderModuleGrid() del RoXThal actual.
+     */
+    article.className =
+      'module rx-collaborators-real-card';
 
-      /* --------------------------------------------------------
-         5. Buscar la entrada generada
-         -------------------------------------------------------- */
-      setTimeout(function () {
+    article.setAttribute(
+      'data-go',
+      MODULE_ID
+    );
 
-        var entry = document.querySelector(
-          '[data-go="collaborators"]'
-        );
+    article.innerHTML =
+      '<img src="' +
+      'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png' +
+      '" alt="Trabaja con nosotros">' +
 
-        /* ------------------------------------------------------
-           6. Si el sistema no la creó, crearla nosotros
-           ------------------------------------------------------ */
-        if (!entry) {
+      '<div class="module-content">' +
 
-          var containers = [
-            '#moduleGrid',
-            '#modulesGrid',
-            '.module-grid',
-            '.modules-grid',
-            '#modules',
-            '.modules'
-          ];
+        '<div class="module-num">' +
+          'MÓDULO 16' +
+        '</div>' +
 
-          var container = null;
+        '<h3>' +
+          '🤝 Trabaja con nosotros' +
+        '</h3>' +
 
-          for (var i = 0; i < containers.length; i++) {
-            var candidate =
-              document.querySelector(containers[i]);
+        '<p>' +
+          'Generá ventas, compartí RoXThal y cobrá tu comisión' +
+        '</p>' +
 
-            if (candidate) {
-              container = candidate;
-              break;
-            }
+        '<button ' +
+          'type="button" ' +
+          'class="btn btn-primary btn-small">' +
+          'Entrar' +
+        '</button>' +
+
+      '</div>';
+
+    grid.appendChild(article);
+
+    return article;
+  }
+
+  function openCollaborators() {
+
+    var target =
+      document.getElementById(MODULE_ID);
+
+    if (!target) return;
+
+    /*
+     * No utilizamos showView() porque la vista
+     * collaborators no pertenece al array privado
+     * publicViews del script principal.
+     */
+    document
+      .querySelectorAll('.view')
+      .forEach(function (view) {
+        view.classList.add('hidden');
+      });
+
+    target.classList.remove('hidden');
+
+    document.body.classList.add('view-open');
+    document.body.classList.remove(
+      'school-atelier-open'
+    );
+
+    /*
+     * Crear el botón volver si todavía no existe.
+     */
+    if (!target.querySelector(
+      '.rx-collaborators-back'
+    )) {
+
+      var back =
+        document.createElement('button');
+
+      back.type = 'button';
+      back.className =
+        'view-back rx-collaborators-back';
+
+      back.innerHTML =
+        '← <span>Volver a RoXThal</span>';
+
+      back.addEventListener(
+        'click',
+        function (event) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          document
+            .querySelectorAll('.view')
+            .forEach(function (view) {
+              view.classList.add('hidden');
+            });
+
+          var home =
+            document.getElementById('home');
+
+          if (home) {
+            home.classList.remove('hidden');
           }
 
-          if (container) {
-
-            var button =
-              document.createElement('button');
-
-            button.type = 'button';
-            button.className =
-              'module-card rx-collaborators-fix';
-
-            button.setAttribute(
-              'data-go',
-              'collaborators'
-            );
-
-            button.innerHTML =
-              '<div class="module-number">Módulo 16</div>' +
-              '<div class="module-title">🤝 Trabaja con nosotros</div>' +
-              '<div class="module-description">' +
-              'Generá ventas, compartí RoXThal y cobrá tu comisión' +
-              '</div>';
-
-            container.appendChild(button);
-
-            entry = button;
-          }
-        }
-
-        /* ------------------------------------------------------
-           7. Asegurar apertura correcta
-           ------------------------------------------------------ */
-        if (entry) {
-
-          entry.addEventListener(
-            'click',
-            function (event) {
-
-              event.preventDefault();
-              event.stopPropagation();
-
-              if (
-                typeof window.showView ===
-                'function'
-              ) {
-
-                window.showView(
-                  'collaborators'
-                );
-
-              } else {
-
-                /* Fallback directo */
-                document
-                  .querySelectorAll('.view')
-                  .forEach(function (view) {
-                    view.classList.add('hidden');
-                  });
-
-                module.classList.remove('hidden');
-              }
-
-              /* Abrir registro inicialmente */
-              setTimeout(function () {
-
-                if (
-                  typeof window.rxCollabOpenTab ===
-                  'function'
-                ) {
-                  window.rxCollabOpenTab(
-                    'register'
-                  );
-                }
-
-              }, 100);
-
-            },
-            true
+          document.body.classList.remove(
+            'view-open'
           );
 
+          window.scrollTo(0, 0);
         }
-
-      }, 300);
-
-    } catch (error) {
-
-      console.error(
-        '[RoXThal] Reparador Trabaja con nosotros:',
-        error
       );
 
+      target.prepend(back);
+    }
+
+    window.scrollTo(0, 0);
+    target.scrollTop = 0;
+
+    /*
+     * Abrir directamente el registro.
+     */
+    setTimeout(function () {
+
+      if (
+        typeof window.rxCollabOpenTab ===
+        'function'
+      ) {
+        window.rxCollabOpenTab('register');
+      }
+
+    }, 50);
+  }
+
+  function install() {
+
+    /*
+     * El reparador anterior podía dejar una tarjeta
+     * blanca. La eliminamos.
+     */
+    removeWrongCards();
+
+    /*
+     * Crear la tarjeta dentro de la cuadrícula REAL.
+     */
+    var card = createCollaboratorCard();
+
+    if (!card) return;
+
+    /*
+     * Capturamos el clic ANTES del listener general
+     * data-go del RoXThal.
+     */
+    if (!card.__rxCollaboratorClick__) {
+
+      card.__rxCollaboratorClick__ = true;
+
+      card.addEventListener(
+        'click',
+        function (event) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          if (event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+          }
+
+          openCollaborators();
+        },
+        true
+      );
     }
   }
 
-  /* Ejecutar cuando el DOM esté listo */
-  if (document.readyState === 'loading') {
+  /*
+   * Ejecutar cuando el DOM esté disponible.
+   */
+  if (
+    document.readyState ===
+    'loading'
+  ) {
 
     document.addEventListener(
       'DOMContentLoaded',
-      rxFixCollaborators
+      install
     );
 
   } else {
 
-    rxFixCollaborators();
-
+    install();
   }
 
-  /* Reintento después de que RoXThal termine
-     de construir la pantalla principal */
-  setTimeout(
-    rxFixCollaborators,
-    1000
-  );
+  /*
+   * El sistema principal puede reconstruir
+   * #moduleGrid después de cargar los assets.
+   * Por eso vigilamos únicamente esa cuadrícula.
+   */
+  var observerStarted = false;
 
-  setTimeout(
-    rxFixCollaborators,
-    2500
-  );
+  function startObserver() {
+
+    if (observerStarted) return;
+
+    var grid = getModuleGrid();
+
+    if (!grid) return;
+
+    observerStarted = true;
+
+    var observer =
+      new MutationObserver(function () {
+
+        var exists =
+          grid.querySelector(
+            '[data-go="' + MODULE_ID + '"]'
+          );
+
+        if (!exists) {
+          install();
+        }
+      });
+
+    observer.observe(
+      grid,
+      {
+        childList: true,
+        subtree: false
+      }
+    );
+  }
+
+  /*
+   * El grid puede existir antes o después.
+   */
+  var tries = 0;
+
+  var timer =
+    setInterval(function () {
+
+      startObserver();
+
+      if (getModuleGrid()) {
+        install();
+      }
+
+      tries++;
+
+      if (tries >= 20) {
+        clearInterval(timer);
+      }
+
+    }, 250);
 
 })();
 </script>
