@@ -64420,22 +64420,42 @@ function openNotes(){
      * No movemos los botones actuales.
      */
 
-    if(quick){
+   
+const toggle = document.createElement('button');
+toggle.id = 'rxUniversalControlToggle';
+toggle.type = 'button';
+toggle.className = 'btn btn-primary';
+toggle.textContent = '✦ RoXThal Centro de Control';
 
-      quick.insertAdjacentElement(
-        'afterend',
-        control
-      );
+toggle.style.cssText =
+  'display:block;width:min(760px,calc(100% - 28px));' +
+  'margin:25px auto 0;';
 
-    }else{
+control.style.display = 'none';
 
-      actions.insertAdjacentElement(
-        'afterend',
-        control
-      );
+toggle.addEventListener('click', function(){
+  const abierto = control.style.display !== 'none';
 
-    }
+  if(abierto){
+    control.style.display = 'none';
+    toggle.textContent = '✦ RoXThal Centro de Control';
+  }else{
+    control.style.display = '';
+    toggle.textContent = '✕ Cerrar Centro de Control';
+    control.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+  }
+});
 
+if(quick){
+  quick.insertAdjacentElement('afterend', toggle);
+  toggle.insertAdjacentElement('afterend', control);
+}else{
+  actions.insertAdjacentElement('afterend', toggle);
+  toggle.insertAdjacentElement('afterend', control);
+}
 
     construirFiltros();
 
