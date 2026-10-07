@@ -63805,6 +63805,945 @@ function openNotes(){
   }
 </style>
 <!-- FIN IGUALAR BOTONES PRINCIPALES -->
+
+   <!-- ============================================================
+     ROXTHAL ART DESIGN
+     CENTRO DE CONTROL — ACCESO UNIVERSAL
+     
+     VERSIÓN QUIRÚRGICA
+     - NO MODIFICA showView()
+     - NO MODIFICA MÓDULO 15
+     - NO MODIFICA APUNTES
+     - NO MODIFICA TIENDA
+     - NO CREA VISTAS NUEVAS
+     - REUTILIZA LAS ENTRADAS ORIGINALES
+     ============================================================ -->
+
+<style id="rx-universal-control-style">
+
+  #rxUniversalControl{
+    width:min(1100px,100%);
+    margin:32px auto 0;
+    padding:0 14px 34px;
+    box-sizing:border-box;
+  }
+
+  #rxUniversalControl .rxuc-shell{
+    position:relative;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:26px;
+    background:
+      radial-gradient(circle at 15% 0%,rgba(255,190,70,.12),transparent 34%),
+      radial-gradient(circle at 100% 100%,rgba(180,30,30,.12),transparent 35%),
+      linear-gradient(145deg,#111,#070707);
+    box-shadow:
+      0 18px 60px rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  #rxUniversalControl .rxuc-header{
+    padding:26px 24px 18px;
+    text-align:center;
+  }
+
+  #rxUniversalControl .rxuc-kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 11px;
+    border:1px solid rgba(255,205,100,.28);
+    border-radius:999px;
+    color:#e7c978;
+    background:rgba(255,190,70,.06);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+
+  #rxUniversalControl h2{
+    margin:13px 0 7px;
+    font-size:clamp(24px,4vw,34px);
+    line-height:1.05;
+  }
+
+  #rxUniversalControl .rxuc-subtitle{
+    max-width:720px;
+    margin:0 auto;
+    color:#aaa;
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  #rxUniversalControl .rxuc-search{
+    padding:0 22px 18px;
+  }
+
+  #rxUniversalControl .rxuc-search input{
+    width:100%;
+    min-height:46px;
+    box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    background:#0b0b0b;
+    color:#fff;
+    padding:0 16px;
+    outline:none;
+    font-size:14px;
+  }
+
+  #rxUniversalControl .rxuc-search input:focus{
+    border-color:rgba(231,201,120,.65);
+    box-shadow:0 0 0 3px rgba(231,201,120,.07);
+  }
+
+  #rxUniversalControl .rxuc-filters{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+    padding:0 22px 20px;
+    justify-content:center;
+  }
+
+  #rxUniversalControl .rxuc-filter{
+    border:1px solid rgba(255,255,255,.12);
+    background:#101010;
+    color:#aaa;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  #rxUniversalControl .rxuc-filter.active{
+    color:#080808;
+    background:#e2bb62;
+    border-color:#e2bb62;
+  }
+
+  #rxUniversalControl .rxuc-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:11px;
+    padding:0 22px 24px;
+  }
+
+  #rxUniversalControl .rxuc-card{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    min-height:150px;
+    padding:17px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:18px;
+    background:
+      linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+    color:#fff;
+    text-align:left;
+    cursor:pointer;
+    transition:
+      transform .18s ease,
+      border-color .18s ease,
+      background .18s ease,
+      box-shadow .18s ease;
+  }
+
+  #rxUniversalControl .rxuc-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(231,201,120,.48);
+    background:
+      linear-gradient(145deg,rgba(231,201,120,.10),rgba(255,255,255,.025));
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+  }
+
+  #rxUniversalControl .rxuc-card:active{
+    transform:translateY(-1px);
+  }
+
+  #rxUniversalControl .rxuc-icon{
+    font-size:27px;
+    line-height:1;
+    margin-bottom:12px;
+  }
+
+  #rxUniversalControl .rxuc-title{
+    font-size:15px;
+    font-weight:900;
+    margin-bottom:5px;
+  }
+
+  #rxUniversalControl .rxuc-desc{
+    color:#999;
+    font-size:11px;
+    line-height:1.45;
+    flex:1;
+  }
+
+  #rxUniversalControl .rxuc-arrow{
+    margin-top:12px;
+    color:#e2bb62;
+    font-size:12px;
+    font-weight:900;
+  }
+
+  #rxUniversalControl .rxuc-admin{
+    border-color:rgba(200,70,70,.28);
+  }
+
+  #rxUniversalControl .rxuc-admin .rxuc-arrow{
+    color:#e58b8b;
+  }
+
+  #rxUniversalControl .rxuc-empty{
+    grid-column:1/-1;
+    text-align:center;
+    color:#777;
+    padding:25px;
+    font-size:13px;
+  }
+
+  #rxUniversalControl .rxuc-footer{
+    border-top:1px solid rgba(255,255,255,.08);
+    padding:13px 22px;
+    text-align:center;
+    color:#666;
+    font-size:10px;
+  }
+
+  @media(max-width:800px){
+    #rxUniversalControl .rxuc-grid{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+  }
+
+  @media(max-width:520px){
+    #rxUniversalControl{
+      padding-left:8px;
+      padding-right:8px;
+    }
+
+    #rxUniversalControl .rxuc-header{
+      padding:22px 16px 16px;
+    }
+
+    #rxUniversalControl .rxuc-search,
+    #rxUniversalControl .rxuc-filters{
+      padding-left:14px;
+      padding-right:14px;
+    }
+
+    #rxUniversalControl .rxuc-grid{
+      grid-template-columns:1fr;
+      padding-left:14px;
+      padding-right:14px;
+    }
+  }
+
+</style>
+
+
+<script id="rx-universal-control-script">
+(function(){
+
+  'use strict';
+
+  if(window.__RX_UNIVERSAL_CONTROL__) return;
+  window.__RX_UNIVERSAL_CONTROL__ = true;
+
+
+  /* ==========================================================
+     DEFINICIONES
+     
+     Cada tipo de entrada tiene su propio método.
+     ========================================================== */
+
+  const ITEMS = [
+
+    {
+      key:'services',
+      category:'crear',
+      icon:'🎨',
+      title:'Servicios',
+      desc:'Arte, diseño y tatuaje.',
+      type:'data-go',
+      target:'services'
+    },
+
+    {
+      key:'gallery',
+      category:'descubrir',
+      icon:'🖼️',
+      title:'Galería y Multimedia',
+      desc:'Obras, tatuajes, fotografías, vídeos y actividades.',
+      type:'data-go',
+      target:'gallery'
+    },
+
+    {
+      key:'school',
+      category:'aprender',
+      icon:'🎓',
+      title:'Escuela',
+      desc:'Cursos y talleres de RoXThal.',
+      type:'data-go',
+      target:'school'
+    },
+
+    {
+      key:'atelier',
+      category:'aprender',
+      icon:'🎨',
+      title:'RoXThal School Atelier',
+      desc:'Herramientas profesionales de arte, dibujo, pintura, tatuaje y creatividad.',
+      type:'data-go',
+      target:'schoolAtelier'
+    },
+
+    {
+      key:'radio',
+      category:'descubrir',
+      icon:'📻',
+      title:'Radio',
+      desc:'La emisora de RoXThal.',
+      type:'data-go',
+      target:'radio'
+    },
+
+    {
+      key:'reviews',
+      category:'descubrir',
+      icon:'⭐',
+      title:'Reseñas',
+      desc:'Opiniones de alumnos y clientes.',
+      type:'data-go',
+      target:'reviews'
+    },
+
+    {
+      key:'raffle',
+      category:'descubrir',
+      icon:'🎟️',
+      title:'Sorteo',
+      desc:'Promociones y sorteos activos.',
+      type:'data-go',
+      target:'raffle'
+    },
+
+    {
+      key:'payments',
+      category:'comprar',
+      icon:'💳',
+      title:'Pagos',
+      desc:'Información y gestión de pagos.',
+      type:'data-go',
+      target:'payments'
+    },
+
+    {
+      key:'store',
+      category:'comprar',
+      icon:'🛒',
+      title:'Tienda',
+      desc:'Insumos de arte, dibujo, pintura y tatuaje.',
+      type:'data-go',
+      target:'store'
+    },
+
+    {
+      key:'search',
+      category:'descubrir',
+      icon:'🔎',
+      title:'Buscadores',
+      desc:'Inspiración y recursos de arte y tatuaje.',
+      type:'data-go',
+      target:'search'
+    },
+
+    {
+      key:'ai',
+      category:'crear',
+      icon:'🤖',
+      title:'RoXThal IA',
+      desc:'Asistente artístico de RoXThal.',
+      type:'data-go',
+      target:'ai'
+    },
+
+    {
+      key:'contact',
+      category:'informacion',
+      icon:'📍',
+      title:'Ubicación y Contacto',
+      desc:'Atelier, ubicación y redes.',
+      type:'data-go',
+      target:'contact'
+    },
+
+    {
+      key:'about',
+      category:'informacion',
+      icon:'✦',
+      title:'Sobre RoXThal',
+      desc:'Historia e identidad de RoXThal Art Design.',
+      type:'data-go',
+      target:'about'
+    },
+
+    {
+      key:'visits',
+      category:'informacion',
+      icon:'📊',
+      title:'Visitas',
+      desc:'Información del contador de visitas.',
+      type:'data-go',
+      target:'visits'
+    },
+
+    {
+      key:'request',
+      category:'crear',
+      icon:'📩',
+      title:'Solicitud',
+      desc:'Realizá una solicitud directamente a RoXThal.',
+      type:'original',
+      id:'rxSolicitudButton'
+    },
+
+    {
+      key:'admin',
+      category:'admin',
+      icon:'⚙️',
+      title:'Administrador',
+      desc:'Gestión completa de RoXThal. Acceso protegido.',
+      type:'data-go',
+      target:'admin'
+    }
+
+  ];
+
+
+  const CATEGORIES = [
+    ['todo','Todo RoXThal'],
+    ['crear','Crear'],
+    ['aprender','Aprender'],
+    ['descubrir','Descubrir'],
+    ['comprar','Comprar'],
+    ['informacion','Información'],
+    ['admin','Administración']
+  ];
+
+
+  function getHome(){
+
+    return document.getElementById('home');
+
+  }
+
+
+  /* ==========================================================
+     NAVEGACIÓN SEGURA
+     ========================================================== */
+
+  function abrir(item){
+
+    /*
+     * ----------------------------------------------------------
+     * ENTRADAS NORMALES
+     * ----------------------------------------------------------
+     */
+
+    if(item.type === 'data-go'){
+
+      const original =
+        document.querySelector(
+          '[data-go="' +
+          item.target +
+          '"]'
+        );
+
+      if(original){
+
+        original.click();
+
+        return true;
+
+      }
+
+      return false;
+
+    }
+
+
+    /*
+     * ----------------------------------------------------------
+     * ENTRADAS ESPECIALES
+     *
+     * Nunca intentamos convertirlas en una vista.
+     * ----------------------------------------------------------
+     */
+
+    if(item.type === 'original'){
+
+      const original =
+        document.getElementById(
+          item.id
+        );
+
+      if(original){
+
+        original.click();
+
+        return true;
+
+      }
+
+      return false;
+
+    }
+
+
+    return false;
+
+  }
+
+
+  /* ==========================================================
+     CONSTRUIR INTERFAZ
+     ========================================================== */
+
+  function instalar(){
+
+    const home =
+      getHome();
+
+    if(!home) return false;
+
+
+    if(
+      document.getElementById(
+        'rxUniversalControl'
+      )
+    ){
+
+      return true;
+
+    }
+
+
+    const actions =
+      home.querySelector(
+        '.hero .actions'
+      );
+
+    if(!actions) return false;
+
+
+    const quick =
+      document.getElementById(
+        'rxHomeQuickAccess'
+      );
+
+
+    const control =
+      document.createElement(
+        'section'
+      );
+
+    control.id =
+      'rxUniversalControl';
+
+
+    control.innerHTML = `
+
+      <div class="rxuc-shell">
+
+        <div class="rxuc-header">
+
+          <div class="rxuc-kicker">
+            ✦ ROXTHAL
+            · CENTRO DE CONTROL
+          </div>
+
+          <h2>
+            Todo RoXThal en un solo lugar
+          </h2>
+
+          <p class="rxuc-subtitle">
+            Explorá arte, tatuaje, formación,
+            herramientas, contenidos, tienda,
+            contacto y todos los espacios de
+            RoXThal Art Design.
+          </p>
+
+        </div>
+
+
+        <div class="rxuc-search">
+
+          <input
+            id="rxucSearch"
+            type="search"
+            autocomplete="off"
+            placeholder="🔎 ¿Qué estás buscando?"
+            aria-label="Buscar dentro de RoXThal"
+          >
+
+        </div>
+
+
+        <div
+          id="rxucFilters"
+          class="rxuc-filters"
+        ></div>
+
+
+        <div
+          id="rxucGrid"
+          class="rxuc-grid"
+        ></div>
+
+
+        <div class="rxuc-footer">
+          RoXThal Art Design · Arte que deja marca.
+        </div>
+
+      </div>
+
+    `;
+
+
+    /*
+     * Lo colocamos debajo de los accesos que ya existen.
+     *
+     * No movemos los botones actuales.
+     */
+
+    if(quick){
+
+      quick.insertAdjacentElement(
+        'afterend',
+        control
+      );
+
+    }else{
+
+      actions.insertAdjacentElement(
+        'afterend',
+        control
+      );
+
+    }
+
+
+    construirFiltros();
+
+    render('todo','');
+
+
+    const search =
+      document.getElementById(
+        'rxucSearch'
+      );
+
+
+    search.addEventListener(
+      'input',
+      function(){
+
+        const filtro =
+          document
+            .querySelector(
+              '#rxucFilters .active'
+            );
+
+        const categoria =
+          filtro ?
+          filtro.dataset.category :
+          'todo';
+
+        render(
+          categoria,
+          this.value
+        );
+
+      }
+    );
+
+
+    return true;
+
+  }
+
+
+  /* ==========================================================
+     FILTROS
+     ========================================================== */
+
+  function construirFiltros(){
+
+    const box =
+      document.getElementById(
+        'rxucFilters'
+      );
+
+    if(!box) return;
+
+
+    box.innerHTML =
+      CATEGORIES.map(
+        function(item,index){
+
+          return `
+
+            <button
+              type="button"
+              class="rxuc-filter ${index===0?'active':''}"
+              data-category="${item[0]}"
+            >
+              ${item[1]}
+            </button>
+
+          `;
+
+        }
+      ).join('');
+
+
+    box.addEventListener(
+      'click',
+      function(event){
+
+        const button =
+          event.target.closest(
+            '.rxuc-filter'
+          );
+
+        if(!button) return;
+
+
+        box
+          .querySelectorAll(
+            '.rxuc-filter'
+          )
+          .forEach(
+            function(el){
+
+              el.classList.remove(
+                'active'
+              );
+
+            }
+          );
+
+
+        button.classList.add(
+          'active'
+        );
+
+
+        const search =
+          document.getElementById(
+            'rxucSearch'
+          );
+
+
+        render(
+          button.dataset.category,
+          search ?
+            search.value :
+            ''
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ==========================================================
+     RENDER
+     ========================================================== */
+
+  function render(category,searchText){
+
+    const grid =
+      document.getElementById(
+        'rxucGrid'
+      );
+
+    if(!grid) return;
+
+
+    const query =
+      String(
+        searchText || ''
+      )
+      .trim()
+      .toLowerCase();
+
+
+    const filtered =
+      ITEMS.filter(
+        function(item){
+
+          const matchesCategory =
+            category === 'todo' ||
+            item.category === category;
+
+
+          const text =
+            (
+              item.title +
+              ' ' +
+              item.desc
+            )
+            .toLowerCase();
+
+
+          const matchesSearch =
+            !query ||
+            text.includes(query);
+
+
+          return (
+            matchesCategory &&
+            matchesSearch
+          );
+
+        }
+      );
+
+
+    if(!filtered.length){
+
+      grid.innerHTML = `
+
+        <div class="rxuc-empty">
+          No encontramos ese acceso.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    grid.innerHTML =
+      filtered.map(
+        function(item){
+
+          const admin =
+            item.category === 'admin'
+              ? ' rxuc-admin'
+              : '';
+
+
+          return `
+
+            <button
+              type="button"
+              class="rxuc-card${admin}"
+              data-rxuc-key="${item.key}"
+            >
+
+              <span class="rxuc-icon">
+                ${item.icon}
+              </span>
+
+              <span class="rxuc-title">
+                ${item.title}
+              </span>
+
+              <span class="rxuc-desc">
+                ${item.desc}
+              </span>
+
+              <span class="rxuc-arrow">
+                Entrar →
+              </span>
+
+            </button>
+
+          `;
+
+        }
+      ).join('');
+
+
+    grid
+      .querySelectorAll(
+        '[data-rxuc-key]'
+      )
+      .forEach(
+        function(button){
+
+          button.addEventListener(
+            'click',
+            function(){
+
+              const item =
+                ITEMS.find(
+                  function(x){
+                    return (
+                      x.key ===
+                      button.dataset.rxucKey
+                    );
+                  }
+                );
+
+
+              if(!item) return;
+
+
+              /*
+               * IMPORTANTE:
+               *
+               * Si el acceso especial no está
+               * disponible todavía, no hacemos
+               * ninguna navegación inventada.
+               */
+
+              abrir(item);
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  /* ==========================================================
+     INICIO
+     ========================================================== */
+
+  if(
+    document.readyState ===
+    'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      {once:true}
+    );
+
+  }else{
+
+    instalar();
+
+  }
+
+})();
+</script>
+
+<!-- ============================================================
+     FIN — CENTRO DE CONTROL ROXTHAL
+     ============================================================ -->
    
 </body>
 </html>
