@@ -63774,6 +63774,37 @@ function openNotes(){
 
 })();
 </script>
+   <!-- =========================================================
+     ROXTHAL — IGUALAR BOTONES PRINCIPALES A ACCESOS RÁPIDOS
+     SOLO CAMBIO VISUAL — NO MODIFICA NAVEGACIÓN
+     ========================================================= -->
+<style id="roxthal-home-main-buttons-style">
+  /* Los botones principales usan exactamente la misma
+     disposición visual que los accesos rápidos */
+  #home .hero .actions{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+    width:100% !important;
+    max-width:760px !important;
+    margin-top:25px !important;
+  }
+
+  #home .hero .actions .btn{
+    width:100% !important;
+    min-height:44px !important;
+    box-sizing:border-box !important;
+    margin:0 !important;
+  }
+
+  @media(max-width:600px){
+    #home .hero .actions{
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:9px !important;
+    }
+  }
+</style>
+<!-- FIN IGUALAR BOTONES PRINCIPALES -->
    
 </body>
 </html>
