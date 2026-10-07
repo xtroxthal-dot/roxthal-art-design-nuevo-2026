@@ -68159,5 +68159,380 @@ if(quick){
 
 })();
 </script> 
+
+   <!-- ============================================================
+     ROXTHAL — COMPARTIR SOLICITUD + ENLACE DIRECTO
+     Pegar UNA SOLA VEZ antes del </body> FINAL
+============================================================ -->
+
+<style id="roxthal-solicitud-share-styles">
+
+  #rxSolicitudShareButton{
+    width:100%;
+    margin-top:9px;
+    min-height:45px;
+    border:1px solid #f2c400;
+    border-radius:9px;
+    background:#181818;
+    color:#f2c400;
+    font-weight:750;
+    font-size:15px;
+    cursor:pointer;
+    transition:
+      background .2s ease,
+      color .2s ease,
+      transform .15s ease;
+  }
+
+  #rxSolicitudShareButton:hover{
+    background:#f2c400;
+    color:#080808;
+  }
+
+  #rxSolicitudShareButton:active{
+    transform:scale(.98);
+  }
+
+</style>
+
+
+<script id="roxthal-solicitud-share-v1">
+
+(function(){
+
+  'use strict';
+
+
+  /* ==========================================================
+     CONFIGURACIÓN
+  ========================================================== */
+
+  const SOLICITUD_URL =
+    window.location.origin +
+    window.location.pathname +
+    '?solicitud=1';
+
+
+  const TEXTO_COMPARTIR =
+`📩 Solicitud de información — RoXThal Art Design
+
+✦ ¿Querés recibir información detallada sobre nuestros servicios, tatuajes, cursos, talleres o proyectos?
+
+📝 Completá tu solicitud y contanos qué necesitás. Con la información que nos brindes podremos orientarte de manera más precisa y enviarte todos los detalles correspondientes.
+
+⚠️ IMPORTANTE:
+Completar y enviar esta solicitud no implica la aceptación de un presupuesto, reserva de turno, contratación ni compromiso de compra.
+
+La solicitud será revisada por RoXThal Art Design y la información, disponibilidad y condiciones serán confirmadas posteriormente.
+
+👉 Completá tu solicitud aquí:
+
+${SOLICITUD_URL}`;
+
+
+  /* ==========================================================
+     INSTALAR BOTÓN
+  ========================================================== */
+
+  function instalarCompartirSolicitud(){
+
+    const panel =
+      document.getElementById('rxSolicitudPanel');
+
+    const form =
+      document.getElementById('rxSolicitudForm');
+
+
+    /* El formulario todavía no existe */
+    if(!panel || !form){
+
+      setTimeout(
+        instalarCompartirSolicitud,
+        300
+      );
+
+      return;
+    }
+
+
+    /* Evitar duplicar el botón */
+    if(
+      document.getElementById(
+        'rxSolicitudShareButton'
+      )
+    ){
+      comprobarEnlaceDirecto();
+      return;
+    }
+
+
+    /* ========================================================
+       CREAR BOTÓN
+    ======================================================== */
+
+    const shareButton =
+      document.createElement('button');
+
+    shareButton.type = 'button';
+
+    shareButton.id =
+      'rxSolicitudShareButton';
+
+    shareButton.textContent =
+      '📲 Compartir solicitud';
+
+    shareButton.setAttribute(
+      'aria-label',
+      'Compartir enlace directo a la solicitud'
+    );
+
+
+    /* ========================================================
+       COLOCAR ANTES DE CANCELAR
+    ======================================================== */
+
+    const cancel =
+      document.getElementById(
+        'rxSolicitudCancel'
+      );
+
+
+    if(cancel){
+
+      cancel.insertAdjacentElement(
+        'beforebegin',
+        shareButton
+      );
+
+    }else{
+
+      form.appendChild(
+        shareButton
+      );
+
+    }
+
+
+    /* ========================================================
+       COMPARTIR
+    ======================================================== */
+
+    shareButton.addEventListener(
+      'click',
+      async function(){
+
+        const shareData = {
+
+          title:
+            'Solicitud — RoXThal Art Design',
+
+          text:
+            TEXTO_COMPARTIR,
+
+          url:
+            SOLICITUD_URL
+
+        };
+
+
+        /* ====================================================
+           ANDROID / iOS / NAVEGADORES COMPATIBLES
+           MENÚ NATIVO DE COMPARTIR
+        ==================================================== */
+
+        if(
+          navigator.share
+        ){
+
+          try{
+
+            await navigator.share(
+              shareData
+            );
+
+            return;
+
+          }catch(error){
+
+            /*
+              Si el usuario cancela el menú
+              de compartir, no hacemos nada.
+            */
+
+            if(
+              error &&
+              error.name === 'AbortError'
+            ){
+
+              return;
+
+            }
+
+          }
+
+        }
+
+
+        /* ====================================================
+           COPIAR ENLACE COMO RESPALDO
+        ==================================================== */
+
+        try{
+
+          if(
+            navigator.clipboard &&
+            window.isSecureContext
+          ){
+
+            await navigator.clipboard.writeText(
+              SOLICITUD_URL
+            );
+
+            alert(
+              '🔗 Enlace de Solicitud copiado.\n\n' +
+              'Ahora podés pegarlo en WhatsApp, ' +
+              'Facebook, Instagram u otra red social.'
+            );
+
+            return;
+          }
+
+        }catch(error){}
+
+
+        /* ====================================================
+           ÚLTIMO RESPALDO
+        ==================================================== */
+
+        window.prompt(
+          'Copiá este enlace para compartir la Solicitud:',
+          SOLICITUD_URL
+        );
+
+      }
+    );
+
+
+    /* ========================================================
+       COMPROBAR SI SE ABRIÓ CON ?solicitud=1
+    ======================================================== */
+
+    comprobarEnlaceDirecto();
+
+  }
+
+
+  /* ==========================================================
+     ABRIR AUTOMÁTICAMENTE SOLICITUD
+     CUANDO VIENE EL ENLACE COMPARTIDO
+  ========================================================== */
+
+  function comprobarEnlaceDirecto(){
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    if(
+      params.get('solicitud') !== '1'
+    ){
+
+      return;
+    }
+
+
+    function abrirSolicitud(){
+
+      const boton =
+        document.getElementById(
+          'rxSolicitudButton'
+        );
+
+
+      if(boton){
+
+        boton.click();
+
+        return true;
+
+      }
+
+      return false;
+
+    }
+
+
+    /*
+      El módulo Solicitud puede instalarse
+      dinámicamente, por eso esperamos.
+    */
+
+    let intentos = 0;
+
+    const maxIntentos = 40;
+
+
+    const intervalo =
+      setInterval(
+        function(){
+
+          intentos++;
+
+
+          if(
+            abrirSolicitud() ||
+            intentos >= maxIntentos
+          ){
+
+            clearInterval(
+              intervalo
+            );
+
+          }
+
+        },
+        250
+      );
+
+  }
+
+
+  /* ==========================================================
+     ESPERAR A QUE EXISTA EL FORMULARIO
+  ========================================================== */
+
+  function iniciar(){
+
+    instalarCompartirSolicitud();
+
+  }
+
+
+  if(
+    document.readyState === 'loading'
+  ){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciar,
+      { once:true }
+    );
+
+  }else{
+
+    iniciar();
+
+  }
+
+
+})();
+
+</script>
+
+<!-- ============================================================
+     FIN — ROXTHAL COMPARTIR SOLICITUD
+============================================================ -->
 </body>
 </html>
