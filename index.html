@@ -66715,11 +66715,11 @@ if(quick){
 
                   (
                     status !== 'active' ?
-                    '<button class="btn btn-small" onclick="rxAdminSetCollaboratorStatus(' +
-                      JSON.stringify(c.id) +
-                      ',\'active\')">' +
-                      'Activar' +
-                    '</button>' :
+                    '<button type="button" class="btn btn-small rx-collab-activate" data-collab-id="' +
+  c.id +
+  '">' +
+  'Activar' +
+'</button>' :
                     ''
                   ) +
 
@@ -67121,7 +67121,25 @@ if(quick){
         );
       }
     };
+   
+/* ==========================================================
+   ADMIN — ACTIVAR COLABORADOR
+   ========================================================== */
+document.addEventListener('click', async function(e){
+  const btn = e.target.closest('.rx-collab-activate');
+  if(!btn) return;
 
+  const id = btn.dataset.collabId;
+  if(!id) return;
+
+  btn.disabled = true;
+
+  try{
+    await window.rxAdminSetCollaboratorStatus(id,'active');
+  }finally{
+    btn.disabled = false;
+  }
+}, true);
   /* ==========================================================
      ADMIN — ESTADO COMISIÓN
      ========================================================== */
