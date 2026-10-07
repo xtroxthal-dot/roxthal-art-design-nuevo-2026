@@ -68872,5 +68872,137 @@ ${SOLICITUD_URL}`;
 
 })();
 </script>
+<script>
+/* ==========================================================
+   RoXThal — REPARADOR COMPARTIR PRODUCTOS/SERVICIOS
+   No toca Compartir enlace del colaborador.
+   ========================================================== */
+(function(){
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      var button =
+        event.target.closest(
+          '.rx-collab-actions button'
+        );
+
+      if(!button) return;
+
+      var label =
+        (button.textContent || '')
+          .trim()
+          .toLowerCase();
+
+      /* Solo 📲 Compartir de productos/servicios */
+      if(
+        label !== '📲 compartir' &&
+        label !== 'compartir'
+      ){
+        return;
+      }
+
+      /*
+       * Este NO es el "Compartir enlace"
+       * principal del colaborador.
+       */
+      if(
+        label.indexOf('compartir enlace') !== -1
+      ){
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      var onclick =
+        button.getAttribute('onclick') || '';
+
+      /*
+       * Recuperamos todas las URLs que existan
+       * dentro del onclick original.
+       */
+      var urls =
+        onclick.match(
+          /https?:\/\/[^"'\\\s)]+/g
+        ) || [];
+
+      var url =
+        urls.length ?
+        urls[urls.length - 1] :
+        '';
+
+      if(!url){
+        alert(
+          'No se pudo obtener el enlace del producto.'
+        );
+        return;
+      }
+
+      /*
+       * Intentamos compartir mediante Android.
+       */
+      if(
+        typeof navigator.share === 'function'
+      ){
+
+        navigator.share({
+          title:'RoXThal Art Design',
+          text:'Conocé este producto de RoXThal.',
+          url:url
+        }).catch(function(err){
+
+          /*
+           * Si el usuario canceló, no hacemos nada.
+           */
+          if(
+            err &&
+            err.name === 'AbortError'
+          ){
+            return;
+          }
+
+          /*
+           * Si compartir falla, copiamos el enlace.
+           */
+          if(
+            typeof window.rxCopy === 'function'
+          ){
+            window.rxCopy(url);
+          }else{
+            window.prompt(
+              'Copiá este enlace:',
+              url
+            );
+          }
+
+        });
+
+        return;
+      }
+
+      /*
+       * Sin Web Share API:
+       * usamos la función de copia existente.
+       */
+      if(
+        typeof window.rxCopy === 'function'
+      ){
+        window.rxCopy(url);
+      }else{
+        window.prompt(
+          'Copiá este enlace:',
+          url
+        );
+      }
+
+    },
+    true
+  );
+
+})();
+</script>
+   
 </body>
 </html>
