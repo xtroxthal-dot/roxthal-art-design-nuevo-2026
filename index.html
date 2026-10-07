@@ -65195,7 +65195,11 @@ if(quick){
                    type="password"
                    autocomplete="off">
           </div>
-
+<button class="btn"
+        type="button"
+        onclick="rxCollabRecoverToken()">
+  👁 Recuperar token guardado
+</button>
           <button class="btn btn-primary"
                   type="button"
                   onclick="rxCollabLogin()">
@@ -65259,6 +65263,31 @@ if(quick){
 
   const LS_TOKEN =
     'roxthal_collab_token';
+   window.rxCollabRecoverToken = function(){
+  const token =
+    localStorage.getItem(LS_TOKEN);
+
+  const input =
+    document.getElementById('rxCollabLoginToken');
+
+  if(!token){
+    rxStatus(
+      'No hay ningún token guardado en este dispositivo.',
+      'err'
+    );
+    return;
+  }
+
+  if(input){
+    input.type = 'text';
+    input.value = token;
+  }
+
+  rxStatus(
+    'Token recuperado correctamente.',
+    'ok'
+  );
+};
 
   let db = window.db;
 
