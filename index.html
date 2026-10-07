@@ -63560,6 +63560,220 @@ function openNotes(){
 
 })();
 </script>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+   <!-- =========================================================
+     ROXTHAL · ACCESOS RÁPIDOS DESDE INICIO
+     Radio · Tienda · Sorteo · Galería
+     No reemplaza la navegación original de los módulos.
+     ========================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__RX_HOME_QUICK_ACCESS__) return;
+  window.__RX_HOME_QUICK_ACCESS__ = true;
+
+  function crearEstilos() {
+    if (document.getElementById('rx-home-quick-access-style')) return;
+
+    var style = document.createElement('style');
+    style.id = 'rx-home-quick-access-style';
+
+    style.textContent = `
+      #rxHomeQuickAccess {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        width: 100%;
+        max-width: 760px;
+        margin: 10px auto 0;
+      }
+
+      #rxHomeQuickAccess button {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+        cursor: pointer;
+      }
+
+      @media (max-width: 600px) {
+        #rxHomeQuickAccess {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 9px;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function buscarEntrada(target, texto) {
+    /* 1. Entrada oficial que ya tenga data-go */
+    var entrada = document.querySelector(
+      '[data-go="' + target + '"]'
+    );
+
+    if (entrada) return entrada;
+
+    /* 2. Buscar botones/enlaces que ya utilicen esa ruta */
+    var elementos = document.querySelectorAll(
+      'button, a, [role="button"]'
+    );
+
+    var textoBuscado = String(texto || '').toLowerCase();
+
+    for (var i = 0; i < elementos.length; i++) {
+      var el = elementos[i];
+
+      var onclick = (
+        el.getAttribute('onclick') || ''
+      ).toLowerCase();
+
+      var href = (
+        el.getAttribute('href') || ''
+      ).toLowerCase();
+
+      var contenido = (
+        el.textContent || ''
+      ).trim().toLowerCase();
+
+      if (
+        onclick.indexOf(target.toLowerCase()) !== -1 ||
+        href.indexOf(target.toLowerCase()) !== -1
+      ) {
+        return el;
+      }
+
+      if (
+        textoBuscado &&
+        contenido === textoBuscado
+      ) {
+        return el;
+      }
+    }
+
+    return null;
+  }
+
+  function abrirModulo(target, texto) {
+    var entrada = buscarEntrada(target, texto);
+
+    if (entrada) {
+      entrada.click();
+      return true;
+    }
+
+    /*
+     * Fallback seguro:
+     * si el módulo existe pero no encontramos su botón,
+     * intentamos utilizar el mecanismo de vistas existente
+     * sin inventar una nueva pantalla.
+     */
+    var vista = document.getElementById(target);
+
+    if (vista) {
+      var vistas = document.querySelectorAll('.view');
+
+      for (var i = 0; i < vistas.length; i++) {
+        vistas[i].classList.add('hidden');
+      }
+
+      vista.classList.remove('hidden');
+      window.scrollTo(0, 0);
+      return true;
+    }
+
+    return false;
+  }
+
+  function instalar() {
+    var home = document.getElementById('home');
+
+    if (!home) return false;
+
+    var actions = home.querySelector('.hero .actions');
+
+    if (!actions) return false;
+
+    /*
+     * Evita duplicarlo si el código se ejecuta otra vez.
+     */
+    if (document.getElementById('rxHomeQuickAccess')) {
+      return true;
+    }
+
+    crearEstilos();
+
+    var contenedor = document.createElement('div');
+    contenedor.id = 'rxHomeQuickAccess';
+
+    var botones = [
+      {
+        target: 'radio',
+        texto: 'Radio',
+        icono: '📻'
+      },
+      {
+        target: 'store',
+        texto: 'Tienda',
+        icono: '🛒'
+      },
+      {
+        target: 'raffle',
+        texto: 'Sorteo',
+        icono: '🎟️'
+      },
+      {
+        target: 'gallery',
+        texto: 'Galería',
+        icono: '🖼️'
+      }
+    ];
+
+    botones.forEach(function (item) {
+      var boton = document.createElement('button');
+
+      boton.type = 'button';
+      boton.className = 'btn';
+      boton.textContent = item.icono + ' ' + item.texto;
+
+      boton.addEventListener('click', function () {
+        abrirModulo(item.target, item.texto);
+      });
+
+      contenedor.appendChild(boton);
+    });
+
+    /*
+     * IMPORTANTE:
+     * Se coloca DESPUÉS de .actions.
+     * Por tanto queda debajo de los botones existentes:
+     * Ver servicios / Ver cursos / Cómo llegar / Solicitud.
+     */
+    actions.insertAdjacentElement(
+      'afterend',
+      contenedor
+    );
+
+    return true;
+  }
+
+  /*
+   * El código está al final del documento, pero esperamos a que
+   * el DOM esté completamente preparado.
+   */
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      instalar,
+      { once: true }
+    );
+  } else {
+    instalar();
+  }
+
+})();
+</script>
    
 </body>
 </html>
