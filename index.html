@@ -65312,6 +65312,92 @@ if(quick){
 
 })();
 </script>
+
+   <script>
+(function () {
+  'use strict';
+
+  function limpiarCentroControl() {
+    const control = document.getElementById('rxUniversalControl');
+    if (!control) return;
+
+    /*
+     * El Centro de Control nuevo usa estas clases.
+     * Todo lo demás que corresponde a la antigua cabecera
+     * se oculta visualmente sin eliminar su lógica.
+     */
+
+    const textosOcultar = [
+      '✦ ROXTHAL · CENTRO DE CONTROL',
+      'Todo RoXThal en un solo lugar',
+      'Explorá arte, tatuaje, formación, herramientas, contenidos, tienda, contacto y todos los espacios de RoXThal.'
+    ];
+
+    control.querySelectorAll('*').forEach(function (el) {
+      const texto = (el.textContent || '').trim();
+
+      if (!texto) return;
+
+      for (const objetivo of textosOcultar) {
+        if (texto === objetivo) {
+          el.style.display = 'none';
+          return;
+        }
+      }
+    });
+
+    /*
+     * Oculta solamente la antigua barra de categorías.
+     * No elimina los botones ni los módulos.
+     */
+    control.querySelectorAll('div,nav,section').forEach(function (el) {
+      const texto = (el.textContent || '').replace(/\s+/g, ' ').trim();
+
+      if (
+        texto === 'Todo RoXThal Crear Aprender Descubrir Comprar Información Administración' ||
+        texto === 'Todo RoXThalCrearAprenderDescubrirComprarInformaciónAdministración'
+      ) {
+        el.style.display = 'none';
+      }
+    });
+
+    /*
+     * Si queda algún encabezado antiguo inmediatamente identificable,
+     * se oculta sin tocar el resto del Centro de Control.
+     */
+    control.querySelectorAll('h1,h2,h3,h4,p').forEach(function (el) {
+      const texto = (el.textContent || '').replace(/\s+/g, ' ').trim();
+
+      if (
+        texto === '✦ ROXTHAL · CENTRO DE CONTROL' ||
+        texto === 'Todo RoXThal en un solo lugar'
+      ) {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  /*
+   * El Centro de Control se crea dinámicamente.
+   * Por eso esperamos a que exista.
+   */
+  limpiarCentroControl();
+
+  const observer = new MutationObserver(function () {
+    limpiarCentroControl();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  /*
+   * Seguridad: no modificar ninguna navegación existente.
+   * Solo limpieza visual del duplicado.
+   */
+})();
+</script>
    
 </body>
 </html>
