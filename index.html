@@ -65571,64 +65571,116 @@ if(quick){
 
   async function rxCopy(text){
 
-    try{
+  try{
 
-      await navigator.clipboard.writeText(
-        text
-      );
+    if(
+      navigator.clipboard &&
+      window.isSecureContext
+    ){
+
+      await navigator.clipboard.writeText(text);
 
       rxToast(
         'Enlace copiado.'
       );
 
       return true;
+    }
 
-    }catch(e){
+  }catch(e){
+    console.warn(
+      '[RoXThal] Clipboard API no disponible:',
+      e
+    );
+  }
 
-      window.prompt(
-        'Copiá este enlace:',
-        text
+  try{
+
+    const area =
+      document.createElement('textarea');
+
+    area.value = text;
+    area.setAttribute('readonly','');
+    area.style.position = 'fixed';
+    area.style.left = '-9999px';
+    area.style.top = '0';
+
+    document.body.appendChild(area);
+
+    area.focus();
+    area.select();
+    area.setSelectionRange(
+      0,
+      area.value.length
+    );
+
+    const copied =
+      document.execCommand('copy');
+
+    document.body.removeChild(area);
+
+    if(copied){
+
+      rxToast(
+        'Enlace copiado.'
       );
 
-      return false;
+      return true;
     }
+
+  }catch(e){
+    console.warn(
+      '[RoXThal] Copia alternativa falló:',
+      e
+    );
   }
+
+  window.prompt(
+    'Copiá este enlace:',
+    text
+  );
+
+  return false;
+}
 
   async function rxShare(
-    title,
-    text,
-    url
-  ){
+  title,
+  text,
+  url
+){
 
-    try{
+  try{
 
-      if(
-        navigator.share &&
-        /Android|iPhone|iPad|iPod/i.test(
-          navigator.userAgent
-        )
-      ){
+    if(
+      typeof navigator.share === 'function'
+    ){
 
-        await navigator.share({
-          title:title,
-          text:text,
-          url:url
-        });
+      await navigator.share({
+        title:title,
+        text:text,
+        url:url
+      });
 
-        return;
-      }
-
-    }catch(e){
-
-      if(e &&
-         e.name === 'AbortError'){
-        return;
-      }
-
+      return true;
     }
 
-    await rxCopy(url);
+  }catch(e){
+
+    if(
+      e &&
+      e.name === 'AbortError'
+    ){
+      return false;
+    }
+
+    console.warn(
+      '[RoXThal] Compartir nativo falló:',
+      e
+    );
   }
+
+  return await rxCopy(url);
+}
 
   window.rxCollabShareApp =
     async function(){
