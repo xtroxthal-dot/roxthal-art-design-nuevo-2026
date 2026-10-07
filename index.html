@@ -68633,73 +68633,187 @@ ${SOLICITUD_URL}`;
 <!-- ============================================================
      FIN — ROXTHAL COMPARTIR SOLICITUD
 ============================================================ -->
-
-       <script>
+<script>
 /* ==========================================================
-   RoXThal — REPARADOR BOTONES COLABORADORES
-   No modifica login, token, Supabase ni Compartir enlace.
+   RoXThal — REPARADOR DEFINITIVO COLABORADORES
+   Lee directamente los argumentos JSON del onclick generado
+   por el módulo. No modifica el resto de la aplicación.
    ========================================================== */
 (function(){
 
-  function rxFixCopy(text){
-    if(!text) return;
+  function rxParseCallArgs(code, fnName){
+    if(!code) return [];
 
-    /* Clipboard moderno */
+    var start =
+      code.indexOf(fnName + '(');
+
+    if(start === -1) return [];
+
+    start += fnName.length + 1;
+
+    var end =
+      code.lastIndexOf(')');
+
+    if(end <= start) return [];
+
+    var source =
+      code.slice(start, end);
+
+    var args = [];
+    var current = '';
+    var quote = null;
+    var escaped = false;
+
+    for(var i = 0; i < source.length; i++){
+
+      var ch = source[i];
+
+      if(escaped){
+        current += ch;
+        escaped = false;
+        continue;
+      }
+
+      if(quote && ch === '\\'){
+        current += ch;
+        escaped = true;
+        continue;
+      }
+
+      if(
+        (ch === '"' || ch === "'")
+      ){
+
+        if(!quote){
+          quote = ch;
+        }else if(quote === ch){
+          quote = null;
+        }
+
+        current += ch;
+        continue;
+      }
+
+      if(ch === ',' && !quote){
+        args.push(current.trim());
+        current = '';
+        continue;
+      }
+
+      current += ch;
+    }
+
+    if(current.trim()){
+      args.push(current.trim());
+    }
+
+    return args.map(function(value){
+
+      try{
+        return JSON.parse(value);
+      }catch(e){
+        return value
+          .replace(/^['"]/, '')
+          .replace(/['"]$/, '');
+      }
+
+    });
+  }
+
+
+  function rxCopyRepair(url){
+
+    if(!url) return;
+
     try{
+
       if(
         navigator.clipboard &&
         window.isSecureContext
       ){
-        navigator.clipboard.writeText(text)
+
+        navigator.clipboard
+          .writeText(url)
           .then(function(){
-            if(typeof window.rxToast === 'function'){
-              window.rxToast('Enlace copiado.');
+
+            if(
+              typeof window.rxToast === 'function'
+            ){
+              window.rxToast(
+                'Enlace copiado.'
+              );
             }else{
-              alert('Enlace copiado.');
+              alert(
+                'Enlace copiado.'
+              );
             }
+
           })
           .catch(function(){
-            rxFixCopyFallback(text);
+            rxCopyFallback(url);
           });
 
         return;
+
       }
+
     }catch(e){}
 
-    rxFixCopyFallback(text);
+    rxCopyFallback(url);
   }
 
-  function rxFixCopyFallback(text){
-    try{
-      var area = document.createElement('textarea');
 
-      area.value = text;
-      area.setAttribute('readonly','');
+  function rxCopyFallback(url){
+
+    try{
+
+      var area =
+        document.createElement('textarea');
+
+      area.value = url;
+      area.setAttribute(
+        'readonly',
+        ''
+      );
+
       area.style.position = 'fixed';
       area.style.left = '-9999px';
       area.style.top = '0';
-      area.style.opacity = '0';
 
       document.body.appendChild(area);
 
       area.focus();
       area.select();
-      area.setSelectionRange(0, area.value.length);
+      area.setSelectionRange(
+        0,
+        area.value.length
+      );
 
       var ok = false;
 
       try{
-        ok = document.execCommand('copy');
+        ok =
+          document.execCommand(
+            'copy'
+          );
       }catch(e){}
 
       document.body.removeChild(area);
 
       if(ok){
-        if(typeof window.rxToast === 'function'){
-          window.rxToast('Enlace copiado.');
+
+        if(
+          typeof window.rxToast === 'function'
+        ){
+          window.rxToast(
+            'Enlace copiado.'
+          );
         }else{
-          alert('Enlace copiado.');
+          alert(
+            'Enlace copiado.'
+          );
         }
+
         return;
       }
 
@@ -68707,18 +68821,7 @@ ${SOLICITUD_URL}`;
 
     window.prompt(
       'Copiá este enlace:',
-      text
-    );
-  }
-
-
-  function rxGetButtonUrl(button){
-    if(!button) return '';
-
-    return (
-      button.getAttribute('data-url') ||
-      button.dataset.url ||
-      ''
+      url
     );
   }
 
@@ -68739,69 +68842,53 @@ ${SOLICITUD_URL}`;
           .trim()
           .toLowerCase();
 
+
       /*
-       * IMPORTANTE:
-       * El botón "Compartir enlace" del colaborador
-       * ya funciona. Lo dejamos completamente intacto.
+       * NO TOCAR EL BOTÓN PRINCIPAL
+       * "📲 Compartir enlace"
        */
       if(
-        label.indexOf('compartir enlace') !== -1
+        label.indexOf(
+          'compartir enlace'
+        ) !== -1
       ){
         return;
       }
 
 
       /*
-       * COPIAR ENLACE
+       * COPIAR ENLACE DE PRODUCTO
        */
       if(
-        label.indexOf('copiar enlace') !== -1
+        label.indexOf(
+          'copiar enlace'
+        ) !== -1
       ){
+
+        var copyCode =
+          button.getAttribute(
+            'onclick'
+          ) || '';
+
+        var copyArgs =
+          rxParseCallArgs(
+            copyCode,
+            'rxCopy'
+          );
+
+        var copyUrl =
+          copyArgs.length ?
+          copyArgs[0] :
+          '';
+
+        if(!copyUrl){
+          return;
+        }
 
         event.preventDefault();
         event.stopPropagation();
 
-        var url =
-          rxGetButtonUrl(button);
-
-        /*
-         * Si el botón ya tiene data-url,
-         * usamos esa URL directamente.
-         */
-        if(url){
-          rxFixCopy(url);
-          return;
-        }
-
-        /*
-         * Si no tiene data-url, intentamos
-         * recuperar la URL del onclick existente.
-         */
-        var code =
-          button.getAttribute('onclick') || '';
-
-        var match =
-          code.match(
-            /rxCopy\(\s*(['"])(.*?)\1\s*\)/
-          );
-
-        if(match && match[2]){
-          rxFixCopy(match[2]);
-          return;
-        }
-
-        /*
-         * Último recurso:
-         * buscar la URL dentro del onclick.
-         */
-        var urlMatch =
-          code.match(
-            /(https?:\/\/[^\s'")]+)/
-          );
-
-        if(urlMatch && urlMatch[1]){
-          rxFixCopy(urlMatch[1]);
-        }
+        rxCopyRepair(copyUrl);
 
         return;
       }
@@ -68815,55 +68902,76 @@ ${SOLICITUD_URL}`;
         label === 'compartir'
       ){
 
-        /*
-         * Si existe el onclick original,
-         * dejamos que el código actual siga funcionando.
-         */
-        var original =
-          button.getAttribute('onclick') || '';
+        var shareCode =
+          button.getAttribute(
+            'onclick'
+          ) || '';
 
-        if(original){
+        var shareArgs =
+          rxParseCallArgs(
+            shareCode,
+            'rxShare'
+          );
+
+        if(
+          shareArgs.length < 3
+        ){
+          return;
+        }
+
+        var title =
+          shareArgs[0] ||
+          'RoXThal Art Design';
+
+        var text =
+          shareArgs[1] ||
+          'Conocé este producto de RoXThal.';
+
+        var url =
+          shareArgs[2] ||
+          '';
+
+        if(!url){
           return;
         }
 
         event.preventDefault();
         event.stopPropagation();
 
-        var url =
-          rxGetButtonUrl(button);
-
-        if(!url) return;
-
+        /*
+         * Compartir nativo Android.
+         */
         if(
-          typeof navigator.share === 'function'
+          typeof navigator.share ===
+          'function'
         ){
 
           navigator.share({
-            title:
-              button.getAttribute('data-title') ||
-              'RoXThal Art Design',
-
-            text:
-              button.getAttribute('data-text') ||
-              'Conocé este producto de RoXThal.',
-
+            title:title,
+            text:text,
             url:url
-
           }).catch(function(err){
 
             if(
-              !err ||
-              err.name !== 'AbortError'
+              err &&
+              err.name ===
+              'AbortError'
             ){
-              rxFixCopy(url);
+              return;
             }
+
+            rxCopyRepair(url);
 
           });
 
           return;
         }
 
-        rxFixCopy(url);
+        /*
+         * Sin Web Share:
+         * copiamos el enlace.
+         */
+        rxCopyRepair(url);
       }
 
     },
@@ -68872,137 +68980,7 @@ ${SOLICITUD_URL}`;
 
 })();
 </script>
-<script>
-/* ==========================================================
-   RoXThal — REPARADOR COMPARTIR PRODUCTOS/SERVICIOS
-   No toca Compartir enlace del colaborador.
-   ========================================================== */
-(function(){
-
-  document.addEventListener(
-    'click',
-    function(event){
-
-      var button =
-        event.target.closest(
-          '.rx-collab-actions button'
-        );
-
-      if(!button) return;
-
-      var label =
-        (button.textContent || '')
-          .trim()
-          .toLowerCase();
-
-      /* Solo 📲 Compartir de productos/servicios */
-      if(
-        label !== '📲 compartir' &&
-        label !== 'compartir'
-      ){
-        return;
-      }
-
-      /*
-       * Este NO es el "Compartir enlace"
-       * principal del colaborador.
-       */
-      if(
-        label.indexOf('compartir enlace') !== -1
-      ){
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      var onclick =
-        button.getAttribute('onclick') || '';
-
-      /*
-       * Recuperamos todas las URLs que existan
-       * dentro del onclick original.
-       */
-      var urls =
-        onclick.match(
-          /https?:\/\/[^"'\\\s)]+/g
-        ) || [];
-
-      var url =
-        urls.length ?
-        urls[urls.length - 1] :
-        '';
-
-      if(!url){
-        alert(
-          'No se pudo obtener el enlace del producto.'
-        );
-        return;
-      }
-
-      /*
-       * Intentamos compartir mediante Android.
-       */
-      if(
-        typeof navigator.share === 'function'
-      ){
-
-        navigator.share({
-          title:'RoXThal Art Design',
-          text:'Conocé este producto de RoXThal.',
-          url:url
-        }).catch(function(err){
-
-          /*
-           * Si el usuario canceló, no hacemos nada.
-           */
-          if(
-            err &&
-            err.name === 'AbortError'
-          ){
-            return;
-          }
-
-          /*
-           * Si compartir falla, copiamos el enlace.
-           */
-          if(
-            typeof window.rxCopy === 'function'
-          ){
-            window.rxCopy(url);
-          }else{
-            window.prompt(
-              'Copiá este enlace:',
-              url
-            );
-          }
-
-        });
-
-        return;
-      }
-
-      /*
-       * Sin Web Share API:
-       * usamos la función de copia existente.
-       */
-      if(
-        typeof window.rxCopy === 'function'
-      ){
-        window.rxCopy(url);
-      }else{
-        window.prompt(
-          'Copiá este enlace:',
-          url
-        );
-      }
-
-    },
-    true
-  );
-
-})();
-</script>
+   
    
 </body>
 </html>
