@@ -66521,25 +66521,29 @@ if(quick){
 
               '<div class="rx-collab-actions">' +
 
-                '<button class="btn btn-primary btn-small" onclick="rxShare(' +
-                  JSON.stringify(
-                    item.title || 'RoXThal'
-                  ) +
-                  ',' +
-                  JSON.stringify(
-                    'Conocé este producto de RoXThal.'
-                  ) +
-                  ',' +
-                  JSON.stringify(url) +
-                ')">' +
-                  '📲 Compartir' +
-                '</button>' +
+  '<button class="btn btn-primary btn-small rx-collab-product-share"' +
+    ' type="button"' +
+    ' data-url="' +
+      rxEscape(url) +
+    '"' +
+    ' data-title="' +
+      rxEscape(item.title || 'RoXThal') +
+    '"' +
+    ' data-text="' +
+      rxEscape('Conocé este producto de RoXThal.') +
+    '">' +
+    '📲 Compartir' +
+  '</button>' +
 
-                '<button class="btn btn-small" onclick="rxCopy(' +
-                  JSON.stringify(url) +
-                ')">' +
-                  '🔗 Copiar enlace' +
-                '</button>' +
+  '<button class="btn btn-small rx-collab-product-copy"' +
+    ' type="button"' +
+    ' data-url="' +
+      rxEscape(url) +
+    '">' +
+    '🔗 Copiar enlace' +
+  '</button>' +
+
+'</div>' +
 
               '</div>' +
 
