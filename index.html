@@ -69502,40 +69502,26 @@ ${SOLICITUD_URL}`;
   window.__RX_APUNTES_REPARACION_UNIVERSAL__ = true;
 
   function abrirApuntes() {
-    var overlay = document.getElementById('rx-apuntes-overlay');
     var api = window.RoXThalApuntes;
 
-    if (overlay) {
-      overlay.hidden = false;
-      overlay.classList.add('rx-apuntes-open');
-      overlay.style.setProperty('display', 'block', 'important');
-      overlay.setAttribute('aria-hidden', 'false');
-    }
-
-    if (api && typeof api.open === 'function') {
-      try {
-        var resultado = api.open();
-
-        if (resultado && typeof resultado.catch === 'function') {
-          resultado.catch(function (error) {
-            console.error('Error al abrir Apuntes:', error);
-          });
-        }
-      } catch (error) {
-        console.error('Error al abrir Apuntes:', error);
-      }
+    if (!api || typeof api.open !== 'function') {
+      alert('Apuntes todavía está cargando. Recarga la aplicación e inténtalo de nuevo.');
       return;
     }
 
-    var estado = document.getElementById('rx-ap-login-status');
+    try {
+      var resultado = api.open();
 
-    if (estado) {
-      estado.textContent =
-        'Apuntes no terminó de cargar. Recarga la aplicación e inténtalo otra vez.';
-      estado.style.display = 'block';
+      if (resultado && typeof resultado.catch === 'function') {
+        resultado.catch(function (error) {
+          console.error('[RoXThal Apuntes] Error al abrir:', error);
+          alert('No se pudo abrir Apuntes. Comprueba la conexión e inténtalo de nuevo.');
+        });
+      }
+    } catch (error) {
+      console.error('[RoXThal Apuntes] Error al abrir:', error);
+      alert('No se pudo abrir Apuntes. Recarga la aplicación e inténtalo de nuevo.');
     }
-
-    console.error('No se encontró el módulo RoXThalApuntes.');
   }
 
   function instalar() {
@@ -69556,29 +69542,9 @@ ${SOLICITUD_URL}`;
       });
     }
 
-    /* Refuerza también la entrada de Apuntes del Módulo 15 */
-    document.addEventListener('click', function (event) {
-      var objetivo = event.target && event.target.closest
-        ? event.target.closest('#rxM15BtnApuntes')
-        : null;
-
-      if (!objetivo) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (event.stopImmediatePropagation) {
-        event.stopImmediatePropagation();
-      }
-
-      abrirApuntes();
-    }, true);
-
     var overlay = document.getElementById('rx-apuntes-overlay');
 
     function sincronizarBoton() {
-      if (!boton) return;
-
       var abierto = !!(
         overlay &&
         !overlay.hidden &&
