@@ -69343,6 +69343,135 @@ ${SOLICITUD_URL}`;
 
 })();
 </script>
+
+   <script>
+/* ==========================================================
+   RoXThal — REPARACIÓN EXCLUSIVA
+   📋 COPIAR ENLACE DEL COLABORADOR
+   ========================================================== */
+
+(function(){
+
+  async function copiarEnlaceColaborador(url){
+
+    if(!url) return;
+
+    try{
+      if(navigator.clipboard &&
+         window.isSecureContext){
+
+        await navigator.clipboard.writeText(url);
+
+        if(typeof window.rxToast === 'function'){
+          window.rxToast('Enlace copiado.');
+        }
+
+        return;
+      }
+    }catch(e){}
+
+    try{
+
+      const area =
+        document.createElement('textarea');
+
+      area.value = url;
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      area.style.top = '0';
+
+      document.body.appendChild(area);
+
+      area.focus();
+      area.select();
+
+      const ok =
+        document.execCommand('copy');
+
+      area.remove();
+
+      if(ok){
+
+        if(typeof window.rxToast === 'function'){
+          window.rxToast('Enlace copiado.');
+        }
+
+        return;
+      }
+
+    }catch(e){}
+
+    window.prompt(
+      'Copiá este enlace:',
+      url
+    );
+  }
+
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      const button =
+        event.target.closest(
+          '.rx-collab-hero .rx-collab-actions button'
+        );
+
+      if(!button) return;
+
+
+      const texto =
+        (button.textContent || '')
+          .trim()
+          .toLowerCase();
+
+
+      /* SOLO el botón 📋 Copiar enlace */
+
+      if(
+        texto.indexOf('copiar enlace') === -1
+      ){
+        return;
+      }
+
+
+      /* Recuperamos el enlace visible
+         del panel del colaborador */
+
+      const panel =
+        button.closest(
+          '.rx-collab-hero'
+        );
+
+      if(!panel) return;
+
+
+      const enlace =
+        panel.querySelector(
+          '.rx-collab-link'
+        );
+
+      if(!enlace) return;
+
+
+      const url =
+        (enlace.textContent || '')
+          .trim();
+
+      if(!url) return;
+
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      copiarEnlaceColaborador(url);
+
+    },
+    true
+  );
+
+})();
+</script>
    
 </body>
 </html>
