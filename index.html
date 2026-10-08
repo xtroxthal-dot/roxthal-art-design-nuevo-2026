@@ -69472,6 +69472,140 @@ ${SOLICITUD_URL}`;
 
 })();
 </script>
+
+   <!-- REPARACIÓN UNIVERSAL DEL MÓDULO APUNTES -->
+<style>
+#rxApuntesUniversalLauncher {
+  position: fixed !important;
+  left: 12px !important;
+  bottom: 14px !important;
+  z-index: 2147483646 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border: 1px solid #d6ad55;
+  border-radius: 999px;
+  background: #111;
+  color: #f5d784;
+  font: 800 14px system-ui, sans-serif;
+  box-shadow: 0 5px 22px #0008;
+  cursor: pointer;
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  if (window.__RX_APUNTES_REPARACION_UNIVERSAL__) return;
+  window.__RX_APUNTES_REPARACION_UNIVERSAL__ = true;
+
+  function abrirApuntes() {
+    var overlay = document.getElementById('rx-apuntes-overlay');
+    var api = window.RoXThalApuntes;
+
+    if (overlay) {
+      overlay.hidden = false;
+      overlay.classList.add('rx-apuntes-open');
+      overlay.style.setProperty('display', 'block', 'important');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    if (api && typeof api.open === 'function') {
+      try {
+        var resultado = api.open();
+
+        if (resultado && typeof resultado.catch === 'function') {
+          resultado.catch(function (error) {
+            console.error('Error al abrir Apuntes:', error);
+          });
+        }
+      } catch (error) {
+        console.error('Error al abrir Apuntes:', error);
+      }
+      return;
+    }
+
+    var estado = document.getElementById('rx-ap-login-status');
+
+    if (estado) {
+      estado.textContent =
+        'Apuntes no terminó de cargar. Recarga la aplicación e inténtalo otra vez.';
+      estado.style.display = 'block';
+    }
+
+    console.error('No se encontró el módulo RoXThalApuntes.');
+  }
+
+  function instalar() {
+    var boton = document.getElementById('rxApuntesUniversalLauncher');
+
+    if (!boton) {
+      boton = document.createElement('button');
+      boton.id = 'rxApuntesUniversalLauncher';
+      boton.type = 'button';
+      boton.textContent = '📝 Apuntes';
+      boton.setAttribute('aria-label', 'Abrir módulo Apuntes');
+      document.body.appendChild(boton);
+
+      boton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        abrirApuntes();
+      });
+    }
+
+    /* Refuerza también la entrada de Apuntes del Módulo 15 */
+    document.addEventListener('click', function (event) {
+      var objetivo = event.target && event.target.closest
+        ? event.target.closest('#rxM15BtnApuntes')
+        : null;
+
+      if (!objetivo) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (event.stopImmediatePropagation) {
+        event.stopImmediatePropagation();
+      }
+
+      abrirApuntes();
+    }, true);
+
+    var overlay = document.getElementById('rx-apuntes-overlay');
+
+    function sincronizarBoton() {
+      if (!boton) return;
+
+      var abierto = !!(
+        overlay &&
+        !overlay.hidden &&
+        overlay.classList.contains('rx-apuntes-open')
+      );
+
+      boton.style.display = abierto ? 'none' : 'flex';
+    }
+
+    sincronizarBoton();
+
+    if (overlay && window.MutationObserver) {
+      new MutationObserver(sincronizarBoton).observe(overlay, {
+        attributes: true,
+        attributeFilter: ['hidden', 'class', 'style']
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', instalar, { once: true });
+  } else {
+    instalar();
+  }
+})();
+</script>
+<!-- FIN REPARACIÓN UNIVERSAL DEL MÓDULO APUNTES -->
    
 </body>
 </html>
