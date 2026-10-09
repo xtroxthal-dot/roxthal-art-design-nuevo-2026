@@ -60246,61 +60246,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
   }
 
 
-     /* ==========================================================
-     APUNTES
 
-     Abre el módulo Apuntes desde el Hub del Módulo 15.
-
-     El módulo Apuntes ya existe más arriba en este mismo
-     index.html y expone:
-     
-       window.RoXThalApuntes.open()
-
-     No se crea otro módulo ni otro cliente Supabase.
-  ========================================================== */
-
-    
-function openNotes() {
-  const overlay = document.getElementById('rx-apuntes-overlay');
-  const api = window.RoXThalApuntes;
-
-  if (!overlay || !api || typeof api.open !== 'function') {
-    console.error('[RoXThal] No se encuentra el módulo Apuntes.');
-    alert('Apuntes no está disponible. Recarga la aplicación e inténtalo de nuevo.');
-    return;
-  }
-
-  // Sacar el panel del contenedor del Módulo 15.
-  if (overlay.parentElement !== document.body) {
-    document.body.appendChild(overlay);
-  }
-
-  // Cerrar la capa del Atelier para que no tape Apuntes.
-  if (typeof closeSchoolAtelier === 'function') {
-    closeSchoolAtelier();
-  }
-
-  // Abrir el panel original después de cerrar el Atelier.
-  setTimeout(function () {
-    try {
-      const resultado = api.open();
-
-      overlay.hidden = false;
-      overlay.style.display = 'block';
-      overlay.classList.add('rx-apuntes-open');
-      overlay.setAttribute('aria-hidden', 'false');
-
-      if (resultado && typeof resultado.catch === 'function') {
-        resultado.catch(function (error) {
-          console.error('[RoXThal] Error al abrir Apuntes:', error);
-        });
-      }
-    } catch (error) {
-      console.error('[RoXThal] Error al abrir Apuntes:', error);
-      alert('No se pudo abrir Apuntes. Inténtalo de nuevo.');
-    }
-  }, 250);
-}
 
 
 
