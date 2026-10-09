@@ -69787,84 +69787,94 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 <!-- FIN ROXTHAL APUNTES NUEVO V2 -->
 
 
-<!-- ROXTHAL: COMPARTIR Y ABRIR APUNTES NUEVO -->
+
+<!-- ROXTHAL APUNTES V2: COMPARTIR SOLO ADMIN -->
 <style>
-#rxp2-share-button {
-  position: fixed;
-  right: 14px;
-  bottom: 18px;
-  z-index: 2147483640;
-  padding: 13px 17px;
-  border: 1px solid #d9b66f;
-  border-radius: 28px;
+#rxp2-admin #rxp2-share-admin {
   background: #211c27;
   color: #f5d797;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 4px 16px #0005;
-  cursor: pointer;
+  border: 1px solid #d9b66f;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: bold;
 }
 </style>
-
-<button id="rxp2-share-button" type="button">
-  📤 Compartir Apuntes
-</button>
 
 <script>
 (function () {
   "use strict";
 
-  const directLink =
+  const enlace =
     "https://xtroxthal-dot.github.io/" +
     "roxthal-art-design-nuevo-2026/#apuntes";
 
-  // Abre el módulo NUEVO, no el antiguo.
-  function openNotesFromLink() {
-    if (window.location.hash !== "#apuntes") return;
+  function instalarBoton() {
+    const admin = document.getElementById("rxp2-admin");
 
-    const module = window.RoXThalApuntesNuevo;
+    if (!admin || admin.dataset.shareInstalled) return;
 
-    if (module && typeof module.open === "function") {
-      module.open();
+    admin.dataset.shareInstalled = "1";
+
+    const boton = document.createElement("button");
+    boton.id = "rxp2-share-admin";
+    boton.type = "button";
+    boton.textContent = "📤 Compartir módulo Apuntes";
+
+    boton.addEventListener("click", async function () {
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "RoXThal — Apuntes",
+            text: "Acceso al módulo Apuntes de RoXThal Art Design",
+            url: enlace
+          });
+        } else {
+          window.prompt("Copia este enlace para compartir:", enlace);
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          window.prompt("Copia este enlace para compartir:", enlace);
+        }
+      }
+    });
+
+    const cabecera = admin.querySelector(".rxp2-card");
+    if (cabecera) {
+      cabecera.appendChild(boton);
     } else {
-      setTimeout(openNotesFromLink, 300);
+      admin.prepend(boton);
     }
   }
 
-  // Abrir automáticamente si entran con el enlace directo.
-  openNotesFromLink();
+  // El botón queda dentro del área exclusiva del administrador.
+  instalarBoton();
 
-  window.addEventListener("hashchange", openNotesFromLink);
-
-  // Compartir mediante las opciones del teléfono.
-  const button = document.getElementById("rxp2-share-button");
-
-  button.addEventListener("click", async function () {
-    const shareData = {
-      title: "RoXThal — Apuntes",
-      text: "Entra directamente al módulo Apuntes de RoXThal Art Design:",
-      url: directLink
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else if (navigator.clipboard &&
-                 navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(directLink);
-        alert("Enlace copiado. Ya puedes compartirlo.");
-      } else {
-        window.prompt("Copia este enlace para compartirlo:", directLink);
-      }
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        window.prompt("Copia el enlace de Apuntes:", directLink);
-      }
-    }
+  const observador = new MutationObserver(instalarBoton);
+  observador.observe(document.body, {
+    childList: true,
+    subtree: true
   });
+
+  // Si se abre con el enlace directo, intenta abrir Apuntes V2.
+  if (location.hash === "#apuntes") {
+    let intentos = 0;
+    const temporizador = setInterval(function () {
+      intentos++;
+
+      const modulo = window.RoXThalApuntesNuevo;
+
+      if (modulo && typeof modulo.open === "function") {
+        clearInterval(temporizador);
+        modulo.open();
+      } else if (intentos >= 30) {
+        clearInterval(temporizador);
+      }
+    }, 300);
+  }
 })();
 </script>
-<!-- FIN COMPARTIR APUNTES NUEVO -->
+<!-- FIN COMPARTIR SOLO ADMIN -->
+
 
    
 </body>
