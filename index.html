@@ -66629,168 +66629,252 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 </script>
 <!-- FIN COMPARTIR SOLO ADMIN -->
 
+<!-- ROXTHAL V2: MOSTRAR / OCULTAR APUNTES -->
+<style>
+  #rxp2-admin-list .rxp2-visibility-btn {
+    display: block;
+    width: 100%;
+    margin-top: 9px;
+    padding: 11px 14px;
+    border: 1px solid #c9a96e;
+    border-radius: 10px;
+    background: #211c27;
+    color: #f5d797;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #rxp2-admin-list .rxp2-visibility-status {
+    margin: 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+</style>
 
-<!-- ROXTHAL: CONTROL DE VISIBILIDAD DE APUNTES -->
 <script>
 (function () {
   "use strict";
 
-  if (window.__rxApuntesVisibilidadInstalado) return;
-  window.__rxApuntesVisibilidadInstalado = true;
+  if (window.__rxp2VisibilityV1) return;
+  window.__rxp2VisibilityV1 = true;
 
-  function cliente() {
-    return window.RoXThalApuntes &&
-      window.RoXThalApuntes.supabase;
+  const API =
+    "https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-apuntes-publico";
+
+  const KEY =
+    "sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J";
+
+  const LIST_ID = "rxp2-admin-list";
+  const ADMIN_ID = "rxp2-admin";
+  const installed = new WeakSet();
+
+  let visibility = {};
+  let refreshing = false;
+
+  async function getAdminToken() {
+    if (!window.db || !window.db.auth) {
+      throw new Error("No se encuentra la sesión de RoXThal.");
+    }
+
+    const result = await window.db.auth.getSession();
+    const session = result.data && result.data.session;
+
+    if (result.error || !session || !session.access_token) {
+      throw new Error("Inicia sesión como administrador.");
+    }
+
+    const userResult = await window.db.auth.getUser();
+
+    if (
+      userResult.error ||
+      !userResult.data.user ||
+      userResult.data.user.app_metadata?.role !== "admin"
+    ) {
+      throw new Error("Esta función es exclusiva del administrador.");
+    }
+
+    return session.access_token;
   }
 
-  async function consultar(button) {
+  async function api(action, data) {
+    const token = await getAdminToken();
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": KEY,
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        action: action,
+        ...data
+      })
+    });
+
+    let result = {};
     try {
-      const sb = cliente();
-      if (!sb) throw new Error("Supabase no está disponible.");
+      result = await response.json();
+    } catch (_) {}
 
-      const { data, error } = await sb
-        .from("apuntes")
-        .select("published")
-        .eq("id", button.dataset.noteId)
-        .single();
+    if (!response.ok || result.error || result.ok === false) {
+      throw new Error(
+        result.error || "No se pudo completar la operación."
+      );
+    }
 
-      if (error) throw error;
+    return result;
+  }
 
-      button.dataset.published = String(!!data.published);
-      button.textContent = data.published
-        ? "🙈 Ocultar a alumnos"
-        : "👁️ Mostrar a alumnos";
-      button.disabled = false;
-      button.title = "Cambia la visibilidad de este apunte";
-    } catch (e) {
-      console.error("[RoXThal Apuntes] Consulta:", e);
-      button.textContent = "Error al consultar";
-      button.disabled = true;
+  function getNoteId(card) {
+    const deleteButton = card.querySelector("[data-rxp2-delete]");
+    return deleteButton
+      ? deleteButton.getAttribute("data-rxp2-delete")
+      : null;
+  }
+
+  function updateButton(button, visible) {
+    button.dataset.visible = String(visible);
+    button.textContent = visible
+      ? "🙈 Ocultar a alumnos"
+      : "👁️ Mostrar a alumnos";
+    button.disabled = false;
+
+    const card = button.closest(".rxp2-card");
+    const label = card &&
+      card.querySelector(".rxp2-visibility-status");
+
+    if (label) {
+      label.textContent = visible
+        ? "● VISIBLE PARA ALUMNOS"
+        : "● OCULTO PARA ALUMNOS";
+      label.style.color = visible ? "#16803c" : "#b45309";
     }
   }
 
-  function instalar(deleteButton) {
-    if (!deleteButton || deleteButton.dataset.rxVisibilityReady) return;
+  function installButton(card) {
+    if (!card || installed.has(card)) return;
 
-    const noteId = deleteButton.getAttribute("data-rx-delete-apunte");
-    if (!noteId) return;
+    const id = getNoteId(card);
+    if (!id) return;
 
-    const card = deleteButton.closest(".rx-ap-note-item");
-    if (!card) return;
-
-    deleteButton.dataset.rxVisibilityReady = "1";
+    installed.add(card);
 
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "rx-ap-btn";
-    button.dataset.rxVisibilityButton = "1";
-    button.dataset.noteId = noteId;
+    button.className = "rxp2-visibility-btn";
+    button.dataset.rxp2Visibility = id;
     button.textContent = "Consultando visibilidad…";
     button.disabled = true;
-    button.style.cssText =
-      "display:block;width:100%;margin-top:8px;white-space:normal;";
 
-    deleteButton.insertAdjacentElement("afterend", button);
-    consultar(button);
+    const label = document.createElement("div");
+    label.className = "rxp2-visibility-status";
+    label.textContent = "Consultando estado…";
+
+    const deleteButton = card.querySelector("[data-rxp2-delete]");
+    deleteButton.insertAdjacentElement("afterend", label);
+    label.insertAdjacentElement("afterend", button);
+
+    if (Object.prototype.hasOwnProperty.call(visibility, id)) {
+      updateButton(button, visibility[id]);
+    }
   }
 
-  async function cambiar(button) {
-    const sb = cliente();
-    if (!sb) {
-      alert("No se ha conectado con Supabase.");
-      return;
-    }
-
-    button.disabled = true;
+  async function refreshList() {
+    if (refreshing) return;
+    refreshing = true;
 
     try {
-      const { data: auth, error: authError } =
-        await sb.auth.getUser();
+      const result = await api("admin_list_notes", {});
+      visibility = {};
 
-      if (
-        authError ||
-        !auth.user ||
-        auth.user.app_metadata?.role !== "admin"
-      ) {
-        throw new Error("Acción exclusiva del administrador autenticado.");
-      }
+      (result.notes || []).forEach(function (note) {
+        visibility[note.id] = note.visible !== false;
+      });
 
-      const nuevoEstado = button.dataset.published !== "true";
+      const list = document.getElementById(LIST_ID);
+      if (!list) return;
 
-      const { data, error } = await sb
-        .from("apuntes")
-        .update({ published: nuevoEstado })
-        .eq("id", button.dataset.noteId)
-        .select("id,published")
-        .single();
+      list.querySelectorAll(".rxp2-card").forEach(function (card) {
+        installButton(card);
 
-      if (error) throw error;
-      if (!data) throw new Error("Supabase no confirmó el cambio.");
-
-      button.dataset.published = String(!!data.published);
-      button.textContent = data.published
-        ? "🙈 Ocultar a alumnos"
-        : "👁️ Mostrar a alumnos";
-
-      alert(data.published
-        ? "Apunte visible para el alumno."
-        : "Apunte oculto para el alumno.");
-    } catch (e) {
-      console.error("[RoXThal Apuntes] Cambio:", e);
-      alert("No se pudo cambiar la visibilidad: " +
-        (e.message || "error desconocido"));
-      await consultar(button);
+        const button = card.querySelector("[data-rxp2-visibility]");
+        if (button) {
+          const id = button.dataset.rxp2Visibility;
+          if (Object.prototype.hasOwnProperty.call(visibility, id)) {
+            updateButton(button, visibility[id]);
+          }
+        }
+      });
+    } catch (error) {
+      console.error("[RoXThal Apuntes] Visibilidad:", error);
     } finally {
-      button.disabled = false;
+      refreshing = false;
     }
   }
 
-  function buscar(root) {
-    if (!root) return;
-
-    if (
-      root.nodeType === 1 &&
-      root.matches?.("[data-rx-delete-apunte]")
-    ) {
-      instalar(root);
-    }
-
-    if (root.querySelectorAll) {
-      root.querySelectorAll("[data-rx-delete-apunte]")
-        .forEach(instalar);
-    }
-  }
-
-  document.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-rx-visibility-button]");
+  document.addEventListener("click", async function (event) {
+    const button = event.target.closest("[data-rxp2-visibility]");
     if (!button) return;
 
     event.preventDefault();
     event.stopPropagation();
-    cambiar(button);
+
+    if (button.disabled) return;
+    button.disabled = true;
+
+    const id = button.dataset.rxp2Visibility;
+    const nextVisible = button.dataset.visible !== "true";
+
+    try {
+      await api("admin_set_note_visibility", {
+        note_id: id,
+        visible: nextVisible
+      });
+
+      visibility[id] = nextVisible;
+      updateButton(button, nextVisible);
+
+      alert(nextVisible
+        ? "El apunte vuelve a estar visible para los alumnos."
+        : "El apunte está oculto para los alumnos.");
+
+      await refreshList();
+    } catch (error) {
+      console.error("[RoXThal Apuntes] Cambio:", error);
+      alert("No se pudo cambiar la visibilidad: " + error.message);
+      button.disabled = false;
+    }
   }, true);
 
-  function iniciar() {
-    buscar(document);
+  function start() {
+    const admin = document.getElementById(ADMIN_ID);
+    const list = document.getElementById(LIST_ID);
 
-    new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        mutation.addedNodes.forEach(buscar);
-      });
-    }).observe(document.body, {
+    if (!admin || !list) return;
+
+    refreshList();
+
+    new MutationObserver(function () {
+      const currentList = document.getElementById(LIST_ID);
+      if (!currentList) return;
+
+      currentList.querySelectorAll(".rxp2-card").forEach(installButton);
+    }).observe(list, {
       childList: true,
       subtree: true
     });
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", iniciar, { once: true });
+    document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {
-    iniciar();
+    start();
   }
 })();
 </script>
-<!-- FIN ROXTHAL: CONTROL DE VISIBILIDAD DE APUNTES -->
+<!-- FIN ROXTHAL V2: MOSTRAR / OCULTAR APUNTES -->
+
+   
    
 </body>
 </html>
