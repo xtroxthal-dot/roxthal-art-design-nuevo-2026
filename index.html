@@ -69484,6 +69484,372 @@ ${SOLICITUD_URL}`;
 
 
 
+<!-- ROXTHAL APUNTES NUEVO E INDEPENDIENTE V2 -->
+<style>
+#rxp2-overlay{position:fixed;inset:0;z-index:2147483000;background:#101014;color:#f5f5f5;display:none;overflow:auto;font-family:Arial,sans-serif}
+#rxp2-overlay *{box-sizing:border-box}
+#rxp2-overlay .rxp2-wrap{max-width:900px;margin:auto;padding:16px}
+#rxp2-overlay .rxp2-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #444;padding-bottom:14px}
+#rxp2-overlay h2,#rxp2-overlay h3{margin:10px 0}
+#rxp2-overlay .rxp2-card{background:#202026;border:1px solid #41414a;border-radius:14px;padding:14px;margin:14px 0}
+#rxp2-overlay input,#rxp2-overlay textarea{width:100%;padding:12px;border-radius:9px;border:1px solid #666;background:#111;color:white;margin:6px 0 12px;font:inherit}
+#rxp2-overlay textarea{min-height:140px;resize:vertical}
+#rxp2-overlay button{padding:10px 14px;border:1px solid #777;border-radius:9px;background:#303039;color:white;font-weight:700;cursor:pointer;margin:4px 4px 4px 0}
+#rxp2-overlay button.primary{background:#a626d3;border-color:#a626d3}
+#rxp2-overlay button.danger{background:#8f2424}
+#rxp2-overlay .rxp2-muted{color:#c4c4ce;font-size:13px}
+#rxp2-overlay .rxp2-photo{width:100%;max-width:220px;max-height:220px;object-fit:contain;border-radius:8px;margin:5px}
+#rxp2-overlay .rxp2-note-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+#rxp2-overlay .rxp2-hidden{display:none!important}
+#rxp2-status{padding:10px 0;color:#f2d37c;white-space:pre-wrap}
+</style>
+
+<div id="rxp2-overlay" aria-hidden="true">
+  <div class="rxp2-wrap">
+    <div class="rxp2-top">
+      <div>
+        <h2>📒 Apuntes · RoXThal Art Design</h2>
+        <div class="rxp2-muted">Módulo independiente</div>
+      </div>
+      <button id="rxp2-close">✕ Cerrar</button>
+    </div>
+    <div id="rxp2-status" role="status"></div>
+    <section id="rxp2-login" class="rxp2-card">
+      <h3>Acceso a los apuntes</h3>
+      <p>Introduce la contraseña compartida para consultar los apuntes publicados.</p>
+      <input id="rxp2-password" type="password" autocomplete="current-password" placeholder="Contraseña de lectura">
+      <button class="primary" id="rxp2-login-btn">Entrar</button>
+    </section>
+    <section id="rxp2-reader" class="rxp2-hidden">
+      <div class="rxp2-card">
+        <h3>Apuntes publicados</h3>
+        <button id="rxp2-refresh">Actualizar apuntes</button>
+        <button id="rxp2-logout">Cerrar sesión de lectura</button>
+      </div>
+      <div id="rxp2-reader-list"></div>
+    </section>
+    <section id="rxp2-admin" class="rxp2-hidden">
+      <div class="rxp2-card">
+        <h3>🔐 Administración</h3>
+        <p class="rxp2-muted">Solo el administrador autenticado de RoXThal puede gestionar el contenido.</p>
+        <label for="rxp2-new-password">Nueva contraseña compartida de lectura</label>
+        <input id="rxp2-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres">
+        <button class="primary" id="rxp2-set-password">Guardar contraseña</button>
+        <button id="rxp2-admin-refresh">Actualizar lista de apuntes</button>
+      </div>
+      <div class="rxp2-card">
+        <h3 id="rxp2-editor-heading">Crear nuevo apunte</h3>
+        <input id="rxp2-title" maxlength="180" placeholder="Título del apunte">
+        <textarea id="rxp2-content" placeholder="Escribe aquí el contenido del apunte"></textarea>
+        <label for="rxp2-photos">Fotografías desde el móvil</label>
+        <input id="rxp2-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+        <div class="rxp2-muted">Puedes añadir hasta 12 fotografías por guardado. Cada imagen debe pesar menos de 8 MB.</div>
+        <div id="rxp2-photo-preview"></div>
+        <button class="primary" id="rxp2-save">Guardar apunte</button>
+        <button id="rxp2-cancel-edit" class="rxp2-hidden">Cancelar edición</button>
+        <button id="rxp2-clear">Limpiar formulario</button>
+      </div>
+      <div class="rxp2-card">
+        <h3>Apuntes guardados</h3>
+        <div id="rxp2-admin-list"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+if(window.__rxp2Started)return;
+window.__rxp2Started=true;
+
+const API='https://hxtzlrsmjwrpqgjgbzyl.supabase.co/functions/v1/roxthal-apuntes-publico';
+const KEY='sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+const $=id=>document.getElementById(id);
+const overlay=$('rxp2-overlay');
+let readerToken='';
+let editingId='';
+let adminMode=false;
+let selectedFiles=[];
+let loading=false;
+
+function esc(v){
+ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function status(message){$('rxp2-status').textContent=message||'';}
+function show(el,on){$(el).classList.toggle('rxp2-hidden',!on);}
+function openPanel(){
+ overlay.style.display='block';
+ overlay.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ checkAdmin();
+}
+function closePanel(){
+ overlay.style.display='none';
+ overlay.setAttribute('aria-hidden','true');
+ document.body.style.overflow='';
+}
+async function adminUser(){
+ try{
+  if(window.RoXThalAdmin && typeof window.RoXThalAdmin.getUser==='function'){
+   const u=await window.RoXThalAdmin.getUser();
+   if(u&&u.app_metadata&&u.app_metadata.role==='admin')return u;
+  }
+  if(window.db&&window.db.auth){
+   const r=await window.db.auth.getUser();
+   const u=r&&r.data&&r.data.user;
+   if(u&&u.app_metadata&&u.app_metadata.role==='admin')return u;
+  }
+ }catch(e){}
+ return null;
+}
+async function adminToken(){
+ if(!window.db||!window.db.auth)throw new Error('No se encuentra la sesión de autenticación de RoXThal.');
+ const r=await window.db.auth.getSession();
+ const token=r&&r.data&&r.data.session&&r.data.session.access_token;
+ if(!token)throw new Error('Inicia sesión como administrador en RoXThal y vuelve a abrir este módulo.');
+ return token;
+}
+async function api(action,data={},asAdmin=false){
+ const headers={'Content-Type':'application/json','apikey':KEY};
+ if(asAdmin)headers.Authorization='Bearer '+await adminToken();
+ if(!asAdmin&&readerToken)headers['x-rx-session']=readerToken;
+ const res=await fetch(API,{method:'POST',headers,body:JSON.stringify({action,...data})});
+ let result={};
+ try{result=await res.json();}catch(e){}
+ if(!res.ok||result.error||result.ok===false)throw new Error(result.error||result.message||('Error del servidor ('+res.status+')'));
+ return result;
+}
+async function checkAdmin(){
+ const u=await adminUser();
+ adminMode=!!u;
+ show('rxp2-admin',adminMode);
+ show('rxp2-login',!readerToken);
+ show('rxp2-reader',!!readerToken);
+ if(adminMode)loadAdminNotes();
+ else if(readerToken)loadReaderNotes();
+}
+function notePhotos(photos){
+ return (photos||[]).map(p=>p.url?'<img class="rxp2-photo" loading="lazy" src="'+esc(p.url)+'" alt="Fotografía del apunte">':'').join('');
+}
+function noteCard(n,admin){
+ return '<article class="rxp2-card"><h3>'+esc(n.title||'Apunte sin título')+'</h3>'+
+ '<div class="rxp2-note-text">'+esc(n.content||'')+'</div>'+
+ '<div>'+notePhotos(n.photos)+'</div>'+
+ '<div class="rxp2-muted">Actualizado: '+esc(n.updated_at||n.created_at||'')+'</div>'+
+ '<button class="primary" data-rxp2-download="'+esc(n.id)+'">Descargar apunte con fotografías</button>'+
+ (admin?'<button data-rxp2-edit="'+esc(n.id)+'">Editar</button><button class="danger" data-rxp2-delete="'+esc(n.id)+'">Eliminar</button>':'')+
+ '</article>';
+}
+async function loadReaderNotes(){
+ try{
+  status('Cargando apuntes…');
+  const r=await api('reader_notes');
+  const notes=r.notes||[];
+  $('rxp2-reader-list').innerHTML=notes.length?notes.map(n=>noteCard(n,false)).join(''):'<div class="rxp2-card">Todavía no hay apuntes publicados.</div>';
+  status('');
+ }catch(e){
+  readerToken='';
+  try{localStorage.removeItem('rxp2_reader_token');}catch(x){}
+  show('rxp2-reader',false);show('rxp2-login',true);
+  status(e.message);
+ }
+}
+async function loadAdminNotes(){
+ try{
+  status('Cargando apuntes guardados…');
+  const r=await api('admin_list_notes',{},true);
+  const notes=r.notes||[];
+  $('rxp2-admin-list').innerHTML=notes.length?notes.map(n=>noteCard(n,true)).join(''):'<p class="rxp2-muted">Aún no hay apuntes. Crea el primero arriba.</p>';
+  status('');
+ }catch(e){status(e.message);}
+}
+function clearEditor(){
+ editingId='';
+ $('rxp2-title').value='';
+ $('rxp2-content').value='';
+ $('rxp2-photos').value='';
+ selectedFiles=[];
+ $('rxp2-photo-preview').innerHTML='';
+ $('rxp2-editor-heading').textContent='Crear nuevo apunte';
+ $('rxp2-save').textContent='Guardar apunte';
+ show('rxp2-cancel-edit',false);
+}
+function readFile(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onload=()=>resolve({name:file.name,type:file.type,data:reader.result});
+  reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));
+  reader.readAsDataURL(file);
+ });
+}
+$('rxp2-photos').addEventListener('change',()=>{
+ const files=Array.from($('rxp2-photos').files||[]);
+ if(files.length>12){status('Selecciona como máximo 12 fotografías por guardado.');$('rxp2-photos').value='';selectedFiles=[];return;}
+ const valid=files.filter(f=>/^image\/(jpeg|png|webp|gif)$/.test(f.type)&&f.size<=8*1024*1024);
+ if(valid.length!==files.length)status('Se omitieron archivos que no son imágenes compatibles o superan 8 MB.');
+ selectedFiles=valid;
+ $('rxp2-photo-preview').innerHTML=valid.map(f=>'<div class="rxp2-muted">'+esc(f.name)+' ('+Math.ceil(f.size/1024)+' KB)</div>').join('');
+});
+$('rxp2-close').addEventListener('click',closePanel);
+$('rxp2-login-btn').addEventListener('click',async()=>{
+ if(loading)return;
+ const password=$('rxp2-password').value;
+ if(!password){status('Escribe la contraseña de lectura.');return;}
+ loading=true;
+ try{
+  status('Comprobando contraseña…');
+  const r=await api('reader_login',{password});
+  if(!r.token)throw new Error('El servidor no devolvió una sesión de lectura.');
+  readerToken=r.token;
+  try{localStorage.setItem('rxp2_reader_token',readerToken);}catch(e){}
+  $('rxp2-password').value='';
+  show('rxp2-login',false);show('rxp2-reader',true);
+  await loadReaderNotes();
+ }catch(e){status(e.message);}
+ finally{loading=false;}
+});
+$('rxp2-refresh').addEventListener('click',loadReaderNotes);
+$('rxp2-admin-refresh').addEventListener('click',loadAdminNotes);
+$('rxp2-logout').addEventListener('click',()=>{
+ readerToken='';
+ try{localStorage.removeItem('rxp2_reader_token');}catch(e){}
+ show('rxp2-reader',false);show('rxp2-login',true);status('Sesión de lectura cerrada.');
+});
+$('rxp2-set-password').addEventListener('click',async()=>{
+ const password=$('rxp2-new-password').value;
+ if(password.length<8){status('La contraseña debe tener al menos 8 caracteres.');return;}
+ try{
+  await api('admin_set_password',{password},true);
+  $('rxp2-new-password').value='';
+  readerToken='';
+  try{localStorage.removeItem('rxp2_reader_token');}catch(e){}
+  show('rxp2-reader',false);show('rxp2-login',true);
+  status('Contraseña guardada. Las sesiones de lectura anteriores se han cerrado.');
+ }catch(e){status(e.message);}
+});
+$('rxp2-save').addEventListener('click',async()=>{
+ if(loading)return;
+ const title=$('rxp2-title').value.trim();
+ const content=$('rxp2-content').value.trim();
+ if(!title){status('Escribe el título del apunte.');return;}
+ if(!content&&!selectedFiles.length){status('Añade texto o al menos una fotografía.');return;}
+ loading=true;
+ try{
+  status('Guardando apunte y fotografías…');
+  const photos=await Promise.all(selectedFiles.map(readFile));
+  if(editingId){
+   await api('admin_update_note',{note_id:editingId,title,content,photos},true);
+  }else{
+   await api('admin_save_note',{title,content,photos},true);
+  }
+  clearEditor();
+  status('Apunte guardado correctamente.');
+  await loadAdminNotes();
+ }catch(e){status('No se pudo guardar el apunte: '+e.message);}
+ finally{loading=false;}
+});
+$('rxp2-clear').addEventListener('click',clearEditor);
+$('rxp2-cancel-edit').addEventListener('click',clearEditor);
+
+document.addEventListener('click',async ev=>{
+ const b=ev.target.closest('[data-rxp2-edit],[data-rxp2-delete],[data-rxp2-download]');
+ if(!b||!overlay.contains(b))return;
+ if(b.hasAttribute('data-rxp2-edit')){
+  try{
+   const r=await api('admin_list_notes',{},true);
+   const n=(r.notes||[]).find(x=>x.id===b.getAttribute('data-rxp2-edit'));
+   if(!n)throw new Error('No se encuentra ese apunte.');
+   editingId=n.id;
+   $('rxp2-title').value=n.title||'';
+   $('rxp2-content').value=n.content||'';
+   $('rxp2-photos').value='';
+   selectedFiles=[];
+   $('rxp2-photo-preview').innerHTML='<p class="rxp2-muted">Las fotografías existentes se conservan. Las nuevas que selecciones se añadirán al guardar.</p>'+notePhotos(n.photos);
+   $('rxp2-editor-heading').textContent='Editar apunte';
+   $('rxp2-save').textContent='Guardar cambios';
+   show('rxp2-cancel-edit',true);
+   $('rxp2-title').scrollIntoView({behavior:'smooth',block:'center'});
+   status('Editando: '+n.title);
+  }catch(e){status(e.message);}
+ }
+ if(b.hasAttribute('data-rxp2-delete')){
+  const id=b.getAttribute('data-rxp2-delete');
+  if(!confirm('¿Eliminar definitivamente este apunte y sus fotografías?'))return;
+  try{
+   await api('admin_delete_note',{note_id:id},true);
+   if(editingId===id)clearEditor();
+   status('Apunte eliminado.');
+   await loadAdminNotes();
+  }catch(e){status('No se pudo eliminar: '+e.message);}
+ }
+ if(b.hasAttribute('data-rxp2-download')){
+  const id=b.getAttribute('data-rxp2-download');
+  try{
+   status('Preparando descarga del apunte…');
+   const r=adminMode?await api('admin_list_notes',{},true):await api('reader_notes');
+   const n=(r.notes||[]).find(x=>x.id===id);
+   if(!n)throw new Error('No se encuentra el apunte para descargar.');
+   let imgs='';
+   for(const p of (n.photos||[])){
+    if(!p.url)continue;
+    try{
+     const response=await fetch(p.url);
+     if(!response.ok)throw new Error('imagen');
+     const blob=await response.blob();
+     const data=await new Promise((resolve,reject)=>{
+      const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(blob);
+     });
+     imgs+='<p><img style="max-width:100%;height:auto" src="'+data+'" alt="Fotografía del apunte"></p>';
+    }catch(e){
+     imgs+='<p><a href="'+esc(p.url)+'">Abrir fotografía (enlace temporal)</a></p>';
+    }
+   }
+   const html='<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(n.title)+'</title><body style="font:16px Arial;max-width:900px;margin:30px auto;padding:16px"><h1>'+esc(n.title)+'</h1><p style="white-space:pre-wrap;line-height:1.6">'+esc(n.content||'')+'</p>'+imgs+'<hr><p>RoXThal Art Design · Apuntes</p></body></html>';
+   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');
+   a.href=url;a.download=(n.title||'apunte').replace(/[\\/:*?"<>|]+/g,'_').slice(0,90)+'.html';
+   document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),30000);
+   status('Descarga preparada. Si una fotografía no se pudo incrustar, el archivo incluye su enlace temporal.');
+  }catch(e){status('No se pudo preparar la descarga: '+e.message);}
+ }
+});
+
+function addHomeCard(){
+ const grid=document.getElementById('moduleGrid');
+ if(!grid||grid.querySelector('[data-rxp2-home-card]'))return;
+ const card=document.createElement('article');
+ card.className='module';
+ card.setAttribute('data-rxp2-home-card','');
+ card.setAttribute('role','button');
+ card.setAttribute('tabindex','0');
+ card.style.cursor='pointer';
+ card.innerHTML='<div class="module-content"><div class="module-num">NUEVO MÓDULO</div><h3>📒 Apuntes</h3><p>Apuntes, textos y fotografías con acceso protegido.</p><button class="btn btn-primary btn-small" type="button">Abrir Apuntes</button></div>';
+ const click=()=>openPanel();
+ card.addEventListener('click',click);
+ card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPanel();}});
+ grid.appendChild(card);
+}
+function installCardObserver(){
+ addHomeCard();
+ const grid=document.getElementById('moduleGrid');
+ if(grid&&window.MutationObserver){
+  const observer=new MutationObserver(()=>addHomeCard());
+  observer.observe(grid,{childList:true});
+ }
+ setInterval(addHomeCard,1800);
+}
+try{readerToken=localStorage.getItem('rxp2_reader_token')||'';}catch(e){}
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded',installCardObserver);
+}else installCardObserver();
+window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
+})();
+</script>
+<!-- FIN ROXTHAL APUNTES NUEVO V2 -->
+
 
    
 </body>
