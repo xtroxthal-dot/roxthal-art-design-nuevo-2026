@@ -60262,37 +60262,41 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     
 function openNotes(){
 
-    /* Apuntes se abre como overlay independiente.
-     No cerramos School Atelier ni modificamos
-     el estado de M15. */
+const api = window.RoXThalApuntes;
+const overlay = document.getElementById('rx-apuntes-overlay');
 
-  if(
-    window.RoXThalApuntes &&
-    typeof window.RoXThalApuntes.open ===
-    "function"
-  ){
+if (!api || typeof api.open !== 'function' || !overlay) {
+console.error('[RoXThal] Apuntes no está inicializado correctamente.');
+alert('Apuntes no está disponible. Recarga la aplicación e inténtalo de nuevo.');
+return;
+}
 
-    try{
+try {
+// El panel debe estar directamente en el documento,
+// fuera de cualquier contenedor del Módulo 15.
+if (overlay.parentElement !== document.body) {
+document.body.appendChild(overlay);
+}
 
-      window.RoXThalApuntes.open();
+// Abrir el módulo original, conservando su lógica y sus datos.
+const resultado = api.open();
 
-    }catch(error){
+// Reforzar la visibilidad después de iniciar la apertura.
+overlay.hidden = false;
+overlay.style.display = 'block';
+overlay.classList.add('rx-apuntes-open');
+overlay.setAttribute('aria-hidden', 'false');
 
-      console.error(
-        "[RoXThal Atelier] Error al abrir Apuntes:",
-        error
-      );
+if (resultado && typeof resultado.catch === 'function') {
+  resultado.catch(function(error) {
+    console.error('[RoXThal] Error al abrir Apuntes:', error);
+  });
+}
 
-    }
-
-    return;
-
-  }
-
-  console.error(
-    "[RoXThal Atelier] El módulo Apuntes no está disponible."
-  );
-
+} catch (error) {
+console.error('[RoXThal] Error al abrir Apuntes:', error);
+alert('No se pudo abrir Apuntes. Revisa la conexión e inténtalo de nuevo.');
+}
 }
 
   /* ==========================================================
