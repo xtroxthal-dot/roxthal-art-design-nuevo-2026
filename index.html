@@ -66874,7 +66874,128 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 </script>
 <!-- FIN ROXTHAL V2: MOSTRAR / OCULTAR APUNTES -->
 
-   
+   <!-- ROXTHAL: CONSULTA DIRECTA DE SERVICIOS -->
+<style id="roxthal-service-inquiry-style">
+  .rox-service-inquiry {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border: 1px solid #f2c400;
+    border-radius: 9px;
+    background: #f2c400;
+    color: #080808;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .rox-service-inquiry:hover {
+    background: #ffe04a;
+  }
+</style>
+
+<script id="roxthal-service-inquiry-script">
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_SERVICE_INQUIRY_V1__) return;
+  window.__ROXTHAL_SERVICE_INQUIRY_V1__ = true;
+
+  function prepararServicios() {
+    const box = document.getElementById('servicesList');
+    if (!box) return;
+
+    box.querySelectorAll('.rox-service-item').forEach(function (item) {
+      const content = item.querySelector('.rox-service-content');
+      const title = item.querySelector('.rox-service-title span');
+
+      if (!content || !title) return;
+      if (content.querySelector('.rox-service-inquiry')) return;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'rox-service-inquiry';
+      button.textContent = '📩 Consultar este servicio';
+      button.dataset.roxServiceName = title.textContent.trim();
+
+      content.appendChild(button);
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('.rox-service-inquiry');
+    if (!button) return;
+
+    const name = button.dataset.roxServiceName || '';
+    const openButton = document.getElementById('rxSolicitudButton');
+    const type = document.getElementById('rxSolTipo');
+    const detail = document.getElementById('rxSolDetalle');
+
+    if (!openButton || !type || !detail) {
+      alert('No se pudo abrir la solicitud. Inténtalo nuevamente.');
+      return;
+    }
+
+    const normalized = name.toLocaleLowerCase('es');
+
+    let desired = '';
+
+    if (/piercing/.test(normalized)) {
+      desired = 'Piercing — colocación';
+    } else if (/tatuaj|tattoo/.test(normalized)) {
+      desired = 'Tatuaje — consulta o presupuesto';
+    } else if (/dibujo|pintura/.test(normalized)) {
+      desired = 'Dibujo y pintura profesional';
+    } else if (/fileteado/.test(normalized)) {
+      desired = 'Fileteado';
+    } else if (/niños|ninos|infantil/.test(normalized)) {
+      desired = 'Taller de arte para niños';
+    } else if (/mural/.test(normalized)) {
+      desired = 'Murales';
+    } else if (/trampantojo/.test(normalized)) {
+      desired = 'Trampantojos';
+    } else if (/diseño|ilustración|ilustracion/.test(normalized)) {
+      desired = 'Diseño artístico / ilustración';
+    } else if (/iniciación|iniciacion/.test(normalized)) {
+      desired = 'Iniciación al tatuaje';
+    }
+
+    const option = Array.from(type.options).find(function (item) {
+      return item.text.trim() === desired;
+    });
+
+    type.value = option ? option.value : 'Otra consulta';
+
+    detail.value = 'Hola, quiero consultar por el siguiente servicio: ' +
+      name + '.\n\nMi consulta es: ';
+
+    openButton.click();
+  });
+
+  const observer = new MutationObserver(prepararServicios);
+
+  function iniciar() {
+    const box = document.getElementById('servicesList');
+
+    if (box) {
+      observer.observe(box, {
+        childList: true,
+        subtree: true
+      });
+
+      prepararServicios();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL: CONSULTA DIRECTA DE SERVICIOS -->
    
 </body>
 </html>
