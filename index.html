@@ -69940,6 +69940,633 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+<!-- =========================================================
+ ROXTHAL — REPARADOR DE 5 PORTADAS DE MÓDULOS
+ Trabaja con nosotros · Tienda · Apuntes
+ RoXThal Kids Art · Tattoo Flash Collection
+ Bloque independiente: pegar antes de </body>
+========================================================= -->
+<style id="rx5-cover-repair-css">
+#rx5-cover-admin{margin-top:18px}
+#rx5-cover-admin .rx5-cover-row{
+  display:grid;
+  grid-template-columns:82px minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  margin:10px 0;
+  border:1px solid var(--border,#333);
+  border-radius:12px;
+  background:var(--surface,#111);
+}
+#rx5-cover-admin .rx5-preview{
+  width:82px;
+  height:72px;
+  border-radius:9px;
+  object-fit:cover;
+  background:#080808;
+}
+#rx5-cover-admin .rx5-cover-row input[type=file]{
+  display:block;
+  width:100%;
+  max-width:100%;
+  margin:8px 0;
+  font-size:12px;
+}
+#rx5-cover-admin .rx5-cover-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+#rx5-cover-admin .rx5-cover-status{
+  font-size:12px;
+  color:var(--muted,#aaa);
+  overflow-wrap:anywhere;
+}
+.rx5-managed-cover{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  opacity:1!important;
+  z-index:0!important;
+  pointer-events:none!important;
+}
+@media(max-width:430px){
+  #rx5-cover-admin .rx5-cover-row{
+    grid-template-columns:66px minmax(0,1fr);
+    gap:9px;
+  }
+  #rx5-cover-admin .rx5-preview{
+    width:66px;
+    height:66px;
+  }
+}
+</style>
+
+<script id="rx5-cover-repair-script">
+(function(){
+  'use strict';
+
+  if(window.__RX5_COVER_REPAIR_V1__) return;
+  window.__RX5_COVER_REPAIR_V1__ = true;
+
+  const DEFAULT_IMAGE =
+    'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
+
+  const ITEMS = [
+    {
+      slot:'module_collaborators',
+      name:'Trabaja con nosotros',
+      aliases:['trabaja con nosotros','colaboradores'],
+      selectors:[
+        '#moduleGrid [data-go="collaborators"]',
+        '#moduleGrid [data-roxthal-collaborators]'
+      ]
+    },
+    {
+      slot:'module_store',
+      name:'Tienda',
+      aliases:['tienda'],
+      selectors:[
+        '#moduleGrid [data-go="store"]',
+        '#moduleGrid [data-roxthal-store]'
+      ]
+    },
+    {
+      slot:'module_apuntes',
+      name:'Apuntes',
+      aliases:['apuntes'],
+      selectors:[
+        '#moduleGrid [data-go="apuntes"]',
+        '#moduleGrid #rx-apuntes-home-card',
+        '#moduleGrid #rxp2-home-card',
+        '#moduleGrid [data-roxthal-apuntes]'
+      ]
+    },
+    {
+      slot:'module_kids_art',
+      name:'RoXThal Kids Art',
+      aliases:['roxthal kids art','kids art','arte infantil'],
+      selectors:[
+        '#rxka-home-card',
+        '#moduleGrid [data-go="kidsArt"]',
+        '#moduleGrid [data-roxthal-kids-art]'
+      ]
+    },
+    {
+      slot:'module_tattooFlash',
+      name:'Tattoo Flash Collection',
+      aliases:['tattoo flash collection','tattoo flash'],
+      selectors:[
+        '#moduleGrid [data-go="tattooFlash"]',
+        '#moduleGrid [data-roxthal-tattoo-flash]'
+      ]
+    }
+  ];
+
+  const bySlot = Object.fromEntries(
+    ITEMS.map(item => [item.slot,item])
+  );
+
+  let rowsBySlot = {};
+  let observer = null;
+  let loadingRows = false;
+
+  const $ = id => document.getElementById(id);
+
+  function safe(value){
+    if(typeof esc === 'function') return esc(String(value ?? ''));
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    })[ch]);
+  }
+
+  function notify(message){
+    if(typeof toast === 'function'){
+      toast(message);
+    }else{
+      alert(message);
+    }
+  }
+
+  function normalize(value){
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function makeId(){
+    if(window.crypto && typeof crypto.randomUUID === 'function'){
+      return crypto.randomUUID();
+    }
+    return Date.now().toString(36)+'_'+
+      Math.random().toString(36).slice(2);
+  }
+
+  function installAdminControls(){
+    const panel = $('adminAssets');
+    if(!panel) return false;
+
+    const host = panel.querySelector('.card');
+    if(!host) return false;
+
+    if(!$('rx5-cover-admin')){
+      const section = document.createElement('section');
+      section.id = 'rx5-cover-admin';
+      section.innerHTML = `
+        <div class="section-head">
+          <h3>Portadas adicionales de módulos</h3>
+          <p class="small">
+            Estas cinco portadas se administran por separado.
+            Seleccioná una imagen y guardá únicamente el módulo
+            que quieras cambiar.
+          </p>
+        </div>
+        <div id="rx5-cover-rows"></div>
+        <p class="small" id="rx5-cover-global-status" role="status">
+          Los cambios se guardan en Supabase.
+        </p>
+      `;
+
+      const originalList = $('assetList');
+      if(originalList && originalList.parentElement === host){
+        originalList.insertAdjacentElement('afterend',section);
+      }else{
+        host.appendChild(section);
+      }
+
+      const rows = $('rx5-cover-rows');
+
+      ITEMS.forEach(item => {
+        const article = document.createElement('article');
+        article.className = 'rx5-cover-row';
+        article.innerHTML = `
+          <img
+            class="rx5-preview"
+            data-rx5-preview="${safe(item.slot)}"
+            src="${DEFAULT_IMAGE}"
+            alt="Portada ${safe(item.name)}"
+          >
+          <div>
+            <strong>${safe(item.name)}</strong>
+            <div class="rx5-cover-status"
+                 data-rx5-status="${safe(item.slot)}">
+              Preparado para seleccionar una imagen.
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              data-rx5-file="${safe(item.slot)}"
+              aria-label="Seleccionar portada: ${safe(item.name)}"
+            >
+            <div class="rx5-cover-actions">
+              <button
+                type="button"
+                class="btn btn-primary btn-small"
+                data-rx5-save="${safe(item.slot)}">
+                Guardar portada
+              </button>
+            </div>
+          </div>
+        `;
+        rows.appendChild(article);
+      });
+    }
+
+    return true;
+  }
+
+  function setStatus(slot,message){
+    const el = document.querySelector(
+      '[data-rx5-status="'+slot+'"]'
+    );
+    if(el) el.textContent = message;
+  }
+
+  function setPreview(slot,url){
+    const img = document.querySelector(
+      '[data-rx5-preview="'+slot+'"]'
+    );
+    if(img) img.src = url || DEFAULT_IMAGE;
+  }
+
+  async function loadSavedRows(){
+    if(loadingRows) return;
+    if(!$('adminPanel') || $('adminPanel').classList.contains('hidden')){
+      return;
+    }
+    if(typeof db === 'undefined') return;
+
+    loadingRows = true;
+
+    try{
+      const {data,error} = await db
+        .from('site_assets')
+        .select('slot,name,url,storage_path')
+        .in('slot',ITEMS.map(item => item.slot));
+
+      if(error) throw error;
+
+      rowsBySlot = {};
+      (data || []).forEach(row => {
+        if(bySlot[row.slot]) rowsBySlot[row.slot] = row;
+      });
+
+      ITEMS.forEach(item => {
+        const row = rowsBySlot[item.slot];
+        setPreview(item.slot,row?.url || DEFAULT_IMAGE);
+        setStatus(
+          item.slot,
+          row
+            ? 'Portada guardada. Podés reemplazarla.'
+            : 'Todavía no hay registro: se creará al guardar.'
+        );
+      });
+
+      applyAllCovers();
+    }catch(error){
+      console.error('[RoXThal portadas] Error al cargar:',error);
+      const status = $('rx5-cover-global-status');
+      if(status) status.textContent =
+        'No se pudieron consultar las portadas: '+
+        (error.message || 'error desconocido');
+    }finally{
+      loadingRows = false;
+    }
+  }
+
+  function getModuleCards(item){
+    const found = new Set();
+
+    item.selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        const card = el.matches('.module,article,[data-home-card]')
+          ? el
+          : el.closest('.module,article,[data-home-card]');
+
+        if(card && (card.closest('#moduleGrid') || card.closest('#home'))){
+          found.add(card);
+        }
+      });
+    });
+
+    const grid = $('moduleGrid');
+    if(grid){
+      const candidates = grid.querySelectorAll(
+        '.module, article, [data-home-card]'
+      );
+
+      candidates.forEach(card => {
+        const heading = card.querySelector('h1,h2,h3,h4');
+        const text = normalize(
+          (heading ? heading.textContent : '')+' '+
+          (card.getAttribute('aria-label') || '')
+        );
+
+        if(item.aliases.some(alias => text.includes(normalize(alias)))){
+          found.add(card);
+        }
+      });
+    }
+
+    return Array.from(found);
+  }
+
+  function applyCover(item){
+    const row = rowsBySlot[item.slot];
+    if(!row || !row.url) return;
+
+    getModuleCards(item).forEach(card => {
+      let img = card.querySelector(
+        'img.rx5-managed-cover'
+      );
+
+      if(!img){
+        const existing = card.querySelector(':scope > img');
+
+        if(existing){
+          img = existing;
+        }else{
+          img = document.createElement('img');
+          img.alt = item.name;
+          img.setAttribute('aria-hidden','true');
+          card.insertBefore(img,card.firstChild);
+        }
+
+        img.classList.add('rx5-managed-cover');
+        img.dataset.rx5Managed = item.slot;
+      }
+
+      if(img.src !== row.url) img.src = row.url;
+      img.alt = item.name;
+
+      if(getComputedStyle(card).position === 'static'){
+        card.style.position = 'relative';
+      }
+      card.style.overflow = 'hidden';
+    });
+  }
+
+  function applyAllCovers(){
+    ITEMS.forEach(applyCover);
+  }
+
+  async function saveCover(slot,button){
+    const item = bySlot[slot];
+    if(!item) return;
+
+    if(typeof db === 'undefined'){
+      return notify('Supabase no está disponible en esta página.');
+    }
+
+    if(typeof requireAdmin === 'function'){
+      if(!await requireAdmin()) return;
+    }else{
+      return notify('No se pudo verificar la sesión de administrador.');
+    }
+
+    const input = document.querySelector(
+      '[data-rx5-file="'+slot+'"]'
+    );
+    const file = input?.files?.[0];
+
+    if(!file){
+      return notify('Seleccioná primero la imagen de '+item.name+'.');
+    }
+    if(!file.type || !file.type.startsWith('image/')){
+      return notify('El archivo seleccionado no es una imagen.');
+    }
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Guardando…';
+    setStatus(slot,'Subiendo imagen y guardando el registro…');
+
+    let uploadedPath = null;
+
+    try{
+      if(typeof optimizeImage !== 'function'){
+        throw new Error('No se encuentra el optimizador de imágenes.');
+      }
+
+      const blob = await optimizeImage(file);
+      if(!blob || !blob.size){
+        throw new Error('No se pudo procesar la imagen.');
+      }
+      if(blob.size > 6*1024*1024){
+        throw new Error('La imagen supera 6 MB después de optimizar.');
+      }
+
+      uploadedPath = 'modules/'+slot+'/'+makeId()+'.jpg';
+
+      const upload = await db.storage
+        .from('images')
+        .upload(uploadedPath,blob,{
+          contentType:'image/jpeg',
+          upsert:false
+        });
+
+      if(upload.error) throw upload.error;
+
+      const publicUrl = db.storage
+        .from('images')
+        .getPublicUrl(uploadedPath)?.data?.publicUrl;
+
+      if(!publicUrl){
+        throw new Error('Supabase no devolvió la URL pública de la imagen.');
+      }
+
+      // Consultar de nuevo antes de guardar: el registro podría
+      // haber sido creado por otra sesión desde que se abrió el panel.
+      const lookup = await db
+        .from('site_assets')
+        .select('slot,name,url,storage_path')
+        .eq('slot',slot)
+        .limit(1);
+
+      if(lookup.error) throw lookup.error;
+
+      const current = lookup.data?.[0] || null;
+      const values = {
+        name:item.name,
+        url:publicUrl,
+        storage_path:uploadedPath,
+        updated_at:new Date().toISOString()
+      };
+
+      let write;
+
+      if(current){
+        write = await db
+          .from('site_assets')
+          .update(values)
+          .eq('slot',slot);
+      }else{
+        // Crear el slot cuando aún no existe.
+        write = await db
+          .from('site_assets')
+          .insert({
+            slot:slot,
+            name:item.name,
+            url:publicUrl,
+            storage_path:uploadedPath
+          });
+      }
+
+      if(write.error) throw write.error;
+
+      const oldPath = current?.storage_path;
+      rowsBySlot[slot] = {
+        slot:slot,
+        name:item.name,
+        url:publicUrl,
+        storage_path:uploadedPath
+      };
+
+      setPreview(slot,publicUrl);
+      setStatus(slot,'Guardada correctamente.');
+      applyCover(item);
+
+      if(input) input.value = '';
+
+      // La imagen anterior se elimina solo después de confirmar
+      // que el registro nuevo quedó guardado.
+      if(oldPath && oldPath !== uploadedPath){
+        const removal = await db.storage
+          .from('images')
+          .remove([oldPath]);
+
+        if(removal.error){
+          console.warn(
+            '[RoXThal portadas] No se pudo eliminar la imagen anterior:',
+            removal.error
+          );
+        }
+      }
+
+      notify('Portada de "'+item.name+'" guardada correctamente.');
+    }catch(error){
+      console.error('[RoXThal portadas] Error al guardar:',error);
+
+      if(uploadedPath){
+        try{
+          await db.storage.from('images').remove([uploadedPath]);
+        }catch(cleanupError){
+          console.warn(
+            '[RoXThal portadas] Limpieza pendiente:',
+            cleanupError
+          );
+        }
+      }
+
+      setStatus(
+        slot,
+        'Error al guardar: '+(error.message || 'error desconocido')
+      );
+      notify(
+        'No se pudo guardar "'+item.name+'": '+
+        (error.message || 'error desconocido')
+      );
+    }finally{
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  document.addEventListener('click',event => {
+    const button = event.target.closest('[data-rx5-save]');
+    if(!button) return;
+    event.preventDefault();
+    saveCover(button.dataset.rx5Save,button);
+  });
+
+  document.addEventListener('change',event => {
+    const input = event.target.closest('[data-rx5-file]');
+    if(!input) return;
+
+    const file = input.files?.[0];
+    if(!file) return;
+
+    const slot = input.dataset.rx5File;
+    const item = bySlot[slot];
+    if(!item) return;
+
+    if(!file.type.startsWith('image/')){
+      input.value = '';
+      return notify('Seleccioná un archivo de imagen válido.');
+    }
+
+    const localUrl = URL.createObjectURL(file);
+    setPreview(slot,localUrl);
+    setStatus(slot,'Imagen seleccionada: '+file.name);
+  });
+
+  function start(){
+    installAdminControls();
+
+    const adminPanel = $('adminPanel');
+    if(adminPanel && !observer){
+      observer = new MutationObserver(() => {
+        installAdminControls();
+        if(!adminPanel.classList.contains('hidden')){
+          loadSavedRows();
+        }
+      });
+
+      observer.observe(adminPanel,{
+        attributes:true,
+        attributeFilter:['class']
+      });
+    }
+
+    const grid = $('moduleGrid');
+    if(grid && !grid.dataset.rx5CoverObserver){
+      grid.dataset.rx5CoverObserver = '1';
+
+      const gridObserver = new MutationObserver(() => {
+        applyAllCovers();
+      });
+
+      gridObserver.observe(grid,{
+        childList:true,
+        subtree:true
+      });
+    }
+
+    applyAllCovers();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+
+  // Reintentos limitados para cuadrículas que se crean después
+  // de cargar los scripts de los módulos.
+  let attempts = 0;
+  const retry = setInterval(() => {
+    start();
+    attempts++;
+    if(attempts >= 12) clearInterval(retry);
+  },500);
+
+})();
+</script>
+<!-- =============== FIN REPARADOR DE 5 PORTADAS =============== -->
+
 
 </body>
 </html>
