@@ -67961,7 +67961,468 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 })();
 </script>
 
-       
+    
+<!-- ================= ROXTHAL TATTOO FLASH COLLECTION ================= -->
+<style>
+#tattooFlash .tf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+#tattooFlash .tf-card{overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--card,#111)}
+#tattooFlash .tf-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;background:#fff}
+#tattooFlash .tf-info{padding:16px}
+#tattooFlash .tf-price{font-size:23px;font-weight:900;color:var(--yellow);margin:12px 0}
+#adminTattooFlash .tf-preview{width:88px;height:88px;object-fit:contain;background:#fff;border-radius:8px}
+#adminTattooFlash .tf-admin-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+#adminTattooFlash .tf-admin-item>div{flex:1;min-width:0}
+#adminTattooFlash .tf-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+#adminTattooFlash .tf-actions button{font-size:12px}
+#tattooFlash .tf-empty{padding:25px;text-align:center;border:1px dashed var(--border);border-radius:12px}
+@media(max-width:600px){#adminTattooFlash .grid2{grid-template-columns:1fr}}
+</style>
+
+<script>
+(function(){
+'use strict';
+
+if(window.__roxthalTattooFlashInstalled)return;
+window.__roxthalTattooFlashInstalled=true;
+
+const TF_TABLE='roxthal_tattoo_flash';
+const TF_BUCKET='images';
+const TF_WA='5491169633376';
+const tf$=id=>document.getElementById(id);
+const tfMoney=v=>new Intl.NumberFormat('es-AR',{
+  style:'currency',currency:'ARS',maximumFractionDigits:0
+}).format(Number(v||0));
+
+function tfEscape(v){
+  return String(v??'').replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[c]));
+}
+
+function tfNotice(message){
+  if(typeof toast==='function')toast(message);
+  else alert(message);
+}
+
+/* 1. CREAR LA PÁGINA PÚBLICA */
+if(!tf$('tattooFlash')){
+  const section=document.createElement('section');
+  section.id='tattooFlash';
+  section.className='view hidden';
+  section.innerHTML=`
+    <div class="container">
+      <div class="section-head">
+        <div class="label">Colecciones digitales</div>
+        <h2 class="section-title">🖋️ RoXThal Tattoo Flash Collection</h2>
+        <p class="section-desc">
+          Láminas originales en distintos estilos y colores.
+          Explorá el catálogo y consultá por tu colección.
+        </p>
+      </div>
+      <div id="tfPublicList" class="tf-grid">
+        <div class="tf-empty">Cargando colecciones…</div>
+      </div>
+    </div>`;
+  const adminSection=tf$('admin');
+  if(adminSection)adminSection.parentNode.insertBefore(section,adminSection);
+  else document.body.appendChild(section);
+}
+
+/* 2. AÑADIR EL ACCESO A LA PANTALLA PRINCIPAL */
+if(typeof publicViews!=='undefined'&&!publicViews.includes('tattooFlash')){
+  publicViews.push('tattooFlash');
+}
+if(typeof moduleDefinitions!=='undefined'&&
+   !moduleDefinitions.some(m=>m[1]==='tattooFlash')){
+  moduleDefinitions.push([
+    '17','tattooFlash','Tattoo Flash Collection',
+    'Colecciones digitales de diseños de tatuajes'
+  ]);
+  if(typeof renderModuleGrid==='function')renderModuleGrid();
+}
+
+/* 3. CREAR LA PESTAÑA DEL ADMINISTRADOR */
+function tfCreateAdmin(){
+  const tabs=tf$('adminTabs');
+  const admin=tf$('adminPanel');
+  if(!tabs||!admin)return;
+
+  if(!tabs.querySelector('[data-admin-tab="tattooFlash"]')){
+    const button=document.createElement('button');
+    button.type='button';
+    button.dataset.adminTab='tattooFlash';
+    button.textContent='🖋️ Tattoo Flash';
+    tabs.appendChild(button);
+  }
+
+  if(!tf$('adminTattooFlash')){
+    const panel=document.createElement('div');
+    panel.id='adminTattooFlash';
+    panel.className='admin-tab-panel hidden';
+    panel.innerHTML=`
+      <div class="grid2">
+        <div class="card">
+          <h3 id="tfFormHeading">📤 Publicar una colección</h3>
+          <p class="small">Elegí una imagen guardada en tu celular.
+          Completá los datos y guardá la colección.</p>
+
+          <input id="tfId" type="hidden">
+
+          <div class="field">
+            <label for="tfTitle">Nombre de la colección</label>
+            <input id="tfTitle" maxlength="120"
+              placeholder="Ej.: Old School — Colección 01">
+          </div>
+
+          <div class="field">
+            <label for="tfStyle">Estilo</label>
+            <select id="tfStyle">
+              <option>Old School</option>
+              <option>Blackwork & Gótico</option>
+              <option>Neo Traditional</option>
+              <option>Japonés</option>
+              <option>Fine Line & Minimalista</option>
+              <option>Chicano</option>
+              <option>Geométrico</option>
+              <option>Lettering</option>
+              <option>Realismo</option>
+              <option>Mixto</option>
+              <option>Otro</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="tfPrice">Precio en pesos argentinos (ARS)</label>
+            <input id="tfPrice" type="number" min="0" step="100" value="8000">
+          </div>
+
+          <div class="field">
+            <label for="tfDescription">Descripción</label>
+            <textarea id="tfDescription" rows="3"
+              placeholder="Cantidad de diseños, estilo y contenido"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="tfLicense">Licencia y condiciones</label>
+            <textarea id="tfLicense" rows="3">Uso personal. Consultar condiciones para uso comercial.</textarea>
+          </div>
+
+          <div class="field">
+            <label for="tfImage">Imagen desde el celular</label>
+            <input id="tfImage" type="file" accept="image/*">
+            <small>Se optimiza antes de subirla. Máximo 6 MB después de optimizar.</small>
+          </div>
+
+          <label style="display:block;margin:12px 0">
+            <input id="tfVisible" type="checkbox" checked>
+            Publicar en el catálogo
+          </label>
+
+          <div class="actions">
+            <button id="tfSave" class="btn btn-primary" type="button">
+              Guardar colección
+            </button>
+            <button id="tfCancel" class="btn" type="button">
+              Limpiar
+            </button>
+          </div>
+          <p id="tfStatus" class="small" aria-live="polite"></p>
+        </div>
+
+        <div class="card">
+          <h3>📚 Colecciones cargadas</h3>
+          <p class="small">Podés editar, ocultar, volver a publicar o eliminar.</p>
+          <div id="tfAdminList">
+            <div class="tf-empty">Entrá a esta pestaña para cargar el listado.</div>
+          </div>
+        </div>
+      </div>`;
+    const system=tf$('adminSystem');
+    if(system)admin.insertBefore(panel,system);
+    else admin.appendChild(panel);
+  }
+}
+tfCreateAdmin();
+
+/* 4. CARGAR EL CATÁLOGO PÚBLICO */
+window.loadTattooFlash=async function(){
+  const box=tf$('tfPublicList');
+  if(!box||!window.db)return;
+
+  box.innerHTML='<div class="tf-empty">Cargando colecciones…</div>';
+
+  const {data,error}=await window.db.from(TF_TABLE)
+    .select('id,title,description,style,price,image_url,license')
+    .eq('visible',true)
+    .order('created_at',{ascending:false});
+
+  if(error){
+    console.error('RoXThal Tattoo Flash:',error);
+    box.innerHTML='<div class="tf-empty">No se pudo cargar el catálogo. Revisá la conexión con Supabase.</div>';
+    return;
+  }
+
+  if(!data||!data.length){
+    box.innerHTML='<div class="tf-empty">Próximamente: nuevas colecciones de RoXThal Art Design.</div>';
+    return;
+  }
+
+  box.innerHTML=data.map(item=>`
+    <article class="tf-card">
+      <img loading="lazy" src="${tfEscape(item.image_url)}"
+        alt="${tfEscape(item.title)}">
+      <div class="tf-info">
+        <div class="label">${tfEscape(item.style||'Mixto')}</div>
+        <h3>${tfEscape(item.title)}</h3>
+        <p>${tfEscape(item.description||'Colección digital de RoXThal Art Design.')}</p>
+        <div class="tf-price">${tfMoney(item.price)}</div>
+        <button class="btn btn-primary" type="button"
+          data-tf-buy="${tfEscape(item.id)}">Consultar / Comprar</button>
+      </div>
+    </article>`).join('');
+};
+
+/* 5. LISTAR LAS COLECCIONES EN EL ADMINISTRADOR */
+async function tfLoadAdmin(){
+  const box=tf$('tfAdminList');
+  if(!box||!window.db)return;
+  if(typeof requireAdmin!=='function'||!await requireAdmin())return;
+
+  const {data,error}=await window.db.from(TF_TABLE)
+    .select('*').order('created_at',{ascending:false});
+
+  if(error){
+    box.innerHTML='<p>No se pudieron cargar las colecciones. '+tfEscape(error.message)+'</p>';
+    return;
+  }
+
+  if(!data||!data.length){
+    box.innerHTML='<div class="tf-empty">Todavía no hay colecciones. Subí la primera desde el formulario.</div>';
+    return;
+  }
+
+  box.innerHTML=data.map(item=>`
+    <div class="tf-admin-item">
+      <img class="tf-preview" src="${tfEscape(item.image_url)}" alt="">
+      <div>
+        <strong>${tfEscape(item.title)}</strong>
+        <p class="small">${tfEscape(item.style||'Mixto')} · ${tfMoney(item.price)}</p>
+        <p class="small">${item.visible?'Publicada':'Oculta'}</p>
+        <div class="tf-actions">
+          <button class="btn btn-small" data-tf-edit="${tfEscape(item.id)}">Editar</button>
+          <button class="btn btn-small" data-tf-toggle="${tfEscape(item.id)}"
+            data-visible="${item.visible}">${item.visible?'Ocultar':'Publicar'}</button>
+          <button class="btn btn-small btn-danger"
+            data-tf-delete="${tfEscape(item.id)}">Eliminar</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* 6. LIMPIAR EL FORMULARIO */
+function tfReset(){
+  tf$('tfId').value='';
+  tf$('tfTitle').value='';
+  tf$('tfStyle').value='Old School';
+  tf$('tfPrice').value='8000';
+  tf$('tfDescription').value='';
+  tf$('tfLicense').value='Uso personal. Consultar condiciones para uso comercial.';
+  tf$('tfImage').value='';
+  tf$('tfVisible').checked=true;
+  tf$('tfStatus').textContent='';
+  tf$('tfFormHeading').textContent='📤 Publicar una colección';
+  tf$('tfSave').textContent='Guardar colección';
+}
+
+/* 7. GUARDAR / EDITAR UNA COLECCIÓN */
+tf$('tfSave').addEventListener('click',async function(){
+  if(typeof requireAdmin!=='function'||!await requireAdmin())return;
+
+  const id=tf$('tfId').value;
+  const title=tf$('tfTitle').value.trim();
+  const file=tf$('tfImage').files[0];
+  const status=tf$('tfStatus');
+  const button=this;
+
+  if(!title)return tfNotice('Escribí el nombre de la colección.');
+  if(!id&&!file)return tfNotice('Seleccioná una imagen desde tu celular.');
+
+  const price=Number(tf$('tfPrice').value);
+  if(!Number.isFinite(price)||price<0)return tfNotice('Revisá el precio.');
+
+  button.disabled=true;
+  button.textContent='Guardando…';
+  status.textContent='Preparando imagen y guardando datos…';
+
+  let newPath=null;
+  let oldPath=null;
+
+  try{
+    const payload={
+      title,
+      style:tf$('tfStyle').value,
+      price,
+      currency:'ARS',
+      description:tf$('tfDescription').value.trim()||null,
+      license:tf$('tfLicense').value.trim()||'Consultar condiciones de uso.',
+      visible:tf$('tfVisible').checked,
+      updated_at:new Date().toISOString()
+    };
+
+    if(id){
+      const previous=await window.db.from(TF_TABLE)
+        .select('storage_path').eq('id',id).single();
+      if(previous.error)throw previous.error;
+      oldPath=previous.data?.storage_path||null;
+    }
+
+    if(file){
+      if(!file.type.startsWith('image/'))throw new Error('Seleccioná un archivo de imagen.');
+      if(typeof optimizeImage!=='function')throw new Error('No está disponible el optimizador de imágenes.');
+
+      const blob=await optimizeImage(file);
+      if(!blob||blob.size>6*1024*1024)throw new Error('La imagen supera 6 MB después de optimizarla.');
+
+      newPath='tattoo-flash/'+crypto.randomUUID()+'.jpg';
+      const upload=await window.db.storage.from(TF_BUCKET).upload(
+        newPath,blob,{contentType:'image/jpeg',upsert:false}
+      );
+      if(upload.error)throw upload.error;
+
+      payload.image_url=window.db.storage.from(TF_BUCKET)
+        .getPublicUrl(newPath).data.publicUrl;
+      payload.storage_path=newPath;
+    }
+
+    let saved;
+    if(id){
+      saved=await window.db.from(TF_TABLE).update(payload).eq('id',id);
+    }else{
+      saved=await window.db.from(TF_TABLE).insert(payload);
+    }
+    if(saved.error)throw saved.error;
+
+    if(newPath&&oldPath){
+      const removed=await window.db.storage.from(TF_BUCKET).remove([oldPath]);
+      if(removed.error)console.warn('La imagen anterior quedó almacenada:',removed.error);
+    }
+
+    tfNotice(id?'Colección actualizada.':'Colección guardada.');
+    tfReset();
+    await tfLoadAdmin();
+    await window.loadTattooFlash();
+
+  }catch(error){
+    if(newPath){
+      await window.db.storage.from(TF_BUCKET).remove([newPath]).catch(()=>{});
+    }
+    console.error(error);
+    status.textContent='No se pudo guardar: '+(error.message||'Error desconocido.');
+    tfNotice('No se pudo guardar. Revisá el mensaje del formulario.');
+  }finally{
+    button.disabled=false;
+    button.textContent='Guardar colección';
+  }
+});
+
+tf$('tfCancel').addEventListener('click',tfReset);
+
+/* 8. ACCIONES DEL ADMINISTRADOR */
+document.addEventListener('click',async function(event){
+  const tab=event.target.closest('[data-admin-tab="tattooFlash"]');
+  if(tab){
+    if(typeof requireAdmin==='function'&&await requireAdmin())await tfLoadAdmin();
+    return;
+  }
+
+  const edit=event.target.closest('[data-tf-edit]');
+  if(edit){
+    if(typeof requireAdmin!=='function'||!await requireAdmin())return;
+    const {data,error}=await window.db.from(TF_TABLE)
+      .select('*').eq('id',edit.dataset.tfEdit).single();
+    if(error)return tfNotice(error.message);
+
+    tf$('tfId').value=data.id;
+    tf$('tfTitle').value=data.title||'';
+    tf$('tfStyle').value=data.style||'Mixto';
+    tf$('tfPrice').value=data.price||0;
+    tf$('tfDescription').value=data.description||'';
+    tf$('tfLicense').value=data.license||'';
+    tf$('tfVisible').checked=!!data.visible;
+    tf$('tfImage').value='';
+    tf$('tfFormHeading').textContent='✏️ Editar colección';
+    tf$('tfSave').textContent='Guardar cambios';
+    tf$('tfStatus').textContent='Si elegís una imagen nueva, reemplazará la actual.';
+    tf$('tfFormHeading').scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+
+  const toggle=event.target.closest('[data-tf-toggle]');
+  if(toggle){
+    if(typeof requireAdmin!=='function'||!await requireAdmin())return;
+    const visible=toggle.dataset.visible!=='true';
+    const {error}=await window.db.from(TF_TABLE)
+      .update({visible,updated_at:new Date().toISOString()})
+      .eq('id',toggle.dataset.tfToggle);
+    if(error)return tfNotice(error.message);
+    await tfLoadAdmin();
+    await window.loadTattooFlash();
+    return tfNotice(visible?'Colección publicada.':'Colección ocultada.');
+  }
+
+  const del=event.target.closest('[data-tf-delete]');
+  if(del){
+    if(typeof requireAdmin!=='function'||!await requireAdmin())return;
+    if(!confirm('¿Eliminar definitivamente esta colección?'))return;
+
+    const {data,error}=await window.db.from(TF_TABLE)
+      .select('storage_path').eq('id',del.dataset.tfDelete).single();
+    if(error)return tfNotice(error.message);
+
+    const removed=await window.db.from(TF_TABLE)
+      .delete().eq('id',del.dataset.tfDelete);
+    if(removed.error)return tfNotice(removed.error.message);
+
+    if(data?.storage_path){
+      const storageResult=await window.db.storage.from(TF_BUCKET).remove([data.storage_path]);
+      if(storageResult.error)console.warn('No se pudo borrar el archivo:',storageResult.error);
+    }
+
+    await tfLoadAdmin();
+    await window.loadTattooFlash();
+    return tfNotice('Colección eliminada.');
+  }
+
+  const buy=event.target.closest('[data-tf-buy]');
+  if(buy){
+    const {data,error}=await window.db.from(TF_TABLE)
+      .select('title,style,price,description,license')
+      .eq('id',buy.dataset.tfBuy).eq('visible',true).single();
+    if(error||!data)return tfNotice('No se pudo abrir esta colección.');
+
+    const message='Hola RoXThal Art Design. Me interesa la colección "'+
+      data.title+'", estilo '+(data.style||'Mixto')+
+      ', precio '+tfMoney(data.price)+'. Quiero consultar cómo recibirla.';
+    window.open('https://wa.me/'+TF_WA+'?text='+encodeURIComponent(message),'_blank','noopener');
+  }
+});
+
+/* 9. ACTUALIZAR EL CATÁLOGO AL ABRIR EL MÓDULO */
+document.addEventListener('click',function(event){
+  if(event.target.closest('[data-go="tattooFlash"]')){
+    setTimeout(()=>window.loadTattooFlash(),100);
+  }
+});
+
+document.addEventListener('DOMContentLoaded',function(){
+  tfCreateAdmin();
+  if(typeof renderModuleGrid==='function')renderModuleGrid();
+});
+
+})();
+</script>
+<!-- ============== FIN ROXTHAL TATTOO FLASH COLLECTION ============== -->
+   
    
 </body>
 </html>
