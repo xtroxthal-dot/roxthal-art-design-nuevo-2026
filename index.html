@@ -66996,6 +66996,198 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 })();
 </script>
 <!-- FIN ROXTHAL: CONSULTA DIRECTA DE SERVICIOS -->
+
+  <!-- ROXTHAL ART DESIGN — CONSULTAS INDIVIDUALES DE GALERÍA Y MULTIMEDIA -->
+<style id="roxthal-gallery-inquiry-styles">
+  .rox-gallery-inquiry {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border: 1px solid #f2c400;
+    border-radius: 9px;
+    background: #f2c400;
+    color: #080808;
+    font-weight: 750;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .rox-gallery-inquiry:hover {
+    background: #ffe04a;
+  }
+
+  .rox-gallery-inquiry:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+</style>
+
+<script id="roxthal-gallery-inquiry-v1">
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_GALLERY_INQUIRY_V1__) return;
+  window.__ROXTHAL_GALLERY_INQUIRY_V1__ = true;
+
+  function prepararTarjetas() {
+    /* GALERÍA DE OBRAS Y TATUAJES */
+    const gallery = document.getElementById('galleryList');
+
+    if (gallery) {
+      gallery.querySelectorAll('.gallery-card').forEach(function (card) {
+        if (card.querySelector('.rox-gallery-inquiry')) return;
+
+        const title = card.querySelector('.gallery-info h3');
+        const category = card.querySelector('.gallery-info .tag');
+        const description = card.querySelector('.gallery-info p');
+
+        if (!title) return;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'rox-gallery-inquiry';
+        button.textContent = '📩 Consultar por este trabajo';
+
+        button.dataset.roxGalleryTitle = title.textContent.trim();
+        button.dataset.roxGalleryCategory =
+          category ? category.textContent.trim() : 'Galería';
+
+        button.dataset.roxGalleryDescription =
+          description ? description.textContent.trim() : '';
+
+        card.querySelector('.gallery-info').appendChild(button);
+      });
+    }
+
+    /* FOTOS Y VÍDEOS DE LAS CATEGORÍAS MULTIMEDIA */
+    const media = document.getElementById('mediaList');
+
+    if (media) {
+      media.querySelectorAll(':scope > .card').forEach(function (card) {
+        if (card.querySelector('.rox-gallery-inquiry')) return;
+
+        const title = card.querySelector('h3');
+        if (!title) return;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'rox-gallery-inquiry';
+        button.textContent = '📩 Consultar por este contenido';
+
+        button.dataset.roxGalleryTitle = title.textContent.trim();
+        button.dataset.roxGalleryCategory =
+          document.getElementById('mediaCategoryTitle')?.textContent.trim()
+          || 'Fotos y vídeos';
+
+        const description = card.querySelector('p');
+
+        button.dataset.roxGalleryDescription =
+          description ? description.textContent.trim() : '';
+
+        card.appendChild(button);
+      });
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('.rox-gallery-inquiry');
+    if (!button) return;
+
+    const openButton = document.getElementById('rxSolicitudButton');
+    const type = document.getElementById('rxSolTipo');
+    const detail = document.getElementById('rxSolDetalle');
+
+    if (!openButton || !type || !detail) {
+      alert('No se pudo abrir la solicitud. Inténtalo nuevamente.');
+      return;
+    }
+
+    const title = button.dataset.roxGalleryTitle || 'Trabajo de RoXThal';
+    const category = button.dataset.roxGalleryCategory || 'Galería';
+    const description = button.dataset.roxGalleryDescription || '';
+
+    const normalized = (
+      title + ' ' + category + ' ' + description
+    ).toLocaleLowerCase('es');
+
+    let desired = 'Otra consulta';
+
+    if (/piercing/.test(normalized)) {
+      desired = 'Piercing — colocación';
+    } else if (/tatuaj|tattoo/.test(normalized)) {
+      desired = 'Tatuaje — consulta o presupuesto';
+    } else if (/iniciación|iniciacion/.test(normalized)) {
+      desired = 'Iniciación al tatuaje';
+    } else if (/dibujo|pintura/.test(normalized)) {
+      desired = 'Dibujo y pintura profesional';
+    } else if (/fileteado/.test(normalized)) {
+      desired = 'Fileteado';
+    } else if (/niños|ninos|infantil/.test(normalized)) {
+      desired = 'Taller de arte para niños';
+    } else if (/mural/.test(normalized)) {
+      desired = 'Murales';
+    } else if (/trampantojo/.test(normalized)) {
+      desired = 'Trampantojos';
+    } else if (/ilustración|ilustracion|diseño artístico|diseño artistico/.test(normalized)) {
+      desired = 'Diseño artístico / ilustración';
+    } else if (/obra|arte|artística|artistica/.test(normalized)) {
+      desired = 'Diseño artístico / ilustración';
+    } else if (/taller|actividad|formación|formacion|curso/.test(normalized)) {
+      desired = 'Formación o capacitación artística';
+    }
+
+    const option = Array.from(type.options).find(function (item) {
+      return item.text.trim() === desired;
+    });
+
+    type.value = option ? option.value : 'Otra consulta';
+
+    detail.value =
+      'Hola, quiero consultar por este trabajo o contenido de RoXThal Art Design.\n\n' +
+      'Título: ' + title + '\n' +
+      'Categoría: ' + category + '\n' +
+      (description ? 'Descripción: ' + description + '\n' : '') +
+      '\nMi consulta: ';
+
+    openButton.click();
+
+    detail.focus();
+  });
+
+  function iniciar() {
+    prepararTarjetas();
+
+    const gallery = document.getElementById('galleryList');
+    const media = document.getElementById('mediaList');
+
+    const observer = new MutationObserver(prepararTarjetas);
+
+    if (gallery) {
+      observer.observe(gallery, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    if (media) {
+      observer.observe(media, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL: CONSULTAS INDIVIDUALES DE GALERÍA Y MULTIMEDIA -->                                                                                                                                                                                                                                          
    
 </body>
 </html>
