@@ -67814,6 +67814,7 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
           rows.length
             ? rows.map(function (item) {
                 const name =
+                  item.label ??
                   item.name ??
                   item.module_name ??
                   item.module_id ??
