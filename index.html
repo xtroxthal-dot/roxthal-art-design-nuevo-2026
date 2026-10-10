@@ -60905,7 +60905,7 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       category:'crear',
       icon:'📩',
       title:'Solicitud',
-      desc:'Realizá una solicitud directamente a RoXThal.',
+      desc:'Solicitá información sobre tatuajes, piercing, cursos, murales y proyectos artísticos. Sin compromiso.',
       type:'original',
       id:'rxSolicitudButton'
     },
@@ -67316,7 +67316,648 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 })();
 </script>
 <!-- FIN ROXTHAL — CONSULTAS INDIVIDUALES DE CURSOS -->
-   
+   <!-- =========================================================
+     ROXTHAL — SOLICITUD PROFESIONAL V2
+     Mejora visual y organización del formulario existente.
+     Conserva los campos y el envío original a WhatsApp.
+========================================================= -->
+
+<style id="roxthal-solicitud-professional-v2">
+
+  /* Identidad visual de Solicitud */
+  #rxSolicitudButton {
+    font-weight: 800;
+    border-radius: 10px;
+    transition:
+      background .2s ease,
+      color .2s ease,
+      transform .2s ease,
+      box-shadow .2s ease;
+  }
+
+  #rxSolicitudButton:hover {
+    box-shadow: 0 0 18px rgba(242,196,0,.18);
+    transform: translateY(-1px);
+  }
+
+  /* Panel principal */
+  #rxSolicitudPanel {
+    position: relative;
+    width: min(100%, 700px);
+    padding: 25px;
+    border: 1px solid rgba(242,196,0,.7);
+    border-radius: 19px;
+    background:
+      radial-gradient(
+        ellipse at top right,
+        rgba(242,196,0,.09),
+        transparent 45%
+      ),
+      linear-gradient(160deg,#151515,#090909 72%);
+    box-shadow:
+      0 25px 80px rgba(0,0,0,.8),
+      0 0 28px rgba(242,196,0,.07);
+    scrollbar-color: #8e7410 #111;
+  }
+
+  #rxSolicitudPanel::before {
+    content: "";
+    display: block;
+    height: 3px;
+    margin: -25px -25px 22px;
+    border-radius: 19px 19px 0 0;
+    background: linear-gradient(
+      90deg,
+      #705600,
+      #f2c400,
+      #fff0a0,
+      #f2c400,
+      #705600
+    );
+  }
+
+  /* Identificador del Atelier */
+  #rxSolicitudPanel .rxsp-kicker {
+    margin: 0 48px 9px 0;
+    color: #f2c400;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #rxSolicitudPanel h2 {
+    margin-bottom: 10px;
+    color: #ffe16a;
+    font-size: clamp(25px,5vw,32px);
+    line-height: 1.15;
+    letter-spacing: -.5px;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-intro {
+    margin: 0 0 17px;
+    color: #dedede;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* Aviso introductorio */
+  #rxSolicitudPanel .rxsp-welcome {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin: 18px 0 24px;
+    padding: 14px;
+    border: 1px solid rgba(242,196,0,.24);
+    border-radius: 12px;
+    background: rgba(242,196,0,.055);
+  }
+
+  #rxSolicitudPanel .rxsp-welcome-icon {
+    flex: 0 0 auto;
+    font-size: 23px;
+    line-height: 1.3;
+  }
+
+  #rxSolicitudPanel .rxsp-welcome strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #f2c400;
+    font-size: 13px;
+  }
+
+  #rxSolicitudPanel .rxsp-welcome span {
+    display: block;
+    color: #c9c9c9;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  /* Separadores de las secciones */
+  #rxSolicitudPanel .rxsp-section {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 27px 0 16px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid rgba(242,196,0,.22);
+  }
+
+  #rxSolicitudPanel .rxsp-number {
+    display: inline-flex;
+    flex: 0 0 31px;
+    width: 31px;
+    height: 31px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(242,196,0,.65);
+    border-radius: 9px;
+    background: rgba(242,196,0,.09);
+    color: #f2c400;
+    font-size: 12px;
+    font-weight: 850;
+  }
+
+  #rxSolicitudPanel .rxsp-section-title {
+    display: block;
+    color: #f6f6f6;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  #rxSolicitudPanel .rxsp-section-subtitle {
+    display: block;
+    margin-top: 3px;
+    color: #999;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  #rxSolicitudPanel .rxsp-required-note {
+    margin: -5px 0 18px;
+    color: #aaa;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  #rxSolicitudPanel .rxsp-required-note strong {
+    color: #f2c400;
+  }
+
+  /* Campos */
+  #rxSolicitudPanel .rx-field {
+    margin-bottom: 17px;
+  }
+
+  #rxSolicitudPanel label {
+    color: #f0d66a;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  #rxSolicitudPanel input,
+  #rxSolicitudPanel select,
+  #rxSolicitudPanel textarea {
+    min-height: 48px;
+    border: 1px solid #414141;
+    border-radius: 10px;
+    background: #151515;
+    color: #f8f8f8;
+    font-size: 14px;
+    transition:
+      border-color .18s ease,
+      box-shadow .18s ease,
+      background .18s ease;
+  }
+
+  #rxSolicitudPanel input::placeholder,
+  #rxSolicitudPanel textarea::placeholder {
+    color: #858585;
+    opacity: 1;
+  }
+
+  #rxSolicitudPanel input:focus,
+  #rxSolicitudPanel select:focus,
+  #rxSolicitudPanel textarea:focus {
+    border-color: #f2c400;
+    background: #191919;
+    box-shadow: 0 0 0 3px rgba(242,196,0,.10);
+    outline: none;
+  }
+
+  #rxSolicitudPanel select {
+    cursor: pointer;
+  }
+
+  #rxSolicitudPanel textarea {
+    min-height: 115px;
+    line-height: 1.6;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-help {
+    color: #aaa;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  /* Consentimiento */
+  #rxSolicitudPanel .rx-solicitud-check {
+    align-items: flex-start;
+    gap: 11px;
+    margin: 22px 0;
+    padding: 14px;
+    border: 1px solid #383838;
+    border-radius: 11px;
+    background: rgba(255,255,255,.025);
+    color: #d2d2d2;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-check input {
+    accent-color: #f2c400;
+    cursor: pointer;
+  }
+
+  /* Acción principal */
+  #rxSolicitudPanel .rx-solicitud-submit {
+    min-height: 53px;
+    border: 1px solid #ffe16a;
+    border-radius: 11px;
+    background: linear-gradient(135deg,#ffe16a,#f2c400 60%,#d9a900);
+    color: #111;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .2px;
+    box-shadow: 0 7px 22px rgba(242,196,0,.12);
+    transition:
+      transform .18s ease,
+      box-shadow .18s ease,
+      filter .18s ease;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-submit:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 9px 27px rgba(242,196,0,.2);
+    transform: translateY(-1px);
+  }
+
+  #rxSolicitudPanel .rx-solicitud-submit:focus-visible,
+  #rxSolicitudPanel .rx-solicitud-cancel:focus-visible,
+  #rxSolicitudPanel #rxSolicitudShareButton:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  #rxSolicitudPanel .rx-solicitud-cancel {
+    min-height: 45px;
+    border-radius: 10px;
+    color: #ccc;
+  }
+
+  /* Botón de compartir */
+  #rxSolicitudPanel #rxSolicitudShareButton {
+    min-height: 47px;
+    border-radius: 10px;
+    background: #171717;
+    border-color: #8e7410;
+    color: #f2c400;
+  }
+
+  #rxSolicitudPanel #rxSolicitudShareButton:hover {
+    background: #24200e;
+  }
+
+  /* Tarjeta Solicitud del Centro de Control */
+  #rxUniversalControl .rxuc-card[data-rxuc-key="request"] {
+    border: 1px solid rgba(242,196,0,.8);
+    background:
+      radial-gradient(
+        ellipse at top right,
+        rgba(242,196,0,.13),
+        transparent 65%
+      ),
+      linear-gradient(145deg,#1c1a11,#101010);
+    box-shadow:
+      inset 0 0 0 1px rgba(242,196,0,.035),
+      0 7px 22px rgba(0,0,0,.22);
+  }
+
+  #rxUniversalControl .rxuc-card[data-rxuc-key="request"] .rxuc-icon {
+    filter: drop-shadow(0 0 7px rgba(242,196,0,.23));
+  }
+
+  #rxUniversalControl .rxuc-card[data-rxuc-key="request"] .rxuc-title {
+    color: #ffe16a;
+  }
+
+  #rxUniversalControl .rxuc-card[data-rxuc-key="request"] .rxuc-desc {
+    color: #ded6b5;
+  }
+
+  @media(max-width:520px) {
+    #rxSolicitudOverlay {
+      align-items: flex-start;
+      padding: 8px;
+    }
+
+    #rxSolicitudPanel {
+      width: 100%;
+      max-height: 97dvh;
+      padding: 18px;
+      border-radius: 15px;
+    }
+
+    #rxSolicitudPanel::before {
+      margin: -18px -18px 19px;
+    }
+
+    #rxSolicitudPanel h2 {
+      font-size: 26px;
+    }
+
+    #rxSolicitudPanel .rxsp-section {
+      margin-top: 23px;
+    }
+
+    #rxSolicitudPanel .rx-solicitud-grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+
+  @media(prefers-reduced-motion:reduce) {
+    #rxSolicitudPanel *,
+    #rxSolicitudButton {
+      scroll-behavior: auto !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+</style>
+
+<script id="roxthal-solicitud-professional-v2-script">
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_SOLICITUD_PRO_V2__) return;
+  window.__ROXTHAL_SOLICITUD_PRO_V2__ = true;
+
+  function crearSeccion(numero, titulo, subtitulo) {
+    const section = document.createElement('div');
+    section.className = 'rxsp-section';
+
+    const number = document.createElement('span');
+    number.className = 'rxsp-number';
+    number.textContent = numero;
+    number.setAttribute('aria-hidden', 'true');
+
+    const copy = document.createElement('div');
+
+    const heading = document.createElement('span');
+    heading.className = 'rxsp-section-title';
+    heading.textContent = titulo;
+
+    const help = document.createElement('span');
+    help.className = 'rxsp-section-subtitle';
+    help.textContent = subtitulo;
+
+    copy.appendChild(heading);
+    copy.appendChild(help);
+    section.appendChild(number);
+    section.appendChild(copy);
+
+    return section;
+  }
+
+  function instalarMejora() {
+    const panel = document.getElementById('rxSolicitudPanel');
+    const form = document.getElementById('rxSolicitudForm');
+
+    if (!panel || !form) return false;
+    if (form.dataset.rxSolicitudProV2 === '1') return true;
+
+    const title = document.getElementById('rxSolicitudTitle');
+    const intro = panel.querySelector('.rx-solicitud-intro');
+    const type = document.getElementById('rxSolTipo');
+
+    if (!title || !intro || !type) return false;
+
+    form.dataset.rxSolicitudProV2 = '1';
+
+    /* Cabecera profesional */
+    title.textContent = 'Hablemos de tu proyecto';
+
+    const kicker = document.createElement('div');
+    kicker.className = 'rxsp-kicker';
+    kicker.textContent = 'ROXTHAL ART DESIGN · ATELIER · ESCUELA · TATTOO';
+    title.insertAdjacentElement('beforebegin', kicker);
+
+    intro.textContent =
+      'Tatuajes, piercing, formación artística y proyectos personalizados. ' +
+      'Contanos qué necesitás y te orientaremos sobre las opciones, ' +
+      'los precios y la disponibilidad.';
+
+    /* Información clara antes de comenzar */
+    const welcome = document.createElement('div');
+    welcome.className = 'rxsp-welcome';
+
+    const welcomeIcon = document.createElement('span');
+    welcomeIcon.className = 'rxsp-welcome-icon';
+    welcomeIcon.textContent = '✦';
+    welcomeIcon.setAttribute('aria-hidden', 'true');
+
+    const welcomeCopy = document.createElement('div');
+    const welcomeTitle = document.createElement('strong');
+    welcomeTitle.textContent = 'Tu idea empieza acá';
+
+    const welcomeText = document.createElement('span');
+    welcomeText.textContent =
+      'Completá los datos necesarios. Revisaremos tu consulta y ' +
+      'te responderemos para confirmar la información y los pasos siguientes.';
+
+    welcomeCopy.appendChild(welcomeTitle);
+    welcomeCopy.appendChild(welcomeText);
+    welcome.appendChild(welcomeIcon);
+    welcome.appendChild(welcomeCopy);
+
+    intro.insertAdjacentElement('afterend', welcome);
+
+    const requiredNote = document.createElement('p');
+    requiredNote.className = 'rxsp-required-note';
+    requiredNote.innerHTML =
+      '<strong>*</strong> Campos obligatorios. ' +
+      'Los demás datos son opcionales y ayudan a comprender mejor tu proyecto.';
+
+    welcome.insertAdjacentElement('afterend', requiredNote);
+
+    /* Primera sección: contacto */
+    const firstGrid = form.querySelector('.rx-solicitud-grid');
+
+    if (firstGrid) {
+      firstGrid.insertAdjacentElement(
+        'beforebegin',
+        crearSeccion(
+          '01',
+          'Tus datos de contacto',
+          'Así podremos responderte.'
+        )
+      );
+    }
+
+    /* Segunda sección: tipo de solicitud */
+    const typeField = type.closest('.rx-field');
+
+    if (typeField) {
+      typeField.insertAdjacentElement(
+        'beforebegin',
+        crearSeccion(
+          '02',
+          '¿Qué necesitás?',
+          'Elegí la categoría que mejor describa tu consulta.'
+        )
+      );
+    }
+
+    /* Organizar opciones sin cambiar sus textos ni valores */
+    if (!type.dataset.rxGroupedV2) {
+      const options = Array.from(type.options);
+      const placeholder = options.find(function (option) {
+        return option.value === '';
+      });
+
+      const groups = [
+        {
+          label: 'Tatuajes y piercing',
+          items: [
+            'Tatuaje — consulta o presupuesto',
+            'Tatuaje — diseño personalizado',
+            'Tatuaje — turno',
+            'Piercing — colocación'
+          ]
+        },
+        {
+          label: 'Cursos y formación artística',
+          items: [
+            'Dibujo y pintura profesional',
+            'Iniciación al tatuaje',
+            'Fileteado',
+            'Taller de arte para niños',
+            'Formación o capacitación artística'
+          ]
+        },
+        {
+          label: 'Obras y proyectos artísticos',
+          items: [
+            'Murales',
+            'Trampantojos',
+            'Diseño artístico / ilustración',
+            'Otra consulta'
+          ]
+        }
+      ];
+
+      type.replaceChildren();
+
+      if (placeholder) {
+        type.appendChild(placeholder);
+      }
+
+      const grouped = new Set();
+
+      groups.forEach(function (groupData) {
+        const group = document.createElement('optgroup');
+        group.label = groupData.label;
+
+        groupData.items.forEach(function (label) {
+          const option = options.find(function (entry) {
+            return entry.text.trim() === label;
+          });
+
+          if (option) {
+            group.appendChild(option);
+            grouped.add(option);
+          }
+        });
+
+        if (group.children.length) {
+          type.appendChild(group);
+        }
+      });
+
+      const remaining = options.filter(function (option) {
+        return option !== placeholder && !grouped.has(option);
+      });
+
+      if (remaining.length) {
+        const otherGroup = document.createElement('optgroup');
+        otherGroup.label = 'Otras opciones';
+
+        remaining.forEach(function (option) {
+          otherGroup.appendChild(option);
+        });
+
+        type.appendChild(otherGroup);
+      }
+
+      type.dataset.rxGroupedV2 = '1';
+    }
+
+    /* Tercera sección: detalles opcionales */
+    const grids = form.querySelectorAll('.rx-solicitud-grid');
+    const secondGrid = grids.length > 1 ? grids[1] : null;
+
+    if (secondGrid) {
+      secondGrid.insertAdjacentElement(
+        'beforebegin',
+        crearSeccion(
+          '03',
+          'Detalles complementarios',
+          'Estos datos son opcionales y nos ayudan a orientarte mejor.'
+        )
+      );
+    }
+
+    /* Identificar claramente los campos opcionales */
+    [
+      'rxSolEmail',
+      'rxSolFecha',
+      'rxSolLugar',
+      'rxSolPresupuesto',
+      'rxSolReferencia'
+    ].forEach(function (id) {
+      const field = document.getElementById(id);
+      if (!field) return;
+
+      const label = form.querySelector('label[for="' + id + '"]');
+      if (!label) return;
+
+      if (!label.textContent.toLowerCase().includes('opcional')) {
+        label.textContent += ' (opcional)';
+      }
+    });
+
+    /* Texto del botón, sin alterar el evento de envío */
+    const submit = form.querySelector('.rx-solicitud-submit');
+
+    if (submit) {
+      submit.textContent = '📲 Preparar solicitud en WhatsApp';
+    }
+
+    return true;
+  }
+
+  function iniciar() {
+    let intentos = 0;
+    const maxIntentos = 40;
+
+    function comprobar() {
+      if (instalarMejora()) return;
+
+      intentos++;
+
+      if (intentos < maxIntentos) {
+        window.setTimeout(comprobar, 250);
+      }
+    }
+
+    comprobar();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+
+})();
+</script>
+
+<!-- FIN ROXTHAL — SOLICITUD PROFESIONAL V2 -->
    
 </body>
 </html>
