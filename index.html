@@ -6318,6 +6318,16 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
     observeNavigation();
     installClickTracking();
+       
+    window.addEventListener('roxthal:conversion', function (event) {
+      const detail = event.detail || {};
+
+      recordEvent(detail.type || 'conversion', {
+        action_target: cleanText(detail.action_target || '', 120),
+        metadata: detail.metadata || {}
+      });
+    });
+
     installSessionTracking();
     observeVisits();
 
