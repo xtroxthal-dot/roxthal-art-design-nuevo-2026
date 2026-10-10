@@ -69226,5 +69226,231 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
    
+<!-- ROXTHAL · PROTECCIÓN VISUAL DE TATTOO FLASH COLLECTION -->
+<style id="roxthal-tf-preview-protection-css">
+  #tfPublicList .tf-public-preview-guard {
+    position: relative !important;
+    display: block !important;
+    width: 100%;
+    overflow: hidden !important;
+    line-height: 0;
+    isolation: isolate;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
+  #tfPublicList .tf-public-preview-guard > img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    pointer-events: none !important;
+    -webkit-user-drag: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
+  #tfPublicList .tf-public-preview-watermark {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 5 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    place-items: center;
+    overflow: hidden;
+    pointer-events: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 65px,
+      rgba(0, 0, 0, 0.035) 66px,
+      transparent 68px
+    );
+  }
+
+  #tfPublicList .tf-public-preview-watermark span {
+    display: block;
+    max-width: 150%;
+    color: rgba(255, 255, 255, 0.76);
+    background: rgba(0, 0, 0, 0.30);
+    border: 1px solid rgba(255, 215, 130, 0.45);
+    padding: 5px 8px;
+    font: 700 11px/1.2 Arial, sans-serif;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+    transform: rotate(-22deg);
+    text-shadow: 0 1px 2px #000;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  }
+</style>
+
+<script id="roxthal-tf-preview-protection-js">
+(function () {
+  'use strict';
+
+  if (window.__roxthalTFPreviewProtectionV1) return;
+  window.__roxthalTFPreviewProtectionV1 = true;
+
+  var ROOT_SELECTOR = '#tfPublicList';
+  var GUARD_CLASS = 'tf-public-preview-guard';
+  var WATERMARK_CLASS = 'tf-public-preview-watermark';
+
+  function protectImage(img) {
+    if (!(img instanceof HTMLImageElement)) return;
+    if (!img.matches('#tfPublicList .tf-card img')) return;
+    if (img.closest('.' + GUARD_CLASS)) return;
+
+    /* No tocar imágenes que formen parte de enlaces. */
+    if (img.closest('a')) return;
+
+    var parent = img.parentElement;
+    if (!parent) return;
+
+    var guard = document.createElement('div');
+    guard.className = GUARD_CLASS;
+    guard.setAttribute('aria-label', 'Vista previa protegida');
+    guard.setAttribute('draggable', 'false');
+
+    /* Conservar el ancho que tenía la imagen en el catálogo. */
+    var computed = window.getComputedStyle(img);
+    guard.style.width = computed.width === 'auto'
+      ? '100%'
+      : computed.width;
+
+    img.setAttribute('draggable', 'false');
+    img.setAttribute('oncontextmenu', 'return false');
+    img.setAttribute('onselectstart', 'return false');
+
+    parent.insertBefore(guard, img);
+    guard.appendChild(img);
+
+    var watermark = document.createElement('div');
+    watermark.className = WATERMARK_CLASS;
+    watermark.setAttribute('aria-hidden', 'true');
+
+    for (var i = 0; i < 4; i++) {
+      var label = document.createElement('span');
+      label.textContent = 'RoXThal · VISTA PREVIA';
+      watermark.appendChild(label);
+    }
+
+    guard.appendChild(watermark);
+  }
+
+  function protectAll(root) {
+    root = root || document;
+
+    if (root instanceof Element && root.matches(
+      ROOT_SELECTOR + ' .tf-card img'
+    )) {
+      protectImage(root);
+    }
+
+    if (root.querySelectorAll) {
+      root.querySelectorAll(
+        ROOT_SELECTOR + ' .tf-card img'
+      ).forEach(protectImage);
+    }
+  }
+
+  function findPublicImage(target) {
+    if (!(target instanceof Element)) return null;
+
+    var image = target.matches('img')
+      ? target
+      : target.querySelector('img');
+
+    if (!image || !image.matches(
+      ROOT_SELECTOR + ' .tf-card img'
+    )) {
+      return null;
+    }
+
+    return image;
+  }
+
+  /* Bloquear las acciones habituales de guardado sobre el catálogo. */
+  ['contextmenu', 'dragstart', 'selectstart'].forEach(function (type) {
+    document.addEventListener(type, function (event) {
+      var target = event.target;
+      if (!(target instanceof Element)) return;
+
+      var guard = target.closest(
+        ROOT_SELECTOR + ' .' + GUARD_CLASS
+      );
+
+      var image = findPublicImage(target);
+
+      if (guard || image) {
+        event.preventDefault();
+      }
+    }, true);
+  });
+
+  /* Evitar que la imagen actúe como un control independiente. */
+  document.addEventListener('click', function (event) {
+    var image = findPublicImage(event.target);
+    if (!image) return;
+
+    if (event.target.closest('a')) return;
+
+    /* No interceptar botones ni otros controles de la tarjeta. */
+    if (event.target.closest('button, input, select, textarea')) return;
+
+    event.preventDefault();
+  }, true);
+
+  function start() {
+    protectAll(document);
+
+    var root = document.querySelector(ROOT_SELECTOR);
+    if (!root || root.__roxthalTFObserver) return;
+
+    var observer = new MutationObserver(function (records) {
+      records.forEach(function (record) {
+        record.addedNodes.forEach(function (node) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            protectAll(node);
+          }
+        });
+      });
+    });
+
+    observer.observe(root, {
+      childList: true,
+      subtree: true
+    });
+
+    root.__roxthalTFObserver = observer;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+
+  /* Por si el módulo se monta después de cargar la página. */
+  var pageObserver = new MutationObserver(function () {
+    if (document.querySelector(ROOT_SELECTOR)) {
+      start();
+      protectAll(document);
+    }
+  });
+
+  pageObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+
+})();
+</script>
+<!-- FIN DE PROTECCIÓN VISUAL TATTOO FLASH -->
+
 </body>
 </html>
