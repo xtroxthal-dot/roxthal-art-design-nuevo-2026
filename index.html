@@ -6218,9 +6218,12 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
            * No registramos los controles internos del panel
            * analítico para no contaminar las estadísticas.
            */
-          if (target.closest('#roxthal-visit-analytics')) {
-            return;
-          }
+          if (
+  target.closest('#roxthal-visit-analytics') ||
+  target.closest('#roxthalAnalyticsV2')
+) {
+  return;
+}
 
           const text = cleanText(
             target.innerText ||
