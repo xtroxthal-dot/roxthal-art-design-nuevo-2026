@@ -67627,6 +67627,340 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 </script>
 
 <!-- FIN ROXTHAL — SOLICITUD PROFESIONAL V2 -->
+
+<script>
+/* ROXTHAL — RESTAURACIÓN DEL PANEL DE ANALÍTICA DETALLADA */
+(function () {
+  'use strict';
+
+  const PANEL_ID = 'roxthal-visit-analytics';
+  const RPC_NAME = 'roxthal_visits_dashboard';
+  let observerInstalled = false;
+  let loadingDashboard = false;
+
+  function addStyles() {
+    if (document.getElementById('rx-analytics-repair-style')) return;
+
+    const style = document.createElement('style');
+    style.id = 'rx-analytics-repair-style';
+    style.textContent = `
+      #${PANEL_ID} { margin:20px 0; padding:18px; }
+      #${PANEL_ID} .rx-analytics-head {
+        display:flex; justify-content:space-between;
+        align-items:center; gap:14px; flex-wrap:wrap;
+        margin-bottom:18px;
+      }
+      #${PANEL_ID} .rx-analytics-title {
+        margin:0 0 6px; font-size:22px;
+      }
+      #${PANEL_ID} .rx-analytics-sub {
+        margin:0; opacity:.75; font-size:13px;
+      }
+      #${PANEL_ID} .rx-analytics-controls {
+        display:flex; flex-wrap:wrap; gap:8px;
+      }
+      #${PANEL_ID} .rx-analytics-controls button { cursor:pointer; }
+      #${PANEL_ID} .rx-analytics-stats {
+        display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:10px; margin-bottom:16px;
+      }
+      #${PANEL_ID} .rx-analytics-stat {
+        border:1px solid var(--border,#444);
+        border-radius:14px; padding:14px;
+        background:var(--surface,#171717);
+      }
+      #${PANEL_ID} .rx-analytics-stat b {
+        display:block; font-size:27px;
+        color:var(--yellow,#d7ad55); overflow-wrap:anywhere;
+      }
+      #${PANEL_ID} .rx-analytics-stat span {
+        font-size:13px; opacity:.8;
+      }
+      #${PANEL_ID} .rx-analytics-grid {
+        display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+      }
+      #${PANEL_ID} .rx-analytics-box {
+        min-width:0; border:1px solid var(--border,#444);
+        border-radius:14px; padding:14px;
+        background:var(--surface,#171717);
+      }
+      #${PANEL_ID} .rx-analytics-box h4 {
+        margin:0 0 12px; font-size:16px;
+      }
+      #${PANEL_ID} .rx-analytics-row {
+        display:flex; justify-content:space-between;
+        gap:12px; padding:8px 0;
+        border-bottom:1px solid var(--border,#444);
+        font-size:13px;
+      }
+      #${PANEL_ID} .rx-analytics-row:last-child { border-bottom:0; }
+      #${PANEL_ID} .rx-analytics-row span {
+        min-width:0; overflow-wrap:anywhere;
+      }
+      #${PANEL_ID} .rx-analytics-row b {
+        flex:none; color:var(--yellow,#d7ad55);
+      }
+      #${PANEL_ID} .rx-analytics-loading {
+        text-align:center; padding:18px; opacity:.8;
+      }
+      #${PANEL_ID} .rx-analytics-error {
+        padding:14px; border:1px solid #a44;
+        border-radius:10px; overflow-wrap:anywhere;
+      }
+      @media(max-width:700px) {
+        #${PANEL_ID} .rx-analytics-stats {
+          grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+        #${PANEL_ID} .rx-analytics-grid { grid-template-columns:1fr; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function getVisitsContainer() {
+    const visits = document.getElementById('visits');
+    if (!visits) return null;
+    return visits.querySelector('.container') || visits;
+  }
+
+  function ensurePanel() {
+    const container = getVisitsContainer();
+    if (!container) return null;
+
+    let panel = document.getElementById(PANEL_ID);
+    if (panel) {
+      if (!container.contains(panel)) container.appendChild(panel);
+      return panel;
+    }
+
+    panel = document.createElement('section');
+    panel.id = PANEL_ID;
+    panel.className = 'card';
+    panel.innerHTML = `
+      <div class="rx-analytics-head">
+        <div>
+          <h3 class="rx-analytics-title">Analítica detallada</h3>
+          <p class="rx-analytics-sub">Estadísticas privadas del administrador.</p>
+        </div>
+        <div class="rx-analytics-controls">
+          <button type="button" class="btn btn-small" data-rx-repair-days="1">24 h</button>
+          <button type="button" class="btn btn-small" data-rx-repair-days="7">7 días</button>
+          <button type="button" class="btn btn-small" data-rx-repair-days="30">30 días</button>
+          <button type="button" class="btn btn-small" data-rx-repair-days="90">90 días</button>
+        </div>
+      </div>
+      <div class="rx-analytics-stats">
+        <div class="rx-analytics-stat"><b id="rxRepairEvents">—</b><span>Eventos</span></div>
+        <div class="rx-analytics-stat"><b id="rxRepairVisitors">—</b><span>Visitantes únicos</span></div>
+        <div class="rx-analytics-stat"><b id="rxRepairSessions">—</b><span>Sesiones</span></div>
+        <div class="rx-analytics-stat"><b id="rxRepairNew">—</b><span>Nuevos visitantes</span></div>
+      </div>
+      <div id="rxRepairContent" class="rx-analytics-loading">Cargando estadísticas…</div>
+    `;
+
+    container.appendChild(panel);
+    panel.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-rx-repair-days]');
+      if (button) loadDashboard(Number(button.dataset.rxRepairDays) || 7);
+    });
+
+    return panel;
+  }
+
+  function isAdmin() {
+    return (async function () {
+      try {
+        if (typeof getAdmin === 'function') {
+          return !!(await getAdmin());
+        }
+        if (typeof db === 'undefined' || !db || !db.auth) return false;
+
+        const result = await db.auth.getUser();
+        const user = result && result.data ? result.data.user : null;
+
+        return !!(
+          user &&
+          user.app_metadata &&
+          user.app_metadata.role === 'admin'
+        );
+      } catch (error) {
+        console.warn('RoXThal Analytics: no se pudo verificar el administrador.', error);
+        return false;
+      }
+    })();
+  }
+
+  function formatNumber(value) {
+    return Number(value || 0).toLocaleString('es-AR');
+  }
+
+  function escapeHTML(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderList(title, items) {
+    const rows = Array.isArray(items) ? items : [];
+
+    return `
+      <div class="rx-analytics-box">
+        <h4>${escapeHTML(title)}</h4>
+        ${
+          rows.length
+            ? rows.map(function (item) {
+                const name =
+                  item.name ??
+                  item.module_name ??
+                  item.module_id ??
+                  item.action_target ??
+                  item.device_type ??
+                  item.operating_system ??
+                  item.browser ??
+                  item.referrer ??
+                  'Sin dato';
+
+                const count = item.count ?? item.total ?? item.events ?? 0;
+
+                return `
+                  <div class="rx-analytics-row">
+                    <span>${escapeHTML(name || 'Directo')}</span>
+                    <b>${formatNumber(count)}</b>
+                  </div>
+                `;
+              }).join('')
+            : '<div class="rx-analytics-loading">Sin datos para este período.</div>'
+        }
+      </div>
+    `;
+  }
+
+  async function loadDashboard(days) {
+    if (loadingDashboard) return;
+    loadingDashboard = true;
+
+    try {
+      if (!(await isAdmin())) {
+        const existing = document.getElementById(PANEL_ID);
+        if (existing) existing.remove();
+        return;
+      }
+
+      addStyles();
+      const panel = ensurePanel();
+      if (!panel) return;
+
+      const content = document.getElementById('rxRepairContent');
+      if (content) {
+        content.className = 'rx-analytics-loading';
+        content.textContent = 'Cargando estadísticas…';
+      }
+
+      if (typeof db === 'undefined' || !db || typeof db.rpc !== 'function') {
+        throw new Error('No se encuentra disponible la conexión existente con Supabase.');
+      }
+
+      const result = await db.rpc(RPC_NAME, {
+        p_days: Math.max(1, Math.min(365, Number(days) || 7))
+      });
+
+      if (result.error) throw result.error;
+
+      const data = result.data || {};
+
+      document.getElementById('rxRepairEvents').textContent =
+        formatNumber(data.total_events);
+      document.getElementById('rxRepairVisitors').textContent =
+        formatNumber(data.unique_visitors);
+      document.getElementById('rxRepairSessions').textContent =
+        formatNumber(data.sessions);
+      document.getElementById('rxRepairNew').textContent =
+        formatNumber(data.new_visitors);
+
+      if (content) {
+        content.className = '';
+        content.innerHTML = `
+          <div class="rx-analytics-grid">
+            ${renderList('Módulos más visitados', data.modules)}
+            ${renderList('Dispositivos', data.devices)}
+            ${renderList('Sistemas operativos', data.systems)}
+            ${renderList('Navegadores', data.browsers)}
+            ${renderList('Acciones', data.actions)}
+            ${renderList('Procedencia', data.referrers)}
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('RoXThal: error al recuperar la analítica detallada:', error);
+      const content = document.getElementById('rxRepairContent');
+      if (content) {
+        content.className = 'rx-analytics-error';
+        content.textContent =
+          'No se pudieron cargar las estadísticas. Revisa la consola del navegador y la función roxthal_visits_dashboard de Supabase.';
+      }
+    } finally {
+      loadingDashboard = false;
+    }
+  }
+
+  async function checkVisitsPanel() {
+    const visits = document.getElementById('visits');
+    if (!visits || visits.classList.contains('hidden')) return;
+
+    if (!(await isAdmin())) {
+      const existing = document.getElementById(PANEL_ID);
+      if (existing) existing.remove();
+      return;
+    }
+
+    addStyles();
+    const panel = ensurePanel();
+    if (panel && panel.dataset.repairLoaded !== '1') {
+      panel.dataset.repairLoaded = '1';
+      await loadDashboard(7);
+    }
+  }
+
+  function start() {
+    if (observerInstalled) return;
+    observerInstalled = true;
+
+    const visits = document.getElementById('visits');
+    if (visits) {
+      const observer = new MutationObserver(checkVisitsPanel);
+      observer.observe(visits, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-rx-repair-days]');
+      if (button) return;
+
+      const visits = document.getElementById('visits');
+      if (visits && !visits.classList.contains('hidden')) {
+        checkVisitsPanel();
+      }
+    });
+
+    checkVisitsPanel();
+    setInterval(checkVisitsPanel, 1500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+
+       
    
 </body>
 </html>
