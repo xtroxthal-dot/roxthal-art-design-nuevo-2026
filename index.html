@@ -69452,5 +69452,494 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN DE PROTECCIÓN VISUAL TATTOO FLASH -->
 
+   
+<!-- =========================================================
+     RoXThal Kids Art — módulo independiente
+     Pegar una sola vez antes de </body>
+     ========================================================= -->
+<style id="rxka-final-style">
+#rxka-home-card{cursor:pointer;position:relative;overflow:hidden}
+#rxka-home-card .rxka-home-icon{font-size:42px;margin-bottom:8px}
+#rxka-overlay{display:none;position:fixed;inset:0;z-index:999990;background:rgba(5,5,8,.88);padding:12px;overflow:auto;color:#f7f2e8}
+#rxka-overlay.rxka-open{display:block}
+#rxka-panel{max-width:1050px;margin:0 auto;background:#111016;border:1px solid #b9974b;border-radius:18px;padding:clamp(14px,3vw,26px);box-shadow:0 20px 70px #000}
+#rxka-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #554526;padding-bottom:14px;margin-bottom:18px}
+#rxka-head h2{margin:0;font-size:clamp(22px,4vw,32px);color:#e4c16b}
+#rxka-close{border:1px solid #786238;background:#211d17;color:#fff;border-radius:10px;min-width:44px;min-height:44px;font-size:22px;cursor:pointer}
+#rxka-intro{line-height:1.6;color:#ded8cc}
+.rxka-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:13px;margin-top:18px}
+.rxka-card{background:#19171e;border:1px solid #403747;border-radius:14px;padding:16px;min-width:0}
+.rxka-card h3{margin:0 0 8px;color:#f0d48a;font-size:19px}
+.rxka-card p{color:#d0c9d1;line-height:1.5}
+.rxka-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;padding:10px 14px;border:1px solid #9a7b3f;border-radius:10px;background:#302717;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;margin:4px 4px 4px 0}
+.rxka-btn.primary{background:#d4ad55;color:#17120a;border-color:#d4ad55}
+.rxka-btn:focus-visible,#rxka-close:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.rxka-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.rxka-tools label{display:flex;align-items:center;gap:7px;color:#eee}
+#rxka-canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;background:#fff;border-radius:10px;border:2px solid #d5b15e;touch-action:none}
+.rxka-result{min-height:50px;padding:12px;border-radius:10px;background:#24202a;color:#fff;line-height:1.6;margin-top:10px;white-space:pre-wrap}
+.rxka-memory{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.rxka-memory button{min-height:64px;border:1px solid #8c7549;border-radius:10px;background:#29232d;color:#fff;font-size:clamp(22px,5vw,32px);cursor:pointer}
+.rxka-memory button:disabled{opacity:1;background:#493d26}
+.rxka-note{font-size:13px;color:#bfb6c5;line-height:1.5}
+@media(max-width:520px){#rxka-overlay{padding:6px}#rxka-panel{padding:12px;border-radius:12px}.rxka-memory button{min-height:56px}}
+</style>
+
+<div id="rxka-overlay" aria-hidden="true">
+  <section id="rxka-panel" role="dialog" aria-modal="true" aria-labelledby="rxka-title">
+    <header id="rxka-head">
+      <h2 id="rxka-title">🧒 RoXThal Kids Art</h2>
+      <button id="rxka-close" type="button" aria-label="Cerrar RoXThal Kids Art">×</button>
+    </header>
+
+    <p id="rxka-intro">Un espacio para crear, jugar, aprender y descubrir el arte. Elegí una actividad o entrá directamente a los cursos, talleres y herramientas infantiles que ya existen en RoXThal.</p>
+
+    <div class="rxka-grid">
+      <article class="rxka-card">
+        <h3>🎨 Mesa de dibujo</h3>
+        <p>Dibujá con el dedo o el ratón, cambiá el color y el grosor, borrá o guardá tu obra como imagen.</p>
+        <div class="rxka-tools">
+          <label>Color <input id="rxka-color" type="color" value="#e74c3c"></label>
+          <label>Grosor <input id="rxka-size" type="range" min="2" max="32" value="8"></label>
+        </div>
+        <div class="rxka-tools">
+          <button class="rxka-btn" type="button" data-rxka-action="eraser">🧽 Borrador</button>
+          <button class="rxka-btn" type="button" data-rxka-action="clear">🗑️ Limpiar</button>
+          <button class="rxka-btn primary" type="button" data-rxka-action="save">💾 Guardar dibujo</button>
+        </div>
+        <canvas id="rxka-canvas" width="1000" height="750" aria-label="Lienzo para dibujar"></canvas>
+        <p class="rxka-note">El dibujo se guarda en el dispositivo como PNG. No se sube a internet.</p>
+      </article>
+
+      <article class="rxka-card">
+        <h3>⭐ Desafío creativo</h3>
+        <p>Ideas nuevas para practicar dibujo e imaginación.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="challenge">Dame un desafío</button>
+        <div id="rxka-challenge" class="rxka-result" role="status" aria-live="polite">Dibujá un animal inventado con tres colores.</div>
+      </article>
+
+      <article class="rxka-card">
+        <h3>📖 Fábrica de cuentos</h3>
+        <p>Combiná personajes, lugares y objetos para inventar una historia.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="story">Inventar cuento</button>
+        <div id="rxka-story" class="rxka-result" role="status" aria-live="polite">Había una vez...</div>
+      </article>
+
+      <article class="rxka-card">
+        <h3>♻️ Arte con reciclaje</h3>
+        <p>Ideas para transformar materiales reutilizables en una obra.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="recycle">Nueva idea</button>
+        <div id="rxka-recycle" class="rxka-result" role="status" aria-live="polite">Convertí una caja vacía en una ciudad de colores.</div>
+      </article>
+
+      <article class="rxka-card">
+        <h3>🧠 Juego de memoria</h3>
+        <p>Encontrá las parejas de dibujos. Tocá dos cartas por turno.</p>
+        <button class="rxka-btn" type="button" data-rxka-action="memory-reset">🔄 Reiniciar juego</button>
+        <div id="rxka-memory" class="rxka-memory" aria-label="Juego de memoria"></div>
+        <div id="rxka-memory-status" class="rxka-result" role="status" aria-live="polite">Encontrá las parejas.</div>
+      </article>
+
+      <article class="rxka-card">
+        <h3>🖍️ Herramientas infantiles originales</h3>
+        <p>Accedé a Arte Infantil dentro de RoXThal School Atelier, sin reemplazar ni duplicar sus herramientas.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="original">Abrir Arte Infantil original</button>
+      </article>
+
+      <article class="rxka-card">
+        <h3>📚 Cursos para niños</h3>
+        <p>Entrá a la Escuela para consultar los cursos publicados por RoXThal.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="courses">Ver cursos</button>
+      </article>
+
+      <article class="rxka-card">
+        <h3>🖌️ Talleres infantiles</h3>
+        <p>Consultá los talleres disponibles en la sección oficial de Escuela · Cursos y Talleres.</p>
+        <button class="rxka-btn primary" type="button" data-rxka-action="workshops">Ver talleres</button>
+        <p class="rxka-note">En la app actual, cursos y talleres se publican en la misma sección; no se crea una lista paralela.</p>
+      </article>
+    </div>
+  </section>
+</div>
+
+<script id="rxka-final-script">
+(function(){
+  'use strict';
+
+  if(window.__rxkaFinalInstalled) return;
+  window.__rxkaFinalInstalled = true;
+
+  const $ = id => document.getElementById(id);
+  const overlay = $('rxka-overlay');
+  const canvas = $('rxka-canvas');
+
+  if(!overlay || !canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+
+  let drawing = false;
+  let last = null;
+  let erasing = false;
+  let previousOverflow = '';
+
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  function open(){
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    overlay.classList.add('rxka-open');
+    overlay.setAttribute('aria-hidden','false');
+    $('rxka-close').focus();
+  }
+
+  function close(){
+    overlay.classList.remove('rxka-open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow = previousOverflow;
+  }
+
+  $('rxka-close').addEventListener('click',close);
+
+  overlay.addEventListener('click',e=>{
+    if(e.target === overlay) close();
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key === 'Escape' && overlay.classList.contains('rxka-open')) close();
+  });
+
+  function installHomeCard(){
+    const grid = $('moduleGrid');
+    if(!grid || $('rxka-home-card')) return !!grid;
+
+    const card = document.createElement('article');
+    card.id = 'rxka-home-card';
+    card.className = 'module';
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label','Abrir RoXThal Kids Art');
+
+    card.innerHTML =
+      '<div class="module-content">' +
+      '<div class="rxka-home-icon" aria-hidden="true">🧒🎨</div>' +
+      '<div class="module-num">MÓDULO KIDS</div>' +
+      '<h3>RoXThal Kids Art</h3>' +
+      '<p>Arte, juegos, cursos y talleres infantiles</p>' +
+      '<button class="btn btn-primary btn-small" type="button">Entrar</button>' +
+      '</div>';
+
+    card.addEventListener('click',open);
+
+    card.addEventListener('keydown',e=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        open();
+      }
+    });
+
+    grid.appendChild(card);
+    return true;
+  }
+
+  installHomeCard();
+
+  const homeObserver = new MutationObserver(()=>{
+    if(!$('rxka-home-card')) installHomeCard();
+  });
+
+  const gridNow = $('moduleGrid');
+  if(gridNow) homeObserver.observe(gridNow,{childList:true});
+
+  const bodyObserver = new MutationObserver(()=>{
+    if(!$('rxka-home-card')) installHomeCard();
+  });
+
+  bodyObserver.observe(document.body,{childList:true,subtree:true});
+
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    return {
+      x:(e.clientX-r.left)*canvas.width/r.width,
+      y:(e.clientY-r.top)*canvas.height/r.height
+    };
+  }
+
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    last = pos(e);
+
+    ctx.beginPath();
+    ctx.arc(
+      last.x,
+      last.y,
+      Math.max(1,Number($('rxka-size').value)/2),
+      0,
+      Math.PI*2
+    );
+    ctx.fillStyle = erasing ? '#ffffff' : $('rxka-color').value;
+    ctx.fill();
+  });
+
+  canvas.addEventListener('pointermove',e=>{
+    if(!drawing) return;
+    e.preventDefault();
+
+    const p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x,last.y);
+    ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle = erasing ? '#ffffff' : $('rxka-color').value;
+    ctx.lineWidth = Number($('rxka-size').value);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    last = p;
+  });
+
+  const stop = ()=>{
+    drawing = false;
+    last = null;
+  };
+
+  canvas.addEventListener('pointerup',stop);
+  canvas.addEventListener('pointercancel',stop);
+  canvas.addEventListener('lostpointercapture',stop);
+
+  const challenges = [
+    'Dibujá un dragón que cuide una flor.',
+    'Inventá un animal con alas y ruedas.',
+    'Creá una casa donde todo esté hecho de formas geométricas.',
+    'Dibujá un paisaje usando solo tres colores.',
+    'Diseñá un robot que ayude a cuidar el planeta.',
+    'Inventá un monstruo simpático con cinco ojos.',
+    'Dibujá tu comida favorita como si fuera un personaje.',
+    'Creá una ciudad debajo del mar.'
+  ];
+
+  const characters = [
+    'una tortuga astronauta',
+    'un gato pintor',
+    'una mariposa gigante',
+    'un robot jardinero',
+    'un dragón amable',
+    'un pez que toca la batería'
+  ];
+
+  const places = [
+    'en una isla flotante',
+    'en un bosque de caramelos',
+    'en una ciudad submarina',
+    'en un planeta de colores',
+    'en un castillo diminuto',
+    'en una escuela de animales'
+  ];
+
+  const objects = [
+    'una llave brillante',
+    'un pincel mágico',
+    'una bicicleta voladora',
+    'una caja misteriosa',
+    'una estrella perdida',
+    'un paraguas parlante'
+  ];
+
+  const recycle = [
+    'Transformá una caja vacía en una ciudad de colores.',
+    'Usá tubos de cartón para construir un cohete.',
+    'Convertí papel usado en un collage de animales.',
+    'Creá un portalápices decorado con un envase limpio.',
+    'Armá un móvil artístico con cartón y retazos.',
+    'Diseñá un robot con envases limpios y tapas.'
+  ];
+
+  const memoryFaces = ['🐸','🦋','🐱','🌈','⭐','🐢','🎨','🐙'];
+  let memoryCards = [];
+  let opened = [];
+  let matched = 0;
+  let lock = false;
+
+  function resetMemory(){
+    memoryCards = [...memoryFaces,...memoryFaces]
+      .sort(()=>Math.random()-.5)
+      .map((v,i)=>({v,i,done:false}));
+
+    opened = [];
+    matched = 0;
+    lock = false;
+    renderMemory();
+    $('rxka-memory-status').textContent = 'Encontrá las 8 parejas.';
+  }
+
+  function renderMemory(){
+    const box = $('rxka-memory');
+    box.innerHTML = '';
+
+    memoryCards.forEach((c,i)=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = (c.done || opened.includes(i)) ? c.v : '❔';
+      b.setAttribute(
+        'aria-label',
+        (c.done || opened.includes(i)) ? 'Carta '+c.v : 'Carta oculta'
+      );
+      b.disabled = c.done;
+      b.addEventListener('click',()=>flip(i));
+      box.appendChild(b);
+    });
+  }
+
+  function flip(i){
+    if(lock || memoryCards[i].done || opened.includes(i)) return;
+
+    opened.push(i);
+    renderMemory();
+
+    if(opened.length < 2) return;
+
+    const [a,b] = opened;
+
+    if(memoryCards[a].v === memoryCards[b].v){
+      memoryCards[a].done = true;
+      memoryCards[b].done = true;
+      opened = [];
+      matched += 2;
+      renderMemory();
+
+      $('rxka-memory-status').textContent =
+        matched === memoryCards.length
+          ? '🎉 ¡Encontraste todas las parejas!'
+          : '¡Pareja encontrada!';
+
+      return;
+    }
+
+    lock = true;
+
+    setTimeout(()=>{
+      opened = [];
+      lock = false;
+      renderMemory();
+    },750);
+  }
+
+  resetMemory();
+
+  function openOriginal(){
+    close();
+
+    const launcher = $('rsaLauncher');
+
+    if(!launcher){
+      alert('No se encontró el acceso a RoXThal School Atelier. Comprobá que el módulo original esté presente en la app.');
+      return;
+    }
+
+    const rsaOverlay = $('rsaOverlay');
+
+    if(!rsaOverlay || !rsaOverlay.classList.contains('rsa-open')){
+      launcher.click();
+    }
+
+    setTimeout(()=>{
+      const tab = document.querySelector(
+        '#rsaTabs [data-rsa-page="infantil"]'
+      );
+
+      if(tab){
+        tab.click();
+      }else{
+        alert('Se abrió School Atelier, pero no se encontró la pestaña Arte Infantil.');
+      }
+    },250);
+  }
+
+  function openSchool(){
+    close();
+
+    const btn =
+      document.querySelector('#home [data-go="school"]') ||
+      document.querySelector('[data-go="school"]');
+
+    if(btn){
+      btn.click();
+      return;
+    }
+
+    const school = $('school');
+
+    if(school){
+      document.querySelectorAll('.view').forEach(v=>{
+        v.classList.add('hidden');
+      });
+
+      school.classList.remove('hidden');
+      school.scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+
+    alert('No se encontró la sección Escuela en esta versión de la app.');
+  }
+
+  overlay.addEventListener('click',e=>{
+    const b = e.target.closest('[data-rxka-action]');
+    if(!b) return;
+
+    switch(b.dataset.rxkaAction){
+      case 'eraser':
+        erasing = !erasing;
+        b.textContent = erasing
+          ? '🖍️ Volver al color'
+          : '🧽 Borrador';
+        break;
+
+      case 'clear':
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        break;
+
+      case 'save': {
+        const a = document.createElement('a');
+        a.download = 'roxthal-kids-art-'+Date.now()+'.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+        break;
+      }
+
+      case 'challenge':
+        $('rxka-challenge').textContent = pick(challenges);
+        break;
+
+      case 'story':
+        $('rxka-story').textContent =
+          'Había una vez '+pick(characters)+
+          ' que vivía '+pick(places)+
+          '. Un día encontró '+pick(objects)+
+          ' y decidió usarlo para ayudar a sus amigos. ¿Cómo termina tu cuento?';
+        break;
+
+      case 'recycle':
+        $('rxka-recycle').textContent = pick(recycle);
+        break;
+
+      case 'memory-reset':
+        resetMemory();
+        break;
+
+      case 'original':
+        openOriginal();
+        break;
+
+      case 'courses':
+      case 'workshops':
+        openSchool();
+        break;
+    }
+  });
+})();
+</script>
+
+
 </body>
 </html>
