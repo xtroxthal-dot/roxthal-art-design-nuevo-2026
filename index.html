@@ -67187,7 +67187,136 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
   }
 })();
 </script>
-<!-- FIN ROXTHAL: CONSULTAS INDIVIDUALES DE GALERÍA Y MULTIMEDIA -->                                                                                                                                                                                                                                          
+<!-- FIN ROXTHAL: CONSULTAS INDIVIDUALES DE GALERÍA Y MULTIMEDIA -->    
+<!-- ROXTHAL — CONSULTAS INDIVIDUALES DE CURSOS -->
+<style id="roxthal-school-inquiry-style">
+  .rx-school-inquiry {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid #f2c400;
+    border-radius: 9px;
+    background: #f2c400;
+    color: #080808;
+    font-size: 14px;
+    font-weight: 750;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .rx-school-inquiry:hover {
+    background: #ffe04a;
+  }
+
+  .rx-school-inquiry:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+</style>
+
+<script id="roxthal-school-inquiry-script">
+(function () {
+  'use strict';
+
+  if (window.__ROXTHAL_SCHOOL_INQUIRY_V1__) return;
+  window.__ROXTHAL_SCHOOL_INQUIRY_V1__ = true;
+
+  function prepararConsultas() {
+    const box = document.getElementById('coursesList');
+    if (!box) return;
+
+    box.querySelectorAll('.rx-school-item').forEach(function (item) {
+      const body = item.querySelector('.rx-school-body');
+      const titleElement = item.querySelector('.rx-school-title span');
+
+      if (!body || !titleElement) return;
+      if (body.querySelector('.rx-school-inquiry')) return;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'rx-school-inquiry';
+      button.textContent = '📩 Consultar por este curso';
+
+      button.dataset.rxCourseTitle = titleElement.textContent.trim();
+
+      body.appendChild(button);
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('.rx-school-inquiry');
+    if (!button) return;
+
+    const openButton = document.getElementById('rxSolicitudButton');
+    const type = document.getElementById('rxSolTipo');
+    const detail = document.getElementById('rxSolDetalle');
+
+    if (!openButton || !type || !detail) {
+      alert('No se pudo abrir la solicitud. Inténtalo nuevamente.');
+      return;
+    }
+
+    const title = button.dataset.rxCourseTitle || 'Curso de RoXThal';
+
+    const item = button.closest('.rx-school-item');
+    const description = item
+      ? item.querySelector('.rx-school-description')
+      : null;
+
+    const details = item
+      ? item.querySelector('.rx-school-details')
+      : null;
+
+    const descriptionText = description
+      ? description.innerText.trim()
+      : '';
+
+    const detailsText = details
+      ? details.innerText.trim()
+      : '';
+
+    const option = Array.from(type.options).find(function (entry) {
+      return entry.text.trim() === 'Formación o capacitación artística';
+    });
+
+    type.value = option ? option.value : 'Otra consulta';
+
+    detail.value =
+      'Hola, quiero consultar por el siguiente curso de RoXThal Art Design.\n\n' +
+      'Curso: ' + title + '\n' +
+      (descriptionText ? '\nDescripción:\n' + descriptionText + '\n' : '') +
+      (detailsText ? '\nInformación del curso:\n' + detailsText + '\n' : '') +
+      '\nMi consulta: ';
+
+    openButton.click();
+    detail.focus();
+  });
+
+  function iniciar() {
+    prepararConsultas();
+
+    const box = document.getElementById('coursesList');
+    if (!box) return;
+
+    const observer = new MutationObserver(prepararConsultas);
+
+    observer.observe(box, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL — CONSULTAS INDIVIDUALES DE CURSOS -->
+   
    
 </body>
 </html>
