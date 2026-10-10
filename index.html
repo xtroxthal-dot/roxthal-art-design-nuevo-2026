@@ -66942,24 +66942,24 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
     let desired = '';
 
     if (/piercing/.test(normalized)) {
-      desired = 'Piercing — colocación';
-    } else if (/tatuaj|tattoo/.test(normalized)) {
-      desired = 'Tatuaje — consulta o presupuesto';
-    } else if (/dibujo|pintura/.test(normalized)) {
-      desired = 'Dibujo y pintura profesional';
-    } else if (/fileteado/.test(normalized)) {
-      desired = 'Fileteado';
-    } else if (/niños|ninos|infantil/.test(normalized)) {
-      desired = 'Taller de arte para niños';
-    } else if (/mural/.test(normalized)) {
-      desired = 'Murales';
-    } else if (/trampantojo/.test(normalized)) {
-      desired = 'Trampantojos';
-    } else if (/diseño|ilustración|ilustracion/.test(normalized)) {
-      desired = 'Diseño artístico / ilustración';
-    } else if (/iniciación|iniciacion/.test(normalized)) {
-      desired = 'Iniciación al tatuaje';
-    }
+  desired = 'Piercing — colocación';
+} else if (/iniciación|iniciacion/.test(normalized)) {
+  desired = 'Iniciación al tatuaje';
+} else if (/tatuaj|tattoo/.test(normalized)) {
+  desired = 'Tatuaje — consulta o presupuesto';
+} else if (/dibujo|pintura/.test(normalized)) {
+  desired = 'Dibujo y pintura profesional';
+} else if (/fileteado/.test(normalized)) {
+  desired = 'Fileteado';
+} else if (/niños|ninos|infantil/.test(normalized)) {
+  desired = 'Taller de arte para niños';
+} else if (/mural/.test(normalized)) {
+  desired = 'Murales';
+} else if (/trampantojo/.test(normalized)) {
+  desired = 'Trampantojos';
+} else if (/diseño|ilustración|ilustracion/.test(normalized)) {
+  desired = 'Diseño artístico / ilustración';
+}
 
     const option = Array.from(type.options).find(function (item) {
       return item.text.trim() === desired;
