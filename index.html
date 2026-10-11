@@ -70579,7 +70579,330 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 <!-- =============== FIN REPARADOR DE 5 PORTADAS =============== -->
+<script>
+(function(){
+  'use strict';
+  if (window.__RX_COLLAB_ACTIVITY_TRACKING_V1__) return;
+  window.__RX_COLLAB_ACTIVITY_TRACKING_V1__ = true;
 
+  const ACTIVITY_URL = 'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+  const ACTIVITY_KEY = 'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+  const activityDb = window.db || (
+    window.supabase &&
+    window.supabase.createClient(ACTIVITY_URL, ACTIVITY_KEY)
+  );
+
+  const getToken = () => {
+    try { return localStorage.getItem('roxthal_collab_token') || ''; }
+    catch(e) { return ''; }
+  };
+
+  const getCode = () => {
+    try { return localStorage.getItem('roxthal_collab_code') || ''; }
+    catch(e) { return ''; }
+  };
+
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+
+  const formatDate = v => {
+    try { return new Date(v).toLocaleString('es-AR'); }
+    catch(e) { return String(v || ''); }
+  };
+
+  async function track(action, targetType, targetId, targetLabel, targetUrl, metadata){
+    const token = getToken();
+    if (!activityDb || !token) return false;
+
+    try {
+      const {data, error} = await activityDb.rpc(
+        'roxthal_log_collaborator_activity',
+        {
+          p_access_token: token,
+          p_action_type: action,
+          p_target_type: targetType || null,
+          p_target_id: targetId || null,
+          p_target_label: targetLabel || null,
+          p_target_url: targetUrl || null,
+          p_metadata: metadata && typeof metadata === 'object' ? metadata : {}
+        }
+      );
+
+      if (error) {
+        console.warn('[RoXThal activity]', error.message);
+        return false;
+      }
+      return data === true;
+    } catch(e) {
+      console.warn('[RoXThal activity]', e);
+      return false;
+    }
+  }
+
+  /* COMPARTIR LA APP */
+  if (typeof window.rxCollabShareApp === 'function') {
+    const originalShareApp = window.rxCollabShareApp;
+
+    window.rxCollabShareApp = async function(){
+      const code = getCode();
+      const shareUrl = location.origin + location.pathname +
+        (code ? '?ref=' + encodeURIComponent(code) : '');
+
+      void track(
+        'share_app',
+        'app',
+        null,
+        'RoXThal Art Design',
+        shareUrl,
+        {collaborator_code: code, method: 'share_sheet_attempt'}
+      );
+
+      return originalShareApp.apply(this, arguments);
+    };
+  }
+
+  /* COMPARTIR ARTÍCULOS Y COPIAR ENLACES */
+  document.addEventListener('click', function(event){
+    const button = event.target && event.target.closest
+      ? event.target.closest(
+          '.rx-collab-product-share, .rx-collab-product-copy, #rxCollabDashboard button'
+        )
+      : null;
+
+    if (!button) return;
+
+    const isShare = button.classList.contains('rx-collab-product-share');
+    const isCopy = button.classList.contains('rx-collab-product-copy');
+    const label = (button.textContent || '').trim();
+
+    if (!isShare && !isCopy && !/compartir|copiar enlace/i.test(label)) return;
+
+    const url = button.getAttribute('data-url') || '';
+    const title = button.getAttribute('data-title') ||
+      button.closest('.rx-collab-product')?.querySelector('h3')?.textContent?.trim() ||
+      'Enlace personal del colaborador';
+
+    let parsed = null;
+    try {
+      parsed = new URL(url || (location.pathname + location.search), location.origin);
+    } catch(e) {}
+
+    const item = parsed ? parsed.searchParams.get('item') : null;
+    const action = (isShare || (!isCopy && /compartir/i.test(label)))
+      ? 'share_item'
+      : 'copy_link';
+
+    void track(
+      action,
+      (isShare || isCopy) ? 'catalog_item' : 'referral_link',
+      item,
+      title,
+      parsed ? parsed.pathname + parsed.search : (url || location.pathname + location.search),
+      {method: action === 'share_item' ? 'share_sheet_attempt' : 'copy_button'}
+    );
+  }, true);
+
+  /* INICIO DE SESIÓN */
+  if (typeof window.rxCollabLogin === 'function') {
+    const originalLogin = window.rxCollabLogin;
+
+    window.rxCollabLogin = async function(){
+      const submittedCode = (
+        document.getElementById('rxCollabLoginCode')?.value || ''
+      ).trim().toUpperCase();
+
+      const submittedToken = (
+        document.getElementById('rxCollabLoginToken')?.value || ''
+      ).trim();
+
+      const result = await originalLogin.apply(this, arguments);
+
+      if (
+        submittedCode &&
+        submittedToken &&
+        getCode() === submittedCode &&
+        getToken() === submittedToken
+      ) {
+        void track(
+          'login_success',
+          'account',
+          submittedCode,
+          'Inicio de sesión del colaborador',
+          location.pathname,
+          {}
+        );
+      }
+
+      return result;
+    };
+  }
+
+  /* CIERRE DE SESIÓN */
+  if (typeof window.rxCollabLogout === 'function') {
+    const originalLogout = window.rxCollabLogout;
+
+    window.rxCollabLogout = function(){
+      void track(
+        'logout',
+        'account',
+        getCode(),
+        'Cierre de sesión del colaborador',
+        location.pathname,
+        {}
+      );
+
+      return originalLogout.apply(this, arguments);
+    };
+  }
+
+  /* PANEL DE ACTIVIDAD PARA EL ADMINISTRADOR */
+  window.rxCollabActivityRefresh = async function(){
+    const root = document.getElementById('rxCollabAdmin');
+    if (!root || !activityDb) return;
+
+    let panel = document.getElementById('rxCollabActivityPanel');
+
+    if (!panel) {
+      panel = document.createElement('section');
+      panel.id = 'rxCollabActivityPanel';
+      panel.className = 'card rx-collab-admin-section';
+      panel.style.marginTop = '18px';
+      root.appendChild(panel);
+    }
+
+    panel.innerHTML =
+      '<h3>📋 Actividad de colaboradores</h3>' +
+      '<p class="small">Cargando registros…</p>';
+
+    try {
+      const {data, error} = await activityDb.rpc(
+        'roxthal_collaborator_activity_admin_v1'
+      );
+
+      if (error) throw error;
+
+      const payload = Array.isArray(data) ? data[0] : data;
+      const activities = payload && Array.isArray(payload.activities)
+        ? payload.activities : [];
+      const totals = payload && Array.isArray(payload.totals)
+        ? payload.totals : [];
+
+      window.__rxCollabActivityData = activities;
+      window.__rxCollabActivityTotals = totals;
+
+      window.rxRenderCollabActivity = function(){
+        const p = document.getElementById('rxCollabActivityPanel');
+        if (!p) return;
+
+        const rows = window.__rxCollabActivityData || [];
+        const summary = window.__rxCollabActivityTotals || [];
+
+        const actionFilter = p.querySelector('#rxActivityActionFilter')?.value || 'all';
+        const collaboratorFilter = p.querySelector('#rxActivityCollaboratorFilter')?.value || 'all';
+
+        const filtered = rows.filter(a =>
+          (actionFilter === 'all' || a.action_type === actionFilter) &&
+          (collaboratorFilter === 'all' || a.collaborator_id === collaboratorFilter)
+        );
+
+        const labels = {
+          share_app: 'Compartir app (intento)',
+          share_item: 'Compartir artículo (intento)',
+          copy_link: 'Copiar enlace',
+          login_success: 'Inicio de sesión',
+          logout: 'Cierre de sesión'
+        };
+
+        const summaryHtml = summary.map(c =>
+          '<div class="stat"><b>' + Number(c.total_actions || 0) +
+          '</b><span>' + esc(c.collaborator_name || c.collaborator_code || 'Colaborador') +
+          ' · ' + Number(c.shares || 0) + ' compartidos · ' +
+          Number(c.copies || 0) + ' copias</span></div>'
+        ).join('');
+
+        const rowHtml = filtered.slice(0, 200).map(a =>
+          '<tr><td>' + esc(formatDate(a.created_at)) +
+          '</td><td>' + esc(a.collaborator_name || '') +
+          ' (' + esc(a.collaborator_code || '') +
+          ')</td><td>' + esc(labels[a.action_type] || a.action_type || '') +
+          '</td><td>' + esc(a.target_label || '—') +
+          '</td><td>' + esc(a.target_url || '—') + '</td></tr>'
+        ).join('');
+
+        p.innerHTML =
+          '<h3>📋 Actividad de colaboradores</h3>' +
+          '<p class="small" style="margin:8px 0 14px">' +
+          rows.length + ' registros recientes; máximo 500. ' +
+          'Compartir registra el intento, no confirma el envío final.</p>' +
+          '<div class="stats">' + (summaryHtml || '<p>No hay actividad registrada.</p>') + '</div>' +
+          '<div class="toolbar">' +
+            '<select id="rxActivityActionFilter" aria-label="Filtrar acción">' +
+              '<option value="all">Todas las acciones</option>' +
+              '<option value="share_app">Compartir app</option>' +
+              '<option value="share_item">Compartir artículo</option>' +
+              '<option value="copy_link">Copiar enlace</option>' +
+              '<option value="login_success">Inicio de sesión</option>' +
+              '<option value="logout">Cierre de sesión</option>' +
+            '</select>' +
+            '<select id="rxActivityCollaboratorFilter" aria-label="Filtrar colaborador">' +
+              '<option value="all">Todos los colaboradores</option>' +
+              summary.map(c =>
+                '<option value="' + esc(c.collaborator_id) + '">' +
+                esc(c.collaborator_name || c.collaborator_code || 'Colaborador') +
+                ' · ' + esc(c.collaborator_code || '') + '</option>'
+              ).join('') +
+            '</select>' +
+            '<button class="btn btn-primary btn-small" type="button" ' +
+            'onclick="rxCollabActivityRefresh()">Actualizar</button>' +
+          '</div>' +
+          '<div class="rx-collab-admin-table"><table>' +
+            '<thead><tr><th>Fecha</th><th>Colaborador</th><th>Acción</th>' +
+            '<th>Elemento</th><th>Destino</th></tr></thead><tbody>' +
+            (rowHtml || '<tr><td colspan="5">No hay registros para este filtro.</td></tr>') +
+            '</tbody></table></div>';
+
+        const af = p.querySelector('#rxActivityActionFilter');
+        const cf = p.querySelector('#rxActivityCollaboratorFilter');
+
+        if (af) {
+          af.value = actionFilter;
+          af.addEventListener('change', window.rxRenderCollabActivity);
+        }
+        if (cf) {
+          cf.value = collaboratorFilter;
+          cf.addEventListener('change', window.rxRenderCollabActivity);
+        }
+      };
+
+      window.rxRenderCollabActivity();
+
+    } catch(e) {
+      panel.innerHTML =
+        '<h3>📋 Actividad de colaboradores</h3>' +
+        '<p class="status err">No se pudo cargar la actividad: ' +
+        esc(e.message || 'Error de permisos o conexión') + '</p>';
+
+      console.error('[RoXThal activity admin]', e);
+    }
+  };
+
+  /* MOSTRAR EL PANEL AL ENTRAR EN ADMINISTRACIÓN */
+  if (typeof window.rxCollabOpenTab === 'function') {
+    const originalOpenTab = window.rxCollabOpenTab;
+
+    window.rxCollabOpenTab = async function(name){
+      const result = await originalOpenTab.apply(this, arguments);
+
+      if (name === 'admin') {
+        await window.rxCollabActivityRefresh();
+      }
+
+      return result;
+    };
+  }
+})();
+</script>
 
 </body>
 </html>
