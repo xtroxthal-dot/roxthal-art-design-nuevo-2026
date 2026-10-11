@@ -71105,7 +71105,18 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 })();
 <script>
+<!-- RoXThal · Reparación del arranque de analítica -->
+<script>
+(function () {
+  'use strict';
 
+  if (typeof window.observeVisits !== 'function') {
+    window.observeVisits = function observeVisits() {
+      /* El seguimiento principal ya instala sus propios observadores. */
+    };
+  }
+})();
+</script>
 
 </body>
 </html>
