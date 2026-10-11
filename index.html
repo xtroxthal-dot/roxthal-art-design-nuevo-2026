@@ -70904,5 +70904,207 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+       
+(function(){
+  'use strict';
+  if (window.__RX_COLLAB_FUNNEL_V1__) return;
+  window.__RX_COLLAB_FUNNEL_V1__ = true;
+
+  const URL = 'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+  const KEY = 'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+  const db = window.db || (window.supabase && window.supabase.createClient(URL, KEY));
+
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+
+  const money = v => Number(v || 0).toLocaleString('es-AR', {
+    style:'currency', currency:'ARS', maximumFractionDigits:0
+  });
+
+  const date = v => {
+    try { return v ? new Date(v).toLocaleString('es-AR') : '—'; }
+    catch(e) { return '—'; }
+  };
+
+  window.rxCollabFunnelRefresh = async function(){
+    const root = document.getElementById('rxCollabAdmin');
+    if (!root) return;
+
+    let panel = document.getElementById('rxCollabFunnelPanel');
+    if (!panel) {
+      panel = document.createElement('section');
+      panel.id = 'rxCollabFunnelPanel';
+      panel.className = 'card rx-collab-admin-section';
+      panel.style.marginTop = '18px';
+      root.appendChild(panel);
+    }
+
+    if (!db) {
+      panel.innerHTML = '<h3>📈 Rendimiento de colaboradores</h3><p class="status err">No está disponible la conexión con Supabase.</p>';
+      return;
+    }
+
+    panel.innerHTML = '<h3>📈 Rendimiento de colaboradores</h3><p class="small">Cargando clics, consultas, ventas y comisiones…</p>';
+
+    try {
+      const {data, error} = await db.rpc('roxthal_collaborator_funnel_admin_v1');
+      if (error) throw error;
+
+      const p = Array.isArray(data) ? (data[0] || {}) : (data || {});
+      const rows = Array.isArray(p.collaborators) ? p.collaborators : [];
+      const inquiries = Array.isArray(p.recent_inquiries) ? p.recent_inquiries : [];
+
+      const totals = rows.reduce((t, r) => {
+        t.clicks += Number(r.clicks || 0);
+        t.visitors += Number(r.unique_visitors || 0);
+        t.inquiries += Number(r.inquiries || 0);
+        t.sales += Number(r.sales_count || 0);
+        t.gross += Number(r.gross_sales || 0);
+        t.commission += Number(r.commission_total || 0);
+        return t;
+      }, {clicks:0,visitors:0,inquiries:0,sales:0,gross:0,commission:0});
+
+      const stats = [
+        ['Clics de referencia', totals.clicks],
+        ['Visitantes únicos', totals.visitors],
+        ['Consultas atribuidas', totals.inquiries],
+        ['Ventas registradas', totals.sales],
+        ['Importe vendido', money(totals.gross)],
+        ['Comisiones generadas', money(totals.commission)]
+      ].map(s =>
+        '<div class="stat"><b>' + esc(s[1]) +
+        '</b><span>' + esc(s[0]) + '</span></div>'
+      ).join('');
+
+      const collaboratorRows = rows.map(r =>
+        '<tr><td>' + esc(r.collaborator_name || '—') + '</td>' +
+        '<td>' + esc(r.collaborator_code || '—') + '</td>' +
+        '<td>' + Number(r.clicks || 0) + '</td>' +
+        '<td>' + Number(r.unique_visitors || 0) + '</td>' +
+        '<td>' + Number(r.unique_sessions || 0) + '</td>' +
+        '<td>' + Number(r.inquiries || 0) + '</td>' +
+        '<td>' + Number(r.sales_count || 0) + '</td>' +
+        '<td>' + esc(money(r.gross_sales)) + '</td>' +
+        '<td>' + esc(money(r.commission_total)) + '</td>' +
+        '<td>' + esc(money(r.commission_pending)) + '</td>' +
+        '<td>' + esc(money(r.commission_paid)) + '</td></tr>'
+      ).join('');
+
+      const inquiryRows = inquiries.slice(0,100).map(r =>
+        '<tr><td>' + esc(date(r.created_at)) +
+        '</td><td>' + esc(r.collaborator_name || '—') +
+        '</td><td>' + esc(r.collaborator_code || '—') +
+        '</td><td>' + esc(r.target_label || 'Solicitud de reserva') +
+        '</td></tr>'
+      ).join('');
+
+      panel.innerHTML =
+        '<h3>📈 Rendimiento de colaboradores</h3>' +
+        '<p class="small">Los clics y las consultas no equivalen a ventas. Las ventas y comisiones dependen de los registros existentes en la base de datos.</p>' +
+        '<div class="stats">' + stats + '</div>' +
+        '<div class="toolbar"><button class="btn btn-primary btn-small" type="button" onclick="rxCollabFunnelRefresh()">Actualizar rendimiento</button></div>' +
+        '<h4>Resultados por colaborador</h4>' +
+        '<div class="rx-collab-admin-table"><table><thead><tr>' +
+        '<th>Colaborador</th><th>Código</th><th>Clics</th><th>Visitantes</th>' +
+        '<th>Sesiones</th><th>Consultas</th><th>Ventas</th><th>Importe vendido</th>' +
+        '<th>Comisión total</th><th>Pendiente</th><th>Pagada</th>' +
+        '</tr></thead><tbody>' +
+        (collaboratorRows || '<tr><td colspan="11">Todavía no hay datos para mostrar.</td></tr>') +
+        '</tbody></table></div>' +
+        '<h4>Consultas recientes atribuidas</h4>' +
+        '<div class="rx-collab-admin-table"><table><thead><tr>' +
+        '<th>Fecha</th><th>Colaborador</th><th>Código</th><th>Consulta</th>' +
+        '</tr></thead><tbody>' +
+        (inquiryRows || '<tr><td colspan="4">Todavía no hay consultas atribuidas.</td></tr>') +
+        '</tbody></table></div>';
+
+    } catch(e) {
+      panel.innerHTML =
+        '<h3>📈 Rendimiento de colaboradores</h3>' +
+        '<p class="status err">No se pudo cargar el informe: ' +
+        esc(e && e.message ? e.message : 'error de conexión o permisos') +
+        '</p>';
+      console.error('[RoXThal collaborator funnel]', e);
+    }
+  };
+
+  if (typeof window.rxCollabOpenTab === 'function') {
+    const previousOpenTab = window.rxCollabOpenTab;
+    window.rxCollabOpenTab = async function(name){
+      const result = await previousOpenTab.apply(this, arguments);
+      if (name === 'admin') await window.rxCollabFunnelRefresh();
+      return result;
+    };
+  }
+
+  function installBookingAttribution(){
+    const form = document.getElementById('roxthalBookingForm');
+    const status = document.getElementById('roxBookingStatus');
+
+    if (!form || !status || form.dataset.rxFunnelObserverInstalled === '1') return;
+    form.dataset.rxFunnelObserverInstalled = '1';
+
+    let targetLabel = 'Solicitud de reserva';
+
+    form.addEventListener('submit', function(){
+      const service = document.getElementById('roxBookingService');
+      targetLabel = service && service.value
+        ? 'Reserva: ' + service.value
+        : 'Solicitud de reserva';
+    }, true);
+
+    const observer = new MutationObserver(function(){
+      if (!/Solicitud enviada correctamente/i.test(status.textContent || '')) return;
+
+      let ref = '';
+      let session = '';
+
+      try {
+        ref = (localStorage.getItem('roxthal_collab_ref') || '').trim().toUpperCase();
+        session = sessionStorage.getItem('roxthal_collab_session') || '';
+
+        if (!session) {
+          session = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : ('rx-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,12));
+
+          sessionStorage.setItem('roxthal_collab_session', session);
+        }
+      } catch(e) { return; }
+
+      if (!ref || session.length < 8 ||
+          form.dataset.rxFunnelLastSession === session || !db) return;
+
+      form.dataset.rxFunnelLastSession = session;
+
+      db.rpc('roxthal_record_collaborator_conversion', {
+        p_ref_code: ref,
+        p_session_id: session,
+        p_conversion_type: 'inquiry',
+        p_target_label: targetLabel
+      }).then(function(result){
+        if (result && result.error) {
+          console.warn('[RoXThal inquiry attribution]', result.error.message);
+        }
+      }).catch(function(e){
+        console.warn('[RoXThal inquiry attribution]', e);
+      });
+    });
+
+    observer.observe(status, {
+      childList:true, subtree:true, characterData:true
+    });
+  }
+
+  installBookingAttribution();
+
+  const pageObserver = new MutationObserver(installBookingAttribution);
+  if (document.body) {
+    pageObserver.observe(document.body, {childList:true,subtree:true});
+  }
+})();
+
+
 </body>
 </html>
