@@ -6082,7 +6082,15 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
      ------------------------------------------------------------ */
   async function recordEvent(type, extra) {
     try {
-      if (typeof db === 'undefined' || !db) return;
+      const client = window.db;
+
+if (!client || typeof client.from !== 'function') {
+  console.error(
+    '[RoXThal Analytics] Supabase no está disponible.',
+    { windowDb: !!window.db }
+  );
+  return;
+}
 
       const payload = Object.assign({
         visitor_id: visitorId,
@@ -6098,16 +6106,22 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
         metadata: {}
       }, extra || {});
 
-      const result = await db
-        .from(TABLE)
-        .insert(payload);
+   const result = await client
+  .from(TABLE)
+  .insert(payload);
 
-      if (result && result.error) {
-        console.warn(
-          'RoXThal Analytics:',
-          result.error.message
-        );
-      }
+if (result && result.error) {
+  console.error(
+    '[RoXThal Analytics] Error al guardar el evento:',
+    result.error.message,
+    result.error
+  );
+} else {
+  console.info(
+    '[RoXThal Analytics] Evento registrado:',
+    type
+  );
+}
     } catch (error) {
       /*
        * IMPORTANTE:
