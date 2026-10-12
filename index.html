@@ -71865,6 +71865,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 
+
 <script id="rxpw-navigation-fix">
 (function () {
   'use strict';
@@ -71872,38 +71873,106 @@ document.addEventListener('DOMContentLoaded',function(){
   if (window.__rxpwNavigationFixInstalled) return;
   window.__rxpwNavigationFixInstalled = true;
 
+  const VIEW_ID = 'rxpw-view';
+
+  const SECTION_IDS = [
+    'home', 'services', 'gallery', 'school', 'schoolAtelier',
+    'radio', 'reviews', 'raffle', 'payments', 'search',
+    'contact', 'visits', 'about', 'ai', 'admin',
+    'students', 'academia', 'collaborators'
+  ];
+
+  function openPrizeWheel() {
+    const view = document.getElementById(VIEW_ID);
+
+    if (!view) {
+      console.error(
+        '[Ruleta RoXThal] No existe #rxpw-view.'
+      );
+      return false;
+    }
+
+    // Ocultar las vistas normales y las vistas dinámicas.
+    document.querySelectorAll('.view').forEach(function (section) {
+      section.classList.add('hidden');
+    });
+
+    SECTION_IDS.forEach(function (id) {
+      const section = document.getElementById(id);
+      if (section && section !== view) {
+        section.classList.add('hidden');
+      }
+    });
+
+    // La ruleta pasa a formar parte del sistema de vistas.
+    view.classList.add('view');
+    view.classList.remove('hidden');
+
+    document.body.classList.add('view-open');
+    document.body.classList.remove('school-atelier-open');
+
+    window.scrollTo(0, 0);
+    return true;
+  }
+
+  // Integrar la ruleta con el enrutador principal.
+  const originalShowView = window.showView;
+
+  if (typeof originalShowView === 'function') {
+    window.showView = function (id) {
+      if (id === VIEW_ID || id === 'prizeWheel') {
+        openPrizeWheel();
+        return;
+      }
+
+      return originalShowView.apply(this, arguments);
+    };
+  }
+
+  function connectCard() {
+    const card = document.querySelector('[data-rxpw-card]');
+
+    if (card && card.dataset.go !== VIEW_ID) {
+      card.dataset.go = VIEW_ID;
+    }
+
+    const view = document.getElementById(VIEW_ID);
+    const back = document.getElementById('rxpw-back');
+
+    if (view) view.classList.add('view');
+    if (back) back.classList.add('view-back');
+  }
+
+  // La tarjeta puede crearse o reconstruirse después del arranque.
+  connectCard();
+
+  if (document.body) {
+    new MutationObserver(connectCard).observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  // Abrir la vista inmediatamente; dejar que el módulo original
+  // procese el clic y ejecute su carga pública.
   document.addEventListener('click', function (event) {
-    const entry = event.target.closest(
-      '[data-rxpw-card], [data-rxpw-enter], [data-go="prizeWheel"]'
+    const target = event.target;
+
+    if (!target || typeof target.closest !== 'function') return;
+
+    const entry = target.closest(
+      '[data-rxpw-card], [data-rxpw-enter]'
     );
 
     if (!entry) return;
 
-    // Deja que el módulo ejecute su apertura original.
-    window.setTimeout(function () {
-      const view = document.getElementById('rxpw-view');
-      if (!view) {
-        console.error('[Ruleta RoXThal] No se encontró #rxpw-view.');
-        return;
-      }
-
-      [
-        'home', 'services', 'gallery', 'school', 'schoolAtelier',
-        'radio', 'reviews', 'raffle', 'payments', 'search',
-        'contact', 'visits', 'about', 'ai', 'admin',
-        'students', 'academia'
-      ].forEach(function (id) {
-        const section = document.getElementById(id);
-        if (section) section.classList.add('hidden');
-      });
-
-      view.classList.remove('hidden');
-      document.body.classList.add('view-open');
-      window.scrollTo(0, 0);
-    }, 100);
+    openPrizeWheel();
   }, true);
+
+  console.info('[Ruleta RoXThal] Navegación integrada.');
 })();
 </script>
+
 
 
 </body>
