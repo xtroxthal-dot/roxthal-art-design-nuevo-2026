@@ -71973,7 +71973,35 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+<script id="rxpw-remove-public-probability-note">
+(function () {
+  'use strict';
 
+  function removePublicProbabilityNote() {
+    const view = document.getElementById('rxpw-view');
+    if (!view) return;
+
+    view.querySelectorAll('.rxpw-note').forEach(function (note) {
+      const text = (note.textContent || '').trim();
+
+      if (
+        text.includes('La probabilidad total de premio es del 0,5 %') &&
+        text.includes('No significa que necesariamente haya un ganador')
+      ) {
+        note.remove();
+      }
+    });
+  }
+
+  removePublicProbabilityNote();
+
+  const observer = new MutationObserver(removePublicProbabilityNote);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();
+</script>
 
 </body>
 </html>
