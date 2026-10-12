@@ -71118,5 +71118,753 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+       
+<script id="roxthal-prize-wheel-module">
+(function () {
+  'use strict';
+
+  if (window.__rxPrizeWheelInstalled) return;
+  window.__rxPrizeWheelInstalled = true;
+
+  const SUPABASE_URL = 'https://hxtzlrsmjwrpqgjgbzyl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_cv6J952zB8hmDtXSHMbtCQ_xGJZHN1J';
+  const EDGE_URL = SUPABASE_URL + '/functions/v1/roxthal-prize-wheel';
+  const ALIAS = 'edukari1';
+  const PRICE = 1500;
+  const WHATSAPP = '5491169633376';
+  const SLOT = 'module_prizeWheel';
+  const STORE_ID = 'roxthal_prize_wheel_v1';
+
+  const DEFAULT_PRIZES = [
+    { label: 'Un retrato', weight: 1, stock: null },
+    { label: 'Un cuadro', weight: 1, stock: null },
+    { label: 'Un tatuaje', weight: 1, stock: null },
+    { label: 'Un piercing', weight: 1, stock: null },
+    { label: '50 % de descuento en cualquier producto', weight: 1, stock: null },
+    { label: '20 % de descuento en cualquier producto', weight: 1, stock: null },
+    { label: '10 % de descuento en cualquier producto', weight: 1, stock: null },
+    { label: 'Sin premio', weight: 1393, stock: null }
+  ];
+
+  const DEFAULT_INSTRUCTIONS =
+    'Participación: $1.500 por tirada. Transferí al alias edukari1. ' +
+    'Después registrá tu solicitud y enviá el comprobante por WhatsApp. ' +
+    'El administrador verificará el pago y habilitará una única tirada. ' +
+    'La probabilidad total de obtener un premio es del 0,5 % por tirada ' +
+    '(probabilidad equivalente a 1 entre 200; no garantiza un premio cada 200 tiradas).';
+
+  const $ = id => document.getElementById(id);
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+
+  let publicConfig = { enabled: false, price: PRICE, payment_instructions: DEFAULT_INSTRUCTIONS };
+  let busy = false;
+  let currentStatus = null;
+  let coverUrl = '';
+
+  function notify(message) {
+    if (typeof window.toast === 'function') window.toast(message);
+    else alert(message);
+  }
+
+  function getSession() {
+    return JSON.parse(localStorage.getItem(STORE_ID) || 'null');
+  }
+
+  function saveSession(value) {
+    localStorage.setItem(STORE_ID, JSON.stringify(value));
+  }
+
+  async function api(action, payload) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    };
+
+    try {
+      const db = window.db;
+      if (db && db.auth && db.auth.getSession) {
+        const result = await db.auth.getSession();
+        const token = result && result.data && result.data.session &&
+          result.data.session.access_token;
+        if (token) headers.Authorization = 'Bearer ' + token;
+      }
+    } catch (_) {}
+
+    const response = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(Object.assign({ action }, payload || {}))
+    });
+
+    let data;
+    try { data = await response.json(); }
+    catch (_) { throw new Error('El servidor devolvió una respuesta no válida.'); }
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || 'No se pudo completar la operación.');
+    }
+    return data;
+  }
+
+  function addStyles() {
+    if ($('rxpw-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'rxpw-styles';
+    style.textContent = `
+      #rxpw-view{color:#f4ead2;background:#090909;padding:20px 14px 50px;min-height:75vh}
+      #rxpw-view.hidden{display:none!important}
+      #rxpw-view *{box-sizing:border-box}
+      #rxpw-view .rxpw-wrap{max-width:1050px;margin:auto}
+      #rxpw-view .rxpw-back{border:1px solid #8f6a2b;background:#17130c;color:#e9c56e;
+        border-radius:10px;padding:10px 14px;margin-bottom:18px;font-weight:700}
+      #rxpw-view .rxpw-hero{position:relative;overflow:hidden;border:1px solid #6f5528;
+        border-radius:18px;background:linear-gradient(135deg,#17130b,#050505 65%);
+        text-align:center;padding:0 0 22px;box-shadow:0 12px 36px #000}
+      #rxpw-view .rxpw-cover{width:100%;height:190px;object-fit:cover;display:block;
+        background:#16120a;border-bottom:1px solid #7b5c27}
+      #rxpw-view .rxpw-kicker{color:#e5bd61;letter-spacing:3px;font-size:11px;
+        font-weight:800;margin:20px 10px 7px}
+      #rxpw-view h1{color:#f5d785;font-size:clamp(26px,5vw,42px);line-height:1.1;
+        margin:8px 10px;text-transform:uppercase}
+      #rxpw-view .rxpw-sub{color:#d0c4a6;line-height:1.6;margin:10px auto;max-width:700px;padding:0 15px}
+      #rxpw-view .rxpw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+        gap:16px;margin-top:18px;align-items:start}
+      #rxpw-view .rxpw-card{border:1px solid #5b4724;border-radius:15px;padding:18px;
+        background:linear-gradient(145deg,#17140e,#0d0d0d)}
+      #rxpw-view h2{color:#e8c46d;font-size:20px;margin:0 0 12px}
+      #rxpw-view p,#rxpw-view li{line-height:1.65;color:#e1d7bf;font-size:14px}
+      #rxpw-view .rxpw-price{font-size:30px;font-weight:900;color:#f5d785;margin:5px 0 12px}
+      #rxpw-view .rxpw-btn{width:100%;border:1px solid #b58b3c;border-radius:10px;padding:12px 14px;
+        margin-top:9px;background:linear-gradient(135deg,#f2d47e,#b98a36);color:#151006;
+        font-weight:900;cursor:pointer}
+      #rxpw-view .rxpw-btn.secondary{background:#17130c;color:#f0ce79}
+      #rxpw-view .rxpw-btn:disabled{opacity:.45;cursor:not-allowed}
+      #rxpw-view input{width:100%;border:1px solid #6b542b;border-radius:9px;background:#090909;
+        color:#fff;padding:12px;margin:5px 0 9px}
+      #rxpw-view .rxpw-status{padding:12px;border:1px solid #6b542b;border-radius:10px;
+        background:#100e09;color:#f1d68a;margin-top:12px;white-space:pre-wrap}
+      #rxpw-view .rxpw-wheel-area{display:flex;justify-content:center;align-items:center;padding:12px 0 18px}
+      #rxpw-view .rxpw-pointer{position:relative;z-index:2;width:0;height:0;
+        border-left:15px solid transparent;border-right:15px solid transparent;
+        border-top:28px solid #f4d06f;filter:drop-shadow(0 2px 3px #000);margin-bottom:-18px}
+      #rxpw-view .rxpw-wheel{width:min(76vw,330px);aspect-ratio:1;border-radius:50%;
+        border:8px solid #d4aa52;box-shadow:0 0 0 4px #20170a,0 0 28px #b58b3c55;
+        position:relative;transition:transform 6s cubic-bezier(.12,.72,.08,1);
+        background:#15120b}
+      #rxpw-view .rxpw-wheel:after{content:'XT';position:absolute;left:50%;top:50%;
+        transform:translate(-50%,-50%);width:68px;height:68px;border-radius:50%;
+        display:grid;place-items:center;background:radial-gradient(circle,#f7df91,#9c7026);
+        border:5px solid #171108;color:#151006;font-size:24px;font-weight:1000;
+        box-shadow:0 2px 10px #000}
+      #rxpw-view .rxpw-prizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+        gap:8px;padding:0;list-style:none}
+      #rxpw-view .rxpw-prizes li{border:1px solid #44361c;border-radius:8px;padding:9px;
+        background:#0c0b08;margin:0;font-size:13px}
+      #rxpw-view .rxpw-prizes li:before{content:'✦ ';color:#e6c26d}
+      #rxpw-view .rxpw-note{font-size:12px;color:#bcb09a}
+      #adminPrizeWheel{color:inherit}
+      #adminPrizeWheel .rxpw-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+      #adminPrizeWheel textarea,#adminPrizeWheel input{width:100%;padding:10px;border-radius:8px;
+        border:1px solid #80642f;background:#0d0d0d;color:#f7e9c5}
+      #adminPrizeWheel textarea{min-height:230px}
+      #adminPrizeWheel .rxpw-admin-session{border:1px solid #8a6a30;border-radius:10px;
+        padding:12px;margin:9px 0;background:#14110b}
+      #adminPrizeWheel .rxpw-admin-session button{margin:5px 5px 0 0}
+      @media(max-width:520px){#rxpw-view{padding:12px 9px 35px}
+        #rxpw-view .rxpw-cover{height:145px}#rxpw-view .rxpw-card{padding:14px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildView() {
+    if ($('rxpw-view')) return;
+    const view = document.createElement('section');
+    view.id = 'rxpw-view';
+    view.className = 'hidden';
+    view.innerHTML = `
+      <div class="rxpw-wrap">
+        <button type="button" class="rxpw-back" id="rxpw-back">← Volver a RoXThal</button>
+        <header class="rxpw-hero">
+          <img class="rxpw-cover" id="rxpw-cover" alt="Portada de la Ruleta de Premios RoXThal">
+          <div class="rxpw-kicker">ROXTHAL ART DESIGN · EXPERIENCIA DE PREMIO</div>
+          <h1>Ruleta de Premios</h1>
+          <p class="rxpw-sub">Una tirada habilitada por el administrador después de verificar tu pago.</p>
+        </header>
+
+        <div class="rxpw-grid">
+          <article class="rxpw-card">
+            <h2>🎡 Tu ruleta</h2>
+            <div class="rxpw-wheel-area">
+              <div>
+                <div class="rxpw-pointer"></div>
+                <div class="rxpw-wheel" id="rxpw-wheel" aria-label="Ruleta de 200 sectores"></div>
+              </div>
+            </div>
+            <button class="rxpw-btn" id="rxpw-spin" disabled>🔒 Esperando autorización</button>
+            <div class="rxpw-status" id="rxpw-result" role="status">La ruleta está cerrada hasta que se habilite tu tirada.</div>
+            <p class="rxpw-note">El resultado se determina en el servidor. Una solicitud autorizada permite una sola tirada.</p>
+          </article>
+
+          <article class="rxpw-card">
+            <h2>💰 Precio y pago</h2>
+            <div class="rxpw-price">$1.500 por tirada</div>
+            <p>1. Transferí $1.500 al alias que figura abajo.</p>
+            <p><strong>Alias de transferencia: edukari1</strong></p>
+            <button class="rxpw-btn secondary" id="rxpw-copy-alias">Copiar alias edukari1</button>
+            <p>2. Conservá el comprobante de transferencia.</p>
+            <p>3. Registrá tu solicitud y enviá el comprobante por WhatsApp.</p>
+            <p>4. Esperá a que el administrador confirme el pago y habilite tu tirada.</p>
+            <button class="rxpw-btn secondary" id="rxpw-whatsapp">Solicitar autorización por WhatsApp</button>
+            <p class="rxpw-note">La transferencia no habilita automáticamente el giro. La autorización es manual.</p>
+          </article>
+
+          <article class="rxpw-card">
+            <h2>📋 Instrucciones de juego</h2>
+            <ol>
+              <li>Leé las instrucciones de pago y aboná la participación.</li>
+              <li>Completá el formulario para registrar tu solicitud.</li>
+              <li>Enviá el comprobante por WhatsApp.</li>
+              <li>Cuando el administrador autorice tu solicitud, el botón de giro quedará habilitado.</li>
+              <li>Presioná “Girar” una sola vez y esperá el resultado.</li>
+              <li>Si obtenés un premio, conservá el resultado y contactá al Atelier para coordinarlo.</li>
+            </ol>
+            <p class="rxpw-note">La probabilidad total de premio es del 0,5 % por tirada (1/200 de probabilidad). No significa que necesariamente haya un ganador cada 200 tiradas.</p>
+          </article>
+
+          <article class="rxpw-card">
+            <h2>🏆 Premios posibles</h2>
+            <ul class="rxpw-prizes" id="rxpw-prizes">
+              <li>Un retrato</li><li>Un cuadro</li><li>Un tatuaje</li><li>Un piercing</li>
+              <li>50 % de descuento en cualquier producto</li>
+              <li>20 % de descuento en cualquier producto</li>
+              <li>10 % de descuento en cualquier producto</li>
+              <li>Varias casillas sin premio</li>
+            </ul>
+          </article>
+
+          <article class="rxpw-card" style="grid-column:1/-1">
+            <h2>📝 Registrar solicitud</h2>
+            <p>Completá tus datos después de realizar el pago. El envío de esta solicitud no equivale a una autorización.</p>
+            <label for="rxpw-name">Nombre y apellido</label>
+            <input id="rxpw-name" maxlength="100" autocomplete="name" placeholder="Tu nombre y apellido">
+            <label for="rxpw-phone">WhatsApp de contacto</label>
+            <input id="rxpw-phone" maxlength="40" autocomplete="tel" placeholder="Tu número de WhatsApp">
+            <button class="rxpw-btn" id="rxpw-register">Registrar solicitud de autorización</button>
+            <div class="rxpw-status" id="rxpw-request-status" role="status">Todavía no hay una solicitud registrada en este navegador.</div>
+          </article>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(view);
+  }
+
+  function buildAdmin() {
+    const tabs = $('adminTabs');
+    const adminPanel = $('adminPanel');
+    if (!tabs || !adminPanel) return false;
+
+    if (!tabs.querySelector('[data-admin-tab="prizeWheel"]')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.adminTab = 'prizeWheel';
+      button.textContent = '🎡 Ruleta de premios';
+      const logout = $('adminLogout');
+      if (logout && logout.parentElement === tabs) tabs.insertBefore(button, logout);
+      else tabs.appendChild(button);
+    }
+
+    if (!$('adminPrizeWheel')) {
+      const panel = document.createElement('div');
+      panel.id = 'adminPrizeWheel';
+      panel.className = 'admin-tab-panel hidden';
+      panel.innerHTML = `
+        <div class="card">
+          <h3>🎡 Administración · Ruleta de Premios</h3>
+          <p class="muted">Controlá la apertura general, los premios, los pagos y las autorizaciones individuales.</p>
+          <div class="rxpw-admin-grid">
+            <section>
+              <h4>Estado y pago</h4>
+              <label><input type="checkbox" id="rxpw-admin-open"> Ruleta abierta para recibir solicitudes</label>
+              <p>Precio fijo por tirada: <strong>$1.500</strong></p>
+              <label for="rxpw-admin-instructions">Instrucciones visibles para el cliente</label>
+              <textarea id="rxpw-admin-instructions"></textarea>
+              <button class="btn btn-primary" id="rxpw-admin-save-settings">Guardar estado e instrucciones</button>
+            </section>
+            <section>
+              <h4>Premios y probabilidades</h4>
+              <p class="small">Una línea por resultado: premio | peso | stock. Usá * para stock ilimitado.</p>
+              <textarea id="rxpw-admin-prize-list" spellcheck="false"></textarea>
+              <p class="small">Configuración inicial: siete resultados de premio con peso 1 y “Sin premio” con peso 1393. La probabilidad total de premio es 7/1400 = 0,5 %.</p>
+              <button class="btn btn-primary" id="rxpw-admin-save-prizes">Guardar lista de premios</button>
+            </section>
+          </div>
+          <hr>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <h4 style="margin:0">Solicitudes e historial</h4>
+            <button class="btn btn-primary btn-small" id="rxpw-admin-refresh">Actualizar solicitudes</button>
+          </div>
+          <div id="rxpw-admin-sessions" style="margin-top:12px">Cargando solicitudes…</div>
+          <p class="small">La portada se administra desde Administrador → Imágenes, con el slot “Ruleta de premios”.</p>
+          <div class="rxpw-status" id="rxpw-admin-message" role="status">Las acciones administrativas requieren una sesión de administrador válida.</div>
+        </div>
+      `;
+      adminPanel.appendChild(panel);
+    }
+    return true;
+  }
+
+  function setHome() {
+    const ids = ['home','services','gallery','school','schoolAtelier','radio','reviews',
+      'raffle','payments','search','contact','visits','about','ai','admin','students','academia'];
+    ids.forEach(id => { const el = $(id); if (el) el.classList.toggle('hidden', id !== 'home'); });
+    $('rxpw-view').classList.add('hidden');
+    document.body.classList.remove('view-open');
+    window.scrollTo(0, 0);
+  }
+
+  function openView() {
+    const ids = ['home','services','gallery','school','schoolAtelier','radio','reviews',
+      'raffle','payments','search','contact','visits','about','ai','admin','students','academia'];
+    ids.forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+    $('rxpw-view').classList.remove('hidden');
+    document.body.classList.add('view-open');
+    window.scrollTo(0, 0);
+    loadPublic();
+  }
+
+  function makeWheel() {
+    const wheel = $('rxpw-wheel');
+    if (!wheel) return;
+    const parts = [];
+    for (let i = 0; i < 200; i++) {
+      const start = i * 0.5;
+      const end = (i + 1) * 0.5;
+      const color = i === 0 ? '#f2cf72' : (i % 2 ? '#17140d' : '#322719');
+      parts.push(`${color} ${start}% ${end}%`);
+    }
+    wheel.style.background = 'conic-gradient(' + parts.join(',') + ')';
+  }
+
+  async function loadCover() {
+    try {
+      const db = window.db;
+      if (!db) return;
+      const { data, error } = await db.from('site_assets')
+        .select('url').eq('slot', SLOT).maybeSingle();
+      if (error || !data || !data.url) return;
+      coverUrl = data.url;
+      const img = $('rxpw-cover');
+      if (img) img.src = coverUrl;
+      const cardImg = document.querySelector('[data-rxpw-card] img');
+      if (cardImg) cardImg.src = coverUrl;
+    } catch (e) {
+      console.warn('[Ruleta RoXThal] No se pudo actualizar la portada.', e);
+    }
+  }
+
+  function ensureCard() {
+    const grid = $('moduleGrid');
+    if (!grid || grid.querySelector('[data-rxpw-card]')) return;
+    const card = document.createElement('article');
+    card.className = 'module';
+    card.dataset.rxpwCard = '1';
+    card.dataset.go = 'prizeWheel';
+    card.innerHTML = `
+      <img src="${esc(coverUrl || 'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png')}" alt="Ruleta de premios">
+      <div class="module-content">
+        <div class="module-num">MÓDULO 16</div>
+        <h3>Ruleta de Premios</h3>
+        <p>Participación, premios y una tirada con autorización del administrador.</p>
+        <button type="button" class="btn btn-primary btn-small" data-rxpw-enter>Entrar</button>
+      </div>`;
+    grid.appendChild(card);
+  }
+
+  function renderPrizeList(prizes) {
+    const list = $('rxpw-prizes');
+    if (!list) return;
+    const labels = (prizes || []).map(p => p.label).filter(Boolean);
+    const defaults = DEFAULT_PRIZES.map(p => p.label);
+    const actual = labels.length ? labels : defaults;
+    list.innerHTML = actual.map(label => `<li>${esc(label)}</li>`).join('');
+  }
+
+  async function loadPublic() {
+    try {
+      const data = await api('public_config');
+      publicConfig = data.settings || publicConfig;
+      renderPrizeList(data.prizes || []);
+      const closed = publicConfig.enabled !== true;
+      $('rxpw-spin').disabled = true;
+      $('rxpw-spin').textContent = closed ? '🔒 Ruleta cerrada temporalmente' : '🔒 Esperando autorización';
+      if (closed) {
+        $('rxpw-result').textContent = 'La ruleta está cerrada temporalmente. Volvé a consultar cuando el administrador la abra.';
+      } else {
+        $('rxpw-result').textContent = 'La ruleta está abierta. Pagá, registrá tu solicitud y esperá la autorización del administrador.';
+      }
+      const instructions = String(publicConfig.payment_instructions || DEFAULT_INSTRUCTIONS);
+      const paymentCard = $('rxpw-view').querySelector('.rxpw-grid .rxpw-card:nth-child(2)');
+      if (paymentCard) {
+        let custom = paymentCard.querySelector('#rxpw-custom-instructions');
+        if (!custom) {
+          custom = document.createElement('div');
+          custom.id = 'rxpw-custom-instructions';
+          custom.className = 'rxpw-status';
+          paymentCard.appendChild(custom);
+        }
+        custom.textContent = instructions;
+      }
+      await loadStatus();
+    } catch (e) {
+      $('rxpw-result').textContent = 'No se pudo consultar el servidor. Probá de nuevo más tarde.';
+      console.error('[Ruleta RoXThal]', e);
+    }
+  }
+
+  async function loadStatus() {
+    const session = getSession();
+    if (!session || !session.visitor_id || !session.session_token) {
+      $('rxpw-request-status').textContent = 'Todavía no hay una solicitud registrada en este navegador.';
+      return;
+    }
+    try {
+      const state = await api('check_status', {
+        visitor_id: session.visitor_id,
+        session_token: session.session_token
+      });
+      currentStatus = state;
+      if (state.can_spin) {
+        $('rxpw-spin').disabled = false;
+        $('rxpw-spin').textContent = '🎡 GIRAR LA RULETA';
+        $('rxpw-result').textContent = 'Tu pago y tu tirada fueron autorizados. Podés girar una sola vez.';
+        $('rxpw-request-status').textContent = 'Solicitud autorizada. Ya podés realizar tu única tirada.';
+      } else if (state.spin_count > 0 || state.status === 'played') {
+        $('rxpw-spin').disabled = true;
+        $('rxpw-spin').textContent = 'Tirada utilizada';
+        $('rxpw-result').textContent = state.last_prize
+          ? 'Resultado registrado: ' + state.last_prize
+          : 'Esta solicitud ya utilizó su tirada.';
+        $('rxpw-request-status').textContent = 'Esta solicitud ya fue utilizada. No se puede volver a girar con ella.';
+      } else {
+        $('rxpw-spin').disabled = true;
+        $('rxpw-spin').textContent = state.status === 'blocked'
+          ? '🔒 Tirada bloqueada' : '🔒 Esperando autorización';
+        $('rxpw-request-status').textContent =
+          'Solicitud registrada. Estado: ' + (state.status || 'pendiente') +
+          '. Esperá la verificación del pago y la autorización del administrador.';
+      }
+    } catch (e) {
+      $('rxpw-request-status').textContent = 'No se pudo consultar el estado de la solicitud. Revisá tu conexión.';
+    }
+  }
+
+  function parsePrizeLines() {
+    const raw = $('rxpw-admin-prize-list').value.split('\n');
+    const prizes = [];
+    raw.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const parts = trimmed.split('|').map(s => s.trim());
+      const label = parts[0];
+      const weight = Number(parts[1] || 1);
+      const stockText = parts[2] == null ? '*' : parts[2];
+      if (!label || !Number.isFinite(weight) || weight < 1) {
+        throw new Error('Revisá la lista: cada línea debe tener premio | peso | stock.');
+      }
+      prizes.push({
+        label,
+        weight: Math.floor(weight),
+        stock: stockText === '*' || stockText === '' ? null : Math.max(0, Math.floor(Number(stockText)))
+      });
+    });
+    if (prizes.length < 2 || prizes.length > 24) {
+      throw new Error('La lista debe contener entre 2 y 24 resultados.');
+    }
+    return prizes;
+  }
+
+  function prizesToText(prizes) {
+    return (prizes || []).map(p =>
+      `${p.label} | ${p.weight} | ${p.stock == null ? '*' : p.stock}`
+    ).join('\n');
+  }
+
+  async function loadAdmin() {
+    const message = $('rxpw-admin-message');
+    message.textContent = 'Consultando configuración…';
+    try {
+      let data = await api('admin_state');
+      if (!data.prizes || data.prizes.length === 0) {
+        await api('admin_save_prizes', { prizes: DEFAULT_PRIZES });
+        data = await api('admin_state');
+      }
+      $('rxpw-admin-open').checked = !!(data.settings && data.settings.enabled);
+      $('rxpw-admin-instructions').value =
+        data.settings && data.settings.payment_instructions ||
+        DEFAULT_INSTRUCTIONS;
+      $('rxpw-admin-prize-list').value = prizesToText(data.prizes || DEFAULT_PRIZES);
+      message.textContent = 'Configuración cargada.';
+      renderSessions(data.sessions || []);
+    } catch (e) {
+      message.textContent = 'No se pudo cargar la administración: ' + e.message;
+    }
+  }
+
+  function renderSessions(sessions) {
+    const host = $('rxpw-admin-sessions');
+    if (!sessions.length) {
+      host.innerHTML = '<p class="muted">Todavía no hay solicitudes registradas.</p>';
+      return;
+    }
+    host.innerHTML = sessions.map(s => {
+      const status = s.spin_count > 0 ? 'TIRADA UTILIZADA' :
+        s.status === 'ready' && s.enabled ? 'AUTORIZADA' :
+        s.status === 'blocked' ? 'BLOQUEADA' : 'PENDIENTE';
+      return `<div class="rxpw-admin-session">
+        <strong>${esc(s.display_name || 'Sin nombre')}</strong>
+        <p>WhatsApp: ${esc(s.phone || 'No informado')}</p>
+        <p>Estado: <strong>${esc(status)}</strong></p>
+        <p>Resultado: ${esc(s.last_prize || 'Todavía sin resultado')}</p>
+        <p>Solicitud: ${esc(s.created_at || '')}</p>
+        ${s.spin_count === 0 ? `
+          <button class="btn btn-primary btn-small" data-rxpw-authorize="${esc(s.visitor_id)}">Confirmar pago y habilitar una tirada</button>
+          <button class="btn btn-danger btn-small" data-rxpw-block="${esc(s.visitor_id)}">Bloquear tirada</button>
+        ` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  async function saveAdminSettings() {
+    const enabled = $('rxpw-admin-open').checked;
+    const instructions = $('rxpw-admin-instructions').value.trim() || DEFAULT_INSTRUCTIONS;
+    await api('admin_save_settings', {
+      enabled,
+      price: PRICE,
+      payment_instructions: instructions
+    });
+    $('rxpw-admin-message').textContent = 'Estado e instrucciones guardados.';
+    notify('Configuración de la ruleta guardada.');
+  }
+
+  async function saveAdminPrizes() {
+    const prizes = parsePrizeLines();
+    const sum = prizes.reduce((n, p) => n + p.weight, 0);
+    const win = prizes.filter(p => !p.label.toLowerCase().includes('sin premio'))
+      .reduce((n, p) => n + p.weight, 0);
+    if (win / sum > 0.00500001 || win / sum < 0.00499999) {
+      const ok = confirm(
+        'La probabilidad de premio que surge de estos pesos es ' +
+        (100 * win / sum).toFixed(4) + ' %, no 0,5 %. ¿Querés guardar igualmente?'
+      );
+      if (!ok) return;
+    }
+    await api('admin_save_prizes', { prizes });
+    $('rxpw-admin-message').textContent = 'Lista de premios guardada.';
+    notify('Lista de premios guardada.');
+    await loadAdmin();
+  }
+
+  async function authorize(visitorId, enabled) {
+    await api('admin_authorize', {
+      visitor_id: visitorId,
+      paid: true,
+      enabled: enabled === true
+    });
+    notify(enabled ? 'Pago marcado y tirada autorizada.' : 'Tirada bloqueada.');
+    await loadAdmin();
+  }
+
+  async function registerRequest() {
+    const name = $('rxpw-name').value.trim();
+    const phone = $('rxpw-phone').value.trim();
+    if (name.length < 2) return notify('Escribí tu nombre y apellido.');
+    if (publicConfig.enabled !== true) return notify('La ruleta está cerrada temporalmente.');
+    const existing = getSession();
+    if (existing && existing.visitor_id && existing.session_token) {
+      return notify('Ya hay una solicitud guardada en este navegador. Consultá su estado antes de crear otra.');
+    }
+    const result = await api('register', { name, phone });
+    saveSession({
+      visitor_id: result.visitor_id,
+      session_token: result.session_token,
+      name, phone,
+      created_at: new Date().toISOString()
+    });
+    $('rxpw-request-status').textContent = result.message ||
+      'Solicitud registrada. Esperá la confirmación del pago y la autorización.';
+    openWhatsApp(name, phone, true);
+    await loadStatus();
+  }
+
+  function openWhatsApp(name, phone, isRequest) {
+    const session = getSession();
+    const text = isRequest
+      ? `Hola RoXThal Art Design. Solicito la autorización de mi tirada de la Ruleta de Premios. Nombre: ${name}. WhatsApp: ${phone || 'No informado'}. Participación: $1.500. Alias de transferencia: ${ALIAS}. Mi solicitud quedó registrada; envío el comprobante para que verifiquen el pago.`
+      : `Hola RoXThal Art Design. Quiero solicitar la autorización de mi tirada de la Ruleta de Premios. Alias de transferencia: ${ALIAS}. Importe: $1.500. ${session && session.name ? 'Nombre: ' + session.name + '.' : ''} Enviaré el comprobante para su verificación.`;
+    window.open('https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  }
+
+  async function spin() {
+    if (busy) return;
+    const session = getSession();
+    if (!session) return notify('Primero registrá tu solicitud.');
+    busy = true;
+    $('rxpw-spin').disabled = true;
+    $('rxpw-spin').textContent = 'Girando…';
+    $('rxpw-result').textContent = 'La ruleta está girando. Esperá el resultado oficial…';
+    try {
+      const result = await api('spin', {
+        visitor_id: session.visitor_id,
+        session_token: session.session_token
+      });
+      if (!result.ok || !result.prize) throw new Error(result.error || 'El servidor no devolvió un resultado.');
+      const label = String(result.prize);
+      const winner = !label.toLowerCase().includes('sin premio');
+      const targetIndex = winner ? 0 : (1 + Math.floor(Math.random() * 199));
+      const targetAngle = (360 - (targetIndex * 1.8 + 0.9)) % 360;
+      $('rxpw-wheel').style.transform = 'rotate(' + (6 * 360 + targetAngle) + 'deg)';
+      await new Promise(resolve => setTimeout(resolve, 6200));
+      $('rxpw-result').textContent = winner
+        ? '🏆 ¡FELICITACIONES! Resultado oficial: ' + label +
+          '. Contactá al Atelier para coordinar la entrega o aplicación del premio.'
+        : 'Esta vez no hubo premio. Gracias por participar en RoXThal Art Design.';
+      $('rxpw-spin').textContent = 'Tirada utilizada';
+      $('rxpw-request-status').textContent = 'Tirada realizada. El resultado quedó registrado en el servidor.';
+      await loadStatus();
+    } catch (e) {
+      $('rxpw-result').textContent = 'No se pudo completar el giro: ' + e.message;
+      await loadStatus();
+    } finally {
+      busy = false;
+    }
+  }
+
+  function bindEvents() {
+    document.addEventListener('click', function (event) {
+      const card = event.target.closest('[data-rxpw-card], [data-rxpw-enter]');
+      if (card) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+        openView();
+        return;
+      }
+
+      if (event.target.closest('#rxpw-back')) {
+        event.preventDefault();
+        setHome();
+        return;
+      }
+
+      if (event.target.closest('#rxpw-copy-alias')) {
+        event.preventDefault();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(ALIAS)
+            .then(() => notify('Alias copiado: ' + ALIAS))
+            .catch(() => prompt('Copiá el alias de transferencia:', ALIAS));
+        } else prompt('Copiá el alias de transferencia:', ALIAS);
+        return;
+      }
+
+      if (event.target.closest('#rxpw-whatsapp')) {
+        event.preventDefault();
+        openWhatsApp();
+        return;
+      }
+
+      if (event.target.closest('#rxpw-register')) {
+        event.preventDefault();
+        registerRequest().catch(e => notify(e.message));
+        return;
+      }
+
+      if (event.target.closest('#rxpw-spin')) {
+        event.preventDefault();
+        spin();
+        return;
+      }
+
+      if (event.target.closest('#rxpw-admin-save-settings')) {
+        event.preventDefault();
+        saveAdminSettings().catch(e => {
+          $('rxpw-admin-message').textContent = e.message;
+          notify(e.message);
+        });
+        return;
+      }
+
+      if (event.target.closest('#rxpw-admin-save-prizes')) {
+        event.preventDefault();
+        saveAdminPrizes().catch(e => {
+          $('rxpw-admin-message').textContent = e.message;
+          notify(e.message);
+        });
+        return;
+      }
+
+      if (event.target.closest('#rxpw-admin-refresh')) {
+        event.preventDefault();
+        loadAdmin();
+        return;
+      }
+
+      const authorizeButton = event.target.closest('[data-rxpw-authorize]');
+      if (authorizeButton) {
+        authorize(authorizeButton.dataset.rxpwAuthorize, true).catch(e => notify(e.message));
+        return;
+      }
+
+      const blockButton = event.target.closest('[data-rxpw-block]');
+      if (blockButton) {
+        authorize(blockButton.dataset.rxpwBlock, false).catch(e => notify(e.message));
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      const tab = event.target.closest('[data-admin-tab="prizeWheel"]');
+      if (tab) loadAdmin();
+    });
+  }
+
+  function install() {
+    addStyles();
+    buildView();
+    buildAdmin();
+    makeWheel();
+    ensureCard();
+    loadCover();
+    bindEvents();
+
+    const grid = $('moduleGrid');
+    if (grid) {
+      new MutationObserver(() => ensureCard()).observe(grid, { childList: true });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !$('rxpw-view').classList.contains('hidden')) {
+        loadPublic();
+      }
+    });
+
+    window.setInterval(() => {
+      if (!$('rxpw-view') || $('rxpw-view').classList.contains('hidden')) return;
+      loadStatus();
+    }, 7000);
+
+    window.setInterval(loadCover, 30000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', install, { once: true });
+  } else {
+    install();
+  }
+})();
+</script>
+
+
 </body>
 </html>
