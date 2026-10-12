@@ -71866,5 +71866,46 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 
+<script id="rxpw-navigation-fix">
+(function () {
+  'use strict';
+
+  if (window.__rxpwNavigationFixInstalled) return;
+  window.__rxpwNavigationFixInstalled = true;
+
+  document.addEventListener('click', function (event) {
+    const entry = event.target.closest(
+      '[data-rxpw-card], [data-rxpw-enter], [data-go="prizeWheel"]'
+    );
+
+    if (!entry) return;
+
+    // Deja que el módulo ejecute su apertura original.
+    window.setTimeout(function () {
+      const view = document.getElementById('rxpw-view');
+      if (!view) {
+        console.error('[Ruleta RoXThal] No se encontró #rxpw-view.');
+        return;
+      }
+
+      [
+        'home', 'services', 'gallery', 'school', 'schoolAtelier',
+        'radio', 'reviews', 'raffle', 'payments', 'search',
+        'contact', 'visits', 'about', 'ai', 'admin',
+        'students', 'academia'
+      ].forEach(function (id) {
+        const section = document.getElementById(id);
+        if (section) section.classList.add('hidden');
+      });
+
+      view.classList.remove('hidden');
+      document.body.classList.add('view-open');
+      window.scrollTo(0, 0);
+    }, 100);
+  }, true);
+})();
+</script>
+
+
 </body>
 </html>
