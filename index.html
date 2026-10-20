@@ -72339,5 +72339,291 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL SCHOOL · CAPTACIÓN E INSCRIPCIONES V1 -->
 
+   
+<!-- ROXTHAL · CAPTACIÓN DE CLIENTES V1 -->
+<section id="rxCaminoArtistico" aria-labelledby="rxCaminoTitulo">
+  <style>
+    #rxCaminoArtistico {
+      --rxca-gold: #d6ad58;
+      background: linear-gradient(145deg, #171717, #080808);
+      color: #f7f2e8;
+      border: 1px solid rgba(214,173,88,.48);
+      border-radius: 18px;
+      padding: 25px 18px;
+      margin: 28px auto;
+      max-width: 1050px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    #rxCaminoArtistico * { box-sizing: border-box; }
+    #rxCaminoArtistico .rxca-kicker {
+      color: var(--rxca-gold);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    #rxCaminoArtistico h2 {
+      color: var(--rxca-gold);
+      font-size: clamp(24px, 5vw, 36px);
+      line-height: 1.15;
+      margin: 10px 0;
+    }
+    #rxCaminoArtistico .rxca-intro {
+      color: #ded8ce;
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+    #rxCaminoArtistico .rxca-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+    }
+    #rxCaminoArtistico .rxca-option {
+      background: #202020;
+      color: #f7f2e8;
+      border: 1px solid #484038;
+      border-radius: 12px;
+      padding: 15px 10px;
+      min-height: 95px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    #rxCaminoArtistico .rxca-option:hover {
+      border-color: var(--rxca-gold);
+      transform: translateY(-2px);
+    }
+    #rxCaminoArtistico .rxca-option[aria-pressed="true"] {
+      border: 2px solid var(--rxca-gold);
+      background: #302719;
+    }
+    #rxCaminoArtistico .rxca-icon {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+    #rxCaminoArtistico .rxca-option strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    #rxCaminoArtistico .rxca-result {
+      background: #111;
+      border: 1px solid #51452f;
+      border-radius: 12px;
+      padding: 17px;
+      margin-top: 18px;
+    }
+    #rxCaminoArtistico .rxca-result h3 {
+      color: var(--rxca-gold);
+      font-size: 20px;
+      margin: 0 0 8px;
+    }
+    #rxCaminoArtistico .rxca-result p {
+      color: #e2ddd3;
+      line-height: 1.6;
+      margin: 7px 0;
+    }
+    #rxCaminoArtistico .rxca-price {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--rxca-gold) !important;
+    }
+    #rxCaminoArtistico .rxca-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    #rxCaminoArtistico .rxca-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 12px 17px;
+      border-radius: 9px;
+      font-weight: 800;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid var(--rxca-gold);
+    }
+    #rxCaminoArtistico .rxca-primary {
+      background: var(--rxca-gold);
+      color: #111;
+    }
+    #rxCaminoArtistico .rxca-secondary {
+      background: transparent;
+      color: var(--rxca-gold);
+    }
+    #rxCaminoArtistico .rxca-note {
+      display: block;
+      margin-top: 12px;
+      color: #aaa39a;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    @media(max-width: 420px) {
+      #rxCaminoArtistico { padding: 20px 13px; }
+      #rxCaminoArtistico .rxca-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      #rxCaminoArtistico .rxca-actions > * { width: 100%; }
+    }
+  </style>
+
+  <div class="rxca-kicker">RoXThal Art Design · Atelier · Escuela · Tattoo</div>
+  <h2 id="rxCaminoTitulo">Encontrá tu camino artístico</h2>
+  <p class="rxca-intro">
+    ¿Querés aprender una técnica, desarrollar tu creatividad o contratar un
+    trabajo artístico? Elegí lo que te interesa y te orientamos.
+  </p>
+
+  <div class="rxca-options" role="group" aria-label="Elegí tu interés">
+    <button type="button" class="rxca-option" data-rxca="dibujo" aria-pressed="false">
+      <span class="rxca-icon">✏️</span>
+      <strong>Dibujo y pintura</strong>
+    </button>
+    <button type="button" class="rxca-option" data-rxca="tattoo" aria-pressed="false">
+      <span class="rxca-icon">🖋️</span>
+      <strong>Iniciación al tatuaje</strong>
+    </button>
+    <button type="button" class="rxca-option" data-rxca="fileteado" aria-pressed="false">
+      <span class="rxca-icon">🎨</span>
+      <strong>Fileteado artístico</strong>
+    </button>
+    <button type="button" class="rxca-option" data-rxca="kids" aria-pressed="false">
+      <span class="rxca-icon">🖍️</span>
+      <strong>Arte para niños</strong>
+    </button>
+    <button type="button" class="rxca-option" data-rxca="murales" aria-pressed="false">
+      <span class="rxca-icon">🖼️</span>
+      <strong>Murales y trampantojos</strong>
+    </button>
+  </div>
+
+  <div class="rxca-result" id="rxcaResultado" aria-live="polite">
+    <h3>Tu próximo paso empieza acá</h3>
+    <p>Elegí una opción para conocer el servicio, ver el precio orientativo y consultar directamente con RoXThal.</p>
+  </div>
+  <span class="rxca-note">
+    Los valores publicados son orientativos y pueden confirmarse al consultar.
+    Para trabajos personalizados, solicitá un presupuesto.
+  </span>
+
+  <script>
+  (function () {
+    const root = document.getElementById('rxCaminoArtistico');
+    if (!root || root.dataset.rxcaReady === '1') return;
+    root.dataset.rxcaReady = '1';
+
+    const whatsapp = '5491169633376';
+    const options = {
+      dibujo: {
+        title: 'Dibujo y pintura profesional',
+        price: '$50.000 por mes',
+        description: 'Formación artística para desarrollar técnica, observación y expresión. Consultá horarios y disponibilidad.',
+        message: 'Hola RoXThal Art Design. Me interesa el curso de Dibujo y Pintura Profesional. Quisiera conocer horarios, vacantes y cómo inscribirme.'
+      },
+      tattoo: {
+        title: 'Iniciación al tatuaje',
+        price: '$65.000 sin materiales · $100.000 con materiales',
+        description: 'Una opción para comenzar a formarte en el mundo del tatuaje. Consultá el programa, la modalidad y los materiales incluidos.',
+        message: 'Hola RoXThal Art Design. Me interesa el curso de Iniciación al Tatuaje. Quisiera conocer el programa, los horarios y las opciones con o sin materiales.'
+      },
+      fileteado: {
+        title: 'Fileteado artístico',
+        price: '$50.000 por mes',
+        description: 'Aprendé y practicá recursos del fileteado. Consultá horarios, contenidos y disponibilidad de inscripción.',
+        message: 'Hola RoXThal Art Design. Me interesa el curso de Fileteado Artístico. Quisiera recibir información sobre horarios e inscripción.'
+      },
+      kids: {
+        title: 'Arte para niños',
+        price: '$20.000 por mes',
+        description: 'Un espacio para explorar creatividad y expresión artística. Consultá edades, horarios y vacantes disponibles.',
+        message: 'Hola RoXThal Art Design. Quisiera información sobre Arte para Niños: edades, horarios, vacantes e inscripción.'
+      },
+      murales: {
+        title: 'Murales y trampantojos',
+        price: 'Presupuesto personalizado',
+        description: 'Contanos qué espacio querés transformar y qué estilo imaginás. El presupuesto depende del trabajo, las dimensiones y la superficie.',
+        message: 'Hola RoXThal Art Design. Quisiera solicitar un presupuesto para un mural o trampantojo. Puedo enviar fotos, medidas y una idea del trabajo.'
+      }
+    };
+
+    const result = root.querySelector('#rxcaResultado');
+    const buttons = Array.from(root.querySelectorAll('[data-rxca]'));
+
+    function selectInterest(key) {
+      const item = options[key];
+      if (!item) return;
+
+      buttons.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.dataset.rxca === key));
+      });
+
+      result.replaceChildren();
+
+      const title = document.createElement('h3');
+      title.textContent = item.title;
+
+      const description = document.createElement('p');
+      description.textContent = item.description;
+
+      const price = document.createElement('p');
+      price.className = 'rxca-price';
+      price.textContent = item.price;
+
+      const actions = document.createElement('div');
+      actions.className = 'rxca-actions';
+
+      const contact = document.createElement('a');
+      contact.className = 'rxca-btn rxca-primary';
+      contact.textContent = 'Consultar por WhatsApp';
+      contact.href = 'https://wa.me/' + whatsapp + '?text=' + encodeURIComponent(item.message);
+      contact.target = '_blank';
+      contact.rel = 'noopener noreferrer';
+      contact.setAttribute('aria-label', 'Consultar por WhatsApp sobre ' + item.title);
+
+      const change = document.createElement('button');
+      change.type = 'button';
+      change.className = 'rxca-btn rxca-secondary';
+      change.textContent = 'Elegir otra opción';
+      change.addEventListener('click', function () {
+        buttons.forEach(function (button) {
+          button.setAttribute('aria-pressed', 'false');
+        });
+        result.replaceChildren();
+        const heading = document.createElement('h3');
+        heading.textContent = '¿Qué te gustaría explorar?';
+        const paragraph = document.createElement('p');
+        paragraph.textContent = 'Elegí una opción de arriba para ver información y consultar.';
+        result.append(heading, paragraph);
+        buttons[0].focus();
+      });
+
+      actions.append(contact, change);
+      result.append(title, description, price, actions);
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        selectInterest(button.dataset.rxca);
+      });
+    });
+
+    /* Ubica el bloque junto al listado de cursos cuando encuentra el ancla. */
+    const courses = document.getElementById('coursesList');
+    if (courses && courses.parentElement && root.parentElement === document.body) {
+      courses.parentElement.insertBefore(root, courses);
+    }
+  })();
+  </script>
+</section>
+<!-- FIN ROXTHAL · CAPTACIÓN DE CLIENTES V1 -->
+
+
 </body>
 </html>
