@@ -72001,5 +72001,343 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+   <!-- ROXTHAL SCHOOL · CAPTACIÓN E INSCRIPCIONES V1 -->
+<style id="rxSchoolGrowthStyles">
+#rxSchoolGrowth {
+  margin: 22px 0;
+  padding: clamp(20px, 4vw, 34px);
+  border: 1px solid #8e7410;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(242,196,0,.13), transparent 48%),
+    linear-gradient(145deg, #171717, #090909);
+  color: #f5f5f5;
+}
+#rxSchoolGrowth * { box-sizing: border-box; }
+
+#rxSchoolGrowth .rxsg-kicker {
+  color: #f2c400;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+#rxSchoolGrowth h3 {
+  color: #f2c400;
+  font-size: clamp(25px, 5vw, 38px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+#rxSchoolGrowth p {
+  color: #ddd;
+  line-height: 1.65;
+  margin: 0 0 16px;
+}
+#rxSchoolGrowth .rxsg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+#rxSchoolGrowth .rxsg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 12px 17px;
+  border: 1px solid #f2c400;
+  border-radius: 10px;
+  background: #f2c400;
+  color: #111;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+#rxSchoolGrowth .rxsg-alt {
+  background: transparent;
+  color: #f2c400;
+}
+#rxSchoolGrowth .rxsg-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+}
+#rxSchoolGrowth .rxsg-benefit {
+  padding: 13px 10px;
+  background: rgba(255,255,255,.035);
+  border: 1px solid #333;
+  border-radius: 11px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+#rxSchoolGrowth .rxsg-benefit strong {
+  display: block;
+  color: #f2c400;
+  margin-bottom: 5px;
+}
+#rxSchoolSearchBox { margin: 0 0 18px; }
+#rxSchoolSearchBox label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 800;
+  color: var(--text, #f5f5f5);
+}
+#rxSchoolSearch {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  color: var(--text, #f5f5f5);
+  background: var(--surface, #111);
+  border: 1px solid var(--border, #444);
+  border-radius: 10px;
+}
+#rxSchoolSearch:focus {
+  outline: 2px solid #f2c400;
+  outline-offset: 2px;
+}
+#rxSchoolSearchStatus {
+  margin-top: 8px;
+  color: var(--muted, #aaa);
+  font-size: 13px;
+}
+@media (max-width: 560px) {
+  #rxSchoolGrowth .rxsg-benefits { grid-template-columns: 1fr; }
+  #rxSchoolGrowth .rxsg-actions { flex-direction: column; }
+  #rxSchoolGrowth .rxsg-btn { width: 100%; }
+}
+</style>
+
+<script id="rxSchoolGrowthScript">
+(function () {
+  'use strict';
+
+  if (window.__rxSchoolGrowthV1) return;
+  window.__rxSchoolGrowthV1 = true;
+
+  const WHATSAPP = '5491169633376';
+
+  function iniciarEscuela() {
+    const school = document.getElementById('school');
+    const list = document.getElementById('coursesList');
+
+    if (!school || !list) return;
+    if (document.getElementById('rxSchoolGrowth')) return;
+
+    /* Presentación comercial */
+    const hero = document.createElement('section');
+    hero.id = 'rxSchoolGrowth';
+    hero.setAttribute('aria-labelledby', 'rxSchoolGrowthTitle');
+
+    hero.innerHTML = `
+      <div class="rxsg-kicker">
+        ROXTHAL ART DESIGN · ESCUELA
+      </div>
+
+      <h3 id="rxSchoolGrowthTitle">
+        Tu próximo paso creativo empieza acá.
+      </h3>
+
+      <p>
+        Explorá los cursos y talleres disponibles, compará las
+        propuestas y consultanos por la opción que más te interese.
+        Te ayudamos a conocer los horarios, la modalidad, los valores
+        y la disponibilidad.
+      </p>
+
+      <div class="rxsg-actions">
+        <button type="button" class="rxsg-btn" id="rxsgExplore">
+          🎨 Explorar cursos
+        </button>
+
+        <button type="button" class="rxsg-btn rxsg-alt" id="rxsgForm">
+          📩 Consultar e inscribirme
+        </button>
+
+        <a
+          class="rxsg-btn rxsg-alt"
+          id="rxsgWa"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://wa.me/5491169633376"
+        >
+          🟢 Consultar por WhatsApp
+        </a>
+      </div>
+
+      <div class="rxsg-benefits">
+        <div class="rxsg-benefit">
+          <strong>✍️ Aprendé y practicá</strong>
+          Conocé las propuestas de formación artística.
+        </div>
+
+        <div class="rxsg-benefit">
+          <strong>🗓️ Consultá antes de anotarte</strong>
+          Preguntá por duración, horarios y modalidad.
+        </div>
+
+        <div class="rxsg-benefit">
+          <strong>💬 Elegí cómo contactarnos</strong>
+          Usá el formulario de la app o WhatsApp.
+        </div>
+      </div>
+    `;
+
+    list.parentNode.insertBefore(hero, list);
+
+    /* Buscador de cursos */
+    const searchBox = document.createElement('div');
+    searchBox.id = 'rxSchoolSearchBox';
+
+    searchBox.innerHTML = `
+      <label for="rxSchoolSearch">
+        🔎 Buscar un curso o taller
+      </label>
+
+      <input
+        id="rxSchoolSearch"
+        type="search"
+        placeholder="Escribí dibujo, tatuaje, pintura..."
+        autocomplete="off"
+      >
+
+      <div id="rxSchoolSearchStatus" aria-live="polite">
+        Buscá entre las propuestas disponibles.
+      </div>
+    `;
+
+    list.parentNode.insertBefore(searchBox, list);
+
+    /* Desplazamiento hasta los cursos */
+    document.getElementById('rxsgExplore')
+      .addEventListener('click', function () {
+        list.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      });
+
+    /* Formulario de solicitud existente */
+    document.getElementById('rxsgForm')
+      .addEventListener('click', function () {
+        const openButton =
+          document.getElementById('rxSolicitudButton');
+
+        const typeField =
+          document.getElementById('rxSolTipo');
+
+        const detailField =
+          document.getElementById('rxSolDetalle');
+
+        if (!openButton || !typeField || !detailField) {
+          alert(
+            'Abrí Solicitud desde el inicio de RoXThal para realizar tu consulta.'
+          );
+          return;
+        }
+
+        const option = Array.from(typeField.options).find(
+          function (item) {
+            return item.text.trim() ===
+              'Formación o capacitación artística';
+          }
+        );
+
+        typeField.value = option
+          ? option.value
+          : 'Otra consulta';
+
+        detailField.value =
+          'Hola, quiero información sobre los cursos y talleres de RoXThal Art Design.\n\n' +
+          'Quisiera conocer precios, horarios, duración, modalidad y cupos disponibles.\n\n' +
+          'Mi consulta: ';
+
+        openButton.click();
+        detailField.focus();
+      });
+
+    /* Consulta directa por WhatsApp */
+    document.getElementById('rxsgWa').href =
+      'https://wa.me/' + WHATSAPP +
+      '?text=' +
+      encodeURIComponent(
+        'Hola RoXThal Art Design. Quiero información sobre los cursos y talleres disponibles, sus precios, horarios, modalidades y cupos.'
+      );
+
+    /* Filtrado de las propuestas existentes */
+    const input = document.getElementById('rxSchoolSearch');
+    const status = document.getElementById('rxSchoolSearchStatus');
+
+    function filtrarCursos() {
+      const query = input.value
+        .trim()
+        .toLocaleLowerCase('es-AR');
+
+      const enhancedCards =
+        list.querySelectorAll('.rx-school-item');
+
+      const items = enhancedCards.length
+        ? Array.from(enhancedCards)
+        : Array.from(list.children);
+
+      let matches = 0;
+
+      items.forEach(function (item) {
+        const found = item.textContent
+          .toLocaleLowerCase('es-AR')
+          .includes(query);
+
+        item.style.display = found ? '' : 'none';
+
+        if (found) matches++;
+      });
+
+      if (!items.length) {
+        status.textContent = 'Los cursos se están cargando.';
+      } else if (!query) {
+        status.textContent =
+          matches +
+          (matches === 1
+            ? ' propuesta disponible.'
+            : ' propuestas disponibles.');
+      } else if (matches) {
+        status.textContent =
+          matches +
+          (matches === 1
+            ? ' resultado encontrado.'
+            : ' resultados encontrados.');
+      } else {
+        status.textContent =
+          'No encontramos coincidencias. Probá otra palabra o consultanos.';
+      }
+    }
+
+    input.addEventListener('input', filtrarCursos);
+
+    /* Actualizar el buscador cuando cambie la lista */
+    const observer = new MutationObserver(filtrarCursos);
+
+    observer.observe(list, {
+      childList: true,
+      subtree: true
+    });
+
+    filtrarCursos();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      iniciarEscuela,
+      { once: true }
+    );
+  } else {
+    iniciarEscuela();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL SCHOOL · CAPTACIÓN E INSCRIPCIONES V1 -->
+
 </body>
 </html>
