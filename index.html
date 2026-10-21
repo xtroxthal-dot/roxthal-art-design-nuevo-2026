@@ -72623,7 +72623,472 @@ document.addEventListener('DOMContentLoaded',function(){
   </script>
 </section>
 <!-- FIN ROXTHAL · CAPTACIÓN DE CLIENTES V1 -->
+<!-- RoXThal Art Design · Captación y seguimiento comercial -->
+<style>
+#rxComercialAdmin {
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid #b89545;
+  border-radius: 14px;
+  background: #111;
+  color: #f4ead2;
+}
+#rxComercialAdmin h3 {
+  margin: 0 0 8px;
+  color: #d8b45b;
+}
+#rxComercialAdmin p {
+  margin: 6px 0 14px;
+}
+#rxComercialAdmin button,
+#rxComercialAdmin select,
+#rxComercialAdmin input,
+#rxComercialAdmin textarea {
+  font: inherit;
+  border-radius: 8px;
+  padding: 9px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#rxComercialAdmin button {
+  cursor: pointer;
+  border: 1px solid #c7a34c;
+  background: #c7a34c;
+  color: #17120a;
+  font-weight: 700;
+}
+#rxComercialAdmin .rxcl-lead {
+  border: 1px solid #55482a;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+  background: #191919;
+  overflow-wrap: anywhere;
+}
+#rxComercialAdmin .rxcl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+#rxComercialAdmin input,
+#rxComercialAdmin textarea,
+#rxComercialAdmin select {
+  width: 100%;
+  background: #222;
+  color: #fff;
+  border: 1px solid #655632;
+}
+#rxComercialAdmin .rxcl-muted {
+  color: #c6bda8;
+  font-size: .9em;
+}
+#rxComercialAdmin .rxcl-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+</style>
 
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxComercialV1Installed) return;
+  window.__rxComercialV1Installed = true;
+
+  const DB = () => window.db;
+
+  const val = id => {
+    const el = document.getElementById(id);
+    return el ? String(el.value || '').trim() : '';
+  };
+
+  const clean = value =>
+    String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]);
+
+  const dateText = value => {
+    try {
+      return new Date(value).toLocaleString('es-AR');
+    } catch (_) {
+      return value || '';
+    }
+  };
+
+  /*
+   * REGISTRO DE CONSULTAS
+   * No espera a Supabase para permitir que continúe
+   * el comportamiento original del formulario y WhatsApp.
+   */
+  document.addEventListener('submit', function (event) {
+    const form = event.target;
+
+    if (!form || form.id !== 'rxSolicitudForm') return;
+    if (form.dataset.rxLeadSaving === '1') return;
+
+    const db = DB();
+
+    if (!db || typeof db.from !== 'function') return;
+
+    const name = val('rxSolNombre');
+    const phone = val('rxSolTelefono');
+    const interest = val('rxSolTipo');
+    const details = val('rxSolDetalle');
+
+    if (!name || !phone || !interest || !details) return;
+
+    form.dataset.rxLeadSaving = '1';
+
+    const lead = {
+      customer_name: name,
+      phone: phone,
+      email: val('rxSolEmail') || null,
+      interest_type: interest,
+      details: details,
+      preferred_date: val('rxSolFecha') || null,
+      location: val('rxSolLugar') || null,
+      budget: val('rxSolPresupuesto') || null,
+      reference: val('rxSolReferencia') || null,
+      source: 'solicitud_whatsapp',
+      status: 'nuevo',
+      sale_amount: 0
+    };
+
+    Promise.resolve()
+      .then(() => db.from('roxthal_sales_leads').insert(lead))
+      .then(result => {
+        if (result && result.error) {
+          console.warn(
+            '[RoXThal Comercial] No se pudo registrar la consulta.',
+            result.error.message
+          );
+        }
+      })
+      .catch(error => {
+        console.warn(
+          '[RoXThal Comercial] Error de conexión con Supabase.',
+          error
+        );
+      })
+      .finally(() => {
+        if (form.isConnected) {
+          form.dataset.rxLeadSaving = '0';
+        }
+      });
+  }, true);
+
+  /*
+   * PANEL COMERCIAL DENTRO DEL ADMINISTRADOR EXISTENTE.
+   */
+  function buildAdmin() {
+    const host = document.getElementById('adminPanel');
+
+    if (!host || document.getElementById('rxComercialAdmin')) return;
+
+    const section = document.createElement('section');
+    section.id = 'rxComercialAdmin';
+    section.hidden = true;
+
+    section.innerHTML = `
+      <h3>RoXThal · Seguimiento comercial</h3>
+      <p class="rxcl-muted">
+        Seguimiento de consultas de cursos y servicios.
+        El acceso requiere una sesión de administrador válida.
+      </p>
+      <div class="rxcl-actions">
+        <button type="button" id="rxclRefresh">
+          Actualizar consultas
+        </button>
+        <span id="rxclSummary"
+              class="rxcl-muted"
+              aria-live="polite"></span>
+      </div>
+      <div id="rxclList" aria-live="polite"></div>
+    `;
+
+    host.appendChild(section);
+
+    section.querySelector('#rxclRefresh')
+      .addEventListener('click', loadLeads);
+
+    const db = DB();
+
+    if (!db || !db.auth) {
+      console.warn('[RoXThal Comercial] Supabase Auth no disponible.');
+      return;
+    }
+
+    db.auth.getSession()
+      .then(({ data, error }) => {
+        const user = data?.session?.user;
+        const isAdmin =
+          !error &&
+          user?.app_metadata?.role === 'admin';
+
+        section.hidden = !isAdmin;
+
+        if (isAdmin) loadLeads();
+      })
+      .catch(() => {
+        section.hidden = true;
+      });
+
+    db.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user;
+      const isAdmin = user?.app_metadata?.role === 'admin';
+
+      section.hidden = !isAdmin;
+
+      if (isAdmin) {
+        loadLeads();
+      } else {
+        const list = section.querySelector('#rxclList');
+        const summary = section.querySelector('#rxclSummary');
+
+        if (list) list.replaceChildren();
+        if (summary) summary.textContent = '';
+      }
+    });
+  }
+
+  /*
+   * CARGA DE CONSULTAS
+   */
+  async function loadLeads() {
+    const list = document.getElementById('rxclList');
+    const summary = document.getElementById('rxclSummary');
+    const db = DB();
+
+    if (!list || !summary || !db) return;
+
+    list.textContent = 'Cargando consultas…';
+    summary.textContent = '';
+
+    try {
+      const { data, error } = await db
+        .from('roxthal_sales_leads')
+        .select(
+          'id,customer_name,phone,email,interest_type,details,' +
+          'preferred_date,location,budget,reference,status,' +
+          'sale_amount,next_follow_up,admin_notes,created_at'
+        )
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      const rows = data || [];
+
+      summary.textContent =
+        rows.length + ' consulta(s) recientes';
+
+      if (!rows.length) {
+        list.textContent = 'Todavía no hay consultas registradas.';
+        return;
+      }
+
+      list.innerHTML = rows.map(row => {
+        const phone = String(row.phone || '').replace(/\D/g, '');
+
+        const extra = [
+          row.preferred_date
+            ? 'Disponibilidad: ' + row.preferred_date : '',
+          row.location
+            ? 'Localidad: ' + row.location : '',
+          row.budget
+            ? 'Presupuesto: ' + row.budget : '',
+          row.reference
+            ? 'Referencia: ' + row.reference : ''
+        ].filter(Boolean);
+
+        const statuses = [
+          ['nuevo', 'Nuevo'],
+          ['contactado', 'Contactado'],
+          ['reservado', 'Reservado'],
+          ['ganado', 'Venta concretada'],
+          ['perdido', 'Perdido']
+        ];
+
+        return `
+          <article class="rxcl-lead" data-id="${clean(row.id)}">
+            <strong>${clean(row.customer_name)}</strong>
+            · ${clean(row.interest_type)}
+
+            <div class="rxcl-muted">
+              ${clean(dateText(row.created_at))}
+              · ${clean(row.phone)}
+              ${row.email ? ' · ' + clean(row.email) : ''}
+            </div>
+
+            <p>${clean(row.details)}</p>
+
+            ${
+              extra.length
+                ? `<div class="rxcl-muted">${extra.map(clean).join(' · ')}</div>`
+                : ''
+            }
+
+            <div class="rxcl-grid">
+              <label>
+                Estado
+                <select class="rxcl-status">
+                  ${statuses.map(([value, label]) => `
+                    <option value="${value}"
+                      ${row.status === value ? 'selected' : ''}>
+                      ${label}
+                    </option>
+                  `).join('')}
+                </select>
+              </label>
+
+              <label>
+                Importe vendido (ARS)
+                <input class="rxcl-amount"
+                       type="number"
+                       min="0"
+                       step="0.01"
+                       value="${clean(row.sale_amount ?? 0)}">
+              </label>
+
+              <label>
+                Próximo seguimiento
+                <input class="rxcl-date"
+                       type="date"
+                       value="${clean(row.next_follow_up || '')}">
+              </label>
+            </div>
+
+            <label>
+              Notas internas
+              <textarea class="rxcl-notes"
+                        rows="2"
+                        maxlength="3000">${clean(row.admin_notes || '')}</textarea>
+            </label>
+
+            <div class="rxcl-actions">
+              <button type="button" class="rxcl-save">
+                Guardar seguimiento
+              </button>
+
+              <a href="https://wa.me/${phone}"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 style="color:#e2c56c;align-self:center">
+                Abrir WhatsApp
+              </a>
+
+              <span class="rxcl-muted rxcl-msg"
+                    aria-live="polite"></span>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.rxcl-save').forEach(button => {
+        button.addEventListener('click', saveLead);
+      });
+
+    } catch (error) {
+      list.textContent =
+        'No se pudieron cargar las consultas. ' +
+        'Verificá la sesión administrativa y los permisos de Supabase.';
+
+      console.error('[RoXThal Comercial]', error);
+    }
+  }
+
+  /*
+   * ACTUALIZACIÓN DEL SEGUIMIENTO COMERCIAL
+   */
+  async function saveLead(event) {
+    const card = event.currentTarget.closest('.rxcl-lead');
+    if (!card) return;
+
+    const message = card.querySelector('.rxcl-msg');
+    const button = event.currentTarget;
+
+    const status = card.querySelector('.rxcl-status').value;
+    const amount = Number(
+      card.querySelector('.rxcl-amount').value || 0
+    );
+
+    if (!Number.isFinite(amount) || amount < 0) {
+      message.textContent = 'El importe debe ser cero o mayor.';
+      return;
+    }
+
+    button.disabled = true;
+    message.textContent = 'Guardando…';
+
+    try {
+      const db = DB();
+
+      if (!db) throw new Error('Supabase no disponible.');
+
+      const { error } = await db
+        .from('roxthal_sales_leads')
+        .update({
+          status: status,
+          sale_amount: amount,
+          next_follow_up:
+            card.querySelector('.rxcl-date').value || null,
+          admin_notes:
+            card.querySelector('.rxcl-notes').value.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', card.dataset.id);
+
+      if (error) throw error;
+
+      message.textContent = 'Seguimiento guardado.';
+
+    } catch (error) {
+      message.textContent =
+        'No se pudo guardar. Verificá los permisos administrativos.';
+
+      console.error('[RoXThal Comercial]', error);
+
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  function init() {
+    buildAdmin();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+
+  /*
+   * Reintento limitado por si el panel se crea después
+   * de cargar este fragmento.
+   */
+  let attempts = 0;
+
+  const retry = setInterval(() => {
+    attempts++;
+
+    if (document.getElementById('adminPanel')) {
+      buildAdmin();
+      clearInterval(retry);
+    }
+
+    if (attempts >= 30) clearInterval(retry);
+  }, 500);
+
+})();
+</script>
 
 </body>
 </html>
