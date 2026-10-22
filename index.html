@@ -67933,9 +67933,17 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 
     addStyles();
     const panel = ensurePanel();
-    if (panel && panel.dataset.repairLoaded !== '1') {
-      panel.dataset.repairLoaded = '1';
+        if (panel && panel.dataset.repairLoaded !== '1') {
       await loadDashboard(7);
+
+      const content = document.getElementById('rxRepairContent');
+      if (
+        content &&
+        !content.classList.contains('rx-analytics-error') &&
+        !content.classList.contains('rx-analytics-loading')
+      ) {
+        panel.dataset.repairLoaded = '1';
+      }
     }
   }
 
