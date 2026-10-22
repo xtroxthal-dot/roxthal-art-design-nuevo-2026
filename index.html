@@ -73696,6 +73696,382 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL · ENTRADA Y AMBIENTE INFANTIL -->
 
 
+<!-- ROXTHAL KIDS ART · AMPLIACIÓN COMPATIBLE CON EL MÓDULO EXISTENTE -->
+<style id="rxka-kids-extra-v2-style">
+#rxka-kids-expanded{
+  margin-top:18px;
+}
+#rxka-kids-expanded .rxka-kids-card{
+  min-width:0;
+  padding:16px;
+  border:2px solid #b7a1f0;
+  border-radius:18px;
+  background:linear-gradient(145deg,#fff,#f0faff);
+  box-shadow:0 4px 0 #e1d3f8;
+  color:#39265d;
+}
+#rxka-kids-expanded .rxka-kids-card h3{
+  color:#713eb0!important;
+  margin:0 0 8px;
+}
+#rxka-kids-expanded .rxka-kids-card p{
+  color:#49355f!important;
+  line-height:1.5;
+}
+#rxka-kids-expanded button{
+  min-height:42px;
+  padding:9px 13px;
+  margin:4px 3px 4px 0;
+  border:2px solid #75cdb8;
+  border-radius:12px;
+  background:#d9f7ed;
+  color:#244c48;
+  font-weight:700;
+  cursor:pointer;
+}
+#rxka-kids-expanded input{
+  box-sizing:border-box;
+  max-width:100%;
+  padding:10px;
+  border:2px solid #b7a1f0;
+  border-radius:10px;
+}
+#rxka-kids-expanded .rxka-kx-result{
+  min-height:42px;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  background:#e8e0ff;
+  color:#39265d;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+#rxka-kids-expanded .rxka-kx-field{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:10px 0;
+}
+#rxka-kids-diploma{
+  display:none;
+}
+@media(max-width:520px){
+  #rxka-kids-expanded .rxka-kids-card{padding:12px}
+}
+@media print{
+  body *{visibility:hidden!important}
+  #rxka-kids-diploma,
+  #rxka-kids-diploma *{visibility:visible!important}
+  #rxka-kids-diploma{
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    padding:35px!important;
+    border:10px double #b9974b!important;
+    background:#fff!important;
+    color:#222!important;
+    text-align:center!important;
+    font-family:Georgia,serif!important;
+  }
+}
+</style>
+
+<script id="rxka-kids-extra-v2-script">
+(function(){
+  'use strict';
+
+  if(window.__rxkaKidsExtraV2) return;
+  window.__rxkaKidsExtraV2=true;
+
+  const $=id=>document.getElementById(id);
+
+  function install(){
+    const host=$('rxka-kids-extra');
+    if(!host) return false;
+
+    if($('rxka-kids-expanded')) return true;
+
+    const section=document.createElement('section');
+    section.id='rxka-kids-expanded';
+
+    section.innerHTML=`
+      <div class="rxka-kids-banner">
+        <h3>🚀 ¡Seguimos creando y jugando!</h3>
+        <p>Nuevos juegos, historias, retos y actividades para pequeños artistas.</p>
+      </div>
+
+      <div class="rxka-grid">
+
+        <article class="rxka-kids-card">
+          <h3>🕵️ Adivinanzas artísticas</h3>
+          <p>Leé la pista e intentá descubrir la respuesta.</p>
+          <button type="button" data-kx="riddle">Otra adivinanza</button>
+          <div id="rxka-kx-riddle" class="rxka-kx-result" aria-live="polite">
+            ¡Prepará tu imaginación!
+          </div>
+          <div class="rxka-kx-field">
+            <input id="rxka-kx-riddle-answer" type="text"
+              maxlength="100" placeholder="Tu respuesta">
+            <button type="button" data-kx="riddle-check">Comprobar</button>
+          </div>
+          <div id="rxka-kx-riddle-result" class="rxka-kx-result" aria-live="polite"></div>
+        </article>
+
+        <article class="rxka-kids-card">
+          <h3>🔢 Letras y números</h3>
+          <p>Resolvé una pregunta nueva y comprobá tu respuesta.</p>
+          <button type="button" data-kx="quiz">Nueva pregunta</button>
+          <div id="rxka-kx-question" class="rxka-kx-result" aria-live="polite">
+            Pulsá «Nueva pregunta» para empezar.
+          </div>
+          <div class="rxka-kx-field">
+            <input id="rxka-kx-answer" type="text"
+              maxlength="30" placeholder="Escribí tu respuesta">
+            <button type="button" data-kx="quiz-check">Comprobar</button>
+          </div>
+          <div id="rxka-kx-feedback" class="rxka-kx-result" aria-live="polite"></div>
+        </article>
+
+        <article class="rxka-kids-card">
+          <h3>🤸 Pausa de movimiento</h3>
+          <p>Una pausa activa para despejar la mente entre dibujos.</p>
+          <button type="button" data-kx="move">¡Dame una misión!</button>
+          <div id="rxka-kx-move" class="rxka-kx-result" aria-live="polite">
+            Elegí una misión y movete en un espacio seguro.
+          </div>
+        </article>
+
+        <article class="rxka-kids-card">
+          <h3>🎭 Teatro de personajes</h3>
+          <p>Creá un personaje, un escenario y una aventura.</p>
+          <button type="button" data-kx="theatre">Inventar aventura</button>
+          <div id="rxka-kx-theatre" class="rxka-kx-result" aria-live="polite">
+            ¿Qué historia vas a representar?
+          </div>
+        </article>
+
+        <article class="rxka-kids-card">
+          <h3>🏆 Reto del pequeño artista</h3>
+          <p>Desafíos para practicar formas, colores y creatividad.</p>
+          <button type="button" data-kx="challenge">Nuevo reto</button>
+          <div id="rxka-kx-challenge" class="rxka-kx-result" aria-live="polite">
+            ¡Tu próxima obra puede empezar con una idea!
+          </div>
+        </article>
+
+        <article class="rxka-kids-card">
+          <h3>📜 Diploma de pequeño artista</h3>
+          <p>Prepará un diploma personalizado para imprimir.</p>
+          <div class="rxka-kx-field">
+            <input id="rxka-kx-name" type="text" maxlength="60"
+              placeholder="Nombre del artista">
+          </div>
+          <button type="button" data-kx="diploma">Preparar diploma</button>
+          <button type="button" data-kx="print">Imprimir diploma</button>
+          <div id="rxka-kx-diploma-status" class="rxka-kx-result" aria-live="polite">
+            Completá el nombre y prepará tu diploma.
+          </div>
+        </article>
+
+      </div>
+
+      <section id="rxka-kids-diploma">
+        <p>🎨 ROXTHAL ART DESIGN 🎨</p>
+        <h1>Diploma de Pequeño Artista</h1>
+        <p>Se reconoce a</p>
+        <h2 id="rxka-kx-diploma-name"></h2>
+        <p>por su imaginación, creatividad y entusiasmo por el arte.</p>
+        <p>¡Seguí dibujando, aprendiendo y creando!</p>
+        <p>RoXThal Kids Art · Arte que deja marca.</p>
+      </section>
+    `;
+
+    host.appendChild(section);
+
+    const riddles=[
+      {q:'Tengo muchos colores y aparezco después de la lluvia. ¿Qué soy?',a:['arcoiris','arco iris']},
+      {q:'Tengo hojas, pero no soy un árbol; cuento historias. ¿Qué soy?',a:['libro']},
+      {q:'Conmigo podés dibujar y después borrar. ¿Qué soy?',a:['lapiz','lápiz']},
+      {q:'Puedo ser redondo, cuadrado o triangular. Soy una figura. ¿Qué soy?',a:['forma','figura geometrica','figura geométrica']},
+      {q:'Me mezclás con azul y amarillo para crear un nuevo color. ¿Qué soy?',a:['pintura','colores','color']}
+    ];
+
+    const movements=[
+      'Hacé cinco estiramientos suaves de brazos, sin forzar el cuerpo.',
+      'Caminá despacio por el lugar y encontrá tres objetos de colores distintos.',
+      'Imaginá que sos un árbol: estirá los brazos como ramas y balanceate suavemente.',
+      'Hacé una pose de estatua artística y mantenela durante cinco segundos.',
+      'Mové los hombros suavemente y después dibujá círculos en el aire con las manos.'
+    ];
+
+    const characters=[
+      'un gato que pinta cuadros',
+      'una tortuga exploradora',
+      'un robot que cuida las plantas',
+      'un dragón que aprende a dibujar',
+      'una mariposa que busca nuevos colores'
+    ];
+
+    const places=[
+      'un bosque mágico',
+      'una ciudad hecha de figuras',
+      'un planeta de colores',
+      'un museo encantado',
+      'una isla llena de animales'
+    ];
+
+    const objects=[
+      'un pincel brillante',
+      'una llave misteriosa',
+      'una caja de colores',
+      'un mapa dibujado a mano',
+      'una estrella de papel'
+    ];
+
+    const challenges=[
+      'Dibujá un animal usando solamente círculos y triángulos.',
+      'Creá un paisaje con tres colores y una línea curva.',
+      'Inventá una criatura que pueda vivir bajo el agua y en el espacio.',
+      'Dibujá una casa para un personaje diminuto.',
+      'Creá un cartel que invite a cuidar el planeta.',
+      'Transformá una mancha imaginaria en un personaje.',
+      'Diseñá una máquina fantástica que ayude a alguien.',
+      'Creá un retrato usando formas geométricas.'
+    ];
+
+    const pick=list=>list[Math.floor(Math.random()*list.length)];
+
+    function normalise(value){
+      return String(value||'')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase()
+        .trim()
+        .replace(/[¿?¡!.,;:]/g,'')
+        .replace(/\s+/g,' ');
+    }
+
+    let currentRiddle=null;
+    let currentAnswer=null;
+
+    section.addEventListener('click',function(event){
+      const button=event.target.closest('button[data-kx]');
+      if(!button) return;
+
+      switch(button.dataset.kx){
+
+        case 'riddle':
+          currentRiddle=pick(riddles);
+          $('rxka-kx-riddle').textContent=currentRiddle.q;
+          $('rxka-kx-riddle-answer').value='';
+          $('rxka-kx-riddle-result').textContent='';
+          break;
+
+        case 'riddle-check': {
+          if(!currentRiddle){
+            $('rxka-kx-riddle-result').textContent='Primero elegí una adivinanza.';
+            break;
+          }
+          const answer=normalise($('rxka-kx-riddle-answer').value);
+          $('rxka-kx-riddle-result').textContent=
+            currentRiddle.a.some(a=>normalise(a)===answer)
+              ? '🎉 ¡Correcto! ¡Buen trabajo!'
+              : '¡Seguí probando! Pista: leé otra vez la adivinanza.';
+          break;
+        }
+
+        case 'quiz': {
+          const a=Math.floor(Math.random()*9)+1;
+          const b=Math.floor(Math.random()*9)+1;
+          const mode=Math.floor(Math.random()*3);
+
+          if(mode===0){
+            currentAnswer=String(a+b);
+            $('rxka-kx-question').textContent='¿Cuánto es '+a+' + '+b+'?';
+          }else if(mode===1){
+            const letter=String.fromCharCode(65+Math.floor(Math.random()*26));
+            currentAnswer=letter.toLowerCase();
+            $('rxka-kx-question').textContent='¿Qué letra es esta? '+letter;
+          }else{
+            const word=pick(['SOL','ARTE','LUNA','GATO','FLOR']);
+            currentAnswer=String(word.length);
+            $('rxka-kx-question').textContent='¿Cuántas letras tiene la palabra '+word+'?';
+          }
+
+          $('rxka-kx-answer').value='';
+          $('rxka-kx-feedback').textContent='';
+          break;
+        }
+
+        case 'quiz-check': {
+          if(currentAnswer===null){
+            $('rxka-kx-feedback').textContent='Primero pedí una nueva pregunta.';
+            break;
+          }
+          const answer=normalise($('rxka-kx-answer').value);
+          $('rxka-kx-feedback').textContent=
+            answer===currentAnswer
+              ? '🌟 ¡Respuesta correcta! ¡Excelente!'
+              : 'Todavía no. Revisá tu respuesta e intentá otra vez.';
+          break;
+        }
+
+        case 'move':
+          $('rxka-kx-move').textContent=pick(movements);
+          break;
+
+        case 'theatre':
+          $('rxka-kx-theatre').textContent=
+            'Había una vez '+pick(characters)+' que llegó a '+pick(places)+
+            '. Allí encontró '+pick(objects)+
+            '. ¿Qué hizo después? ¡Inventá el final o representalo!';
+          break;
+
+        case 'challenge':
+          $('rxka-kx-challenge').textContent=pick(challenges);
+          break;
+
+        case 'diploma': {
+          const name=$('rxka-kx-name').value.trim();
+          if(!name){
+            $('rxka-kx-diploma-status').textContent='Escribí primero el nombre del artista.';
+            $('rxka-kx-name').focus();
+            break;
+          }
+          $('rxka-kx-diploma-name').textContent=name;
+          $('rxka-kids-diploma').style.display='block';
+          $('rxka-kx-diploma-status').textContent=
+            '🎉 ¡Diploma preparado para '+name+'! Ahora podés imprimirlo.';
+          break;
+        }
+
+        case 'print':
+          if(!$('rxka-kx-diploma-name').textContent.trim()){
+            $('rxka-kx-diploma-status').textContent='Primero prepará el diploma con el nombre del artista.';
+            break;
+          }
+          window.print();
+          break;
+      }
+    });
+
+    return true;
+  }
+
+  if(!install()){
+    const observer=new MutationObserver(function(){
+      if(install()) observer.disconnect();
+    });
+    observer.observe(document.documentElement,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),15000);
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · AMPLIACIÓN COMPATIBLE -->
+
 
 </body>
 </html>
