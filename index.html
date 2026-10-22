@@ -74072,6 +74072,148 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL KIDS ART · AMPLIACIÓN COMPATIBLE -->
 
+   
+<!-- ROXTHAL KIDS ART: CORRECCIÓN SEGURA DEL BORRADOR -->
+<script id="rxka-transparent-eraser-v1">
+(function () {
+  'use strict';
+
+  if (window.__rxkaTransparentEraserV1) return;
+
+  const canvas = document.getElementById('rxka-canvas');
+  const overlay = document.getElementById('rxka-overlay');
+
+  if (!canvas || !overlay) {
+    console.warn('[RoXThal Kids Art] No se encontró el lienzo o el panel.');
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  window.__rxkaTransparentEraserV1 = true;
+
+  let eraserActive = false;
+  let erasing = false;
+  let pointerId = null;
+  let lastPoint = null;
+
+  const sizeInput = document.getElementById('rxka-size');
+
+  function getPoint(event) {
+    const rect = canvas.getBoundingClientRect();
+
+    return {
+      x: (event.clientX - rect.left) * canvas.width / rect.width,
+      y: (event.clientY - rect.top) * canvas.height / rect.height
+    };
+  }
+
+  function getSize() {
+    return Math.max(
+      2,
+      Math.min(32, Number(sizeInput?.value) || 8)
+    );
+  }
+
+  function eraseSegment(from, to) {
+    const radius = getSize() / 2;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = getSize();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(to.x, to.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function stopErasing() {
+    erasing = false;
+    pointerId = null;
+    lastPoint = null;
+  }
+
+  /*
+   * Sincroniza el estado con el botón original del módulo.
+   * El controlador existente sigue atendiendo el resto
+   * de las acciones de Kids Art.
+   */
+  overlay.addEventListener('click', function (event) {
+    const button = event.target.closest(
+      '[data-rxka-action="eraser"]'
+    );
+
+    if (!button) return;
+
+    eraserActive = !eraserActive;
+    stopErasing();
+  }, true);
+
+  /*
+   * Capturamos los eventos únicamente cuando está activo
+   * el borrador. En modo dibujo sigue actuando el código
+   * original del lienzo.
+   */
+  canvas.addEventListener('pointerdown', function (event) {
+    if (!eraserActive) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    erasing = true;
+    pointerId = event.pointerId;
+    lastPoint = getPoint(event);
+
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch (_) {}
+
+    eraseSegment(lastPoint, lastPoint);
+  }, true);
+
+  canvas.addEventListener('pointermove', function (event) {
+    if (!eraserActive || !erasing) return;
+    if (event.pointerId !== pointerId) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const point = getPoint(event);
+    eraseSegment(lastPoint, point);
+    lastPoint = point;
+  }, true);
+
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(
+    function (eventName) {
+      canvas.addEventListener(eventName, function (event) {
+        if (!eraserActive || !erasing) return;
+        if (pointerId !== null &&
+            event.pointerId !== pointerId) return;
+
+        event.stopImmediatePropagation();
+        stopErasing();
+      }, true);
+    }
+  );
+
+  console.info(
+    '[RoXThal Kids Art] Corrección de borrador instalada.'
+  );
+})();
+</script>
+<!-- FIN CORRECCIÓN DEL BORRADOR -->
+
+
 
 </body>
 </html>
