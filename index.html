@@ -73463,6 +73463,218 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL · RECUPERACIÓN COMPLEMENTARIA DE VISITAS -->
 
+   
+<!-- ROXTHAL: RESUMEN COMERCIAL ADICIONAL -->
+<style>
+#rxclCommercialSummary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+#rxclCommercialSummary .rxcl-summary-card {
+  background: #151515;
+  border: 1px solid #655632;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+#rxclCommercialSummary strong {
+  display: block;
+  color: #e2c56c;
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+}
+#rxclCommercialSummary span {
+  display: block;
+  color: #c6bda8;
+  font-size: .85rem;
+  margin-top: 5px;
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxCommercialSummaryV1) return;
+  window.__rxCommercialSummaryV1 = true;
+
+  const db = () => window.db;
+
+  function installSummary() {
+    const section = document.getElementById('rxComercialAdmin');
+    const list = document.getElementById('rxclList');
+    const refresh = document.getElementById('rxclRefresh');
+
+    if (!section || !list || !refresh) return false;
+
+    let panel = document.getElementById('rxclCommercialSummary');
+
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'rxclCommercialSummary';
+      panel.setAttribute('aria-live', 'polite');
+      panel.innerHTML =
+        '<div class="rxcl-summary-card"><strong>—</strong>' +
+        '<span>Consultas recibidas</span></div>';
+
+      section.insertBefore(panel, list);
+    }
+
+    if (refresh.dataset.rxSummaryBound !== '1') {
+      refresh.dataset.rxSummaryBound = '1';
+      refresh.addEventListener('click', () => {
+        // El manejador original sigue funcionando.
+        // Este manejador solo actualiza los indicadores.
+        setTimeout(updateSummary, 100);
+      });
+    }
+
+    return true;
+  }
+
+  async function updateSummary() {
+    const panel = document.getElementById('rxclCommercialSummary');
+    const client = db();
+
+    if (!panel || !client) return;
+
+    try {
+      panel.innerHTML =
+        '<div class="rxcl-summary-card"><strong>…</strong>' +
+        '<span>Actualizando resumen</span></div>';
+
+      const { data: auth, error: authError } =
+        await client.auth.getSession();
+
+      const user = auth?.session?.user;
+
+      if (authError || user?.app_metadata?.role !== 'admin') {
+        panel.textContent =
+          'El resumen requiere una sesión administrativa válida.';
+        return;
+      }
+
+      const rows = [];
+      const pageSize = 1000;
+      let offset = 0;
+
+      while (true) {
+        const { data, error } = await client
+          .from('roxthal_sales_leads')
+          .select('status,sale_amount,next_follow_up,created_at')
+          .order('created_at', { ascending: true })
+          .range(offset, offset + pageSize - 1);
+
+        if (error) throw error;
+
+        const page = data || [];
+        rows.push(...page);
+
+        if (page.length < pageSize) break;
+        offset += pageSize;
+      }
+
+      const won = rows.filter(r => r.status === 'ganado');
+
+      const amount = won.reduce((sum, r) => {
+        const n = Number(r.sale_amount || 0);
+        return sum + (Number.isFinite(n) && n > 0 ? n : 0);
+      }, 0);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const followUps = rows.filter(r => {
+        if (
+          !r.next_follow_up ||
+          r.status === 'ganado' ||
+          r.status === 'perdido'
+        ) return false;
+
+        const date = new Date(r.next_follow_up + 'T00:00:00');
+
+        return !Number.isNaN(date.getTime()) && date <= today;
+      }).length;
+
+      const money = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0
+      });
+
+      const stats = [
+        [rows.length, 'Consultas recibidas'],
+        [rows.filter(r => r.status === 'nuevo').length,
+          'Pendientes de contactar'],
+        [won.length, 'Ventas concretadas'],
+        [money.format(amount), 'Importe vendido'],
+        [followUps, 'Seguimientos vencidos o de hoy']
+      ];
+
+      panel.innerHTML = stats.map(([value, label]) =>
+        '<div class="rxcl-summary-card"><strong>' +
+        String(value) + '</strong><span>' +
+        label + '</span></div>'
+      ).join('');
+
+    } catch (error) {
+      console.error('[RoXThal resumen comercial]', error);
+      panel.textContent =
+        'No se pudo actualizar el resumen. El listado comercial original se mantiene.';
+    }
+  }
+
+  function init() {
+    installSummary();
+
+    const client = db();
+
+    if (client?.auth) {
+      client.auth.getSession().then(({ data, error }) => {
+        if (!error && data?.session?.user?.app_metadata?.role === 'admin') {
+          installSummary();
+          updateSummary();
+        }
+      }).catch(error => {
+        console.error('[RoXThal resumen comercial]', error);
+      });
+
+      client.auth.onAuthStateChange((_event, session) => {
+        if (session?.user?.app_metadata?.role === 'admin') {
+          installSummary();
+          updateSummary();
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+
+  // El panel comercial puede crearse después de cargar el documento.
+  const observer = new MutationObserver(() => {
+    if (installSummary()) {
+      const section = document.getElementById('rxComercialAdmin');
+      if (section && !section.hidden) updateSummary();
+    }
+  });
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+
+  setTimeout(() => observer.disconnect(), 30000);
+})();
+</script>
+<!-- FIN ROXTHAL: RESUMEN COMERCIAL ADICIONAL -->
+
+
 
 </body>
 </html>
