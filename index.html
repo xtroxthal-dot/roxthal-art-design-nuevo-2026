@@ -72734,29 +72734,68 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   };
 
+  
   /*
-   * REGISTRO DE CONSULTAS
-   * No espera a Supabase para permitir que continúe
-   * el comportamiento original del formulario y WhatsApp.
+   * REGISTRO DE CONSULTAS — CON ESTADO VISIBLE
+   * Mantiene el envío original a WhatsApp.
    */
-  document.addEventListener('submit', function (event) {
+  document.addEventListener('submit', async function (event) {
     const form = event.target;
 
     if (!form || form.id !== 'rxSolicitudForm') return;
     if (form.dataset.rxLeadSaving === '1') return;
 
-    const db = DB();
+    let status = document.getElementById('rxLeadStatus');
 
-    if (!db || typeof db.from !== 'function') return;
+    if (!status) {
+      status = document.createElement('p');
+      status.id = 'rxLeadStatus';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      status.style.cssText =
+        'padding:10px;margin:10px 0;border-radius:8px;' +
+        'overflow-wrap:anywhere;';
+      const submitButton = form.querySelector('[type="submit"]');
+      if (submitButton) {
+        submitButton.insertAdjacentElement('beforebegin', status);
+      } else {
+        form.appendChild(status);
+      }
+    }
+
+    const mostrarEstado = (mensaje, correcto) => {
+      status.textContent = mensaje;
+      status.style.color = correcto ? '#65d995' : '#ff9b9b';
+    };
+
+    const db = window.db;
+
+    if (!db || typeof db.from !== 'function') {
+      mostrarEstado(
+        'ERROR: Supabase no está disponible. La consulta no se registró.',
+        false
+      );
+      console.error('[RoXThal Comercial] window.db no disponible.');
+      return;
+    }
+
+    const val = id => {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    };
 
     const name = val('rxSolNombre');
     const phone = val('rxSolTelefono');
     const interest = val('rxSolTipo');
     const details = val('rxSolDetalle');
 
-    if (!name || !phone || !interest || !details) return;
-
-    form.dataset.rxLeadSaving = '1';
+    if (!name || !phone || !interest || !details) {
+      mostrarEstado(
+        'Completá los campos obligatorios para registrar la consulta.',
+        false
+      );
+      return;
+    }
 
     const lead = {
       customer_name: name,
@@ -72773,28 +72812,43 @@ document.addEventListener('DOMContentLoaded',function(){
       sale_amount: 0
     };
 
-    Promise.resolve()
-      .then(() => db.from('roxthal_sales_leads').insert(lead))
-      .then(result => {
-        if (result && result.error) {
-          console.warn(
-            '[RoXThal Comercial] No se pudo registrar la consulta.',
-            result.error.message
-          );
-        }
-      })
-      .catch(error => {
-        console.warn(
-          '[RoXThal Comercial] Error de conexión con Supabase.',
-          error
+    form.dataset.rxLeadSaving = '1';
+    mostrarEstado('Registrando la consulta…', true);
+
+    try {
+      const { error } = await db
+        .from('roxthal_sales_leads')
+        .insert(lead);
+
+      if (error) {
+        console.error('[RoXThal Comercial] Error al registrar:', error);
+        mostrarEstado(
+          'NO SE REGISTRÓ la consulta: ' +
+          (error.message || 'Error de Supabase') +
+          '. Podés continuar con WhatsApp.',
+          false
         );
-      })
-      .finally(() => {
-        if (form.isConnected) {
-          form.dataset.rxLeadSaving = '0';
-        }
-      });
+        return;
+      }
+
+      mostrarEstado(
+        'Consulta registrada correctamente. Ya podés continuar con WhatsApp.',
+        true
+      );
+      console.info('[RoXThal Comercial] Consulta registrada.');
+    } catch (error) {
+      console.error('[RoXThal Comercial] Error de conexión:', error);
+      mostrarEstado(
+        'NO SE PUDO CONFIRMAR el registro. ' +
+        (error.message || 'Error de conexión') +
+        '. Podés continuar con WhatsApp.',
+        false
+      );
+    } finally {
+      form.dataset.rxLeadSaving = '0';
+    }
   }, true);
+
 
   /*
    * PANEL COMERCIAL DENTRO DEL ADMINISTRADOR EXISTENTE.
