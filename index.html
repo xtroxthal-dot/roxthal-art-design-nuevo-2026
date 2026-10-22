@@ -6336,11 +6336,14 @@ if (result && result.error) {
     window.addEventListener('roxthal:conversion', function (event) {
       const detail = event.detail || {};
 
+      
       recordEvent(detail.type || 'conversion', {
         action_target: cleanText(detail.action_target || '', 120),
+        module_id: cleanText(detail.module_id || '', 80) || null,
+        module_name: cleanText(detail.module_name || '', 120) || null,
         metadata: detail.metadata || {}
       });
-    });
+
 
     
     installSessionTracking();
