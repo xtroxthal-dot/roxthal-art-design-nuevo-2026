@@ -73248,5 +73248,155 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL · CAPTACIÓN 360 -->
 
+   
+<!-- ROXTHAL · RECUPERACIÓN COMPLEMENTARIA DE VISITAS -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxVisitsRecoveryInstalled) return;
+  window.__rxVisitsRecoveryInstalled = true;
+
+  const knownViews = new Set([
+    'home', 'services', 'gallery', 'school', 'radio', 'reviews',
+    'raffle', 'payments', 'search', 'contact', 'visits', 'about',
+    'ai', 'admin', 'students'
+  ]);
+
+  const names = {
+    schoolAtelier: 'RoXThal School Atelier',
+    roxthalAppModule: 'RoXThal App',
+    roxthalNewsModule: 'RoXThal News',
+    store: 'Tienda',
+    academia: 'Academia RoXThal',
+    rsaPanel: 'Apuntes',
+    rsaPageAtelier: 'Apuntes · Atelier',
+    rsaPageDibujo: 'Apuntes · Dibujo',
+    rsaPagePintura: 'Apuntes · Pintura',
+    rsaPageTatuaje: 'Apuntes · Tatuaje',
+    rsaPageProfesional: 'Apuntes · Profesional',
+    rsaPageInfantil: 'Apuntes · Infantil',
+    rsaPageCreatividad: 'Apuntes · Creatividad',
+    collaborators: 'Trabaja con nosotros',
+    rxkaPanel: 'RoXThal Kids Art',
+    rxCaminoArtistico: 'Camino Artístico'
+  };
+
+  let lastView = '';
+  let lastContact = '';
+
+  function emit(type, target, metadata) {
+    try {
+      window.dispatchEvent(new CustomEvent('roxthal:conversion', {
+        detail: {
+          type: type,
+          action_target: target,
+          module_id: type === 'module_view' ? target : undefined,
+          module_name: type === 'module_view'
+            ? (names[target] || target)
+            : undefined,
+          metadata: Object.assign({
+            source: 'visits_recovery',
+            page: location.pathname
+          }, metadata || {})
+        }
+      }));
+    } catch (error) {
+      console.warn('[RoXThal Visitas] No se pudo emitir el evento.', error);
+    }
+  }
+
+  function checkView() {
+    const visible = document.querySelector('.view:not(.hidden)[id]');
+    if (!visible) return;
+
+    const id = visible.id;
+    if (id === lastView) return;
+    lastView = id;
+
+    // Las vistas antiguas ya cuentan con seguimiento propio.
+    // Este respaldo cubre módulos que faltaban en el registro.
+    if (!knownViews.has(id)) {
+      emit('module_view', id, {
+        module_name: names[id] || id,
+        recovery: true
+      });
+    }
+  }
+
+  function init() {
+    checkView();
+
+    const observer = new MutationObserver(checkView);
+    observer.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    document.addEventListener('click', function (event) {
+      const target = event.target && event.target.closest
+        ? event.target.closest(
+            'button,[role="button"],[onclick],[data-href],[data-url]'
+          )
+        : null;
+
+      if (!target) return;
+
+      const label = String(
+        target.innerText ||
+        target.getAttribute('aria-label') ||
+        target.getAttribute('title') || ''
+      ).replace(/\s+/g, ' ').trim().slice(0, 120);
+
+      const destination = [
+        target.getAttribute('onclick') || '',
+        target.getAttribute('data-href') || '',
+        target.getAttribute('data-url') || '',
+        label
+      ].join(' ');
+
+      let channel = '';
+
+      if (/whatsapp|wa\.me/i.test(destination)) {
+        channel = 'whatsapp';
+      } else if (/mailto:|enviar correo/i.test(destination)) {
+        channel = 'email';
+      } else if (/tel:|llamar por teléfono/i.test(destination)) {
+        channel = 'telefono';
+      }
+
+      if (!channel) return;
+
+      // Evita repetir rápidamente el mismo clic.
+      const now = Date.now();
+      const signature = channel + '|' + label;
+
+      if (
+        lastContact === signature &&
+        now - (window.__rxLastContactAt || 0) < 1200
+      ) return;
+
+      lastContact = signature;
+      window.__rxLastContactAt = now;
+
+      emit('contact_click', channel, {
+        channel: channel,
+        cta_text: label || channel,
+        recovery: true
+      });
+    }, true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · RECUPERACIÓN COMPLEMENTARIA DE VISITAS -->
+
+
 </body>
 </html>
