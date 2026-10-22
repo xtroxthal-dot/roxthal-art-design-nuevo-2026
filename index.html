@@ -73090,5 +73090,163 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+<!-- ROXTHAL · CAPTACIÓN 360 · MEDICIÓN COMPLEMENTARIA -->
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxCaptacion360Installed) return;
+  window.__rxCaptacion360Installed = true;
+
+  const STORAGE_KEY = 'roxthal_campaign_attribution_v1';
+  const LANDING_KEY = 'roxthal_campaign_landing_logged_v1';
+
+  function safeGet(key) {
+    try {
+      return sessionStorage.getItem(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch (_) {}
+  }
+
+  function clean(value, max) {
+    return String(value || '').replace(/\s+/g, ' ')
+      .trim().slice(0, max);
+  }
+
+  function getAttribution() {
+    let saved = {};
+
+    try {
+      saved = JSON.parse(safeGet(STORAGE_KEY) || '{}');
+    } catch (_) {}
+
+    const params = new URLSearchParams(window.location.search);
+    const keys = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_content',
+      'utm_term'
+    ];
+
+    let hasCampaign = false;
+
+    keys.forEach(function (key) {
+      const value = clean(params.get(key), 120);
+
+      if (value) {
+        saved[key] = value;
+        hasCampaign = true;
+      }
+    });
+
+    if (hasCampaign) {
+      safeSet(STORAGE_KEY, JSON.stringify(saved));
+    }
+
+    return saved;
+  }
+
+  function emit(type, target, extra) {
+    try {
+      window.dispatchEvent(new CustomEvent('roxthal:conversion', {
+        detail: {
+          type: type,
+          action_target: clean(target, 120),
+          metadata: Object.assign({
+            source: 'captacion360',
+            page: window.location.pathname,
+            utm_source: attribution.utm_source || '',
+            utm_medium: attribution.utm_medium || '',
+            utm_campaign: attribution.utm_campaign || '',
+            utm_content: attribution.utm_content || '',
+            utm_term: attribution.utm_term || ''
+          }, extra || {})
+        }
+      }));
+    } catch (error) {
+      console.warn('[RoXThal Captación 360]', error);
+    }
+  }
+
+  const attribution = getAttribution();
+
+  function init() {
+    const campaign = [
+      attribution.utm_source,
+      attribution.utm_medium,
+      attribution.utm_campaign
+    ].filter(Boolean).join('|');
+
+    if (campaign && safeGet(LANDING_KEY) !== campaign) {
+      safeSet(LANDING_KEY, campaign);
+
+      emit('campaign_landing', 'entrada_por_campana', {
+        campaign_landing: true
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+
+      let url;
+
+      try {
+        url = new URL(link.href, window.location.href);
+      } catch (_) {
+        return;
+      }
+
+      let channel = '';
+
+      if (
+        /(^|\.)wa\.me$/i.test(url.hostname) ||
+        /(^|\.)whatsapp\.com$/i.test(url.hostname) ||
+        /(^|\.)api\.whatsapp\.com$/i.test(url.hostname)
+      ) {
+        channel = 'whatsapp';
+      } else if (url.protocol === 'tel:') {
+        channel = 'telefono';
+      } else if (url.protocol === 'mailto:') {
+        channel = 'email';
+      }
+
+      if (!channel) return;
+
+      emit('contact_click', channel, {
+        channel: channel,
+        cta_text: clean(link.innerText || link.getAttribute('aria-label'), 80)
+      });
+    }, true);
+
+    document.addEventListener('submit', function (event) {
+      const form = event.target;
+
+      if (!form || form.id !== 'rxSolicitudForm') return;
+
+      emit('consultation_form_submit_attempt', 'rxSolicitudForm', {
+        form_id: 'rxSolicitudForm'
+      });
+    }, true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · CAPTACIÓN 360 -->
+
 </body>
 </html>
