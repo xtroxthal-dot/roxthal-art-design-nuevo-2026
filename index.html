@@ -73464,6 +73464,237 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL · RECUPERACIÓN COMPLEMENTARIA DE VISITAS -->
 
 
+<!-- ROXTHAL · ENTRADA Y AMBIENTE INFANTIL -->
+<style id="rxka-kids-world-style">
+#rxka-kids-entry{
+  display:block;width:100%;margin:22px 0 12px;padding:17px;
+  border:3px solid #ffcf56;border-radius:20px;
+  background:linear-gradient(120deg,#ff8fc7,#ffda70,#8de8d0,#9bbcff);
+  color:#33204a;font-size:1.2rem;font-weight:900;
+  box-shadow:0 7px 0 #6d558a;cursor:pointer;
+}
+#rxka-kids-entry:focus-visible{outline:3px solid #222;outline-offset:3px}
+#rxka-overlay.rxka-open{
+  background:
+    radial-gradient(circle at 10% 10%,#ffdf86 0 7%,transparent 8%),
+    radial-gradient(circle at 90% 20%,#ffadd4 0 8%,transparent 9%),
+    linear-gradient(145deg,#a7eaff,#f8c8ee 45%,#fff0ad);
+  color:#35214d;
+}
+#rxka-panel{
+  background:linear-gradient(160deg,#fffdf6,#f4eaff)!important;
+  border:4px solid #ffb84d!important;border-radius:26px!important;
+  color:#35214d!important;box-shadow:0 12px 0 #b99ad8!important;
+}
+#rxka-head{border-color:#e6b4e8!important}
+#rxka-head h2{color:#713eb0!important}
+#rxka-intro{color:#49355f!important}
+#rxka-close{background:#ff8fb8!important;color:#35214d!important;border:2px solid #fff!important}
+#rxka-overlay .rxka-card{
+  background:linear-gradient(145deg,#fff,#f0faff)!important;
+  border:2px solid #b7a1f0!important;border-radius:20px!important;
+  box-shadow:0 5px 0 #dfc8f4;
+}
+#rxka-overlay .rxka-card h3{color:#713eb0!important}
+#rxka-overlay .rxka-card p{color:#49355f!important}
+#rxka-overlay .rxka-btn{
+  background:#d9f7ed!important;color:#244c48!important;
+  border:2px solid #75cdb8!important;border-radius:14px!important;
+}
+#rxka-overlay .rxka-btn.primary{
+  background:#ffcf68!important;color:#422c52!important;
+  border-color:#f3ad45!important;
+}
+#rxka-overlay .rxka-result{background:#e8e0ff!important;color:#39265d!important}
+#rxka-overlay #rxka-canvas{border:3px dashed #bd86df!important}
+#rxka-overlay .rxka-memory button{background:#c9f2ff!important;color:#39265d!important}
+#rxka-kids-extra{margin-top:18px}
+#rxka-kids-extra .rxka-kids-banner{
+  padding:18px;border-radius:20px;
+  background:linear-gradient(110deg,#ffdf8b,#ffc5e0,#b9f4df);
+  color:#39265d;text-align:center;margin-bottom:14px;
+}
+#rxka-kids-extra .rxka-kids-banner h3{color:#39265d!important;font-size:1.35rem}
+#rxka-kids-extra .rxka-kids-card{
+  padding:16px;border-radius:18px;background:#fff;
+  border:2px solid #b7a1f0;box-shadow:0 4px 0 #e1d3f8;
+}
+#rxka-kids-extra select{
+  max-width:100%;padding:10px;border-radius:10px;border:2px solid #b7a1f0;
+}
+#rxka-kids-extra .rxka-kids-answer{
+  padding:12px;border-radius:12px;background:#e8f9f2;color:#294e46;
+  margin-top:10px;min-height:25px;
+}
+@media(max-width:520px){
+  #rxka-kids-entry{font-size:1.05rem;padding:14px}
+  #rxka-kids-extra .rxka-kids-card{padding:12px}
+}
+</style>
+
+<script id="rxka-kids-world-script">
+(function(){
+  'use strict';
+  if(window.__rxkaKidsWorldV1) return;
+  window.__rxkaKidsWorldV1=true;
+
+  const $=id=>document.getElementById(id);
+
+  function install(){
+    const grid=$('moduleGrid');
+    const overlay=$('rxka-overlay');
+    if(!grid||!overlay) return false;
+
+    let entry=$('rxka-kids-entry');
+    if(!entry){
+      entry=document.createElement('button');
+      entry.id='rxka-kids-entry';
+      entry.type='button';
+      entry.innerHTML='🧸🌈 PARA NIÑOS 🌈🧸<br><small>¡Entrá a jugar, dibujar y crear!</small>';
+      grid.insertAdjacentElement('afterend',entry);
+      entry.addEventListener('click',()=>{
+        const existing=$('rxka-home-card');
+        if(existing){existing.click();return;}
+        overlay.classList.add('rxka-open');
+        overlay.setAttribute('aria-hidden','false');
+      });
+    }
+
+    const cards=overlay.querySelector('.rxka-grid');
+    if(!cards||$('rxka-kids-extra')) return true;
+
+    const extra=document.createElement('section');
+    extra.id='rxka-kids-extra';
+    extra.innerHTML=`
+      <div class="rxka-kids-banner">
+        <h3>🌟 ¡El rincón de los pequeños artistas! 🌟</h3>
+        <p>Imaginá, experimentá, aprendé y convertí tus ideas en arte.</p>
+      </div>
+      <div class="rxka-grid">
+        <article class="rxka-kids-card">
+          <h3>🐾 ¿Qué animal dibujo?</h3>
+          <p>Descubrí una misión para tu próximo dibujo.</p>
+          <button class="rxka-btn primary" type="button" data-kids-game="animal">¡Dame una misión!</button>
+          <div class="rxka-kids-answer" id="rxka-kids-animal" aria-live="polite">¿Un animal real o uno inventado?</div>
+        </article>
+        <article class="rxka-kids-card">
+          <h3>🌈 Laboratorio de colores</h3>
+          <p>Elegí dos colores y explorá nuevas combinaciones.</p>
+          <div class="rxka-tools">
+            <label>Color 1 <select id="rxka-kids-color1">
+              <option value="Rojo">Rojo</option><option value="Azul">Azul</option>
+              <option value="Amarillo">Amarillo</option><option value="Blanco">Blanco</option>
+            </select></label>
+            <label>Color 2 <select id="rxka-kids-color2">
+              <option value="Amarillo">Amarillo</option><option value="Azul">Azul</option>
+              <option value="Rojo">Rojo</option><option value="Blanco">Blanco</option>
+            </select></label>
+          </div>
+          <button class="rxka-btn primary" type="button" data-kids-game="colors">¡Experimentar!</button>
+          <div class="rxka-kids-answer" id="rxka-kids-colors" aria-live="polite">¡La mezcla empieza con curiosidad!</div>
+        </article>
+        <article class="rxka-kids-card">
+          <h3>😊 Dibujá una emoción</h3>
+          <p>Elegí cómo te sentís y transformalo en un personaje.</p>
+          <div class="rxka-tools">
+            <button class="rxka-btn" type="button" data-kids-mood="😊 Alegría">😊</button>
+            <button class="rxka-btn" type="button" data-kids-mood="😌 Calma">😌</button>
+            <button class="rxka-btn" type="button" data-kids-mood="😮 Sorpresa">😮</button>
+            <button class="rxka-btn" type="button" data-kids-mood="🤔 Curiosidad">🤔</button>
+          </div>
+          <div class="rxka-kids-answer" id="rxka-kids-mood" aria-live="polite">Cada emoción puede convertirse en un dibujo.</div>
+        </article>
+        <article class="rxka-kids-card">
+          <h3>🔺 Misión de formas</h3>
+          <p>Practicá observación y composición usando formas sencillas.</p>
+          <button class="rxka-btn primary" type="button" data-kids-game="shapes">¡Mi misión!</button>
+          <div class="rxka-kids-answer" id="rxka-kids-shapes" aria-live="polite">Creá algo usando círculos, triángulos y cuadrados.</div>
+        </article>
+      </div>`;
+    cards.insertAdjacentElement('afterend',extra);
+
+    extra.addEventListener('click',e=>{
+      const mood=e.target.closest('[data-kids-mood]');
+      if(mood){
+        $('rxka-kids-mood').textContent=
+          mood.dataset.kidsMood+': dibujá un personaje con una cara, colores y una postura que expresen esa emoción.';
+        return;
+      }
+
+      const button=e.target.closest('[data-kids-game]');
+      if(!button) return;
+
+      const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+      if(button.dataset.kidsGame==='animal'){
+        $('rxka-kids-animal').textContent=pick([
+          'Dibujá un pingüino que sueña con volar.',
+          'Inventá una jirafa con manchas de estrellas.',
+          'Creá una mascota fantástica que nadie haya visto.',
+          'Dibujá un pez que vive entre planetas.',
+          'Imaginá una mariposa con alas geométricas.'
+        ]);
+      }
+
+      if(button.dataset.kidsGame==='colors'){
+        const a=$('rxka-kids-color1').value;
+        const b=$('rxka-kids-color2').value;
+        const key=[a,b].sort().join('|');
+        const mixes={
+          'Azul|Rojo':'Podés explorar violetas y púrpuras.',
+          'Amarillo|Azul':'Probá verdes claros y oscuros.',
+          'Amarillo|Rojo':'Experimentá con naranjas.',
+          'Blanco|Rojo':'Probá rosas y rojos suaves.',
+          'Azul|Blanco':'Explorá celestes.',
+          'Amarillo|Blanco':'Probá amarillos suaves.'
+        };
+        $('rxka-kids-colors').textContent=
+          a===b?'Elegiste el mismo color dos veces: probá cambiar uno.':
+          (mixes[key]||'¡Probá pequeñas cantidades y observá qué tonos aparecen!')+
+          ' Usá pintura adecuada y pedí ayuda adulta si la necesitás.';
+      }
+
+      if(button.dataset.kidsGame==='shapes'){
+        $('rxka-kids-shapes').textContent=pick([
+          'Construí un cohete con triángulos, rectángulos y círculos.',
+          'Dibujá un robot usando al menos cinco cuadrados.',
+          'Creá un jardín con círculos y líneas curvas.',
+          'Inventá un castillo usando formas grandes y pequeñas.',
+          'Componé un animal con triángulos, círculos y óvalos.'
+        ]);
+      }
+    });
+
+    const close=$('rxka-close');
+    if(close&&!close.dataset.kidsWorldBound){
+      close.dataset.kidsWorldBound='1';
+      close.addEventListener('click',()=>{
+        document.body.classList.remove('rxka-child-mode');
+      });
+    }
+
+    entry.addEventListener('click',()=>{
+      document.body.classList.add('rxka-child-mode');
+    });
+
+    return true;
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',install,{once:true});
+  }else{
+    install();
+  }
+
+  const observer=new MutationObserver(()=>{
+    if(install()) observer.disconnect();
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(()=>observer.disconnect(),15000);
+})();
+</script>
+<!-- FIN ROXTHAL · ENTRADA Y AMBIENTE INFANTIL -->
+
 
 
 </body>
