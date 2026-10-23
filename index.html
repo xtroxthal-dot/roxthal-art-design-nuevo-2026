@@ -75931,6 +75931,239 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN IMAGEN DE APERTURA -->
 
+   
+<!-- ROXTHAL KIDS ART · COMPARTIR E INVITAR A CURSAR -->
+<style id="rxka-share-v2-style">
+  #rxka-share-v2 {
+    margin: 18px 0;
+    padding: 16px;
+    border: 2px solid #e6b44f;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fffdf6, #f4eaff);
+    color: #35214d;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  #rxka-share-v2 * {
+    box-sizing: border-box;
+  }
+
+  #rxka-share-v2 h3 {
+    margin: 8px 0;
+    color: #713eb0;
+  }
+
+  #rxka-share-v2 p {
+    line-height: 1.55;
+  }
+
+  #rxka-share-v2 .rxka-share-v2-button {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    min-height: 50px;
+    margin: 12px auto;
+    padding: 13px 16px;
+    border: 2px solid #e6a63c;
+    border-radius: 14px;
+    background: #ffcf68;
+    color: #422c52;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  #rxka-share-v2 .rxka-share-v2-button:focus-visible {
+    outline: 3px solid #713eb0;
+    outline-offset: 3px;
+  }
+
+  #rxka-share-v2-status {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+  }
+</style>
+
+<script id="rxka-share-v2-script">
+(function () {
+  'use strict';
+
+  if (window.__RXKA_SHARE_V2__) return;
+  window.__RXKA_SHARE_V2__ = true;
+
+  const BASE =
+    'https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/';
+
+  const SHARE_URL = BASE + '?roxthal_kids_share=1';
+
+  const IMAGE_URL =
+    BASE +
+    '793518536_1876041837113230_8146076789935608945_n.webp';
+
+  const TITLE = 'RoXThal Kids Art · Arte para niños';
+
+  const MESSAGE =
+    '🎨 ¡Descubre RoXThal Kids Art!\n\n' +
+    'Un espacio para que los niños dibujen, pinten, jueguen, ' +
+    'creen y desarrollen su imaginación.\n\n' +
+    '👧🧒 ¿Buscas actividades artísticas para tus peques? ' +
+    'Entra en RoXThal Kids Art, descubre las propuestas y ' +
+    'consulta nuestros cursos y talleres infantiles.\n\n' +
+    '✨ ¡Invita a otras familias a descubrir el arte!\n\n' +
+    'RoXThal Art Design · Arte que deja marca.\n\n' +
+    '👉 Entra directamente al módulo infantil:\n' +
+    SHARE_URL;
+
+  function install() {
+    const panel = document.getElementById('rxka-panel');
+    const intro = document.getElementById('rxka-intro');
+
+    if (!panel || !intro) return;
+
+    let card = document.getElementById('rxka-share-v2');
+
+    if (!card) {
+      card = document.createElement('section');
+      card.id = 'rxka-share-v2';
+      card.setAttribute('aria-labelledby', 'rxka-share-v2-title');
+
+      const heading = document.createElement('h3');
+      heading.id = 'rxka-share-v2-title';
+      heading.textContent = '📲 ¡Comparte RoXThal Kids Art!';
+
+      const description = document.createElement('p');
+      description.textContent =
+        '¿Conoces familias con niños? Comparte este espacio ' +
+        'e invítalas a descubrir nuestras actividades y cursos ' +
+        'de arte infantil.';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'rxka-share-v2-button';
+      button.textContent = '🎨 Compartir imagen e invitar a cursar';
+
+      const status = document.createElement('p');
+      status.id = 'rxka-share-v2-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+
+      card.append(heading, description, button, status);
+      intro.insertAdjacentElement('afterend', card);
+
+      button.addEventListener('click', async function () {
+        button.disabled = true;
+        status.textContent = '';
+
+        try {
+          if (typeof navigator.share === 'function') {
+            let imageFile = null;
+
+            try {
+              const response = await fetch(IMAGE_URL);
+
+              if (response.ok) {
+                const blob = await response.blob();
+
+                imageFile = new File(
+                  [blob],
+                  'roxthal-kids-art.webp',
+                  { type: 'image/webp' }
+                );
+              }
+            } catch (imageError) {
+              imageFile = null;
+            }
+
+            if (
+              imageFile &&
+              typeof navigator.canShare === 'function' &&
+              navigator.canShare({ files: [imageFile] })
+            ) {
+              try {
+                await navigator.share({
+                  title: TITLE,
+                  text: MESSAGE,
+                  files: [imageFile]
+                });
+
+                return;
+              } catch (shareError) {
+                if (shareError.name === 'AbortError') return;
+              }
+            }
+
+            try {
+              await navigator.share({
+                title: TITLE,
+                text: MESSAGE,
+                url: SHARE_URL
+              });
+
+              return;
+            } catch (shareError) {
+              if (shareError.name === 'AbortError') return;
+            }
+          }
+
+          const whatsappURL =
+            'https://wa.me/?text=' +
+            encodeURIComponent(MESSAGE);
+
+          window.open(
+            whatsappURL,
+            '_blank',
+            'noopener,noreferrer'
+          );
+
+        } catch (error) {
+          status.textContent =
+            'No se pudo abrir el menú de compartir. ' +
+            'Puedes copiar este enlace: ' + SHARE_URL;
+        } finally {
+          button.disabled = false;
+        }
+      });
+    }
+  }
+
+  function openFromSharedLink() {
+    const params = new URLSearchParams(location.search);
+
+    if (params.get('roxthal_kids_share') !== '1') return;
+
+    const overlay = document.getElementById('rxka-overlay');
+
+    if (!overlay) return;
+
+    overlay.classList.add('rxka-open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    const closeButton = document.getElementById('rxka-close');
+
+    if (closeButton) {
+      closeButton.focus({ preventScroll: true });
+    }
+  }
+
+  function start() {
+    install();
+    openFromSharedLink();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, {
+      once: true
+    });
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · COMPARTIR -->
+
+
 
 </body>
 </html>
