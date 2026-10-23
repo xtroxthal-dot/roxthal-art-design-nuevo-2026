@@ -75120,6 +75120,397 @@ document.addEventListener('DOMContentLoaded',function(){
 </body>
 </html>
 
+   <!-- ROXTHAL KIDS ART · SOLICITUD INDEPENDIENTE DE INSCRIPCIÓN -->
+<style id="rxka-enrollment-v1-style">
+#rxka-enrollment-v1 {
+  margin: 24px 0;
+  padding: 20px;
+  border: 2px solid #b997e8;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fff, #f5f0ff);
+  color: #35234d;
+  box-sizing: border-box;
+}
+#rxka-enrollment-v1 * {
+  box-sizing: border-box;
+}
+#rxka-enrollment-v1 h3 {
+  margin: 0 0 8px;
+  color: #65379b;
+}
+#rxka-enrollment-v1 .rxka-enroll-intro {
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+#rxka-enrollment-v1 .rxka-enroll-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+#rxka-enrollment-v1 .rxka-enroll-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#rxka-enrollment-v1 .rxka-enroll-wide {
+  grid-column: 1 / -1;
+}
+#rxka-enrollment-v1 label {
+  font-weight: 700;
+  font-size: 14px;
+}
+#rxka-enrollment-v1 input,
+#rxka-enrollment-v1 select,
+#rxka-enrollment-v1 textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 11px;
+  border: 1px solid #b9a5d9;
+  border-radius: 10px;
+  background: #fff;
+  color: #30233e;
+  font: inherit;
+}
+#rxka-enrollment-v1 textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+#rxka-enrollment-v1 input:focus,
+#rxka-enrollment-v1 select:focus,
+#rxka-enrollment-v1 textarea:focus {
+  outline: 2px solid #8054bc;
+  outline-offset: 2px;
+}
+#rxka-enrollment-v1 .rxka-enroll-submit {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: #56318a;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+#rxka-enrollment-v1 .rxka-enroll-submit:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+#rxka-enrollment-v1 .rxka-enroll-status {
+  display: none;
+  margin: 14px 0 0;
+  padding: 12px;
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+#rxka-enrollment-v1 .rxka-enroll-status[data-state="ok"] {
+  display: block;
+  background: #e2f8e8;
+  color: #185c2d;
+}
+#rxka-enrollment-v1 .rxka-enroll-status[data-state="error"] {
+  display: block;
+  background: #ffeded;
+  color: #8b2020;
+}
+#rxka-enrollment-v1 .rxka-enroll-privacy {
+  display: block;
+  margin-top: 12px;
+  line-height: 1.45;
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  #rxka-enrollment-v1 {
+    padding: 14px;
+  }
+  #rxka-enrollment-v1 .rxka-enroll-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #rxka-enrollment-v1 .rxka-enroll-wide {
+    grid-column: auto;
+  }
+}
+</style>
+
+<script id="rxka-enrollment-v1-script">
+(function () {
+  'use strict';
+
+  if (window.__RXKA_ENROLLMENT_V1__) return;
+  window.__RXKA_ENROLLMENT_V1__ = true;
+
+  var FORM_ID = 'rxka-enrollment-v1';
+  var ATTEMPT_KEY = 'rxkaEnrollmentSubmitting';
+
+  function getDb() {
+    try {
+      if (window.db && typeof window.db.from === 'function') {
+        return window.db;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  function install() {
+    var host = document.getElementById('rxka-kids-expanded');
+    if (!host) return false;
+
+    if (document.getElementById(FORM_ID)) return true;
+
+    var section = document.createElement('section');
+    section.id = FORM_ID;
+    section.setAttribute('aria-labelledby', 'rxka-enroll-title');
+
+    section.innerHTML = `
+      <h3 id="rxka-enroll-title">🎨 Inscripción a RoXThal Kids Art</h3>
+      <p class="rxka-enroll-intro">
+        ¿Querés que tu hijo o hija participe en nuestras actividades
+        artísticas? Completá esta solicitud y nos pondremos en contacto
+        para conversar sobre la inscripción.
+      </p>
+
+      <form id="rxka-enroll-form">
+        <div class="rxka-enroll-grid">
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-guardian">Nombre del adulto responsable *</label>
+            <input id="rxka-enroll-guardian" name="guardian"
+              type="text" maxlength="100" autocomplete="name"
+              required placeholder="Nombre y apellido">
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-phone">WhatsApp o teléfono *</label>
+            <input id="rxka-enroll-phone" name="phone"
+              type="tel" maxlength="35" autocomplete="tel"
+              required placeholder="Código de área y número">
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-email">Correo electrónico</label>
+            <input id="rxka-enroll-email" name="email"
+              type="email" maxlength="200" autocomplete="email"
+              placeholder="Opcional">
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-child">Nombre del niño o niña *</label>
+            <input id="rxka-enroll-child" name="child"
+              type="text" maxlength="100" required
+              placeholder="Nombre de pila">
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-age">Edad *</label>
+            <select id="rxka-enroll-age" name="age" required>
+              <option value="">Seleccionar edad</option>
+              <option value="Menos de 4 años">Menos de 4 años</option>
+              <option value="4 años">4 años</option>
+              <option value="5 años">5 años</option>
+              <option value="6 años">6 años</option>
+              <option value="7 años">7 años</option>
+              <option value="8 años">8 años</option>
+              <option value="9 años">9 años</option>
+              <option value="10 años">10 años</option>
+              <option value="11 años">11 años</option>
+              <option value="12 años">12 años</option>
+              <option value="13 años o más">13 años o más</option>
+            </select>
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-activity">Actividad de interés *</label>
+            <select id="rxka-enroll-activity" name="activity" required>
+              <option value="">Elegir actividad</option>
+              <option value="Dibujo y pintura infantil">Dibujo y pintura</option>
+              <option value="Arte y creatividad">Arte y creatividad</option>
+              <option value="Color y técnicas artísticas">Color y técnicas artísticas</option>
+              <option value="Taller infantil personalizado">Taller personalizado</option>
+              <option value="Orientación para elegir actividad">Necesito orientación</option>
+            </select>
+          </div>
+
+          <div class="rxka-enroll-field">
+            <label for="rxka-enroll-schedule">Horario preferido</label>
+            <select id="rxka-enroll-schedule" name="schedule">
+              <option value="">A convenir</option>
+              <option value="Mañana">Mañana</option>
+              <option value="Mediodía">Mediodía</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Sábado">Sábado</option>
+              <option value="Flexible">Flexible</option>
+            </select>
+          </div>
+
+          <div class="rxka-enroll-field rxka-enroll-wide">
+            <label for="rxka-enroll-message">Mensaje adicional</label>
+            <textarea id="rxka-enroll-message" name="message"
+              maxlength="1500"
+              placeholder="Contanos qué le gusta dibujar, qué actividad busca o cualquier consulta. No incluyas información médica ni datos sensibles."></textarea>
+          </div>
+
+        </div>
+
+        <button class="rxka-enroll-submit" type="submit">
+          Enviar solicitud de inscripción
+        </button>
+
+        <p id="rxka-enroll-status" class="rxka-enroll-status"
+          role="status" aria-live="polite"></p>
+
+        <small class="rxka-enroll-privacy">
+          La solicitud será utilizada para responder a esta consulta.
+          Enviar el formulario no confirma una vacante ni una inscripción.
+        </small>
+      </form>
+    `;
+
+    host.appendChild(section);
+
+    var form = section.querySelector('#rxka-enroll-form');
+    var submit = section.querySelector('.rxka-enroll-submit');
+    var status = section.querySelector('#rxka-enroll-status');
+
+    function showStatus(message, state) {
+      status.textContent = message;
+      status.dataset.state = state;
+    }
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      if (form.dataset[ATTEMPT_KEY] === '1') return;
+
+      var db = getDb();
+
+      if (!db) {
+        showStatus(
+          'No se pudo conectar con el sistema de inscripción. ' +
+          'La solicitud no fue registrada. Recargá la página e intentá nuevamente.',
+          'error'
+        );
+        return;
+      }
+
+      var guardian = section.querySelector('#rxka-enroll-guardian').value.trim();
+      var phone = section.querySelector('#rxka-enroll-phone').value.trim();
+      var email = section.querySelector('#rxka-enroll-email').value.trim();
+      var child = section.querySelector('#rxka-enroll-child').value.trim();
+      var age = section.querySelector('#rxka-enroll-age').value;
+      var activity = section.querySelector('#rxka-enroll-activity').value;
+      var schedule = section.querySelector('#rxka-enroll-schedule').value;
+      var message = section.querySelector('#rxka-enroll-message').value.trim();
+
+      if (!guardian || !phone || !child || !age || !activity) {
+        showStatus('Completá todos los campos obligatorios.', 'error');
+        return;
+      }
+
+      if (guardian.length > 100 || phone.length > 35 ||
+          child.length > 100 || message.length > 1500) {
+        showStatus('Revisá la longitud de los campos e intentá nuevamente.', 'error');
+        return;
+      }
+
+      var details = [
+        'SOLICITUD INDEPENDIENTE · ROXTHAL KIDS ART',
+        'Adulto responsable: ' + guardian,
+        'Nombre del niño o niña: ' + child,
+        'Edad: ' + age,
+        'Actividad solicitada: ' + activity,
+        'Horario preferido: ' + (schedule || 'A convenir'),
+        'Mensaje: ' + (message || 'Sin mensaje adicional')
+      ].join('\n');
+
+      if (details.length > 2500) {
+        showStatus('El mensaje es demasiado largo. Acortalo e intentá nuevamente.', 'error');
+        return;
+      }
+
+      var lead = {
+        customer_name: guardian,
+        phone: phone,
+        email: email || null,
+        interest_type: 'Kids Art · Solicitud de inscripción infantil',
+        details: details,
+        preferred_date: schedule || null,
+        location: 'RoXThal Kids Art',
+        budget: null,
+        reference: 'roxthal_kids_art_solicitud_v1',
+        source: 'captacion_comercial',
+        status: 'nuevo',
+        sale_amount: 0
+      };
+
+      form.dataset[ATTEMPT_KEY] = '1';
+      submit.disabled = true;
+      submit.textContent = 'Registrando solicitud…';
+      showStatus('Estamos registrando tu solicitud…', 'ok');
+
+      try {
+        var result = await db
+          .from('roxthal_sales_leads')
+          .insert(lead);
+
+        if (result.error) throw result.error;
+
+        showStatus(
+          '¡Solicitud registrada correctamente! El equipo de RoXThal Art Design podrá revisarla desde el seguimiento comercial.',
+          'ok'
+        );
+
+        form.reset();
+      } catch (error) {
+        console.error('[RoXThal Kids Art] No se pudo registrar la solicitud:', error);
+
+        showStatus(
+          'No se pudo confirmar el registro. No consideres enviada la solicitud. ' +
+          'Intentá nuevamente más tarde o contactá a RoXThal Art Design.',
+          'error'
+        );
+      } finally {
+        form.dataset[ATTEMPT_KEY] = '0';
+        submit.disabled = false;
+        submit.textContent = 'Enviar solicitud de inscripción';
+      }
+    });
+
+    return true;
+  }
+
+  function start() {
+    if (install()) return;
+
+    var observer = new MutationObserver(function () {
+      if (install()) observer.disconnect();
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    window.setTimeout(function () {
+      observer.disconnect();
+    }, 30000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · SOLICITUD INDEPENDIENTE DE INSCRIPCIÓN -->
+
 
 </body>
 </html>
