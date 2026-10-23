@@ -75859,6 +75859,78 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL KIDS ART · LABORATORIO CREATIVO Y CAPTACIÓN V1.1 -->
 
 
+<!-- ROXTHAL KIDS ART · IMAGEN DE APERTURA -->
+<style id="rxka-opening-art-style">
+  #rxka-overlay #rxka-opening-art {
+    display: block;
+    width: 100%;
+    max-height: min(58vh, 520px);
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    background: #080808;
+    border: 1px solid #554526;
+    border-radius: 14px;
+    margin: 0 0 18px;
+  }
+
+  @media (max-width: 520px) {
+    #rxka-overlay #rxka-opening-art {
+      max-height: 42vh;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+  }
+</style>
+
+<script id="rxka-opening-art-script">
+(function () {
+  "use strict";
+
+  function insertarImagenKidsArt() {
+    var panel = document.getElementById("rxka-panel");
+    if (!panel) return;
+
+    // Evita insertar la imagen más de una vez.
+    if (document.getElementById("rxka-opening-art")) return;
+
+    var imagen = document.createElement("img");
+    imagen.id = "rxka-opening-art";
+    imagen.src = "https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/793518536_1876041837113230_8146076789935608945_n.webp";
+    imagen.alt = "RoXThal Kids Art";
+    imagen.loading = "eager";
+    imagen.decoding = "async";
+
+    // La imagen aparece justo después del encabezado del módulo.
+    var encabezado = panel.querySelector("#rxka-head");
+    if (encabezado && encabezado.parentNode === panel) {
+      encabezado.insertAdjacentElement("afterend", imagen);
+    } else {
+      panel.insertBefore(imagen, panel.firstChild);
+    }
+  }
+
+  // Funciona aunque el módulo se abra después de cargar la página.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", insertarImagenKidsArt);
+  } else {
+    insertarImagenKidsArt();
+  }
+
+  // Reintenta cuando el módulo se abre si todavía no existía.
+  document.addEventListener("click", function (evento) {
+    if (
+      evento.target.closest("#rxka-overlay") ||
+      evento.target.closest('[data-module*="kids"]') ||
+      evento.target.closest('[data-target*="kids"]')
+    ) {
+      insertarImagenKidsArt();
+    }
+  });
+})();
+</script>
+<!-- FIN IMAGEN DE APERTURA -->
+
 
 </body>
 </html>
