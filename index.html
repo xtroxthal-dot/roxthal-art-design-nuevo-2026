@@ -74213,6 +74213,280 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN CORRECCIÓN DEL BORRADOR -->
 
+<!-- ROXTHAL KIDS ART · PASAPORTE CREATIVO V1 -->
+<style id="rxka-passport-style">
+#rxka-passport{
+  margin-top:20px;
+  padding:18px;
+  border:3px solid #f0c96a;
+  border-radius:22px;
+  background:linear-gradient(145deg,#fff9dc,#f2e8ff 55%,#e1fff4);
+  color:#34264c;
+  box-shadow:0 5px 0 #e3d3f4;
+}
+#rxka-passport *{box-sizing:border-box}
+#rxka-passport h3{
+  margin:0 0 8px;
+  color:#653ba0;
+  font-size:1.35rem;
+}
+#rxka-passport .rxka-passport-intro{margin:0 0 15px;line-height:1.5}
+#rxka-passport .rxka-passport-stats{
+  padding:13px;
+  border-radius:15px;
+  background:#fff;
+  border:2px solid #d9c5f4;
+  margin-bottom:14px;
+}
+#rxka-passport .rxka-passport-track{
+  height:15px;
+  background:#e8def8;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:9px;
+}
+#rxka-passport .rxka-passport-fill{
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,#70d9bd,#ffd36e,#e9a5ef);
+  border-radius:99px;
+  transition:width .25s ease;
+}
+#rxka-passport .rxka-passport-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#rxka-passport .rxka-passport-task{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  padding:12px;
+  border:2px solid #d8c8f0;
+  border-radius:14px;
+  background:#fff;
+  line-height:1.4;
+  cursor:pointer;
+  min-width:0;
+}
+#rxka-passport .rxka-passport-task input{
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+  margin:1px 0 0;
+  accent-color:#7b4db2;
+}
+#rxka-passport .rxka-passport-task:has(input:checked){
+  background:#e3fff0;
+  border-color:#65c9a2;
+}
+#rxka-passport .rxka-passport-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:14px;
+}
+#rxka-passport .rxka-passport-actions button{
+  padding:11px 14px;
+  border:2px solid #a98ad8;
+  border-radius:12px;
+  background:#fff;
+  color:#432c68;
+  font-weight:700;
+  cursor:pointer;
+}
+#rxka-passport .rxka-passport-message{
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  background:#fff;
+  line-height:1.5;
+}
+@media(max-width:520px){
+  #rxka-passport{padding:12px}
+  #rxka-passport .rxka-passport-list{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  #rxka-passport .rxka-passport-fill{transition:none}
+}
+</style>
+
+<script id="rxka-passport-script">
+(function(){
+  'use strict';
+
+  if(window.__rxkaPassportV1) return;
+  window.__rxkaPassportV1=true;
+
+  const STORAGE_KEY='roxthal_kids_creative_passport_v1';
+
+  const tasks=[
+    {id:'drawing',icon:'🖍️',label:'Hice un dibujo propio'},
+    {id:'colors',icon:'🌈',label:'Experimenté con colores'},
+    {id:'story',icon:'📖',label:'Inventé una historia'},
+    {id:'memory',icon:'🧠',label:'Jugué a encontrar parejas'},
+    {id:'challenge',icon:'🚀',label:'Completé un reto artístico'},
+    {id:'eco',icon:'♻️',label:'Imaginé una creación reciclada'}
+  ];
+
+  function loadProgress(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+      return saved && typeof saved==='object' && !Array.isArray(saved)
+        ? saved : {};
+    }catch(_){
+      return {};
+    }
+  }
+
+  let progress=loadProgress();
+
+  function saveProgress(){
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));
+      return true;
+    }catch(_){
+      return false;
+    }
+  }
+
+  function install(){
+    const host=document.getElementById('rxka-kids-expanded');
+    if(!host || document.getElementById('rxka-passport')) return;
+
+    const section=document.createElement('section');
+    section.id='rxka-passport';
+    section.setAttribute('aria-labelledby','rxka-passport-title');
+
+    section.innerHTML=`
+      <h3 id="rxka-passport-title">🎨 Mi Pasaporte Creativo</h3>
+      <p class="rxka-passport-intro">
+        Cada vez que completás una actividad, marcala y ganá una estrella.
+        ¡No hay respuestas incorrectas cuando usás tu imaginación!
+      </p>
+      <div class="rxka-passport-stats">
+        <strong id="rxka-passport-count">⭐ 0 de 6 logros</strong>
+        <div
+          class="rxka-passport-track"
+          role="progressbar"
+          aria-label="Progreso del pasaporte creativo"
+          aria-valuemin="0"
+          aria-valuemax="6"
+          aria-valuenow="0"
+          id="rxka-passport-progress"
+        >
+          <div class="rxka-passport-fill" id="rxka-passport-fill"></div>
+        </div>
+      </div>
+      <div class="rxka-passport-list" id="rxka-passport-list"></div>
+      <div class="rxka-passport-message" id="rxka-passport-message" aria-live="polite">
+        ¡Elegí tu primera misión y empezá a crear!
+      </div>
+      <div class="rxka-passport-actions">
+        <button type="button" data-rxka-passport="reset">
+          🔄 Reiniciar pasaporte
+        </button>
+      </div>
+    `;
+
+    const list=section.querySelector('#rxka-passport-list');
+
+    tasks.forEach(task=>{
+      const label=document.createElement('label');
+      label.className='rxka-passport-task';
+
+      const input=document.createElement('input');
+      input.type='checkbox';
+      input.dataset.passportTask=task.id;
+      input.checked=progress[task.id]===true;
+
+      const text=document.createElement('span');
+      text.textContent=task.icon+' '+task.label;
+
+      label.append(input,text);
+      list.appendChild(label);
+    });
+
+    host.appendChild(section);
+
+    function render(){
+      const completed=tasks.filter(t=>progress[t.id]===true).length;
+      const count=section.querySelector('#rxka-passport-count');
+      const fill=section.querySelector('#rxka-passport-fill');
+      const bar=section.querySelector('#rxka-passport-progress');
+      const message=section.querySelector('#rxka-passport-message');
+
+      count.textContent='⭐ '+completed+' de '+tasks.length+' logros';
+      fill.style.width=(completed/tasks.length*100)+'%';
+      bar.setAttribute('aria-valuenow',String(completed));
+
+      if(completed===tasks.length){
+        message.textContent='🏆 ¡Pasaporte completo! ¡Sos una estrella de la creatividad! Seguí inventando nuevas obras.';
+      }else if(completed===0){
+        message.textContent='✨ ¡Elegí tu primera misión y empezá a crear!';
+      }else{
+        message.textContent='¡Muy bien! Ya conseguiste '+completed+
+          (completed===1?' estrella':' estrellas')+
+          '. ¡Te faltan '+(tasks.length-completed)+' logros!';
+      }
+
+      tasks.forEach(task=>{
+        const input=section.querySelector(
+          '[data-passport-task="'+task.id+'"]'
+        );
+        if(input) input.checked=progress[task.id]===true;
+      });
+    }
+
+    section.addEventListener('change',function(event){
+      const input=event.target.closest('[data-passport-task]');
+      if(!input) return;
+
+      progress[input.dataset.passportTask]=input.checked;
+      const saved=saveProgress();
+      render();
+
+      if(!saved){
+        section.querySelector('#rxka-passport-message').textContent=
+          'Tu progreso se ve en esta pantalla, pero el dispositivo no permitió guardarlo. No cierres esta pantalla si querés conservarlo.';
+      }
+    });
+
+    section.addEventListener('click',function(event){
+      const button=event.target.closest('[data-rxka-passport="reset"]');
+      if(!button) return;
+
+      if(!window.confirm('¿Querés reiniciar solamente el Pasaporte Creativo?')){
+        return;
+      }
+
+      progress={};
+      saveProgress();
+      render();
+    });
+
+    render();
+  }
+
+  function start(){
+    if(install()) return;
+
+    const observer=new MutationObserver(function(){
+      if(install()) observer.disconnect();
+    });
+
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · PASAPORTE CREATIVO V1 -->
+
 
 
 </body>
