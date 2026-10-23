@@ -75509,6 +75509,356 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL KIDS ART · SOLICITUD INDEPENDIENTE DE INSCRIPCIÓN -->
 
+   
+<!-- ROXTHAL KIDS ART · LABORATORIO CREATIVO Y CAPTACIÓN V1.1 -->
+<style id="rxka-creative-lab-v11-style">
+#rxka-creative-lab-v11 {
+  margin: 24px 0;
+  padding: 18px;
+  border: 2px solid #d7b75a;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fffaf0, #f4f0ff);
+  color: #30233f;
+}
+#rxka-creative-lab-v11 * { box-sizing: border-box; }
+#rxka-creative-lab-v11 .rxka-lab-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+#rxka-creative-lab-v11 h3,
+#rxka-creative-lab-v11 h4 {
+  color: #533d75;
+  margin: 0 0 8px;
+}
+#rxka-creative-lab-v11 .rxka-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 14px;
+}
+#rxka-creative-lab-v11 .rxka-lab-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #d8cbe9;
+  border-radius: 14px;
+  background: #fff;
+}
+#rxka-creative-lab-v11 .rxka-lab-card p {
+  margin: 0;
+  line-height: 1.5;
+}
+#rxka-creative-lab-v11 .rxka-lab-prompt {
+  min-height: 82px;
+  padding: 12px;
+  border: 1px dashed #c49a36;
+  border-radius: 10px;
+  background: #fff7dc;
+  line-height: 1.5;
+}
+#rxka-creative-lab-v11 button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font: inherit;
+  font-weight: 700;
+}
+#rxka-creative-lab-v11 .rxka-lab-next {
+  background: #49315f;
+  color: #fff;
+}
+#rxka-creative-lab-v11 .rxka-lab-enroll {
+  background: #151515;
+  color: #f6d77d;
+  border: 2px solid #d7b75a;
+}
+#rxka-creative-lab-v11 .rxka-lab-main-cta {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+}
+#rxka-creative-lab-v11 .rxka-lab-foot {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: .95em;
+}
+#rxka-creative-lab-v11 button:focus-visible {
+  outline: 3px solid #8b5fc7;
+  outline-offset: 3px;
+}
+</style>
+
+<script id="rxka-creative-lab-v11-script">
+(function () {
+  'use strict';
+
+  if (window.__RXKA_CREATIVE_LAB_V11__) return;
+  window.__RXKA_CREATIVE_LAB_V11__ = true;
+
+  var activities = [
+    {
+      id: 'textures',
+      title: '🧪 Laboratorio de texturas',
+      intro: 'Explorá líneas, puntos, estampas y materiales cotidianos.',
+      interest: 'Color y técnicas artísticas',
+      prompts: [
+        'Creá una obra usando solo puntos, líneas y tres colores.',
+        'Dibujá tres texturas que encuentres en objetos seguros de casa.',
+        'Inventá un animal combinando una textura suave y otra rugosa.',
+        'Hacé un paisaje con líneas onduladas, quebradas y espirales.',
+        'Transformá formas de papel reutilizado en un collage con título.'
+      ]
+    },
+    {
+      id: 'comic',
+      title: '💬 Mi primer cómic',
+      intro: 'Inventá una historia breve con personaje, problema y final.',
+      interest: 'Arte y creatividad',
+      prompts: [
+        'Dibujá cuatro viñetas: presentación, sorpresa, solución y final.',
+        'Creá un personaje que encuentra una puerta secreta. ¿Qué hay detrás?',
+        'Contá una historia sin palabras usando solo gestos.',
+        'Dibujá dos personajes que resuelven juntos un problema.',
+        'Inventá un final divertido para una aventura bajo el mar.'
+      ]
+    },
+    {
+      id: 'characters',
+      title: '🐉 Fábrica de personajes',
+      intro: 'Diseñá una criatura, ponéle nombre y descubrí sus habilidades.',
+      interest: 'Taller infantil personalizado',
+      prompts: [
+        'Mezclá dos animales y creá una criatura con tres habilidades.',
+        'Inventá un robot que ayude a cuidar el planeta.',
+        'Creá un personaje diminuto que vive en una caja de colores.',
+        'Usá una forma geométrica como cuerpo y agregale personalidad.',
+        'Diseñá un guardián de un bosque mágico y elegí sus colores.'
+      ]
+    },
+    {
+      id: 'exhibition',
+      title: '🖼️ Mi primera exposición',
+      intro: 'Prepará una pequeña exposición de una obra para tu familia.',
+      interest: 'Dibujo y pintura infantil',
+      prompts: [
+        'Elegí una obra anterior, ponéle un título y contá qué te inspiró.',
+        'Diseñá una etiqueta de museo con título, técnica y fecha.',
+        'Creá una invitación ilustrada para mostrar tu obra.',
+        'Elegí tres colores que representen tu obra y explicá por qué.',
+        'Dibujá un marco para destacar tu creación sin taparla.'
+      ]
+    }
+  ];
+
+  function makeCard(activity) {
+    var article = document.createElement('article');
+    article.className = 'rxka-lab-card';
+
+    var title = document.createElement('h4');
+    title.textContent = activity.title;
+
+    var intro = document.createElement('p');
+    intro.textContent = activity.intro;
+
+    var prompt = document.createElement('div');
+    prompt.className = 'rxka-lab-prompt';
+    prompt.id = 'rxka-lab-prompt-' + activity.id;
+    prompt.setAttribute('aria-live', 'polite');
+    prompt.textContent = 'Tocá «Dame una consigna» para empezar.';
+
+    var next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'rxka-lab-next';
+    next.textContent = 'Dame una consigna';
+    next.setAttribute('data-rxka-lab-next', activity.id);
+
+    var enroll = document.createElement('button');
+    enroll.type = 'button';
+    enroll.className = 'rxka-lab-enroll';
+    enroll.textContent = 'Consultar por esta actividad';
+    enroll.setAttribute('data-rxka-lab-enroll', activity.id);
+
+    article.append(title, intro, prompt, next, enroll);
+    return article;
+  }
+
+  function install() {
+    var host = document.getElementById('rxka-kids-expanded');
+    if (!host) return false;
+
+    if (document.getElementById('rxka-creative-lab-v11')) {
+      return true;
+    }
+
+    var section = document.createElement('section');
+    section.id = 'rxka-creative-lab-v11';
+    section.setAttribute('aria-labelledby', 'rxka-lab-title-v11');
+
+    var header = document.createElement('div');
+    header.className = 'rxka-lab-head';
+
+    var heading = document.createElement('h3');
+    heading.id = 'rxka-lab-title-v11';
+    heading.textContent = '✨ Nuevos talleres para explorar';
+
+    var description = document.createElement('p');
+    description.textContent =
+      'Elegí una propuesta, probá una idea y creá a tu ritmo. ' +
+      'Lo importante es experimentar y disfrutar el proceso.';
+
+    header.append(heading, description);
+
+    var grid = document.createElement('div');
+    grid.className = 'rxka-lab-grid';
+
+    activities.forEach(function (activity) {
+      grid.appendChild(makeCard(activity));
+    });
+
+    var mainCta = document.createElement('button');
+    mainCta.type = 'button';
+    mainCta.className = 'rxka-lab-enroll rxka-lab-main-cta';
+    mainCta.textContent =
+      '🎨 Consultar por las clases de RoXThal Kids Art';
+    mainCta.setAttribute('data-rxka-lab-enroll', 'general');
+
+    var foot = document.createElement('p');
+    foot.className = 'rxka-lab-foot';
+    foot.textContent =
+      'Consultá por las actividades, los horarios y la inscripción.';
+
+    section.append(header, grid, mainCta, foot);
+    host.appendChild(section);
+
+    section.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!target || typeof target.closest !== 'function') return;
+
+      var nextButton = target.closest('[data-rxka-lab-next]');
+
+      if (nextButton) {
+        var selected = activities.find(function (activity) {
+          return activity.id ===
+            nextButton.getAttribute('data-rxka-lab-next');
+        });
+
+        if (!selected) return;
+
+        var output = document.getElementById(
+          'rxka-lab-prompt-' + selected.id
+        );
+
+        if (output) {
+          var previous = output.getAttribute('data-last-prompt');
+          var choices = selected.prompts.filter(function (item) {
+            return item !== previous;
+          });
+
+          var prompt = choices[
+            Math.floor(Math.random() * choices.length)
+          ] || selected.prompts[0];
+
+          output.textContent = prompt;
+          output.setAttribute('data-last-prompt', prompt);
+          nextButton.textContent = 'Otra consigna';
+        }
+        return;
+      }
+
+      var enrollButton = target.closest('[data-rxka-lab-enroll]');
+      if (!enrollButton) return;
+
+      var chosen = activities.find(function (activity) {
+        return activity.id ===
+          enrollButton.getAttribute('data-rxka-lab-enroll');
+      });
+
+      var formSection = document.getElementById('rxka-enrollment-v1');
+
+      if (!formSection) {
+        window.alert(
+          'No encontramos el formulario de inscripción. ' +
+          'Recargá la página e intentá nuevamente.'
+        );
+        return;
+      }
+
+      if (chosen) {
+        var activitySelect = formSection.querySelector(
+          '#rxka-enroll-activity, select[name="activity"]'
+        );
+
+        if (activitySelect) {
+          var optionExists = Array.prototype.some.call(
+            activitySelect.options,
+            function (option) {
+              return option.value === chosen.interest;
+            }
+          );
+
+          if (optionExists) {
+            activitySelect.value = chosen.interest;
+            activitySelect.dispatchEvent(
+              new Event('change', { bubbles: true })
+            );
+          } else {
+            window.alert(
+              'La actividad se abrió en el formulario, pero no encontramos ' +
+              'una opción compatible. Elegila manualmente antes de enviar.'
+            );
+          }
+        }
+      }
+
+      formSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+      var firstField = formSection.querySelector(
+        '#rxka-enroll-guardian, input:not([type="hidden"])'
+      );
+
+      if (firstField) {
+        window.setTimeout(function () {
+          firstField.focus({ preventScroll: true });
+        }, 350);
+      }
+    });
+
+    return true;
+  }
+
+  function start() {
+    if (install()) return;
+
+    var observer = new MutationObserver(function () {
+      if (install()) observer.disconnect();
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    window.setTimeout(function () {
+      observer.disconnect();
+    }, 15000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · LABORATORIO CREATIVO Y CAPTACIÓN V1.1 -->
+
+
 
 </body>
 </html>
