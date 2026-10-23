@@ -74801,6 +74801,42 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 <!-- FIN ROXTHAL KIDS ART · GALERÍA DE CREACIONES V1 -->
+<!-- ROXTHAL · REUBICAR ACCESO INFANTIL -->
+<script id="rxka-kids-home-position-fix">
+(function () {
+  'use strict';
+
+  function colocarBotonInfantil() {
+    const boton = document.getElementById('rxka-kids-entry');
+    const control = document.getElementById('rxUniversalControlToggle');
+
+    if (!boton || !control) return false;
+
+    // Coloca el botón infantil inmediatamente debajo
+    // de RoXThal Centro de Control, sin crear duplicados.
+    if (control.nextElementSibling !== boton) {
+      control.insertAdjacentElement('afterend', boton);
+    }
+
+    return true;
+  }
+
+  if (colocarBotonInfantil()) return;
+
+  const observador = new MutationObserver(function () {
+    if (colocarBotonInfantil()) {
+      observador.disconnect();
+    }
+  });
+
+  observador.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();
+</script>
+<!-- FIN REUBICAR ACCESO INFANTIL -->
+   
 
 </body>
 </html>
