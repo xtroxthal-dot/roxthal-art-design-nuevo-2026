@@ -74836,6 +74836,249 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 <!-- FIN REUBICAR ACCESO INFANTIL -->
+
+        <!-- ROXTHAL KIDS ART · RETOS POR EDAD Y DONACIONES V1 -->
+<style id="rxka-kids-growth-v1-style">
+#rxka-growth-v1{
+  margin-top:22px;
+  padding:16px;
+  border:3px solid #e8bd55;
+  border-radius:22px;
+  background:linear-gradient(135deg,#fff4b9,#ffd9ed,#d5f7e8);
+  color:#39265d;
+}
+#rxka-growth-v1 h3{
+  color:#633d91;
+  margin:0 0 10px;
+}
+#rxka-growth-v1 p{
+  line-height:1.5;
+}
+#rxka-growth-v1 select,
+#rxka-growth-v1 button{
+  box-sizing:border-box;
+  max-width:100%;
+  padding:11px;
+  margin:5px 5px 5px 0;
+  border-radius:12px;
+  font:inherit;
+}
+#rxka-growth-v1 select{
+  border:2px solid #a98bd1;
+  background:#fff;
+  color:#39265d;
+}
+#rxka-growth-v1 button{
+  border:2px solid #7652a6;
+  background:#7652a6;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+#rxka-growth-v1 .rxka-growth-result{
+  padding:13px;
+  margin-top:10px;
+  border-radius:12px;
+  background:#fff;
+  color:#39265d;
+  line-height:1.6;
+}
+#rxka-growth-v1 .rxka-growth-donate{
+  margin-top:20px;
+  padding:16px;
+  border:2px solid #d5ad43;
+  border-radius:18px;
+  background:#fffdf2;
+  text-align:center;
+}
+#rxka-growth-v1 .rxka-growth-donate button{
+  background:#f3c400;
+  color:#211900;
+  border-color:#d4a900;
+}
+#rxka-growth-v1 .rxka-growth-note{
+  font-size:13px;
+}
+</style>
+
+<script id="rxka-kids-growth-v1-script">
+(function(){
+  'use strict';
+
+  if(window.__rxkaKidsGrowthV1) return;
+  window.__rxkaKidsGrowthV1=true;
+
+  const KEY='roxthal_kids_growth_achievements_v1';
+  const ALIAS='edukari1';
+
+  const challenges={
+    '3-5':[
+      'Dibujá un sol usando círculos y rayitas.',
+      'Inventá un monstruo con tres ojos y muchos colores.',
+      'Pintá una casa con una puerta gigante.',
+      'Creá una mariposa usando formas simétricas.',
+      'Dibujá tu animal favorito con figuras simples.'
+    ],
+    '6-8':[
+      'Inventá un superhéroe y diseñale un símbolo.',
+      'Dibujá una ciudad del futuro con cinco edificios.',
+      'Creá un animal fantástico mezclando tres animales.',
+      'Hacé un paisaje usando colores cálidos y fríos.',
+      'Diseñá un juguete imaginario y ponéle un nombre.'
+    ],
+    '9-12':[
+      'Creá un personaje y expresá una emoción con su rostro.',
+      'Diseñá un mural con un mensaje positivo.',
+      'Dibujá un paisaje usando profundidad y perspectiva.',
+      'Inventá un logotipo para una escuela de artistas.',
+      'Creá una ilustración usando solo tres colores.'
+    ]
+  };
+
+  function readAchievements(){
+    try{
+      const data=JSON.parse(localStorage.getItem(KEY)||'[]');
+      return Array.isArray(data)?data:[];
+    }catch(error){
+      return [];
+    }
+  }
+
+  function init(){
+    const panel=document.getElementById('rxka-panel');
+    if(!panel) return false;
+
+    let section=document.getElementById('rxka-growth-v1');
+
+    if(!section){
+      section=document.createElement('section');
+      section.id='rxka-growth-v1';
+      section.innerHTML=
+        '<h3>🌟 Retos artísticos por edades</h3>'+
+        '<p>Elegí tu grupo, descubrí un reto y convertí tu imaginación en arte.</p>'+
+        '<label for="rxka-growth-age"><strong>¿Cuántos años tenés?</strong></label><br>'+
+        '<select id="rxka-growth-age">'+
+          '<option value="3-5">3 a 5 años</option>'+
+          '<option value="6-8">6 a 8 años</option>'+
+          '<option value="9-12">9 a 12 años</option>'+
+        '</select>'+
+        '<button type="button" id="rxka-growth-new">🎨 Proponer un reto</button>'+
+        '<div id="rxka-growth-result" class="rxka-growth-result" aria-live="polite">'+
+          '¡Preparado para crear! Elegí tu edad y pulsá “Proponer un reto”.'+
+        '</div>'+
+        '<button type="button" id="rxka-growth-done" disabled>🏅 ¡Reto terminado!</button>'+
+        '<div id="rxka-growth-score" class="rxka-growth-result" aria-live="polite"></div>'+
+        '<div class="rxka-growth-donate">'+
+          '<h3>💛 Ayudá a que RoXThal siga creciendo</h3>'+
+          '<p>Si disfrutás este espacio, podés colaborar voluntariamente para apoyar su continuidad.</p>'+
+          '<p><strong>Alias para donar: edukari1</strong></p>'+
+          '<button type="button" id="rxka-growth-copy">📋 Copiar alias de donación</button>'+
+          '<div id="rxka-growth-donate-status" class="rxka-growth-result" aria-live="polite">'+
+            'Copiá el alias y usalo en tu aplicación bancaria para realizar la transferencia.'+
+          '</div>'+
+          '<p class="rxka-growth-note">La donación es voluntaria. Este botón no realiza pagos ni confirma transferencias.</p>'+
+        '</div>';
+
+      panel.appendChild(section);
+    }
+
+    const age=section.querySelector('#rxka-growth-age');
+    const result=section.querySelector('#rxka-growth-result');
+    const done=section.querySelector('#rxka-growth-done');
+    const score=section.querySelector('#rxka-growth-score');
+    const newButton=section.querySelector('#rxka-growth-new');
+    const copy=section.querySelector('#rxka-growth-copy');
+    const donateStatus=section.querySelector('#rxka-growth-donate-status');
+
+    if(!age||!result||!done||!score||!newButton||!copy) return true;
+
+    function updateScore(){
+      const total=readAchievements().length;
+      score.textContent='🏆 Retos completados en este dispositivo: '+total;
+    }
+
+    if(!newButton.dataset.bound){
+      newButton.dataset.bound='1';
+
+      newButton.addEventListener('click',function(){
+        const options=challenges[age.value]||challenges['3-5'];
+        const available=options.filter(item=>item!==result.dataset.challenge);
+        const choices=available.length?available:options;
+        const challenge=choices[Math.floor(Math.random()*choices.length)];
+
+        result.dataset.challenge=challenge;
+        result.textContent='🎯 Tu reto: '+challenge;
+        done.disabled=false;
+        done.textContent='🏅 ¡Reto terminado!';
+      });
+
+      done.addEventListener('click',function(){
+        const challenge=result.dataset.challenge;
+        if(!challenge) return;
+
+        const entries=readAchievements();
+        entries.push({
+          challenge:challenge,
+          age:age.value,
+          date:new Date().toISOString()
+        });
+
+        try{
+          localStorage.setItem(KEY,JSON.stringify(entries));
+          result.textContent='🎉 ¡Excelente trabajo! Reto completado. Elegí otro para seguir creando.';
+          delete result.dataset.challenge;
+          done.disabled=true;
+          updateScore();
+        }catch(error){
+          result.textContent='No se pudo guardar el logro en este dispositivo. Podés seguir jugando y crear otro reto.';
+        }
+      });
+    }
+
+    if(!copy.dataset.bound){
+      copy.dataset.bound='1';
+
+      copy.addEventListener('click',async function(){
+        try{
+          if(navigator.clipboard && window.isSecureContext){
+            await navigator.clipboard.writeText(ALIAS);
+            donateStatus.textContent='✅ Alias copiado: '+ALIAS+'. Abrí tu aplicación bancaria y pegalo para realizar la transferencia.';
+          }else{
+            window.prompt('Copiá el alias para donar:',ALIAS);
+            donateStatus.textContent='El alias es '+ALIAS+'. Copialo y pegalo en tu aplicación bancaria.';
+          }
+        }catch(error){
+          window.prompt('Copiá el alias para donar:',ALIAS);
+          donateStatus.textContent='Alias para donar: '+ALIAS;
+        }
+      });
+    }
+
+    updateScore();
+    return true;
+  }
+
+  function start(){
+    if(init()) return;
+
+    const observer=new MutationObserver(function(){
+      if(init()) observer.disconnect();
+    });
+
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · RETOS Y DONACIONES V1 -->   
    
 
 </body>
