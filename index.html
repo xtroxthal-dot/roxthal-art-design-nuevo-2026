@@ -75079,7 +75079,47 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 <!-- FIN ROXTHAL KIDS ART · RETOS Y DONACIONES V1 -->   
-   
+
+<!-- RoXThal Kids Art: acceso a pagos, complemento seguro -->
+<script id="rxka-growth-payment-v1">
+(function () {
+  if (window.__rxkaGrowthPaymentV1) return;
+  window.__rxkaGrowthPaymentV1 = true;
+
+  function addPaymentButton() {
+    const copyButton = document.getElementById('rxka-growth-copy');
+    if (!copyButton || document.getElementById('rxka-growth-payment')) return;
+
+    const button = document.createElement('button');
+    button.id = 'rxka-growth-payment';
+    button.type = 'button';
+    button.textContent = '💳 Abrir Mercado Pago';
+    button.style.cssText =
+      'display:block;width:100%;margin-top:10px;padding:13px;' +
+      'border:1px solid #d7ad55;border-radius:10px;' +
+      'background:#111;color:#f2cf78;font-weight:bold;cursor:pointer;';
+
+    button.addEventListener('click', function () {
+      window.open(
+        'https://www.mercadopago.com.ar/',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+
+    copyButton.insertAdjacentElement('afterend', button);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addPaymentButton);
+  } else {
+    addPaymentButton();
+  }
+})();
+</script>
+</body>
+</html>
+
 
 </body>
 </html>
