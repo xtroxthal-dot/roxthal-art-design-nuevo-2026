@@ -74487,7 +74487,320 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL KIDS ART · PASAPORTE CREATIVO V1 -->
 
+<!-- ROXTHAL KIDS ART · GALERÍA DE CREACIONES V1 -->
+<style id="rxka-gallery-v1-style">
+#rxka-gallery-card{
+  grid-column:1/-1;
+  background:linear-gradient(145deg,#fffaf0,#f4f0ff);
+  border:2px solid #d7b75a;
+  border-radius:16px;
+  padding:16px;
+  color:#30233f;
+}
+#rxka-gallery-card h3{
+  margin:0 0 8px;
+  color:#6844a0;
+}
+#rxka-gallery-card .rxka-gallery-form{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:12px 0;
+}
+#rxka-gallery-card input{
+  flex:1;
+  min-width:160px;
+  border:1px solid #b8a5d5;
+  border-radius:10px;
+  padding:11px;
+  font:inherit;
+}
+#rxka-gallery-card button{
+  border:0;
+  border-radius:10px;
+  padding:10px 13px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+#rxka-gallery-save{
+  background:#6844a0;
+  color:#fff;
+}
+#rxka-gallery-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+.rxka-gallery-item{
+  min-width:0;
+  background:#fff;
+  border:1px solid #e0d5ee;
+  border-radius:12px;
+  padding:9px;
+  box-shadow:0 3px 0 #e8def5;
+}
+.rxka-gallery-item img{
+  display:block;
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:contain;
+  background:#fff;
+  border-radius:7px;
+}
+.rxka-gallery-item strong{
+  display:block;
+  overflow-wrap:anywhere;
+  margin:7px 0;
+  font-size:14px;
+}
+.rxka-gallery-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.rxka-gallery-actions button{
+  font-size:12px;
+  padding:7px;
+  background:#eee7f8;
+  color:#39265d;
+}
+.rxka-gallery-actions .delete{
+  background:#ffebeb;
+  color:#8a2020;
+}
+#rxka-gallery-status{
+  font-size:13px;
+  line-height:1.5;
+  margin-top:8px;
+  color:#57456d;
+}
+</style>
 
+<script id="rxka-gallery-v1-script">
+(function(){
+  'use strict';
+
+  if(window.__rxkaGalleryV1) return;
+  window.__rxkaGalleryV1=true;
+
+  const KEY='roxthal_kids_art_gallery_v1';
+  const MAX=8;
+
+  function init(){
+    const canvas=document.getElementById('rxka-canvas');
+    const grid=document.querySelector('#rxka-overlay .rxka-grid');
+
+    if(!canvas || !grid ||
+       document.getElementById('rxka-gallery-card')){
+      return false;
+    }
+
+    const card=document.createElement('article');
+    card.id='rxka-gallery-card';
+
+    card.innerHTML=
+      '<h3>🖼️ Mi Galería de Creaciones</h3>'+
+      '<p>Guardá tus dibujos con un título y volvé a verlos cuando regreses desde este mismo dispositivo y navegador. Las obras quedan guardadas aquí, no se publican en internet.</p>'+
+      '<div class="rxka-gallery-form">'+
+      '<input id="rxka-gallery-title" type="text" maxlength="48" placeholder="Título de tu obra (ej. Mi dragón)" aria-label="Título de la obra">'+
+      '<button id="rxka-gallery-save" type="button">💾 Guardar en mi galería</button>'+
+      '</div>'+
+      '<div id="rxka-gallery-status" role="status" aria-live="polite"></div>'+
+      '<div id="rxka-gallery-list"></div>';
+
+    const firstCard=canvas.closest('.rxka-card');
+
+    if(firstCard && firstCard.parentNode===grid){
+      firstCard.insertAdjacentElement('afterend',card);
+    }else{
+      grid.appendChild(card);
+    }
+
+    const title=card.querySelector('#rxka-gallery-title');
+    const list=card.querySelector('#rxka-gallery-list');
+    const status=card.querySelector('#rxka-gallery-status');
+
+    function read(){
+      try{
+        const value=JSON.parse(localStorage.getItem(KEY)||'[]');
+        return Array.isArray(value)
+          ? value.filter(item =>
+              item &&
+              typeof item.src==='string' &&
+              typeof item.title==='string'
+            )
+          : [];
+      }catch(error){
+        return [];
+      }
+    }
+
+    function write(items){
+      try{
+        localStorage.setItem(KEY,JSON.stringify(items));
+        return true;
+      }catch(error){
+        status.textContent=
+          'No hay espacio suficiente en el dispositivo. '+
+          'Borrá alguna obra e intentá de nuevo.';
+        return false;
+      }
+    }
+
+    function render(){
+      const items=read();
+      list.replaceChildren();
+
+      if(!items.length){
+        list.textContent=
+          'Todavía no guardaste obras. ¡Tu primera creación puede estar aquí!';
+        return;
+      }
+
+      items.forEach(function(item,index){
+        const box=document.createElement('div');
+        box.className='rxka-gallery-item';
+
+        const img=document.createElement('img');
+        img.src=item.src;
+        img.alt='Dibujo guardado: '+item.title;
+        img.loading='lazy';
+
+        const name=document.createElement('strong');
+        name.textContent=item.title;
+
+        const actions=document.createElement('div');
+        actions.className='rxka-gallery-actions';
+
+        const download=document.createElement('button');
+        download.type='button';
+        download.textContent='⬇️ Descargar';
+
+        download.addEventListener('click',function(){
+          const link=document.createElement('a');
+          link.href=item.src;
+          link.download=
+            (item.title||'mi-creacion')
+              .replace(/[^a-z0-9áéíóúñ_-]+/gi,'-')+
+            '.jpg';
+
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        });
+
+        const del=document.createElement('button');
+        del.type='button';
+        del.className='delete';
+        del.textContent='🗑️ Borrar';
+
+        del.addEventListener('click',function(){
+          if(!window.confirm(
+            '¿Querés borrar «'+item.title+'» de esta galería?'
+          )){
+            return;
+          }
+
+          const latest=read();
+          latest.splice(index,1);
+
+          if(write(latest)){
+            status.textContent='Obra eliminada de la galería.';
+            render();
+          }
+        });
+
+        actions.append(download,del);
+        box.append(img,name,actions);
+        list.appendChild(box);
+      });
+    }
+
+    card.querySelector('#rxka-gallery-save')
+      .addEventListener('click',function(){
+        const label=(title.value||'').trim();
+
+        if(!label){
+          status.textContent=
+            'Escribí un título para tu obra antes de guardarla.';
+          title.focus();
+          return;
+        }
+
+        const items=read();
+
+        if(items.length>=MAX){
+          status.textContent=
+            'La galería admite hasta '+MAX+
+            ' obras. Borrá una antes de guardar otra.';
+          return;
+        }
+
+        try{
+          const temp=document.createElement('canvas');
+          temp.width=700;
+          temp.height=525;
+
+          const context=temp.getContext('2d');
+
+          if(!context){
+            throw new Error('Canvas no disponible');
+          }
+
+          context.fillStyle='#ffffff';
+          context.fillRect(0,0,temp.width,temp.height);
+          context.drawImage(
+            canvas,0,0,temp.width,temp.height
+          );
+
+          const src=temp.toDataURL('image/jpeg',0.72);
+
+          items.unshift({
+            title:label,
+            src:src,
+            createdAt:new Date().toISOString()
+          });
+
+          if(write(items)){
+            title.value='';
+            status.textContent=
+              '¡Obra guardada! Ya aparece en tu galería.';
+            render();
+          }
+        }catch(error){
+          status.textContent=
+            'No se pudo guardar esta obra. Probá borrar alguna '+
+            'imagen de la galería y volver a intentarlo.';
+        }
+      });
+
+    render();
+    return true;
+  }
+
+  function start(){
+    if(init()) return;
+
+    const observer=new MutationObserver(function(){
+      if(init()) observer.disconnect();
+    });
+
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL KIDS ART · GALERÍA DE CREACIONES V1 -->
 
 </body>
 </html>
