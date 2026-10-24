@@ -76164,6 +76164,140 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL KIDS ART · COMPARTIR -->
 
 
+<!-- ROXTHAL · AMPLIACIÓN DEL MÓDULO SOBRE ROXTHAL -->
+<style id="rx-about-expanded-style">
+.rx-about-expanded{display:grid;gap:16px;margin:18px 0}
+.rx-about-expanded .rx-about-hero{padding:clamp(24px,5vw,52px) 22px;text-align:center;background:radial-gradient(circle at 50% 0,rgba(242,196,0,.15),transparent 65%),#101010;border:1px solid #4b3b00;border-radius:20px}
+.rx-about-expanded .rx-about-kicker{color:#f2c400;font-size:12px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase}
+.rx-about-expanded h3{font-size:clamp(21px,4vw,29px);line-height:1.2;margin:9px 0 13px}
+.rx-about-expanded h4{font-size:19px;line-height:1.3;margin:7px 0 10px}
+.rx-about-expanded p{color:#d0d0d0;line-height:1.8;margin:9px 0}
+.rx-about-expanded .rx-about-names{color:#f2c400;font-size:clamp(18px,4vw,25px);font-weight:900;margin:18px 0}
+.rx-about-expanded .rx-about-card{padding:clamp(18px,4vw,30px);border:1px solid #292929;border-radius:17px;background:linear-gradient(145deg,#181818,#101010)}
+.rx-about-expanded .rx-about-card h4{color:#f2c400}
+.rx-about-expanded .rx-about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.rx-about-expanded .rx-about-signature{text-align:center;padding:30px 18px;border:1px solid #4b3b00;border-radius:18px;background:linear-gradient(145deg,#181818,#080808)}
+.rx-about-expanded .rx-about-signature strong{display:block;color:#f2c400;font-size:clamp(20px,4vw,27px);margin:12px 0}
+.rx-about-expanded .rx-about-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+</style>
+
+<script id="rx-about-expanded-content">
+(function(){
+  'use strict';
+
+  const section = document.getElementById('about');
+  if(!section) return;
+
+  const container = section.querySelector(':scope > .container');
+  if(!container) return;
+
+  const heading = container.querySelector(':scope > .section-head');
+  if(!heading) return;
+
+  if(container.querySelector(':scope > .rx-about-expanded')) return;
+
+  const content = document.createElement('div');
+  content.className = 'rx-about-expanded';
+
+  content.innerHTML = `
+    <div class="rx-about-hero">
+      <div class="rx-about-kicker">RoXThal Art Design</div>
+      <h3>Arte, conocimiento y creación sin fronteras</h3>
+      <div class="rx-about-names">Karina Cochea · Eduardo Expósito</div>
+      <p><em>Arte que deja marca.</em></p>
+      <p>Una visión del arte que reúne creación, investigación, diseño, tatuaje y formación artística en un universo creativo en permanente evolución.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Una visión del arte que trasciende disciplinas</h4>
+      <p>RoXThal Art Design nace de una concepción integral del arte: una forma de expresión, conocimiento, transformación y comunicación capaz de atravesar fronteras, conectar culturas y dejar una huella duradera en las personas.</p>
+      <p>Detrás de este universo creativo se encuentran <strong>Karina Cochea y Eduardo Expósito</strong>, dos nombres vinculados a una visión del arte que reúne creación, investigación, diseño, tatuaje y formación artística. Su proyecto representa la voluntad de construir un espacio en el que la tradición y la innovación dialoguen, donde el conocimiento técnico se encuentre con la sensibilidad estética y donde cada disciplina contribuya a ampliar las posibilidades de la expresión humana.</p>
+      <p>RoXThal no se concibe únicamente como un estudio artístico. Es un proyecto en evolución permanente, una plataforma de creación, aprendizaje y desarrollo profesional que integra diferentes lenguajes visuales bajo una identidad propia.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Formación, conocimiento y excelencia artística</h4>
+      <p>La formación académica y profesional constituye una dimensión fundamental de esta propuesta. El conocimiento de las artes plásticas, la investigación visual, el dominio de los procedimientos técnicos y la comprensión del lenguaje artístico forman parte de una visión que entiende la creación como un ejercicio de rigor, sensibilidad y búsqueda constante.</p>
+      <p>Karina Cochea y Eduardo Expósito cuentan, según la información aportada para esta presentación, con formación doctoral en Bellas Artes vinculada a la Universidad Complutense de Madrid y con una titulación oficial europea en tatuaje.</p>
+      <p>Estas credenciales se integran en una concepción de la práctica artística que aspira a reunir preparación, experiencia, responsabilidad profesional y capacidad pedagógica. La formación no se limita a la adquisición de técnicas: comprende también el desarrollo de una mirada propia, la comprensión de los fundamentos estéticos y la construcción de un criterio capaz de orientar decisiones creativas.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Una trayectoria artística y docente internacional</h4>
+      <p>El trabajo y la enseñanza desarrollados en distintos países de Europa y América constituyen una dimensión internacional de la trayectoria que ambos desean proyectar a través de RoXThal.</p>
+      <p>El intercambio entre contextos culturales, tradiciones visuales y formas de entender el arte permite enriquecer la práctica creativa y ampliar sus horizontes. Cada experiencia artística y educativa contribuye a una perspectiva abierta, en la que las técnicas evolucionan, los lenguajes se transforman y el aprendizaje se convierte en un proceso continuo.</p>
+      <p>Esta vocación internacional se expresa en la voluntad de compartir conocimientos, transmitir procedimientos, acompañar a nuevos creadores y acercar distintas disciplinas artísticas a públicos diversos.</p>
+      <p>RoXThal aspira así a ser un punto de encuentro entre experiencia y descubrimiento, entre oficio y experimentación, entre la herencia de las artes tradicionales y las posibilidades de la creación contemporánea.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Un universo de disciplinas artísticas</h4>
+      <p>La identidad de RoXThal Art Design se construye a partir de la diversidad. El dibujo y la pintura, el retrato artístico, el diseño, el tatuaje, el fileteado, los murales, los trampantojos y las distintas formas de expresión visual conviven dentro de una misma filosofía: comprender cada obra como una oportunidad para comunicar, investigar y crear algo singular.</p>
+      <p>Cada disciplina posee sus propios materiales, códigos y exigencias. Sin embargo, todas comparten una base común: el estudio de la forma, la composición, el contraste, el color, la línea, la textura y la relación entre la idea y su materialización.</p>
+      <p>Desde el trabajo minucioso del grafito hasta la expresividad del tatuaje; desde la pintura sobre una superficie hasta la intervención artística de un espacio, RoXThal entiende el oficio como una combinación de conocimiento técnico, imaginación y dedicación.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>El tatuaje como lenguaje artístico</h4>
+      <p>El tatuaje ocupa un lugar destacado dentro de esta visión. Más allá de su dimensión ornamental, constituye un lenguaje visual que acompaña a las personas y transforma el cuerpo en soporte de expresión.</p>
+      <p>Su práctica exige precisión, comprensión del diseño, estudio de la composición, dominio técnico y un compromiso riguroso con la higiene, la seguridad y la responsabilidad profesional.</p>
+      <p>La identidad de RoXThal busca integrar la cultura del tatuaje con los fundamentos del dibujo y las artes plásticas, reconociendo la diversidad de estilos y la importancia de desarrollar una voz artística propia.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>La enseñanza como legado</h4>
+      <p>Transmitir conocimiento es una parte esencial de la filosofía de RoXThal. La formación artística no consiste únicamente en enseñar a reproducir imágenes o ejecutar procedimientos: significa proporcionar herramientas para observar, comprender, experimentar y desarrollar una identidad creativa.</p>
+      <p>La Escuela RoXThal ofrece un espacio para el aprendizaje del dibujo y la pintura, la iniciación al tatuaje, el fileteado y otras propuestas formativas, junto con actividades adaptadas al público infantil.</p>
+      <p>La enseñanza a niños y jóvenes ocupa un lugar especialmente valioso dentro de esta visión. Fomentar la imaginación, la confianza, la curiosidad y la capacidad de expresión significa contribuir al desarrollo de personas capaces de mirar el mundo desde nuevas perspectivas.</p>
+      <p>El objetivo es que cada alumno pueda avanzar desde sus propias capacidades, comprender los fundamentos de su disciplina y encontrar progresivamente su manera de expresarse.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Tradición, innovación y tecnología</h4>
+      <p>RoXThal también amplía su campo de acción mediante herramientas digitales y experiencias interactivas que conectan la creación artística con las posibilidades de la tecnología.</p>
+      <p>Su ecosistema digital reúne servicios, galerías, recursos educativos, espacios de aprendizaje, contenidos especializados y herramientas vinculadas al universo del tatuaje y el diseño. Proyectos como RoXThal School Atelier representan la voluntad de explorar nuevas formas de organizar el conocimiento, facilitar el acceso a recursos creativos y construir experiencias de aprendizaje más amplias.</p>
+      <p>La tecnología no sustituye al arte ni al oficio: se incorpora como un instrumento para difundir, enseñar, organizar y abrir nuevas vías de participación.</p>
+      <p>Esta combinación permite concebir RoXThal como un proyecto artístico que no permanece inmóvil, sino que investiga nuevas formas de relacionarse con el público, los alumnos y la comunidad creativa.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>Una identidad con valores</h4>
+      <p>La identidad de RoXThal se expresa mediante una estética reconocible, una presencia visual propia y una filosofía que busca situar el arte en el centro de la vida cotidiana.</p>
+      <p>La creatividad, la formación, la inclusión, el intercambio de conocimientos y la conciencia sobre el entorno forman parte de los valores que orientan el proyecto.</p>
+      <p>El arte puede ocupar un museo, una galería, una pared, una hoja de papel, una pantalla o la piel. Puede ser contemplación, aprendizaje, experimentación o comunicación. Su capacidad para generar significado no depende de un único soporte, sino de la intención, el conocimiento y la sensibilidad con los que se construye.</p>
+    </div>
+
+    <div class="rx-about-card">
+      <h4>RoXThal: una obra en permanente evolución</h4>
+      <p>RoXThal Art Design representa una apuesta por la continuidad del aprendizaje y la expansión de las posibilidades creativas. Un proyecto que reúne creación artística, diseño, tatuaje, enseñanza y desarrollo digital bajo una misma identidad.</p>
+      <p>Karina Cochea y Eduardo Expósito impulsan esta visión con la voluntad de mantener vivo el diálogo entre experiencia e innovación, entre técnica y sensibilidad, entre el conocimiento adquirido y todo aquello que todavía queda por explorar.</p>
+      <p>Porque el arte no es únicamente aquello que se contempla al final de un proceso. También es el camino recorrido para crearlo, el conocimiento que se transmite, la imaginación que despierta y la huella que deja en quienes lo experimentan.</p>
+    </div>
+
+    <div class="rx-about-signature">
+      <div class="rx-about-kicker">Atelier · Escuela · Tattoo</div>
+      <strong>ROXTHAL ART DESIGN</strong>
+      <p>Un espacio para crear. Una escuela para descubrir. Una identidad para dejar huella.</p>
+      <p><em>Arte que deja marca.</em></p>
+      <div class="rx-about-actions">
+        <button class="btn btn-primary" type="button" data-go="school">Ver Escuela</button>
+        <button class="btn" type="button" data-go="services">Ver Servicios</button>
+        <button class="btn" type="button" data-go="contact">Contactar</button>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(content);
+
+  Array.from(container.children).forEach(function(element){
+    if(element !== heading && element !== content){
+      element.remove();
+    }
+  });
+})();
+</script>
+<!-- FIN AMPLIACIÓN SOBRE ROXTHAL -->
+
 
 </body>
 </html>
