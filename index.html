@@ -76399,24 +76399,52 @@ document.addEventListener('DOMContentLoaded',function(){
       card.id='rx-donation-home';
       card.setAttribute('aria-label','Colaborar con RoXThal Art Design');
 
-      card.innerHTML=
-        '<h3>💛 ¿Querés apoyar a RoXThal?</h3>'+
-        '<p>Tu colaboración voluntaria ayuda a sostener y hacer crecer '+
-        'este espacio de arte, diseño, tatuaje y formación artística.</p>'+
-        '<button type="button" id="rx-donation-open">'+
-        '💛 Colaborar con RoXThal</button>'+
-        '<div class="rx-donation-details" id="rx-donation-details" hidden>'+
-          '<p>Podés colaborar mediante una transferencia desde tu '+
-          'aplicación bancaria o billetera virtual.</p>'+
-          '<span class="rx-donation-alias">edukari1</span>'+
-          '<button type="button" id="rx-donation-copy">'+
-          '📋 Copiar alias</button>'+
-          '<button type="button" id="rx-donation-share">'+
-          '📲 Compartir</button>'+
-          '<p id="rx-donation-status" role="status" aria-live="polite"></p>'+
-          '<p class="rx-donation-note">La colaboración es voluntaria. '+
-          'Este sitio no procesa pagos ni confirma transferencias.</p>'+
-        '</div>';
+      
+card.innerHTML =
+  '<h3>💛 El arte crece cuando lo hacemos entre todos</h3>' +
+  '<p><strong>¿Te gusta lo que hacemos en RoXThal Art Design? ' +
+  'Ayudanos a llevarlo más lejos.</strong></p>' +
+  '<p>Detrás de cada obra, cada tatuaje, cada clase y cada nueva ' +
+  'propuesta hay horas de trabajo, creatividad y pasión por el arte.</p>' +
+  '<p>RoXThal Art Design es un proyecto artístico independiente ' +
+  'que reúne arte, diseño, tatuaje y formación. Queremos crear ' +
+  'más oportunidades para aprender, desarrollar el talento y ' +
+  'acercar el arte a personas de todas las edades.</p>' +
+  '<p>Tu colaboración nos ayuda a sostener este espacio, mejorar ' +
+  'nuestros recursos, crear nuevos contenidos, ampliar los cursos ' +
+  'e impulsar propuestas educativas, incluido nuestro espacio infantil.</p>' +
+  '<p><strong>No importa cuánto puedas aportar: cada colaboración ' +
+  'suma y nos ayuda a seguir creciendo.</strong></p>' +
+  '<p>Si alguna vez encontraste inspiración, aprendiste algo nuevo ' +
+  'o disfrutaste de nuestro trabajo, podés ayudarnos a que este ' +
+  'proyecto llegue a más personas.</p>' +
+  '<p>No estás apoyando solamente una web: estás contribuyendo ' +
+  'a mantener vivo un espacio de arte, aprendizaje y creatividad.</p>' +
+  '<p><strong>Apoyá el arte. Impulsá la creatividad. ' +
+  'Sé parte de RoXThal. 💛</strong></p>' +
+  '<button type="button" id="rx-donation-open">' +
+  '💛 Quiero colaborar con RoXThal</button>' +
+  '<div class="rx-donation-details" id="rx-donation-details" hidden>' +
+    '<p>Elegí cómo querés colaborar:</p>' +
+    '<a href="https://www.mercadopago.com.ar/" ' +
+    'target="_blank" rel="noopener noreferrer" ' +
+    'style="display:block;text-align:center;padding:14px;margin:12px 0;' +
+    'background:#d7ad55;color:#17120a;font-weight:bold;' +
+    'text-decoration:none;border-radius:10px;">' +
+    '💳 Abrir Mercado Pago</a>' +
+    '<p>También podés realizar una transferencia desde tu banco ' +
+    'o billetera virtual.</p>' +
+    '<span class="rx-donation-alias">edukari1</span>' +
+    '<button type="button" id="rx-donation-copy">' +
+    '📋 Copiar alias</button>' +
+    '<button type="button" id="rx-donation-share">' +
+    '📲 Compartir RoXThal</button>' +
+    '<p id="rx-donation-status" role="status" aria-live="polite"></p>' +
+    '<p class="rx-donation-note">La colaboración es voluntaria. ' +
+    'Este sitio no procesa pagos ni confirma transferencias. ' +
+    'Gracias por ayudarnos a seguir dejando huella. 💛</p>' +
+  '</div>';
+
 
       accesos.insertAdjacentElement('afterend',card);
 
