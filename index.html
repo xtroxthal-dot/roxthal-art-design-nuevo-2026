@@ -6325,12 +6325,13 @@ if (result && result.error) {
 
     initializeIdentity();
 
-    recordEvent('page_view', {
-      module_id: 'home',
-      module_name: 'Inicio'
-    });
-
+    
+    /*
+     * La vista inicial se registra desde observeNavigation().
+     * Evitamos duplicar el evento page_view de Inicio.
+     */
     observeNavigation();
+
     installClickTracking();
        
     window.addEventListener('roxthal:conversion', function (event) {
