@@ -76293,7 +76293,386 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN AMPLIACIÓN SOBRE ROXTHAL -->
 
+<!-- ROXTHAL · DONACIÓN INDEPENDIENTE · V2 -->
+<style>
+#rx-donar-entry-wrap {
+  width: min(760px, calc(100% - 28px));
+  margin: 14px auto 22px;
+  text-align: center;
+}
+#rx-donar-entry {
+  width: 100%;
+  padding: 15px 20px;
+  border: 1px solid #d7ad55;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #211a0b, #080808);
+  color: #f3ce69;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+#rx-donar-entry:focus-visible,
+#rx-donar-screen button:focus-visible,
+#rx-donar-screen a:focus-visible {
+  outline: 3px solid #f3ce69;
+  outline-offset: 3px;
+}
+#rx-donar-screen[hidden] {
+  display: none !important;
+}
+#rx-donar-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: max(18px, env(safe-area-inset-top))
+           14px
+           max(18px, env(safe-area-inset-bottom));
+  background: #080808;
+  color: #f7f0df;
+  font-family: inherit;
+}
+#rx-donar-screen .rxds-panel {
+  box-sizing: border-box;
+  width: min(760px, 100%);
+  min-height: calc(100vh - 36px);
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 38px);
+  border: 1px solid #b99543;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #1b160c, #090909 65%);
+  box-shadow: 0 10px 40px #000;
+}
+#rx-donar-screen .rxds-back {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: #f3ce69;
+  text-decoration: underline;
+  font-weight: 700;
+}
+#rx-donar-screen h1 {
+  margin: 0 0 20px;
+  color: #f3ce69;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  line-height: 1.2;
+}
+#rx-donar-screen p {
+  line-height: 1.75;
+  margin: 0 0 15px;
+}
+#rx-donar-screen .rxds-highlight {
+  margin: 22px 0;
+  padding: 16px;
+  border-left: 3px solid #d7ad55;
+  background: #151109;
+}
+#rx-donar-screen .rxds-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 25px;
+}
+#rx-donar-screen .rxds-actions button {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 50px;
+  padding: 13px 16px;
+  border: 1px solid #d7ad55;
+  border-radius: 11px;
+  background: #d7ad55;
+  color: #17120a;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+#rx-donar-screen .rxds-actions button:nth-child(2),
+#rx-donar-screen .rxds-actions button:nth-child(3) {
+  background: #111;
+  color: #f3ce69;
+}
+#rx-donar-screen .rxds-alias {
+  display: block;
+  margin: 8px 0 0;
+  color: #f3ce69;
+  font-size: 1.25rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+#rx-donar-screen .rxds-status {
+  min-height: 1.5em;
+  margin-top: 14px;
+  color: #f3ce69;
+  overflow-wrap: anywhere;
+}
+#rx-donar-screen .rxds-note {
+  margin-top: 20px;
+  font-size: .85rem;
+  opacity: .8;
+}
+</style>
 
+<script id="rx-donar-independent-v2">
+(function () {
+  'use strict';
+
+  if (window.__rxDonarIndependentV2) return;
+  window.__rxDonarIndependentV2 = true;
+
+  const ALIAS = 'edukari1';
+  const SHARE_URL = 'https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/';
+  const SHARE_TEXT =
+    'Conocé RoXThal Art Design: arte, diseño, tatuaje y formación artística. ' +
+    'Entrá, explorá nuestros módulos y ayudanos a mantener vivo este proyecto.';
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return copyFallback(text); }
+      );
+    }
+    return Promise.resolve(copyFallback(text));
+  }
+
+  function copyFallback(text) {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.left = '-9999px';
+    document.body.appendChild(field);
+    field.select();
+
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch (error) {}
+
+    field.remove();
+    return ok;
+  }
+
+  function install() {
+    const home = document.getElementById('home');
+    const quickAccess = document.getElementById('rxHomeQuickAccess');
+
+    if (!home || !quickAccess) return false;
+
+    let entryWrap = document.getElementById('rx-donar-entry-wrap');
+    let screen = document.getElementById('rx-donar-screen');
+
+    if (!entryWrap) {
+      entryWrap = document.createElement('div');
+      entryWrap.id = 'rx-donar-entry-wrap';
+      entryWrap.innerHTML =
+        '<button type="button" id="rx-donar-entry">' +
+        '💛 DONAR · Apoyá a RoXThal Art Design</button>';
+
+      quickAccess.insertAdjacentElement('afterend', entryWrap);
+
+      entryWrap.querySelector('#rx-donar-entry').addEventListener(
+        'click',
+        openScreen
+      );
+    } else if (entryWrap.previousElementSibling !== quickAccess) {
+      quickAccess.insertAdjacentElement('afterend', entryWrap);
+    }
+
+    if (!screen) {
+      screen = document.createElement('section');
+      screen.id = 'rx-donar-screen';
+      screen.hidden = true;
+      screen.setAttribute('role', 'dialog');
+      screen.setAttribute('aria-modal', 'true');
+      screen.setAttribute('aria-labelledby', 'rxds-title');
+
+      screen.innerHTML =
+        '<div class="rxds-panel">' +
+          '<a href="#" class="rxds-back" id="rxds-back">← Volver a RoXThal</a>' +
+          '<h1 id="rxds-title">💛 Ayudá a que RoXThal siga creciendo</h1>' +
+
+          '<p><strong>El arte necesita espacios donde pueda crearse, ' +
+          'compartirse y transmitirse.</strong> RoXThal Art Design es un ' +
+          'proyecto artístico independiente que reúne arte, diseño, tatuaje ' +
+          'y formación artística bajo una identidad propia.</p>' +
+
+          '<p>Detrás de cada obra, cada tatuaje, cada clase y cada propuesta ' +
+          'hay tiempo, trabajo, experiencia, materiales y muchas horas ' +
+          'dedicadas a desarrollar ideas y convertirlas en algo real. ' +
+          'Sostener un espacio creativo independiente requiere esfuerzo ' +
+          'constante y recursos para seguir avanzando.</p>' +
+
+          '<p>En RoXThal queremos que el arte sea mucho más que algo que ' +
+          'se observa: queremos que también sea una oportunidad para ' +
+          'aprender, experimentar, descubrir capacidades y desarrollar ' +
+          'el talento. Por eso reunimos servicios artísticos, tatuaje, ' +
+          'cursos y propuestas de formación para distintas edades.</p>' +
+
+          '<p>Nuestro espacio infantil busca acercar la creatividad a ' +
+          'niños y niñas mediante actividades artísticas, imaginación, ' +
+          'juego y aprendizaje. Cada recurso que podemos sumar ayuda a ' +
+          'crear nuevas experiencias y a mejorar las oportunidades ' +
+          'de quienes se acercan al arte.</p>' +
+
+          '<p>También trabajamos para ampliar los contenidos, mejorar ' +
+          'los recursos del atelier, desarrollar nuevas propuestas ' +
+          'educativas y mantener nuestros espacios digitales. Cada mejora ' +
+          'implica planificación, dedicación y trabajo.</p>' +
+
+          '<div class="rxds-highlight">' +
+            '<p><strong>Tu colaboración voluntaria puede ayudarnos a ' +
+            'continuar, mejorar los recursos existentes y hacer realidad ' +
+            'nuevas ideas.</strong></p>' +
+            '<p>No hace falta aportar una cantidad determinada. Cada ' +
+            'colaboración cuenta y cada persona que comparte el proyecto ' +
+            'también ayuda a que llegue más lejos.</p>' +
+          '</div>' +
+
+          '<p>Si disfrutás de nuestro trabajo, valorás la formación ' +
+          'artística o querés contribuir a que existan más espacios ' +
+          'independientes dedicados al arte, te invitamos a acompañarnos.</p>' +
+
+          '<p><strong>Apoyá el arte. Impulsá la creatividad. ' +
+          'Sé parte de RoXThal Art Design. 💛</strong></p>' +
+
+          '<div class="rxds-actions">' +
+            '<button type="button" id="rxds-mercadopago">' +
+              '💳 Abrir Mercado Pago' +
+            '</button>' +
+            '<button type="button" id="rxds-copy">' +
+              '📋 Copiar alias: edukari1' +
+            '</button>' +
+            '<button type="button" id="rxds-share">' +
+              '📲 Compartir RoXThal' +
+            '</button>' +
+          '</div>' +
+
+          '<span class="rxds-alias">Alias: edukari1</span>' +
+          '<p class="rxds-status" id="rxds-status" role="status" ' +
+          'aria-live="polite"></p>' +
+          '<p class="rxds-note">La colaboración es voluntaria. ' +
+          'El botón de Mercado Pago abre su sitio; no inicia por sí solo ' +
+          'un cobro ni confirma una transferencia.</p>' +
+        '</div>';
+
+      document.body.appendChild(screen);
+
+      screen.querySelector('#rxds-back').addEventListener(
+        'click',
+        function (event) {
+          event.preventDefault();
+          closeScreen();
+        }
+      );
+
+      screen.querySelector('#rxds-mercadopago').addEventListener(
+        'click',
+        function () {
+          window.open(
+            'https://www.mercadopago.com.ar/',
+            '_blank',
+            'noopener,noreferrer'
+          );
+        }
+      );
+
+      screen.querySelector('#rxds-copy').addEventListener(
+        'click',
+        function () {
+          const status = screen.querySelector('#rxds-status');
+          copyText(ALIAS).then(function (ok) {
+            status.textContent = ok
+              ? '✅ Alias copiado. Pegalo en tu aplicación para transferir.'
+              : 'No se pudo copiar automáticamente. Alias: edukari1';
+          });
+        }
+      );
+
+      screen.querySelector('#rxds-share').addEventListener(
+        'click',
+        function () {
+          const status = screen.querySelector('#rxds-status');
+          const data = {
+            title: 'RoXThal Art Design',
+            text: SHARE_TEXT,
+            url: SHARE_URL
+          };
+
+          if (navigator.share) {
+            navigator.share(data).then(function () {
+              status.textContent = 'Compartido. ¡Gracias por difundir RoXThal!';
+            }).catch(function (error) {
+              if (error && error.name === 'AbortError') return;
+              copyText(SHARE_TEXT + ' ' + SHARE_URL).then(function (ok) {
+                status.textContent = ok
+                  ? 'Texto y enlace copiados para compartir.'
+                  : SHARE_TEXT + ' ' + SHARE_URL;
+              });
+            });
+          } else {
+            copyText(SHARE_TEXT + ' ' + SHARE_URL).then(function (ok) {
+              status.textContent = ok
+                ? 'Texto y enlace copiados para compartir.'
+                : SHARE_TEXT + ' ' + SHARE_URL;
+            });
+          }
+        }
+      );
+    }
+
+    return true;
+  }
+
+  let previousOverflow = '';
+
+  function openScreen() {
+    const screen = document.getElementById('rx-donar-screen');
+    if (!screen) return;
+
+    previousOverflow = document.body.style.overflow;
+    screen.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    const back = screen.querySelector('#rxds-back');
+    if (back) back.focus();
+  }
+
+  function closeScreen() {
+    const screen = document.getElementById('rx-donar-screen');
+    if (!screen) return;
+
+    screen.hidden = true;
+    document.body.style.overflow = previousOverflow;
+
+    const entry = document.getElementById('rx-donar-entry');
+    if (entry) entry.focus();
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeScreen();
+  });
+
+  function start() {
+    if (install()) return;
+
+    const observer = new MutationObserver(function () {
+      if (install()) observer.disconnect();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · DONACIÓN INDEPENDIENTE · V2 -->
 
 </body>
 </html>
