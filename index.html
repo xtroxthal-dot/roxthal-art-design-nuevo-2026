@@ -76293,6 +76293,206 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN AMPLIACIÓN SOBRE ROXTHAL -->
 
+   
+<!-- ROXTHAL · BOTÓN DE DONACIÓN EN INICIO · V1 -->
+<style>
+#rx-donation-home{
+  width:min(760px,calc(100% - 28px));
+  box-sizing:border-box;
+  margin:16px auto 22px;
+  padding:18px;
+  text-align:center;
+  color:#f8f1df;
+  background:linear-gradient(135deg,#17130b,#29200e);
+  border:1px solid #d5ad43;
+  border-radius:18px;
+  box-shadow:0 6px 22px rgba(0,0,0,.2);
+}
+#rx-donation-home h3{
+  margin:0 0 8px;
+  color:#f0cb62;
+  font-size:1.2rem;
+}
+#rx-donation-home p{
+  margin:8px 0 12px;
+  line-height:1.5;
+}
+#rx-donation-home button{
+  display:inline-block;
+  margin:5px;
+  padding:11px 16px;
+  border:1px solid #d5ad43;
+  border-radius:10px;
+  background:#f0c84f;
+  color:#211900;
+  font-weight:700;
+  cursor:pointer;
+}
+#rx-donation-home .rx-donation-details{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid #75602c;
+  border-radius:12px;
+  background:#100e09;
+}
+#rx-donation-home [hidden]{display:none!important}
+#rx-donation-home .rx-donation-alias{
+  display:block;
+  margin:10px auto;
+  color:#f0cb62;
+  font-size:1.25rem;
+  font-weight:800;
+  overflow-wrap:anywhere;
+}
+#rx-donation-home .rx-donation-note{
+  font-size:.84rem;
+  opacity:.85;
+}
+</style>
+
+<script id="rx-donation-home-script">
+(function(){
+  'use strict';
+
+  if(window.__rxDonationHomeV1) return;
+  window.__rxDonationHomeV1=true;
+
+  const ALIAS='edukari1';
+  const MESSAGE=
+    'Quiero apoyar a RoXThal Art Design. '+
+    'Alias para colaborar: '+ALIAS;
+
+  function copiar(texto){
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(texto).then(
+        function(){return true;},
+        function(){return copiarAlternativo(texto);}
+      );
+    }
+    return Promise.resolve(copiarAlternativo(texto));
+  }
+
+  function copiarAlternativo(texto){
+    const campo=document.createElement('textarea');
+    campo.value=texto;
+    campo.setAttribute('readonly','');
+    campo.style.position='fixed';
+    campo.style.left='-9999px';
+    document.body.appendChild(campo);
+    campo.select();
+
+    let ok=false;
+    try{ok=document.execCommand('copy');}catch(e){}
+    campo.remove();
+    return ok;
+  }
+
+  function instalar(){
+    const home=document.getElementById('home');
+    const accesos=document.getElementById('rxHomeQuickAccess');
+    if(!home || !accesos) return false;
+
+    let card=document.getElementById('rx-donation-home');
+
+    if(!card){
+      card=document.createElement('section');
+      card.id='rx-donation-home';
+      card.setAttribute('aria-label','Colaborar con RoXThal Art Design');
+
+      card.innerHTML=
+        '<h3>💛 ¿Querés apoyar a RoXThal?</h3>'+
+        '<p>Tu colaboración voluntaria ayuda a sostener y hacer crecer '+
+        'este espacio de arte, diseño, tatuaje y formación artística.</p>'+
+        '<button type="button" id="rx-donation-open">'+
+        '💛 Colaborar con RoXThal</button>'+
+        '<div class="rx-donation-details" id="rx-donation-details" hidden>'+
+          '<p>Podés colaborar mediante una transferencia desde tu '+
+          'aplicación bancaria o billetera virtual.</p>'+
+          '<span class="rx-donation-alias">edukari1</span>'+
+          '<button type="button" id="rx-donation-copy">'+
+          '📋 Copiar alias</button>'+
+          '<button type="button" id="rx-donation-share">'+
+          '📲 Compartir</button>'+
+          '<p id="rx-donation-status" role="status" aria-live="polite"></p>'+
+          '<p class="rx-donation-note">La colaboración es voluntaria. '+
+          'Este sitio no procesa pagos ni confirma transferencias.</p>'+
+        '</div>';
+
+      accesos.insertAdjacentElement('afterend',card);
+
+      card.querySelector('#rx-donation-open').addEventListener(
+        'click',function(){
+          const details=card.querySelector('#rx-donation-details');
+          details.hidden=!details.hidden;
+        }
+      );
+
+      card.querySelector('#rx-donation-copy').addEventListener(
+        'click',function(){
+          const status=card.querySelector('#rx-donation-status');
+          Promise.resolve(copiar(ALIAS)).then(function(ok){
+            status.textContent=ok
+              ? '✅ Alias copiado. Pegalo en tu aplicación para transferir.'
+              : 'No se pudo copiar automáticamente. Copiá el alias: edukari1';
+          });
+        }
+      );
+
+      card.querySelector('#rx-donation-share').addEventListener(
+        'click',function(){
+          const status=card.querySelector('#rx-donation-status');
+          const shareData={
+            title:'Apoyá a RoXThal Art Design',
+            text:MESSAGE,
+            url:window.location.href.split('#')[0]
+          };
+
+          if(navigator.share){
+            navigator.share(shareData).then(function(){
+              status.textContent='Compartido.';
+            }).catch(function(error){
+              if(error && error.name==='AbortError') return;
+              copiar(MESSAGE+' '+shareData.url).then(function(ok){
+                status.textContent=ok
+                  ? 'Texto para compartir copiado.'
+                  : MESSAGE;
+              });
+            });
+          }else{
+            copiar(MESSAGE+' '+shareData.url).then(function(ok){
+              status.textContent=ok
+                ? 'Texto para compartir copiado.'
+                : MESSAGE+' '+shareData.url;
+            });
+          }
+        }
+      );
+    }else if(card.previousElementSibling!==accesos){
+      accesos.insertAdjacentElement('afterend',card);
+    }
+
+    return true;
+  }
+
+  function iniciar(){
+    if(instalar()) return;
+
+    const observer=new MutationObserver(function(){
+      if(instalar()) observer.disconnect();
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',iniciar,{once:true});
+  }else{
+    iniciar();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · BOTÓN DE DONACIÓN EN INICIO · V1 -->
+
+
 
 </body>
 </html>
