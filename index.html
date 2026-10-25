@@ -77523,65 +77523,6 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL CREA TU IDEA -->
 
 
-<!-- ROXTHAL: UNIFICAR BOTONES DEL INICIO -->
-<style>
-  #rxSolicitudButton {
-    display: none !important;
-  }
-
-  #home .hero .actions #rxci-launch {
-    position: static !important;
-    inset: auto !important;
-    z-index: auto !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    max-width: 100%;
-    margin: 0;
-    white-space: normal;
-    box-shadow: none;
-  }
-
-  #home .hero .actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-  }
-</style>
-
-<script id="roxthal-unificar-acciones-inicio">
-(function () {
-  'use strict';
-
-  function organizarBotones() {
-    var acciones = document.querySelector('#home .hero .actions');
-    var idea = document.getElementById('rxci-launch');
-
-    if (!acciones || !idea) return;
-
-    var presupuesto = acciones.querySelector(
-      '[data-rx-revenue-cta="hero"]'
-    );
-
-    if (presupuesto) {
-      presupuesto.insertAdjacentElement('afterend', idea);
-    } else {
-      acciones.appendChild(idea);
-    }
-  }
-
-  organizarBotones();
-
-  var observador = new MutationObserver(organizarBotones);
-  observador.observe(document.getElementById('home') || document.body, {
-    childList: true,
-    subtree: true
-  });
-})();
-</script>
-<!-- FIN ROXTHAL: UNIFICAR BOTONES DEL INICIO -->
-
 
 </body>
 </html>
