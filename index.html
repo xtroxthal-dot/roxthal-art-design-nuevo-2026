@@ -77225,6 +77225,201 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+   
+<!-- ROXTHAL CREA TU IDEA · Módulo independiente -->
+<style>
+#rxIdeaLaunch{position:fixed;right:14px;bottom:18px;z-index:9990;background:#c99a35;color:#111;border:2px solid #f5d989;border-radius:30px;padding:13px 18px;font-weight:900;box-shadow:0 5px 24px #0008;cursor:pointer;font-size:14px}
+#rxIdeaOverlay{display:none;position:fixed;inset:0;z-index:9991;background:#080808f5;overflow:auto;padding:18px;box-sizing:border-box;color:#f6f0e4;font-family:Arial,sans-serif}
+#rxIdeaOverlay.rxIdeaOpen{display:block}
+#rxIdeaPanel{max-width:650px;margin:18px auto;background:#171512;border:1px solid #bd923b;border-radius:18px;padding:22px;box-sizing:border-box}
+#rxIdeaPanel *{box-sizing:border-box}
+#rxIdeaPanel h2{color:#e6bd62;font-size:27px;margin:8px 0}
+#rxIdeaPanel p{line-height:1.5}
+#rxIdeaPanel label{display:block;color:#e7c56f;font-weight:bold;margin:15px 0 7px}
+#rxIdeaPanel select,#rxIdeaPanel textarea,#rxIdeaPanel input{width:100%;padding:12px;border-radius:9px;border:1px solid #71603b;background:#0c0c0c;color:white;font:inherit}
+#rxIdeaPanel textarea{min-height:100px;resize:vertical}
+#rxIdeaPanel .rxIdeaBtn{border:1px solid #d6ad4e;border-radius:10px;padding:12px 15px;font-weight:bold;cursor:pointer;margin:8px 6px 0 0}
+#rxIdeaPanel .rxIdeaGold{background:#d5aa45;color:#111}
+#rxIdeaPanel .rxIdeaDark{background:#25221c;color:#f5e5b9}
+#rxIdeaResult{display:none;margin-top:18px;padding:16px;border:1px solid #b38c38;border-radius:12px;background:#0d0d0d;white-space:pre-wrap;line-height:1.6}
+#rxIdeaClose{float:right;background:transparent;color:#fff;border:1px solid #777;border-radius:8px;padding:8px 12px;cursor:pointer}
+#rxIdeaPanel .rxIdeaSmall{font-size:12px;color:#c8c0b0}
+@media(max-width:480px){#rxIdeaPanel{padding:16px;margin:4px auto}#rxIdeaPanel h2{font-size:23px}#rxIdeaLaunch{right:10px;bottom:12px}}
+</style>
+
+<button id="rxIdeaLaunch" type="button">🎨 CREA TU IDEA</button>
+
+<div id="rxIdeaOverlay" role="dialog" aria-modal="true" aria-labelledby="rxIdeaTitle">
+  <section id="rxIdeaPanel">
+    <button id="rxIdeaClose" type="button" aria-label="Cerrar">✕ Cerrar</button>
+    <p>ROXTHAL ART DESIGN · ARTE QUE DEJA MARCA</p>
+    <h2 id="rxIdeaTitle">Tu idea. Nuestro arte.</h2>
+    <p>Contanos qué imaginás y prepará una propuesta para consultar por tu encargo artístico.</p>
+
+    <label for="rxIdeaType">¿Qué querés crear?</label>
+    <select id="rxIdeaType">
+      <option value="Diseño de tatuaje">Un diseño de tatuaje</option>
+      <option value="Retrato artístico">Un retrato artístico</option>
+      <option value="Dibujo personalizado">Un dibujo personalizado</option>
+      <option value="Mural o trampantojo">Un mural o trampantojo</option>
+      <option value="Obra o regalo artístico">Una obra o regalo artístico</option>
+      <option value="Otro proyecto creativo">Otra idea creativa</option>
+    </select>
+
+    <label for="rxIdeaStyle">Elegí el estilo</label>
+    <select id="rxIdeaStyle">
+      <option>Realismo</option>
+      <option>Blackwork</option>
+      <option>Old School</option>
+      <option>Chicano</option>
+      <option>Fine line</option>
+      <option>Tradicional</option>
+      <option>Graffiti y urbano</option>
+      <option>Ilustración artística</option>
+      <option>Surrealismo</option>
+      <option>Quiero asesoramiento artístico</option>
+    </select>
+
+    <label for="rxIdeaSubject">¿Qué te gustaría representar?</label>
+    <textarea id="rxIdeaSubject" maxlength="700" placeholder="Ej.: una rosa con un reloj antiguo, en negro y gris, con un significado personal..."></textarea>
+
+    <label for="rxIdeaColor">Preferencia de color</label>
+    <select id="rxIdeaColor">
+      <option>Negro y gris</option>
+      <option>Color intenso</option>
+      <option>Colores suaves</option>
+      <option>Lo dejo a criterio artístico</option>
+    </select>
+
+    <label for="rxIdeaBudget">Presupuesto aproximado (opcional)</label>
+    <select id="rxIdeaBudget">
+      <option value="A conversar">Prefiero conversarlo</option>
+      <option>Hasta $30.000 ARS</option>
+      <option>$30.000–$60.000 ARS</option>
+      <option>$60.000–$100.000 ARS</option>
+      <option>Más de $100.000 ARS</option>
+    </select>
+
+    <button id="rxIdeaGenerate" class="rxIdeaBtn rxIdeaGold" type="button">✨ Crear mi concepto</button>
+
+    <div id="rxIdeaResult" aria-live="polite"></div>
+
+    <div id="rxIdeaActions" style="display:none">
+      <button id="rxIdeaWhatsApp" class="rxIdeaBtn rxIdeaGold" type="button">Compartir por WhatsApp</button>
+      <button id="rxIdeaCopy" class="rxIdeaBtn rxIdeaDark" type="button">Copiar mi propuesta</button>
+      <button id="rxIdeaReset" class="rxIdeaBtn rxIdeaDark" type="button">Crear otra idea</button>
+    </div>
+    <p class="rxIdeaSmall">La propuesta es una descripción inicial, no una imagen generada ni un presupuesto definitivo. El diseño, la viabilidad y el precio se confirman con RoXThal.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  if (window.__rxIdeaModuleLoaded) return;
+  window.__rxIdeaModuleLoaded = true;
+
+  const $ = id => document.getElementById(id);
+  const overlay = $('rxIdeaOverlay');
+  const result = $('rxIdeaResult');
+  const actions = $('rxIdeaActions');
+  let proposal = '';
+
+  function openIdea(){
+    overlay.classList.add('rxIdeaOpen');
+    document.body.style.overflow = 'hidden';
+    $('rxIdeaClose').focus();
+  }
+  function closeIdea(){
+    overlay.classList.remove('rxIdeaOpen');
+    document.body.style.overflow = '';
+    $('rxIdeaLaunch').focus();
+  }
+  function makeProposal(){
+    const type = $('rxIdeaType').value;
+    const style = $('rxIdeaStyle').value;
+    const subject = $('rxIdeaSubject').value.trim();
+    const color = $('rxIdeaColor').value;
+    const budget = $('rxIdeaBudget').value;
+
+    if(subject.length < 8){
+      $('rxIdeaSubject').focus();
+      result.style.display = 'block';
+      result.textContent = 'Describí tu idea con un poco más de detalle (al menos 8 caracteres) para preparar una propuesta útil.';
+      actions.style.display = 'none';
+      return;
+    }
+
+    proposal =
+      '🎨 ROXTHAL CREA TU IDEA\n' +
+      'RoXThal Art Design · Arte que deja marca\n\n' +
+      'Mi proyecto: ' + type + '\n' +
+      'Estilo elegido: ' + style + '\n' +
+      'Idea: ' + subject + '\n' +
+      'Color: ' + color + '\n' +
+      'Presupuesto orientativo: ' + budget + '\n\n' +
+      'Quiero consultar con RoXThal la viabilidad, el diseño personalizado, el precio y los próximos pasos.\n' +
+      'Web: https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/\n' +
+      'Instagram: https://www.instagram.com/roxthalartdesign/';
+
+    result.textContent =
+      '✨ TU CONCEPTO INICIAL\n\n' +
+      'Proyecto: ' + type + '\n' +
+      'Dirección artística: ' + style + '\n' +
+      'Idea central: ' + subject + '\n' +
+      'Paleta: ' + color + '\n\n' +
+      'SIGUIENTE PASO\n' +
+      'RoXThal podrá evaluar tu propuesta y conversar con vos sobre la composición, los detalles y el presupuesto. Compartí esta ficha para iniciar la consulta.\n\n' +
+      'Importante: esta ficha organiza tu idea; no genera una imagen ni confirma disponibilidad o precio.';
+
+    result.style.display = 'block';
+    actions.style.display = 'block';
+  }
+
+  $('rxIdeaLaunch').addEventListener('click', openIdea);
+  $('rxIdeaClose').addEventListener('click', closeIdea);
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closeIdea();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && overlay.classList.contains('rxIdeaOpen')) closeIdea();
+  });
+  $('rxIdeaGenerate').addEventListener('click', makeProposal);
+  $('rxIdeaWhatsApp').addEventListener('click', function(){
+    if(!proposal) return;
+    const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(proposal);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  });
+  $('rxIdeaCopy').addEventListener('click', async function(){
+    if(!proposal) return;
+    try{
+      await navigator.clipboard.writeText(proposal);
+      $('rxIdeaCopy').textContent = '✓ Propuesta copiada';
+    }catch(err){
+      const area = document.createElement('textarea');
+      area.value = proposal;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      $('rxIdeaCopy').textContent = ok ? '✓ Propuesta copiada' : 'Seleccioná y copiá el texto desde la ficha';
+    }
+  });
+  $('rxIdeaReset').addEventListener('click', function(){
+    $('rxIdeaSubject').value = '';
+    result.style.display = 'none';
+    actions.style.display = 'none';
+    proposal = '';
+    $('rxIdeaCopy').textContent = 'Copiar mi propuesta';
+    $('rxIdeaSubject').focus();
+  });
+})();
+</script>
+<!-- FIN ROXTHAL CREA TU IDEA -->
+
+
 
 </body>
 </html>
