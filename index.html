@@ -77524,6 +77524,197 @@ document.addEventListener('DOMContentLoaded',function(){
 
    
 
+<!-- ROXTHAL · PUENTE COMERCIAL CREA TU IDEA V1 -->
+<style id="rxci-commercial-bridge-style">
+  #rxci-commercial-bridge {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 13px 16px;
+    border: 1px solid #d7b65d;
+    border-radius: 10px;
+    background: #211d13;
+    color: #f4d77e;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  #rxci-commercial-bridge:hover {
+    background: #382d16;
+  }
+</style>
+
+<script id="rxci-commercial-bridge">
+(function () {
+  'use strict';
+
+  if (window.__RXCI_COMMERCIAL_BRIDGE_V1__) return;
+  window.__RXCI_COMMERCIAL_BRIDGE_V1__ = true;
+
+  function init() {
+    const ideaModal = document.getElementById('rxci-modal');
+    const ideaButton = document.getElementById('rxci-whatsapp');
+
+    if (!ideaModal || !ideaButton) return;
+
+    if (document.getElementById('rxci-commercial-bridge')) return;
+
+    const button = document.createElement('button');
+    button.id = 'rxci-commercial-bridge';
+    button.type = 'button';
+    button.textContent =
+      '📋 Continuar con mi solicitud comercial';
+
+    ideaButton.insertAdjacentElement('afterend', button);
+
+    function getValue(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function chooseRequestType(type) {
+      const t = type.toLowerCase();
+
+      if (t.includes('tatu')) {
+        return 'Tatuaje — diseño personalizado';
+      }
+
+      if (t.includes('retrato') || t.includes('dibujo')) {
+        return 'Dibujo y pintura profesional';
+      }
+
+      if (t.includes('mural') || t.includes('decoración')) {
+        return 'Murales';
+      }
+
+      if (t.includes('fileteado') || t.includes('pintura')) {
+        return 'Fileteado';
+      }
+
+      if (t.includes('regalo')) {
+        return 'Diseño artístico / ilustración';
+      }
+
+      return 'Otra consulta';
+    }
+
+    button.addEventListener('click', function () {
+      const requestButton =
+        document.getElementById('rxSolicitudButton');
+
+      const requestForm =
+        document.getElementById('rxSolicitudForm');
+
+      if (!requestButton || !requestForm) {
+        alert(
+          'No se encontró el formulario comercial. ' +
+          'Podés seguir usando el botón habitual de WhatsApp.'
+        );
+        return;
+      }
+
+      const type = getValue('rxci-type');
+      const style = getValue('rxci-style');
+      const idea = getValue('rxci-idea');
+      const colors = getValue('rxci-colors');
+      const place = getValue('rxci-place');
+      const budget = getValue('rxci-budget');
+
+      if (idea.length < 8) {
+        alert(
+          'Describí tu idea con al menos 8 caracteres ' +
+          'antes de continuar.'
+        );
+
+        const field = document.getElementById('rxci-idea');
+        if (field) field.focus();
+        return;
+      }
+
+      const details = [
+        'SOLICITUD PROCEDENTE DE ROXTHAL CREA TU IDEA',
+        'Proyecto: ' + (type || 'A definir'),
+        'Estilo: ' + (style || 'A definir'),
+        'Descripción: ' + idea,
+        'Colores: ' + (colors || 'A definir'),
+        'Ubicación o zona: ' + (place || 'A confirmar'),
+        'Presupuesto indicado: ' + (budget || 'A conversar'),
+        'El cliente podrá adjuntar imágenes de referencia ' +
+          'directamente en WhatsApp.'
+      ].join('\n');
+
+      const closeButton =
+        document.getElementById('rxci-close');
+
+      if (closeButton) closeButton.click();
+
+      requestButton.click();
+
+      window.setTimeout(function () {
+        const select = document.getElementById('rxSolTipo');
+        const description = document.getElementById('rxSolDetalle');
+        const reference = document.getElementById('rxSolReferencia');
+        const budgetField = document.getElementById('rxSolPresupuesto');
+        const placeField = document.getElementById('rxSolLugar');
+
+        if (select) {
+          const desired = chooseRequestType(type);
+
+          const option = Array.from(select.options).find(
+            function (opt) {
+              return opt.text.trim() === desired;
+            }
+          );
+
+          if (option) {
+            select.value = option.value;
+            select.dispatchEvent(
+              new Event('change', { bubbles: true })
+            );
+          }
+        }
+
+        if (description) {
+          description.value = details;
+          description.dispatchEvent(
+            new Event('input', { bubbles: true })
+          );
+          description.dispatchEvent(
+            new Event('change', { bubbles: true })
+          );
+        }
+
+        if (reference) {
+          reference.value =
+            'Idea creada en RoXThal Crea Tu Idea. ' +
+            'Las imágenes, si las hay, deben adjuntarse ' +
+            'manualmente en WhatsApp.';
+        }
+
+        if (budgetField && budget) {
+          budgetField.value = budget;
+        }
+
+        if (placeField && place) {
+          placeField.value = place;
+        }
+
+        const first = document.getElementById('rxSolNombre');
+        if (first) first.focus();
+      }, 180);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · PUENTE COMERCIAL CREA TU IDEA V1 -->
+
 
 
 </body>
