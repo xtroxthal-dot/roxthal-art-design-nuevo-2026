@@ -77123,6 +77123,108 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL · CONVERSIÓN COMERCIAL QUIRÚRGICA V1 -->
 
 
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxCourseSalesClarityV2) return;
+  window.__rxCourseSalesClarityV2 = true;
+
+  var originalLoadCourses = window.loadCourses;
+
+  if (typeof originalLoadCourses !== 'function') {
+    console.error(
+      '[RoXThal] No se pudo localizar loadCourses. No se modificó el cargador original.'
+    );
+    return;
+  }
+
+  function improveCourseCards() {
+    var box = document.getElementById('coursesList');
+    if (!box) return;
+
+    Array.from(box.children).forEach(function (card) {
+      var heading = card.querySelector('h3');
+      if (!heading) return;
+
+      var name = (heading.textContent || '').trim();
+      var normalized = name.toLowerCase();
+
+      var priceRow = Array.from(
+        card.querySelectorAll('.row')
+      ).find(function (row) {
+        return /precio/i.test(row.textContent || '');
+      });
+
+      var priceNode = priceRow && priceRow.querySelector('b');
+      if (!priceRow || !priceNode) return;
+
+      var price = '';
+      var details = '';
+
+      if (/iniciaci[oó]n.*tatuaj|tatuaj.*iniciaci[oó]n/.test(normalized)) {
+        price = 'Desde $65.000/mes';
+        details =
+          'Sin materiales: $65.000/mes. ' +
+          'Con materiales: $100.000/mes. ' +
+          'Consultá por el contenido de cada modalidad.';
+      } else if (/dibujo.*pintura|pintura.*dibujo/.test(normalized)) {
+        price = '$50.000/mes';
+        details = 'Cuota mensual. Materiales no incluidos.';
+      } else if (/niñ|infantil|kids/.test(normalized)) {
+        price = '$20.000/mes';
+        details = 'Cuota mensual. Materiales no incluidos.';
+      } else {
+        return;
+      }
+
+      if (priceNode.textContent.trim() !== price) {
+        priceNode.textContent = price;
+      }
+
+      var info = card.querySelector('[data-rx-course-sales-info]');
+
+      if (!info) {
+        info = document.createElement('p');
+        info.dataset.rxCourseSalesInfo = '1';
+        info.className = 'muted';
+        info.style.margin = '8px 0';
+        priceRow.insertAdjacentElement('afterend', info);
+      }
+
+      if (info.textContent !== details) {
+        info.textContent = details;
+      }
+    });
+  }
+
+  window.loadCourses = async function () {
+    var result = await originalLoadCourses.apply(this, arguments);
+    improveCourseCards();
+    return result;
+  };
+
+  var box = document.getElementById('coursesList');
+
+  if (box) {
+    new MutationObserver(function () {
+      improveCourseCards();
+    }).observe(box, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (box && box.children.length) {
+    improveCourseCards();
+  } else {
+    window.loadCourses().catch(function (error) {
+      console.error('[RoXThal] Error al actualizar los cursos:', error);
+    });
+  }
+})();
+</script>
+
 
 </body>
 </html>
