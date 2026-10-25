@@ -77225,199 +77225,304 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-   
-<!-- ROXTHAL CREA TU IDEA · Módulo independiente -->
+<!-- ROXTHAL CREA TU IDEA — versión con IA externa y envío comercial -->
 <style>
-#rxIdeaLaunch{position:fixed;right:14px;bottom:18px;z-index:9990;background:#c99a35;color:#111;border:2px solid #f5d989;border-radius:30px;padding:13px 18px;font-weight:900;box-shadow:0 5px 24px #0008;cursor:pointer;font-size:14px}
-#rxIdeaOverlay{display:none;position:fixed;inset:0;z-index:9991;background:#080808f5;overflow:auto;padding:18px;box-sizing:border-box;color:#f6f0e4;font-family:Arial,sans-serif}
-#rxIdeaOverlay.rxIdeaOpen{display:block}
-#rxIdeaPanel{max-width:650px;margin:18px auto;background:#171512;border:1px solid #bd923b;border-radius:18px;padding:22px;box-sizing:border-box}
-#rxIdeaPanel *{box-sizing:border-box}
-#rxIdeaPanel h2{color:#e6bd62;font-size:27px;margin:8px 0}
-#rxIdeaPanel p{line-height:1.5}
-#rxIdeaPanel label{display:block;color:#e7c56f;font-weight:bold;margin:15px 0 7px}
-#rxIdeaPanel select,#rxIdeaPanel textarea,#rxIdeaPanel input{width:100%;padding:12px;border-radius:9px;border:1px solid #71603b;background:#0c0c0c;color:white;font:inherit}
-#rxIdeaPanel textarea{min-height:100px;resize:vertical}
-#rxIdeaPanel .rxIdeaBtn{border:1px solid #d6ad4e;border-radius:10px;padding:12px 15px;font-weight:bold;cursor:pointer;margin:8px 6px 0 0}
-#rxIdeaPanel .rxIdeaGold{background:#d5aa45;color:#111}
-#rxIdeaPanel .rxIdeaDark{background:#25221c;color:#f5e5b9}
-#rxIdeaResult{display:none;margin-top:18px;padding:16px;border:1px solid #b38c38;border-radius:12px;background:#0d0d0d;white-space:pre-wrap;line-height:1.6}
-#rxIdeaClose{float:right;background:transparent;color:#fff;border:1px solid #777;border-radius:8px;padding:8px 12px;cursor:pointer}
-#rxIdeaPanel .rxIdeaSmall{font-size:12px;color:#c8c0b0}
-@media(max-width:480px){#rxIdeaPanel{padding:16px;margin:4px auto}#rxIdeaPanel h2{font-size:23px}#rxIdeaLaunch{right:10px;bottom:12px}}
+#rxci-launch{position:fixed;right:16px;bottom:18px;z-index:9990;border:1px solid #d8b45c;border-radius:30px;padding:14px 19px;background:#111;color:#f5d77d;font-weight:800;box-shadow:0 4px 20px #0008;cursor:pointer}
+#rxci-modal[hidden]{display:none!important}
+#rxci-modal{position:fixed;inset:0;z-index:99999;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+#rxci-panel{box-sizing:border-box;width:min(680px,100%);max-height:94dvh;overflow:auto;background:#151515;color:#f7f0df;border:1px solid #bd9848;border-radius:18px;padding:20px;font-family:Arial,sans-serif}
+#rxci-panel *{box-sizing:border-box}
+#rxci-panel h2{color:#e6c46e;margin:0 0 8px}
+#rxci-panel p{line-height:1.5}
+#rxci-panel label{display:block;margin:13px 0 6px;font-weight:700}
+#rxci-panel input:not([type=file]),#rxci-panel select,#rxci-panel textarea{display:block;width:100%;padding:12px;border-radius:9px;border:1px solid #76633c;background:#222;color:#fff;font:inherit}
+#rxci-panel textarea{min-height:90px;resize:vertical}
+#rxci-panel button,#rxci-panel .rxci-link{display:inline-block;border:1px solid #c5a354;border-radius:10px;padding:12px 14px;margin:7px 5px 2px 0;background:#26231c;color:#f8dc91;font-weight:700;text-decoration:none;cursor:pointer;font:inherit}
+#rxci-panel .rxci-primary{background:#d6b45d;color:#17130b}
+#rxci-panel .rxci-close{float:right;margin:0 0 10px 10px}
+#rxci-panel .rxci-note{font-size:13px;color:#d5cbb4}
+#rxci-panel #rxci-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+#rxci-panel .rxci-thumb{width:105px}
+#rxci-panel .rxci-thumb img{width:100%;height:100px;object-fit:cover;border-radius:8px}
+#rxci-panel .rxci-thumb button{font-size:12px;padding:6px;margin:4px 0}
+#rxci-status{min-height:22px;color:#f2d88c}
+@media(max-width:480px){#rxci-panel{padding:15px}#rxci-launch{right:10px;bottom:12px;font-size:13px}}
 </style>
 
-<button id="rxIdeaLaunch" type="button">🎨 CREA TU IDEA</button>
+<button id="rxci-launch" type="button">🎨 CREA TU IDEA</button>
 
-<div id="rxIdeaOverlay" role="dialog" aria-modal="true" aria-labelledby="rxIdeaTitle">
-  <section id="rxIdeaPanel">
-    <button id="rxIdeaClose" type="button" aria-label="Cerrar">✕ Cerrar</button>
-    <p>ROXTHAL ART DESIGN · ARTE QUE DEJA MARCA</p>
-    <h2 id="rxIdeaTitle">Tu idea. Nuestro arte.</h2>
-    <p>Contanos qué imaginás y prepará una propuesta para consultar por tu encargo artístico.</p>
+<div id="rxci-modal" hidden>
+  <section id="rxci-panel" role="dialog" aria-modal="true" aria-labelledby="rxci-title">
+    <button id="rxci-close" class="rxci-close" type="button" aria-label="Cerrar">✕</button>
+    <h2 id="rxci-title">🎨 RoXThal Crea tu Idea</h2>
+    <p>Imaginá tu proyecto, prepará una referencia visual con IA y envianos tu propuesta para que podamos asesorarte.</p>
 
-    <label for="rxIdeaType">¿Qué querés crear?</label>
-    <select id="rxIdeaType">
-      <option value="Diseño de tatuaje">Un diseño de tatuaje</option>
-      <option value="Retrato artístico">Un retrato artístico</option>
-      <option value="Dibujo personalizado">Un dibujo personalizado</option>
-      <option value="Mural o trampantojo">Un mural o trampantojo</option>
-      <option value="Obra o regalo artístico">Una obra o regalo artístico</option>
-      <option value="Otro proyecto creativo">Otra idea creativa</option>
+    <label for="rxci-type">¿Qué querés crear?</label>
+    <select id="rxci-type">
+      <option>Tatuajes</option>
+      <option>Retratos y dibujos</option>
+      <option>Murales y decoración</option>
+      <option>Diseños personalizados</option>
+      <option>Fileteado y pintura</option>
+      <option>Regalos artísticos</option>
     </select>
 
-    <label for="rxIdeaStyle">Elegí el estilo</label>
-    <select id="rxIdeaStyle">
+    <label for="rxci-style">Estilo artístico</label>
+    <select id="rxci-style">
+      <option>Quiero asesoramiento de RoXThal</option>
       <option>Realismo</option>
-      <option>Blackwork</option>
       <option>Old School</option>
       <option>Chicano</option>
+      <option>Blackwork</option>
       <option>Fine line</option>
-      <option>Tradicional</option>
-      <option>Graffiti y urbano</option>
-      <option>Ilustración artística</option>
-      <option>Surrealismo</option>
-      <option>Quiero asesoramiento artístico</option>
+      <option>Graffiti</option>
+      <option>Fileteado tradicional</option>
+      <option>Retrato a lápiz</option>
+      <option>Acuarela</option>
+      <option>Otro estilo</option>
     </select>
 
-    <label for="rxIdeaSubject">¿Qué te gustaría representar?</label>
-    <textarea id="rxIdeaSubject" maxlength="700" placeholder="Ej.: una rosa con un reloj antiguo, en negro y gris, con un significado personal..."></textarea>
+    <label for="rxci-idea">Describí tu idea</label>
+    <textarea id="rxci-idea" maxlength="1800" placeholder="Ej.: un diseño original con una rosa, una serpiente, sombras y detalles dorados..."></textarea>
 
-    <label for="rxIdeaColor">Preferencia de color</label>
-    <select id="rxIdeaColor">
-      <option>Negro y gris</option>
-      <option>Color intenso</option>
-      <option>Colores suaves</option>
-      <option>Lo dejo a criterio artístico</option>
-    </select>
+    <label for="rxci-colors">Colores preferidos</label>
+    <input id="rxci-colors" maxlength="250" placeholder="Ej.: negro y gris, rojo y dorado">
 
-    <label for="rxIdeaBudget">Presupuesto aproximado (opcional)</label>
-    <select id="rxIdeaBudget">
-      <option value="A conversar">Prefiero conversarlo</option>
+    <label for="rxci-place">Ubicación o zona del proyecto (opcional)</label>
+    <input id="rxci-place" maxlength="250" placeholder="Ej.: antebrazo, pared del salón, tamaño aproximado">
+
+    <label for="rxci-budget">Presupuesto aproximado (opcional)</label>
+    <select id="rxci-budget">
+      <option value="">Prefiero consultar</option>
       <option>Hasta $30.000 ARS</option>
-      <option>$30.000–$60.000 ARS</option>
-      <option>$60.000–$100.000 ARS</option>
+      <option>$30.000 a $60.000 ARS</option>
+      <option>$60.000 a $100.000 ARS</option>
       <option>Más de $100.000 ARS</option>
     </select>
 
-    <button id="rxIdeaGenerate" class="rxIdeaBtn rxIdeaGold" type="button">✨ Crear mi concepto</button>
+    <hr style="border-color:#594a2e;margin:20px 0">
+    <h3 style="color:#e6c46e">✨ Laboratorio de IA</h3>
+    <p class="rxci-note">La herramienta de IA es externa a RoXThal. Puede requerir iniciar sesión y aplicar límites de uso. RoXThal no cobra ni paga por la generación externa.</p>
 
-    <div id="rxIdeaResult" aria-live="polite"></div>
+    <button id="rxci-copy-prompt" class="rxci-primary" type="button">📋 Preparar y copiar mi prompt</button>
+    <a id="rxci-ai-link" class="rxci-link" href="https://chatgpt.com/images/" target="_blank" rel="noopener noreferrer">🪄 Crear imagen con IA</a>
+    <p class="rxci-note">Primero copiá tu prompt; después abrí la IA, pegalo y generá la imagen. Cuando termines, descargala a tu móvil y regresá aquí.</p>
 
-    <div id="rxIdeaActions" style="display:none">
-      <button id="rxIdeaWhatsApp" class="rxIdeaBtn rxIdeaGold" type="button">Compartir por WhatsApp</button>
-      <button id="rxIdeaCopy" class="rxIdeaBtn rxIdeaDark" type="button">Copiar mi propuesta</button>
-      <button id="rxIdeaReset" class="rxIdeaBtn rxIdeaDark" type="button">Crear otra idea</button>
-    </div>
-    <p class="rxIdeaSmall">La propuesta es una descripción inicial, no una imagen generada ni un presupuesto definitivo. El diseño, la viabilidad y el precio se confirman con RoXThal.</p>
+    <hr style="border-color:#594a2e;margin:20px 0">
+    <h3 style="color:#e6c46e">🖼️ Tu diseño de referencia</h3>
+    <label for="rxci-files">Seleccioná una o varias imágenes descargadas o de tu galería</label>
+    <input id="rxci-files" type="file" accept="image/*" multiple>
+    <div id="rxci-preview"></div>
+    <p class="rxci-note">Las imágenes se muestran temporalmente en esta pantalla; no se suben a un servidor. Para enviarlas, adjuntalas en WhatsApp después de abrir el chat.</p>
+
+    <button id="rxci-whatsapp" class="rxci-primary" type="button">💬 Enviar mi propuesta a RoXThal</button>
+    <button id="rxci-reset" type="button">Limpiar formulario</button>
+    <p id="rxci-status" role="status" aria-live="polite"></p>
+    <p class="rxci-note">Enviar la propuesta abre WhatsApp con el resumen escrito. Tendrás que adjuntar manualmente las imágenes en ese chat y pulsar enviar.</p>
   </section>
 </div>
 
 <script>
 (function(){
   'use strict';
-  if (window.__rxIdeaModuleLoaded) return;
-  window.__rxIdeaModuleLoaded = true;
 
-  const $ = id => document.getElementById(id);
-  const overlay = $('rxIdeaOverlay');
-  const result = $('rxIdeaResult');
-  const actions = $('rxIdeaActions');
-  let proposal = '';
+  const modal = document.getElementById('rxci-modal');
+  const launch = document.getElementById('rxci-launch');
+  const close = document.getElementById('rxci-close');
+  const filesInput = document.getElementById('rxci-files');
+  const preview = document.getElementById('rxci-preview');
+  const status = document.getElementById('rxci-status');
+  const aiLink = document.getElementById('rxci-ai-link');
+  const whatsappNumber = '5491169633376';
+  let previousOverflow = '';
+  let previousFocus = null;
+  let selectedFiles = [];
+  let objectUrls = [];
 
-  function openIdea(){
-    overlay.classList.add('rxIdeaOpen');
+  function value(id){
+    return document.getElementById(id).value.trim();
+  }
+
+  function getIdea(){
+    return {
+      type: value('rxci-type'),
+      style: value('rxci-style'),
+      idea: value('rxci-idea'),
+      colors: value('rxci-colors'),
+      place: value('rxci-place'),
+      budget: value('rxci-budget')
+    };
+  }
+
+  function buildPrompt(){
+    const d = getIdea();
+    return [
+      'Crea una imagen conceptual original para un proyecto artístico de RoXThal Art Design.',
+      'Tipo de proyecto: ' + d.type + '.',
+      'Estilo visual: ' + d.style + '.',
+      'Idea del cliente: ' + (d.idea || 'Proponer una composición creativa acorde al tipo de proyecto') + '.',
+      'Colores: ' + (d.colors || 'Elegir una paleta coherente con el concepto') + '.',
+      'Ubicación, formato o dimensiones: ' + (d.place || 'Elegir un encuadre apropiado') + '.',
+      'Diseña una composición clara, original, bien resuelta y visualmente equilibrada.',
+      'La imagen es una referencia conceptual para conversar con un artista, no una garantía de que el resultado final sea idéntico.',
+      'No agregues marcas de agua ni firmas inventadas. Si es un tatuaje, presenta el diseño con claridad y evita simularlo sobre una persona real, salvo que se solicite.',
+      'Genera la imagen; no te limites a describirla.'
+    ].join('\n');
+  }
+
+  function buildSummary(){
+    const d = getIdea();
+    return [
+      'Hola, RoXThal Art Design. Quiero consultar por un proyecto artístico.',
+      '',
+      'Proyecto: ' + d.type,
+      'Estilo: ' + d.style,
+      'Idea: ' + (d.idea || 'Quiero ayuda para definirla'),
+      'Colores: ' + (d.colors || 'A definir'),
+      'Ubicación o formato: ' + (d.place || 'A definir'),
+      'Presupuesto orientativo: ' + (d.budget || 'Prefiero consultar'),
+      'Tengo ' + selectedFiles.length + ' imagen(es) de referencia para adjuntar en este chat.',
+      '',
+      '¿Podrían asesorarme y darme un presupuesto?'
+    ].join('\n');
+  }
+
+  function openModal(){
+    previousFocus = document.activeElement;
+    previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    $('rxIdeaClose').focus();
+    modal.hidden = false;
+    close.focus();
   }
-  function closeIdea(){
-    overlay.classList.remove('rxIdeaOpen');
-    document.body.style.overflow = '';
-    $('rxIdeaLaunch').focus();
-  }
-  function makeProposal(){
-    const type = $('rxIdeaType').value;
-    const style = $('rxIdeaStyle').value;
-    const subject = $('rxIdeaSubject').value.trim();
-    const color = $('rxIdeaColor').value;
-    const budget = $('rxIdeaBudget').value;
 
-    if(subject.length < 8){
-      $('rxIdeaSubject').focus();
-      result.style.display = 'block';
-      result.textContent = 'Describí tu idea con un poco más de detalle (al menos 8 caracteres) para preparar una propuesta útil.';
-      actions.style.display = 'none';
-      return;
+  function closeModal(){
+    modal.hidden = true;
+    document.body.style.overflow = previousOverflow;
+    if(previousFocus && typeof previousFocus.focus === 'function'){
+      previousFocus.focus();
     }
-
-    proposal =
-      '🎨 ROXTHAL CREA TU IDEA\n' +
-      'RoXThal Art Design · Arte que deja marca\n\n' +
-      'Mi proyecto: ' + type + '\n' +
-      'Estilo elegido: ' + style + '\n' +
-      'Idea: ' + subject + '\n' +
-      'Color: ' + color + '\n' +
-      'Presupuesto orientativo: ' + budget + '\n\n' +
-      'Quiero consultar con RoXThal la viabilidad, el diseño personalizado, el precio y los próximos pasos.\n' +
-      'Web: https://xtroxthal-dot.github.io/roxthal-art-design-nuevo-2026/\n' +
-      'Instagram: https://www.instagram.com/roxthalartdesign/';
-
-    result.textContent =
-      '✨ TU CONCEPTO INICIAL\n\n' +
-      'Proyecto: ' + type + '\n' +
-      'Dirección artística: ' + style + '\n' +
-      'Idea central: ' + subject + '\n' +
-      'Paleta: ' + color + '\n\n' +
-      'SIGUIENTE PASO\n' +
-      'RoXThal podrá evaluar tu propuesta y conversar con vos sobre la composición, los detalles y el presupuesto. Compartí esta ficha para iniciar la consulta.\n\n' +
-      'Importante: esta ficha organiza tu idea; no genera una imagen ni confirma disponibilidad o precio.';
-
-    result.style.display = 'block';
-    actions.style.display = 'block';
   }
 
-  $('rxIdeaLaunch').addEventListener('click', openIdea);
-  $('rxIdeaClose').addEventListener('click', closeIdea);
-  overlay.addEventListener('click', function(e){
-    if(e.target === overlay) closeIdea();
+  function revokeUrls(){
+    objectUrls.forEach(function(url){ URL.revokeObjectURL(url); });
+    objectUrls = [];
+  }
+
+  function renderPreviews(){
+    revokeUrls();
+    preview.replaceChildren();
+
+    selectedFiles.forEach(function(file, index){
+      const url = URL.createObjectURL(file);
+      objectUrls.push(url);
+
+      const item = document.createElement('div');
+      item.className = 'rxci-thumb';
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'Vista previa de imagen ' + (index + 1);
+
+      const name = document.createElement('div');
+      name.className = 'rxci-note';
+      name.textContent = file.name.length > 22
+        ? file.name.slice(0, 19) + '…'
+        : file.name;
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = 'Quitar';
+      remove.addEventListener('click', function(){
+        selectedFiles.splice(index, 1);
+        renderPreviews();
+        status.textContent = 'Imagen quitada.';
+      });
+
+      item.append(img, name, remove);
+      preview.appendChild(item);
+    });
+  }
+
+  launch.addEventListener('click', openModal);
+  close.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', function(event){
+    if(event.target === modal) closeModal();
   });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && overlay.classList.contains('rxIdeaOpen')) closeIdea();
+
+  document.addEventListener('keydown', function(event){
+    if(event.key === 'Escape' && !modal.hidden) closeModal();
   });
-  $('rxIdeaGenerate').addEventListener('click', makeProposal);
-  $('rxIdeaWhatsApp').addEventListener('click', function(){
-    if(!proposal) return;
-    const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(proposal);
-    window.open(url, '_blank', 'noopener,noreferrer');
-  });
-  $('rxIdeaCopy').addEventListener('click', async function(){
-    if(!proposal) return;
+
+  document.getElementById('rxci-copy-prompt').addEventListener('click', async function(){
+    const prompt = buildPrompt();
     try{
-      await navigator.clipboard.writeText(proposal);
-      $('rxIdeaCopy').textContent = '✓ Propuesta copiada';
-    }catch(err){
+      await navigator.clipboard.writeText(prompt);
+      status.textContent = 'Prompt copiado. Abrí la IA y pegalo en el campo de creación.';
+    }catch(error){
       const area = document.createElement('textarea');
-      area.value = proposal;
+      area.value = prompt;
+      area.setAttribute('readonly', '');
       area.style.position = 'fixed';
       area.style.opacity = '0';
       document.body.appendChild(area);
       area.select();
-      const ok = document.execCommand('copy');
+      const copied = document.execCommand('copy');
       area.remove();
-      $('rxIdeaCopy').textContent = ok ? '✓ Propuesta copiada' : 'Seleccioná y copiá el texto desde la ficha';
+      status.textContent = copied
+        ? 'Prompt copiado. Abrí la IA y pegalo en el campo de creación.'
+        : 'No se pudo copiar automáticamente. Revisá los permisos del navegador.';
     }
   });
-  $('rxIdeaReset').addEventListener('click', function(){
-    $('rxIdeaSubject').value = '';
-    result.style.display = 'none';
-    actions.style.display = 'none';
-    proposal = '';
-    $('rxIdeaCopy').textContent = 'Copiar mi propuesta';
-    $('rxIdeaSubject').focus();
+
+  filesInput.addEventListener('change', function(){
+    const incoming = Array.from(filesInput.files || []);
+    const images = incoming.filter(function(file){
+      return file.type && file.type.startsWith('image/');
+    });
+    const room = Math.max(0, 8 - selectedFiles.length);
+    selectedFiles = selectedFiles.concat(images.slice(0, room));
+    filesInput.value = '';
+    renderPreviews();
+    status.textContent = images.length
+      ? 'Imágenes seleccionadas: ' + selectedFiles.length + '. Recordá adjuntarlas manualmente en WhatsApp.'
+      : 'Seleccioná archivos de imagen válidos.';
+    if(incoming.length > room && room >= 0){
+      status.textContent += ' Máximo: 8 imágenes.';
+    }
   });
+
+  document.getElementById('rxci-whatsapp').addEventListener('click', function(){
+    const message = buildSummary();
+    const url = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(message);
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if(!win){
+      window.location.href = url;
+    }
+    status.textContent = selectedFiles.length
+      ? 'WhatsApp se está abriendo. Adjuntá allí las ' + selectedFiles.length + ' imagen(es) y enviá el mensaje.'
+      : 'WhatsApp se está abriendo con tu propuesta escrita.';
+  });
+
+  document.getElementById('rxci-reset').addEventListener('click', function(){
+    document.getElementById('rxci-type').selectedIndex = 0;
+    document.getElementById('rxci-style').selectedIndex = 0;
+    ['rxci-idea','rxci-colors','rxci-place'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('rxci-budget').selectedIndex = 0;
+    selectedFiles = [];
+    filesInput.value = '';
+    renderPreviews();
+    status.textContent = 'Formulario limpiado.';
+  });
+
+  window.addEventListener('pagehide', revokeUrls);
 })();
 </script>
 <!-- FIN ROXTHAL CREA TU IDEA -->
+
+   
 
 
 
