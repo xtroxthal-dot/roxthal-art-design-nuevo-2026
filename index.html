@@ -76752,6 +76752,377 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL VISITAS: ACTUALIZACION AUTOMATICA SEGURA -->
 
+   
+<!-- ROXTHAL · CONVERSIÓN COMERCIAL QUIRÚRGICA V1 -->
+<style id="rxRevenueCtaV1Style">
+  .rx-revenue-cta-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .rx-revenue-price {
+    margin: 14px 0 0;
+    font-weight: 700;
+    color: var(--yellow, #d8b65c);
+  }
+
+  .rx-revenue-cta {
+    white-space: normal;
+  }
+
+  @media (max-width: 600px) {
+    #home .rx-revenue-hero-cta {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .rx-revenue-cta-wrap .rx-revenue-cta {
+      width: 100%;
+    }
+  }
+</style>
+
+<script id="rxRevenueCtaV1">
+(function () {
+  'use strict';
+
+  if (window.__RX_REVENUE_CTA_V1__) return;
+  window.__RX_REVENUE_CTA_V1__ = true;
+
+  var servicePrices = new Map();
+
+  function makeButton(kind, item, price, label) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className =
+      'btn btn-primary btn-small rx-revenue-cta';
+
+    button.dataset.rxRevenueCta = kind;
+    button.dataset.rxRevenueItem = item || '';
+    button.dataset.rxRevenuePrice =
+      price == null ? '' : String(price);
+
+    button.textContent = label;
+    return button;
+  }
+
+  function enhanceCards(containerId, kind) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+
+    Array.from(container.children).forEach(function (card) {
+      if (!card || !card.querySelector) return;
+
+      var heading = card.querySelector('h3');
+      if (!heading) return;
+
+      var item = (heading.textContent || '').trim();
+      if (!item) return;
+
+      var price = '';
+
+      if (kind === 'course') {
+        var priceRow = Array.from(
+          card.querySelectorAll('.row')
+        ).find(function (row) {
+          return /precio/i.test(row.textContent || '');
+        });
+
+        var priceNode = priceRow &&
+          priceRow.querySelector('b');
+
+        price = priceNode
+          ? priceNode.textContent.trim()
+          : '';
+      } else {
+        var found = servicePrices.get(item);
+
+        price = found == null
+          ? 'A confirmar'
+          : (
+              Number(found) > 0
+                ? '$' +
+                  Number(found).toLocaleString('es-AR') +
+                  ' ARS'
+                : 'Presupuesto personalizado'
+            );
+
+        var priceLabel = card.querySelector(
+          '[data-rx-revenue-price-label]'
+        );
+
+        if (!priceLabel) {
+          priceLabel = document.createElement('p');
+          priceLabel.className = 'rx-revenue-price';
+          priceLabel.dataset.rxRevenuePriceLabel = '1';
+
+          var description = card.querySelector('p');
+
+          if (description) {
+            description.insertAdjacentElement(
+              'afterend',
+              priceLabel
+            );
+          } else {
+            card.appendChild(priceLabel);
+          }
+        }
+
+        if (found == null) {
+          priceLabel.textContent = 'Consultá el presupuesto';
+        } else if (Number(found) > 0) {
+          priceLabel.textContent =
+            'Precio: $' +
+            Number(found).toLocaleString('es-AR') +
+            ' ARS';
+        } else {
+          priceLabel.textContent =
+            'Presupuesto personalizado';
+        }
+      }
+
+      var wrap = card.querySelector(
+        '.rx-revenue-cta-wrap'
+      );
+
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'rx-revenue-cta-wrap';
+        card.appendChild(wrap);
+      }
+
+      var existing = wrap.querySelector(
+        '[data-rx-revenue-cta]'
+      );
+
+      if (!existing) {
+        wrap.appendChild(
+          makeButton(
+            kind,
+            item,
+            price,
+            kind === 'course'
+              ? 'Quiero inscribirme'
+              : 'Solicitar este servicio'
+          )
+        );
+      } else {
+        existing.dataset.rxRevenuePrice = price;
+      }
+    });
+  }
+
+  function installHeroCta() {
+    var actions = document.querySelector(
+      '#home .hero .actions'
+    );
+
+    if (
+      !actions ||
+      actions.querySelector(
+        '[data-rx-revenue-cta="hero"]'
+      )
+    ) {
+      return;
+    }
+
+    var button = makeButton(
+      'hero',
+      'Consulta general de RoXThal',
+      '',
+      '📩 Solicitar presupuesto / inscripción'
+    );
+
+    button.classList.add('rx-revenue-hero-cta');
+    actions.appendChild(button);
+  }
+
+  function refresh() {
+    installHeroCta();
+    enhanceCards('servicesList', 'service');
+    enhanceCards('coursesList', 'course');
+  }
+
+  function chooseInterest(item) {
+    var value = String(item || '').toLowerCase();
+
+    if (/niñ|infantil|kids/.test(value)) {
+      return 'Taller de arte para niños';
+    }
+
+    if (/filetead/.test(value)) {
+      return 'Fileteado';
+    }
+
+    if (/piercing/.test(value)) {
+      return 'Piercing — colocación';
+    }
+
+    if (/mural/.test(value)) {
+      return 'Murales';
+    }
+
+    if (/trampantojo/.test(value)) {
+      return 'Trampantojos';
+    }
+
+    if (
+      /iniciaci[oó]n.*tatuaj|tatuaj.*iniciaci[oó]n/.test(value)
+    ) {
+      return 'Iniciación al tatuaje';
+    }
+
+    if (/dibujo.*pintura|pintura.*dibujo/.test(value)) {
+      return 'Dibujo y pintura profesional';
+    }
+
+    if (/tatuaj/.test(value)) {
+      return 'Tatuaje — consulta o presupuesto';
+    }
+
+    if (/diseñ|ilustraci[oó]n/.test(value)) {
+      return 'Diseño artístico / ilustración';
+    }
+
+    return 'Otra consulta';
+  }
+
+  function openLead(button) {
+    var requestButton = document.getElementById(
+      'rxSolicitudButton'
+    );
+
+    if (!requestButton) {
+      console.error(
+        '[RoXThal Comercial] No se encontró el botón Solicitud existente.'
+      );
+      return;
+    }
+
+    requestButton.click();
+
+    var item = button.dataset.rxRevenueItem ||
+      'Consulta general de RoXThal';
+
+    var price = button.dataset.rxRevenuePrice || '';
+
+    var select = document.getElementById('rxSolTipo');
+    var details = document.getElementById('rxSolDetalle');
+
+    if (select) {
+      var desired = chooseInterest(item);
+
+      var option = Array.from(select.options).find(
+        function (opt) {
+          return opt.text.trim() === desired;
+        }
+      );
+
+      if (option) select.value = option.value;
+    }
+
+    if (details) {
+      var priceText = price
+        ? ' Precio mostrado: ' + price + '.'
+        : '';
+
+      details.value =
+        'Me interesa: ' + item + '.' +
+        priceText +
+        ' Quiero conocer disponibilidad, forma de pago ' +
+        'y cómo reservar o inscribirme.';
+
+      details.dispatchEvent(
+        new Event('input', { bubbles: true })
+      );
+
+      details.dispatchEvent(
+        new Event('change', { bubbles: true })
+      );
+    }
+
+    var first = document.getElementById('rxSolNombre');
+    if (first) first.focus();
+  }
+
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest(
+      '[data-rx-revenue-cta]'
+    );
+
+    if (!button) return;
+    openLead(button);
+  });
+
+  function observe(id, kind) {
+    var container = document.getElementById(id);
+    if (!container) return;
+
+    var observer = new MutationObserver(function () {
+      enhanceCards(id, kind);
+    });
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true
+    });
+
+    enhanceCards(id, kind);
+  }
+
+  async function loadServicePrices() {
+    try {
+      var db = window.db;
+
+      if (!db || typeof db.from !== 'function') return;
+
+      var result = await db
+        .from('services')
+        .select('name,price')
+        .eq('active', true);
+
+      if (result.error) throw result.error;
+
+      (result.data || []).forEach(function (row) {
+        servicePrices.set(
+          String(row.name || '').trim(),
+          row.price
+        );
+      });
+
+      enhanceCards('servicesList', 'service');
+    } catch (error) {
+      console.warn(
+        '[RoXThal Comercial] No se pudieron leer ' +
+        'los precios de servicios:',
+        error
+      );
+    }
+  }
+
+  function start() {
+    refresh();
+    observe('servicesList', 'service');
+    observe('coursesList', 'course');
+    loadServicePrices();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      start,
+      { once: true }
+    );
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · CONVERSIÓN COMERCIAL QUIRÚRGICA V1 -->
+
+
 
 </body>
 </html>
