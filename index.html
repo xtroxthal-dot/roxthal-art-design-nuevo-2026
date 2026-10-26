@@ -57950,6 +57950,17 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
             const safeDescription =
               escapeHTML(description);
+   const priceValue = Number(service.price);
+const hasPrice =
+  service.price !== null &&
+  service.price !== undefined &&
+  String(service.price).trim() !== '' &&
+  Number.isFinite(priceValue) &&
+  priceValue > 0;
+
+const safePrice = hasPrice
+  ? '$' + priceValue.toLocaleString('es-AR')
+  : '';
 const imageUrl =
   String(service.image_url || '').trim();
 
