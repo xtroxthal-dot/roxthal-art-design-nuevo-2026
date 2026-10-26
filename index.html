@@ -66737,8 +66737,12 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
 
     type.value = option ? option.value : 'Otra consulta';
 
+        const price = button.dataset.roxServicePrice || '';
+
     detail.value = 'Hola, quiero consultar por el siguiente servicio: ' +
-      name + '.\n\nMi consulta es: ';
+      name +
+      (price ? '\n' + price : '') +
+      '\n\nMi consulta es: ';
 
     openButton.click();
   });
