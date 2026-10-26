@@ -106,8 +106,28 @@ body{
 <!-- ==================== HUB DE MÓDULOS ==================== -->
 <section><div class="container"><div class="section-head"><div class="label">Explorar</div><h2 class="section-title">Todo RoXThal</h2><p class="section-desc">Cada módulo tiene su propia imagen y acceso. Las imágenes podrán cambiarse desde el Administrador.</p></div><div id="moduleGrid" class="modules"></div></div></section>
 
-<!-- ==================== MÓDULO 2 — SERVICIOS ==================== -->
-<section id="services" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 2</div><h2 class="section-title">Servicios</h2><p class="section-desc">Arte, diseño, tatuaje y actividades del Atelier.</p></div><div id="servicesList" class="grid2"></div></div></section>
+<!-- ==================== MÓDULO 2 — SERVICIOS ================= -->
+   <section id="services" class="view hidden">
+  <div class="container">
+    <div class="section-head">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="flex:1;min-width:0;">
+          <div class="label">Módulo 2</div>
+          <h2 class="section-title">Servicios</h2>
+          <p class="section-desc">Arte, diseño, tatuaje y actividades del Atelier.</p>
+        </div>
+        <img
+          src="./icon-512.png"
+          alt="RoXThal Art Design"
+          width="68"
+          height="68"
+          style="width:68px;height:68px;max-width:22vw;object-fit:contain;flex-shrink:0;"
+        >
+      </div>
+    </div>
+    <div id="servicesList" class="grid2"></div>
+  </div>
+</section>
 
 <!-- ==================== MÓDULO 3 — GALERÍA ==================== -->
 <section id="gallery" class="view hidden"><div class="container"><div class="section-head"><div class="label">Módulo 3</div><h2 class="section-title">Galería y Multimedia</h2><p class="section-desc">Obras, tatuajes, fotografías, vídeos, talleres y actividades de RoXThal.</p></div><div class="toolbar"><button class="filter active" data-gallery-filter="all">Todo</button><button class="filter" data-gallery-filter="art">Arte</button><button class="filter" data-gallery-filter="tattoo">Tatuajes</button></div><div id="galleryList" class="gallery"></div><div id="mediaCategories" class="grid2"><button class="card media-category" data-media-category="talleres" type="button"><div style="font-size:42px">🎨</div><h3>Talleres y actividades</h3><p class="muted">Fotos y vídeos de nuestros talleres y actividades.</p></button><button class="card media-category" data-media-category="obras" type="button"><div style="font-size:42px">🖼️</div><h3>Obras</h3><p class="muted">Trabajos y producciones artísticas.</p></button><button class="card media-category" data-media-category="tatuajes" type="button"><div style="font-size:42px">🖋️</div><h3>Tatuajes</h3><p class="muted">Trabajos y procesos de tatuaje.</p></button><button class="card media-category" data-media-category="dibujo-pintura" type="button"><div style="font-size:42px">🖌️</div><h3>Dibujo y pintura</h3><p class="muted">Trabajos realizados en dibujo y pintura.</p></button><button class="card media-category" data-media-category="eventos" type="button"><div style="font-size:42px">🎉</div><h3>Eventos</h3><p class="muted">Eventos y momentos especiales de RoXThal.</p></button><button class="card media-category" data-media-category="alumnos" type="button"><div style="font-size:42px">👥</div><h3>Alumnos</h3><p class="muted">Trabajos y actividades de nuestros alumnos.</p></button><button class="card media-category" data-media-category="otros" type="button"><div style="font-size:42px">📁</div><h3>Otros</h3><p class="muted">Contenido que no pertenece a otro apartado.</p></button></div><div id="mediaContent" class="hidden"><div class="actions" style="margin-bottom:18px"><button class="btn" type="button" id="mediaBackCategories">← Volver a apartados</button></div><div class="section-head"><div class="label">Fotos y Vídeos</div><h3 id="mediaCategoryTitle" class="section-title" style="font-size:32px">Contenido</h3></div><div id="mediaList" class="grid3"></div></div></div></section>
