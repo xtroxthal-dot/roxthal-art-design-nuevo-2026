@@ -66700,7 +66700,20 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'rox-service-inquiry';
-      button.textContent = '📩 Consultar este servicio';
+      
+const serviceName = title.textContent.trim().toLocaleLowerCase('es');
+button.textContent = /iniciaci[oó]n.*tatuaj/.test(serviceName)
+  ? '🎓 Consultar curso de tatuaje'
+  : /dibujo|pintura|fileteado|niñ|infantil/.test(serviceName)
+    ? '🎨 Consultar por el curso'
+    : /piercing/.test(serviceName)
+      ? '💎 Consultar piercing'
+      : /tatuaj|tattoo/.test(serviceName)
+        ? '🖋️ Consultar mi tatuaje'
+        : /mural|trampantojo|diseñ|ilustraci[oó]n/.test(serviceName)
+          ? '📐 Pedir presupuesto'
+          : '📩 Consultar este servicio';
+
       button.dataset.roxServiceName = title.textContent.trim();
 
       const priceElement = item.querySelector('.rox-service-price');
