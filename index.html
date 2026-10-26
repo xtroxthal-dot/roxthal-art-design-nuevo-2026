@@ -57950,7 +57950,11 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
             const safeDescription =
               escapeHTML(description);
+const imageUrl =
+  String(service.image_url || '').trim();
 
+const safeImageUrl =
+  escapeHTML(imageUrl);
             return `
               <article
                 class="rox-service-item"
@@ -57973,7 +57977,21 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
                 </button>
 
                 <div class="rox-service-content">
-
+${
+  safeImageUrl && /^https?:\/\//i.test(imageUrl)
+    ? `
+      <img
+        class="rox-service-image"
+        src="${safeImageUrl}"
+        alt="${safeName}"
+        loading="lazy"
+        decoding="async"
+        style="display:block;width:100%;max-width:520px;max-height:360px;object-fit:contain;margin:0 auto 16px;border-radius:12px;"
+        onerror="this.style.display='none'"
+      >
+    `
+    : ''
+}
                   <p class="rox-service-description">
                     ${safeDescription}
                   </p>
