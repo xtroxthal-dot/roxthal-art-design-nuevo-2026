@@ -77523,6 +77523,127 @@ document.addEventListener('DOMContentLoaded',function(){
 <!-- FIN ROXTHAL CREA TU IDEA -->
 
 
+<!-- ROXTHAL: AGRUPAR ACCESOS DE PORTADA — V1 -->
+<style id="roxthal-home-actions-layout-v1">
+  #home .hero .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #home .hero .actions > #rxSolicitudButton {
+    display: none !important;
+  }
+
+  #home .hero .actions > #rxci-launch,
+  #home .hero .actions > .rx-home-action-machine {
+    position: static !important;
+    inset: auto !important;
+    float: none !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+    box-shadow: none;
+  }
+
+  @media (max-width: 480px) {
+    #home .hero .actions > #rxci-launch,
+    #home .hero .actions > .rx-home-action-machine {
+      font-size: 13px;
+      padding: 12px;
+    }
+  }
+</style>
+
+<script id="roxthal-home-actions-layout-script-v1">
+(function () {
+  'use strict';
+
+  if (window.__RX_HOME_ACTIONS_LAYOUT_V1__) return;
+  window.__RX_HOME_ACTIONS_LAYOUT_V1__ = true;
+
+  function organizarAccesos() {
+    var actions = document.querySelector('#home .hero .actions');
+    if (!actions) return;
+
+    var idea = document.getElementById('rxci-launch');
+
+    var presupuesto = actions.querySelector(
+      '[data-rx-revenue-cta="hero"]'
+    );
+
+    if (idea) {
+      if (presupuesto && presupuesto.parentElement === actions) {
+        if (presupuesto.nextElementSibling !== idea) {
+          presupuesto.insertAdjacentElement('afterend', idea);
+        }
+      } else if (idea.parentElement !== actions) {
+        actions.appendChild(idea);
+      }
+    }
+
+    var maquinas = Array.from(document.querySelectorAll('button')).filter(
+      function (button) {
+        return (button.textContent || '').trim() === '🎰 Máquina RoXThal'
+          && !button.closest('#rxm-overlay')
+          && !button.closest('#rxci-panel');
+      }
+    );
+
+    var maquina = maquinas[0];
+
+    if (maquina) {
+      maquina.classList.add('rx-home-action-machine');
+
+      /* Quitar posiciones fijas anteriores de este botón. */
+      [
+        'position',
+        'top',
+        'right',
+        'bottom',
+        'left',
+        'z-index'
+      ].forEach(function (property) {
+        maquina.style.removeProperty(property);
+      });
+
+      if (idea && idea.parentElement === actions) {
+        if (idea.nextElementSibling !== maquina) {
+          idea.insertAdjacentElement('afterend', maquina);
+        }
+      } else if (maquina.parentElement !== actions) {
+        actions.appendChild(maquina);
+      }
+    }
+  }
+
+  function iniciar() {
+    organizarAccesos();
+
+    var observer = new MutationObserver(function () {
+      organizarAccesos();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL: AGRUPAR ACCESOS DE PORTADA — V1 -->
+
 
 </body>
 </html>
