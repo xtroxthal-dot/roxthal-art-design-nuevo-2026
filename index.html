@@ -57919,7 +57919,8 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
             .from('services')
             .select('*')
             .eq('active',true)
-            .order('created_at',{ascending:false});
+            .order('sort_order',{ascending:true})
+.order('created_at',{ascending:false});
 
         if(response.error){
           throw response.error;
