@@ -5176,7 +5176,7 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       const response = await db
         .from('services')
         .select(
-          'id,name,description,active,price,image_url,sort_order,created_at,updated_at'
+          'id,name,description,active,price,image_url,image_url_2,image_url_3,sort_order,created_at,updated_at'
         )
         .order('sort_order', {
           ascending: true
@@ -5337,7 +5337,29 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       img.removeAttribute('src');
       preview.style.display = 'none';
     }
+    oldImageUrl2 = service.image_url_2 || '';
+    oldImageUrl3 = service.image_url_3 || '';
+    selectedFile2 = null;
+    selectedFile3 = null;
 
+    [
+      ['rxServiceImage2', 'rxServicePreview2', 'rxServicePreviewImg2', oldImageUrl2],
+      ['rxServiceImage3', 'rxServicePreview3', 'rxServicePreviewImg3', oldImageUrl3]
+    ].forEach(function (item) {
+      const input = document.getElementById(item[0]);
+      const preview = document.getElementById(item[1]);
+      const img = document.getElementById(item[2]);
+
+      if (input) input.value = '';
+
+      if (item[3]) {
+        img.src = item[3];
+        preview.style.display = 'block';
+      } else {
+        img.removeAttribute('src');
+        preview.style.display = 'none';
+      }
+    });
     document.getElementById('rxServiceSave').textContent =
       '💾 Guardar cambios';
 
@@ -57911,7 +57933,21 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     line-height:1.7;
     white-space:pre-line;
   }
+  #servicesList.rox-services-accordion .rox-service-extra-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
 
+  #servicesList.rox-services-accordion .rox-service-extra-images img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border, rgba(255,255,255,.12));
+  }
   #servicesList.rox-services-accordion .rox-service-share{
     display:inline-flex;
     align-items:center;
