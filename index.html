@@ -4748,6 +4748,69 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       reader.readAsDataURL(selectedFile);
     });
 
+    function bindExtraServiceImage(inputId, previewId, imgId, setFile) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const img = document.getElementById(imgId);
+
+      if (!input || !preview || !img) return;
+
+      input.addEventListener('change', function () {
+        const file = this.files && this.files[0]
+          ? this.files[0]
+          : null;
+
+        setFile(file);
+
+        if (!file) {
+          preview.style.display = 'none';
+          img.removeAttribute('src');
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          showStatus('El archivo seleccionado no es una imagen.', true);
+          this.value = '';
+          setFile(null);
+          preview.style.display = 'none';
+          img.removeAttribute('src');
+          return;
+        }
+
+        if (file.size > 15 * 1024 * 1024) {
+          showStatus('La imagen supera el límite de 15 MB.', true);
+          this.value = '';
+          setFile(null);
+          preview.style.display = 'none';
+          img.removeAttribute('src');
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          img.src = e.target.result;
+          preview.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    bindExtraServiceImage(
+      'rxServiceImage2',
+      'rxServicePreview2',
+      'rxServicePreviewImg2',
+      function (file) { selectedFile2 = file; }
+    );
+
+    bindExtraServiceImage(
+      'rxServiceImage3',
+      'rxServicePreview3',
+      'rxServicePreviewImg3',
+      function (file) { selectedFile3 = file; }
+    );
+
     document.getElementById('rxServiceSave')
       .addEventListener('click', saveService);
 
