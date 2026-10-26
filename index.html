@@ -66676,11 +66676,18 @@ window.RoXThalApuntesNuevo={open:openPanel,close:closePanel};
       if (!content || !title) return;
       if (content.querySelector('.rox-service-inquiry')) return;
 
+      
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'rox-service-inquiry';
       button.textContent = '📩 Consultar este servicio';
       button.dataset.roxServiceName = title.textContent.trim();
+
+      const priceElement = item.querySelector('.rox-service-price');
+      button.dataset.roxServicePrice = priceElement
+        ? priceElement.textContent.trim()
+        : '';
+
 
       content.appendChild(button);
     });
