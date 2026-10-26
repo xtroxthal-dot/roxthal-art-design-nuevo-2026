@@ -5410,6 +5410,13 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       if (service.image_url) {
         await deleteOldImage(service.image_url);
       }
+             if (service.image_url_2) {
+        await deleteOldImage(service.image_url_2);
+      }
+
+      if (service.image_url_3) {
+        await deleteOldImage(service.image_url_3);
+      }
 
       showStatus(
         'Servicio eliminado correctamente.',
@@ -58159,6 +58166,34 @@ const imageUrl =
 
 const safeImageUrl =
   escapeHTML(imageUrl);
+   
+            const imageUrl2 =
+              String(service.image_url_2 || '').trim();
+
+            const imageUrl3 =
+              String(service.image_url_3 || '').trim();
+
+            const extraImagesHTML = [
+              imageUrl2,
+              imageUrl3
+            ].filter(function (url) {
+              return /^https?:\/\//i.test(url);
+            }).map(function (url, index) {
+              return `
+                <img
+                  src="${escapeHTML(url)}"
+                  alt="${safeName} — foto adicional ${index + 1}"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.remove()"
+                >
+              `;
+            }).join('');
+
+            const extraImagesSection = extraImagesHTML
+              ? `<div class="rox-service-extra-images">${extraImagesHTML}</div>`
+              : '';
+
             return `
               <article
                 class="rox-service-item"
@@ -58209,6 +58244,7 @@ ${
                   <p class="rox-service-description">
                     ${safeDescription}
                   </p>
+                     ${extraImagesSection}
 
                   ${
                     description
