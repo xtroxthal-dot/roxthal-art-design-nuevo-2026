@@ -4977,6 +4977,7 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
     }
   }
 
+
   async function saveService() {
     const db = getDB();
 
@@ -5013,24 +5014,38 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       return;
     }
 
-    const button =
-      document.getElementById('rxServiceSave');
+    const button = document.getElementById('rxServiceSave');
+    const newImagePaths = [];
+    let serviceSaved = false;
 
     button.disabled = true;
     button.textContent = 'Guardando...';
 
     try {
       let imageUrl = oldImageUrl || null;
-      let newImagePath = null;
+      let imageUrl2 = oldImageUrl2 || null;
+      let imageUrl3 = oldImageUrl3 || null;
+
+      if (selectedFile || selectedFile2 || selectedFile3) {
+        showStatus('Subiendo imágenes...', false);
+      }
 
       if (selectedFile) {
-        showStatus('Subiendo imagen...', false);
-
-        const uploaded =
-          await uploadImage(selectedFile, name);
-
+        const uploaded = await uploadImage(selectedFile, name);
         imageUrl = uploaded.url;
-        newImagePath = uploaded.path;
+        newImagePaths.push(uploaded.path);
+      }
+
+      if (selectedFile2) {
+        const uploaded = await uploadImage(selectedFile2, name + '-adicional-1');
+        imageUrl2 = uploaded.url;
+        newImagePaths.push(uploaded.path);
+      }
+
+      if (selectedFile3) {
+        const uploaded = await uploadImage(selectedFile3, name + '-adicional-2');
+        imageUrl3 = uploaded.url;
+        newImagePaths.push(uploaded.path);
       }
 
       const payload = {
@@ -5039,14 +5054,11 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
         price,
         sort_order: sortOrder,
         active,
+        image_url: imageUrl,
+        image_url_2: imageUrl2,
+        image_url_3: imageUrl3,
         updated_at: new Date().toISOString()
       };
-
-      if (imageUrl) {
-        payload.image_url = imageUrl;
-      } else if (editingId && oldImageUrl) {
-        payload.image_url = oldImageUrl;
-      }
 
       let response;
 
@@ -5066,33 +5078,24 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
       }
 
       if (response.error) {
-        /*
-          Si falló guardar después de subir una imagen nueva,
-          intentamos limpiar esa imagen huérfana.
-        */
-        if (newImagePath) {
-          try {
-            await db
-              .storage
-              .from(BUCKET)
-              .remove([newImagePath]);
-          } catch (_) {}
-        }
-
         throw response.error;
       }
 
-      /*
-        Solo después de guardar correctamente eliminamos
-        la imagen anterior si fue reemplazada.
-      */
-      if (
-        editingId &&
-        selectedFile &&
-        oldImageUrl &&
-        oldImageUrl !== imageUrl
-      ) {
+      serviceSaved = true;
+
+      if (editingId && selectedFile && oldImageUrl &&
+          oldImageUrl !== imageUrl) {
         await deleteOldImage(oldImageUrl);
+      }
+
+      if (editingId && selectedFile2 && oldImageUrl2 &&
+          oldImageUrl2 !== imageUrl2) {
+        await deleteOldImage(oldImageUrl2);
+      }
+
+      if (editingId && selectedFile3 && oldImageUrl3 &&
+          oldImageUrl3 !== imageUrl3) {
+        await deleteOldImage(oldImageUrl3);
       }
 
       showStatus(
@@ -5106,18 +5109,32 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
       await loadServices();
 
-      /*
-        Actualizamos también el módulo público.
-        Si la app tiene loadServices(), la dejamos funcionar.
-      */
       try {
         if (typeof window.loadServices === 'function') {
           await window.loadServices();
         }
-      } catch (_) {}
+      } catch (refreshError) {
+        console.warn(
+          'No se pudo actualizar inmediatamente el módulo público:',
+          refreshError
+        );
+      }
 
     } catch (error) {
       console.error('Error guardando servicio:', error);
+
+      if (!serviceSaved && newImagePaths.length) {
+        try {
+          await db.storage
+            .from(BUCKET)
+            .remove(newImagePaths);
+        } catch (cleanupError) {
+          console.warn(
+            'No se pudieron limpiar todas las imágenes nuevas:',
+            cleanupError
+          );
+        }
+      }
 
       showStatus(
         'No se pudo guardar el servicio: ' +
@@ -5127,12 +5144,12 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
     } finally {
       button.disabled = false;
-      button.textContent =
-        editingId
-          ? '💾 Guardar cambios'
-          : '💾 Guardar servicio';
+      button.textContent = editingId
+        ? '💾 Guardar cambios'
+        : '💾 Guardar servicio';
     }
   }
+
 
   async function loadServices() {
     const db = getDB();
