@@ -57867,33 +57867,43 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     /*
      * Comparte ÚNICAMENTE la explicación.
      */
-    function shareServiceDescription(description){
+    
+    /*
+     * Comparte la ficha del servicio por WhatsApp.
+     */
+    function shareServiceDescription(name, price, description){
 
-      const text = String(description || '').trim();
+      const serviceName = String(name || 'Servicio').trim();
+      const servicePrice = String(price || '').trim();
+      const serviceDescription = String(description || '').trim();
+      const appURL = window.location.origin + window.location.pathname;
 
-      if(!text){
-        if(typeof window.toast === 'function'){
-          window.toast('Este servicio no tiene explicación para compartir.');
-        }else{
-          alert('Este servicio no tiene explicación para compartir.');
-        }
-        return;
-      }
+      const message = [
+        '🎨 RoXThal Art Design',
+        '',
+        'Servicio: ' + serviceName,
+        servicePrice ? servicePrice : '',
+        '',
+        serviceDescription,
+        '',
+        'Conocé RoXThal y consultá por este servicio:',
+        appURL
+      ].filter(function(line, index, lines){
+        return line !== '' ||
+          (index > 0 && lines[index - 1] !== '');
+      }).join('\n');
 
       const whatsappURL =
         'https://wa.me/?text=' +
-        encodeURIComponent(text);
+        encodeURIComponent(message);
 
-      /*
-       * En móviles abre WhatsApp.
-       */
       window.open(
         whatsappURL,
         '_blank',
         'noopener,noreferrer'
       );
-
     }
+
 
     /*
      * Render público de Servicios.
@@ -58119,6 +58129,7 @@ ${
                 event.preventDefault();
                 event.stopPropagation();
 
+                
                 const item =
                   button.closest('.rox-service-item');
 
@@ -58126,22 +58137,36 @@ ${
                   return;
                 }
 
+                const titleElement =
+                  item.querySelector('.rox-service-title span');
+
+                const priceElement =
+                  item.querySelector('.rox-service-price');
+
                 const descriptionElement =
-                  item.querySelector(
-                    '.rox-service-description'
-                  );
+                  item.querySelector('.rox-service-description');
 
-                if(!descriptionElement){
-                  return;
-                }
+                const serviceName =
+                  titleElement
+                    ? titleElement.textContent.trim()
+                    : 'Servicio';
 
-                /*
-                 * textContent garantiza que WhatsApp
-                 * reciba únicamente la explicación.
-                 */
+                const servicePrice =
+                  priceElement
+                    ? priceElement.textContent.trim()
+                    : '';
+
+                const serviceDescription =
+                  descriptionElement
+                    ? descriptionElement.textContent.trim()
+                    : '';
+
                 shareServiceDescription(
-                  descriptionElement.textContent
+                  serviceName,
+                  servicePrice,
+                  serviceDescription
                 );
+
 
               }
             );
