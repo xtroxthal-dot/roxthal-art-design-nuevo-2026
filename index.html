@@ -57979,6 +57979,31 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     transform:scale(.98);
   }
 
+  #servicesList.rox-services-accordion .rox-service-share-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 16px;
+    border: 1px solid #d4af37;
+    border-radius: 12px;
+    background: #111;
+    color: #f2d675;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-share-card:hover {
+    background: #1c1c1c;
+  }
+
+  #servicesList.rox-services-accordion .rox-service-share-card:disabled {
+    opacity: .65;
+    cursor: wait;
+  }
+
   @media(max-width:600px){
     #servicesList.rox-services-accordion .rox-service-title{
       font-size:18px;
@@ -58093,6 +58118,204 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
       );
     }
 
+
+    /*
+     * Genera una tarjeta promocional JPG del servicio.
+     */
+    async function createServiceShareImage(item, name, price, description) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 1500;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('No se pudo crear la tarjeta.');
+
+      ctx.fillStyle = '#080808';
+      ctx.fillRect(0, 0, 1200, 1500);
+
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(28, 28, 1144, 1444);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'bold 34px Arial';
+      ctx.fillText('ROXTHAL ART DESIGN', 600, 92);
+
+      function wrapText(text, maxWidth, font) {
+        ctx.font = font;
+        const lines = [];
+        let line = '';
+
+        String(text || '').split(/\s+/).forEach(function(word) {
+          const test = line ? line + ' ' + word : word;
+
+          if (line && ctx.measureText(test).width > maxWidth) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = test;
+          }
+        });
+
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      let y = 170;
+      ctx.fillStyle = '#ffffff';
+
+      wrapText(name, 1000, 'bold 54px Arial')
+        .slice(0, 2)
+        .forEach(function(line) {
+          ctx.font = 'bold 54px Arial';
+          ctx.fillText(line, 600, y);
+          y += 66;
+        });
+
+      if (price) {
+        ctx.fillStyle = '#f2d675';
+        ctx.font = 'bold 42px Arial';
+        ctx.fillText(price, 600, y + 4);
+        y += 64;
+      }
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#eeeeee';
+
+      wrapText(description, 980, '28px Arial')
+        .slice(0, 5)
+        .forEach(function(line) {
+          ctx.font = '28px Arial';
+          ctx.fillText(line, 110, y);
+          y += 40;
+        });
+
+      y += 22;
+
+      const imageUrls = Array.from(
+        item.querySelectorAll(
+          '.rox-service-image, .rox-service-extra-images img'
+        )
+      )
+        .map(function(img) {
+          return img.currentSrc || img.src;
+        })
+        .filter(Boolean)
+        .slice(0, 3);
+
+      const loadedImages = await Promise.all(
+        imageUrls.map(function(url) {
+          return new Promise(function(resolve) {
+            const img = new Image();
+
+            img.crossOrigin = 'anonymous';
+            img.onload = function() { resolve(img); };
+            img.onerror = function() { resolve(null); };
+            img.src = url;
+
+            if (img.complete && img.naturalWidth) resolve(img);
+          });
+        })
+      );
+
+      const photos = loadedImages.filter(Boolean);
+      const cols = photos.length === 1 ? 1 : 2;
+      const photoW = photos.length === 1 ? 980 : 481;
+      const photoH = 290;
+      const gap = 18;
+
+      photos.forEach(function(img, index) {
+        const x = photos.length === 1
+          ? 110
+          : 110 + (index % cols) * (photoW + gap);
+
+        const py = y + Math.floor(index / cols) * (photoH + gap);
+        const scale = Math.max(
+          photoW / img.naturalWidth,
+          photoH / img.naturalHeight
+        );
+
+        const sw = photoW / scale;
+        const sh = photoH / scale;
+        const sx = (img.naturalWidth - sw) / 2;
+        const sy = (img.naturalHeight - sh) / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, py, photoW, photoH);
+        ctx.clip();
+
+        ctx.drawImage(
+          img, sx, sy, sw, sh,
+          x, py, photoW, photoH
+        );
+
+        ctx.restore();
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, py, photoW, photoH);
+      });
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText('Arte que deja marca.', 600, 1400);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '22px Arial';
+      ctx.fillText(
+        window.location.origin + window.location.pathname,
+        600,
+        1440
+      );
+
+      return new Promise(function(resolve, reject) {
+        canvas.toBlob(function(blob) {
+          if (!blob) {
+            reject(new Error('No se pudo exportar la imagen.'));
+            return;
+          }
+
+          resolve(new File(
+            [blob],
+            'roxthal-servicio.jpg',
+            { type: 'image/jpeg' }
+          ));
+        }, 'image/jpeg', 0.92);
+      });
+    }
+
+    function getServiceShareData(item) {
+      const title = item.querySelector('.rox-service-title span');
+      const price = item.querySelector('.rox-service-price');
+      const desc = item.querySelector('.rox-service-description');
+
+      const name = title ? title.textContent.trim() : 'Servicio';
+      const cost = price ? price.textContent.trim() : '';
+      const description = desc ? desc.textContent.trim() : '';
+      const url = window.location.origin + window.location.pathname;
+
+      const text = [
+        '🎨 RoXThal Art Design',
+        '',
+        'Servicio: ' + name,
+        cost,
+        '',
+        description,
+        '',
+        'Conocé RoXThal y consultá por este servicio:',
+        url
+      ].filter(Boolean).join('\n');
+
+      return {
+        name: name,
+        price: cost,
+        description: description,
+        url: url,
+        text: text
+      };
+    }
 
     /*
      * Render público de Servicios.
@@ -58241,6 +58464,15 @@ ${
                       `
                       : ''
                   }
+                  
+                  <button
+                    type="button"
+                    class="rox-service-share-card"
+                    data-rox-share-card
+                  >
+                    📤 Compartir tarjeta completa
+                  </button>
+
                   <p class="rox-service-description">
                     ${safeDescription}
                   </p>
@@ -58331,6 +58563,113 @@ ${
               }
             );
 
+          });
+
+        /*
+         * Compartir tarjeta visual del servicio.
+         */
+        currentBox
+          .querySelectorAll('[data-rox-share-card]')
+          .forEach(function(button) {
+            button.addEventListener('click', async function(event) {
+              event.preventDefault();
+              event.stopPropagation();
+
+              const item = button.closest('.rox-service-item');
+              if (!item) return;
+
+              const data = getServiceShareData(item);
+              const originalLabel = button.textContent;
+
+              button.disabled = true;
+              button.textContent = '⏳ Preparando tarjeta...';
+
+              try {
+                const file = await createServiceShareImage(
+                  item,
+                  data.name,
+                  data.price,
+                  data.description
+                );
+
+                if (
+                  navigator.share &&
+                  navigator.canShare &&
+                  navigator.canShare({ files: [file] })
+                ) {
+                  await navigator.share({
+                    files: [file],
+                    title: 'RoXThal Art Design — ' + data.name,
+                    text: data.text,
+                    url: data.url
+                  });
+                } else {
+                  const objectUrl = URL.createObjectURL(file);
+                  const link = document.createElement('a');
+
+                  link.href = objectUrl;
+                  link.download = 'roxthal-servicio.jpg';
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+
+                  setTimeout(function() {
+                    URL.revokeObjectURL(objectUrl);
+                  }, 15000);
+
+                  if (navigator.share) {
+                    await navigator.share({
+                      title: 'RoXThal Art Design — ' + data.name,
+                      text: data.text,
+                      url: data.url
+                    });
+                  } else {
+                    shareServiceDescription(
+                      data.name,
+                      data.price,
+                      data.description
+                    );
+                  }
+                }
+              } catch (error) {
+                if (error && error.name === 'AbortError') return;
+
+                console.error(
+                  'RoXThal: error al compartir la tarjeta visual',
+                  error
+                );
+
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: 'RoXThal Art Design — ' + data.name,
+                      text: data.text,
+                      url: data.url
+                    });
+                  } catch (shareError) {
+                    if (
+                      !shareError ||
+                      shareError.name !== 'AbortError'
+                    ) {
+                      shareServiceDescription(
+                        data.name,
+                        data.price,
+                        data.description
+                      );
+                    }
+                  }
+                } else {
+                  shareServiceDescription(
+                    data.name,
+                    data.price,
+                    data.description
+                  );
+                }
+              } finally {
+                button.disabled = false;
+                button.textContent = originalLabel;
+              }
+            });
           });
 
         /*
