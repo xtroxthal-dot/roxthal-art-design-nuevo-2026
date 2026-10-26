@@ -4550,6 +4550,18 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
 
     root.setAttribute(MARK, '1');
 
+    // Ocultar únicamente la lista antigua de Servicios.
+    // La lista nueva de Servicios ADMIN V4 seguirá funcionando.
+    const legacyServiceList = document.getElementById('adminServiceList');
+
+    if (legacyServiceList) {
+      const legacyServiceCard = legacyServiceList.closest('.card');
+
+      if (legacyServiceCard) {
+        legacyServiceCard.style.display = 'none';
+      }
+    }
+
     root.innerHTML = `
       <div class="card" id="roxthalServicesEditor">
 
