@@ -58003,6 +58003,16 @@ ${
     `
     : ''
 }
+                     ${
+                    hasPrice
+                      ? `
+                        <p class="rox-service-price"
+                           style="font-size:1.2rem;font-weight:800;color:#d4af37;margin:12px 0;">
+                          Precio: ${safePrice}
+                        </p>
+                      `
+                      : ''
+                  }
                   <p class="rox-service-description">
                     ${safeDescription}
                   </p>
