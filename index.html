@@ -4844,6 +4844,27 @@ loadAssets();loadSiteSettings();countVisit();loadVisits();showView('home');
     selectedFile = null;
     oldImageUrl = '';
 
+    selectedFile2 = null;
+    selectedFile3 = null;
+    oldImageUrl2 = '';
+    oldImageUrl3 = '';
+
+    ['rxServiceImage2', 'rxServiceImage3'].forEach(function (id) {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
+
+    [
+      ['rxServicePreview2', 'rxServicePreviewImg2'],
+      ['rxServicePreview3', 'rxServicePreviewImg3']
+    ].forEach(function (ids) {
+      const preview = document.getElementById(ids[0]);
+      const img = document.getElementById(ids[1]);
+
+      if (preview) preview.style.display = 'none';
+      if (img) img.removeAttribute('src');
+    });
+
     const name = document.getElementById('rxServiceName');
     const description = document.getElementById('rxServiceDescription');
     const price = document.getElementById('rxServicePrice');
