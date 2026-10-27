@@ -879,7 +879,12 @@ body{
           class="btn rox-app-btn">
           🔗 Compartir RoXThal
         </button>
-
+<button
+  type="button"
+  id="roxWhatsAppBtn"
+  class="btn rox-app-btn">
+  🟢 Enviar por WhatsApp
+</button>
         <button
           type="button"
           id="roxCopyBtn"
@@ -1329,7 +1334,30 @@ body{
 
   }
 
+  /* =======================================================
+     COMPARTIR DIRECTAMENTE POR WHATSAPP
+     ======================================================= */
 
+  const roxWhatsAppBtn =
+    document.getElementById('roxWhatsAppBtn');
+
+  if (roxWhatsAppBtn) {
+    roxWhatsAppBtn.addEventListener('click', function () {
+      const message =
+        '🎨 Descubrí RoXThal Art Design: arte, diseño, tatuajes y cursos. ' +
+        'Entrá desde aquí: ' + roxAppUrl;
+
+      const url =
+        'https://wa.me/?text=' + encodeURIComponent(message);
+
+      window.open(url, '_blank', 'noopener,noreferrer');
+
+      roxSetStatus(
+        'WhatsApp se abrió con el enlace de RoXThal listo para compartir.',
+        'success'
+      );
+    });
+  }
   /* =======================================================
      COPIAR ENLACE
      ======================================================= */
