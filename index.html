@@ -78566,6 +78566,152 @@ if(document.readyState==='loading'){
 </script>
 
 
+<style id="roxthal-gallery-fix-v2-style">
+  /* Mantener las obras dentro de sus categorías cerradas */
+  #galleryList.rx-gallery-categories-hidden {
+    display: none !important;
+  }
+
+  /* Vídeo en línea: los controles nativos no deben abrir el visor */
+  #mediaList video.rx-video-inline {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: contain;
+    background: #050505;
+    border-radius: 12px;
+  }
+
+  .rx-video-fullscreen-btn {
+    display: block;
+    width: 100%;
+    margin: 10px 0 14px;
+    padding: 12px;
+    border: 1px solid #b99750;
+    border-radius: 10px;
+    background: #151515;
+    color: #f0d38a;
+    font-weight: 700;
+    cursor: pointer;
+  }
+</style>
+
+<script id="roxthal-gallery-fix-v2-script">
+(function () {
+  'use strict';
+
+  if (window.__RX_GALLERY_FIX_V2__) return;
+  window.__RX_GALLERY_FIX_V2__ = true;
+
+  function iniciarCorreccion() {
+    var galleryList = document.getElementById('galleryList');
+    var mediaList = document.getElementById('mediaList');
+    var viewer = document.getElementById('rx-media-fullview');
+
+    if (galleryList) {
+      galleryList.classList.add('rx-gallery-categories-hidden');
+    }
+
+    if (!mediaList || !viewer) {
+      console.warn(
+        '[RoXThal Galería] No se encontraron los elementos del visor.'
+      );
+      return;
+    }
+
+    var player = viewer.querySelector('video');
+
+    if (!player) {
+      console.warn(
+        '[RoXThal Galería] No se encontró el reproductor de vídeo.'
+      );
+      return;
+    }
+
+    function prepararVideos() {
+      mediaList.querySelectorAll('video.media-img').forEach(function (video) {
+        /* Evitar que el clic en los controles active el visor anterior */
+        video.classList.remove('media-img');
+        video.classList.add('rx-video-inline');
+
+        var siguiente = video.nextElementSibling;
+
+        if (
+          siguiente &&
+          siguiente.classList.contains('rx-video-fullscreen-btn')
+        ) {
+          return;
+        }
+
+        var boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'rx-video-fullscreen-btn';
+        boton.textContent = '⛶ Ver vídeo en grande';
+
+        boton.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          var src =
+            video.currentSrc ||
+            video.getAttribute('src') ||
+            video.src;
+
+          if (!src) return;
+
+          player.pause();
+          player.src = src;
+          player.load();
+          viewer.classList.add('open');
+
+          var reproduccion = player.play();
+
+          if (reproduccion && reproduccion.catch) {
+            reproduccion.catch(function () {
+              /* El usuario puede iniciar el vídeo con los controles */
+            });
+          }
+        });
+
+        video.insertAdjacentElement('afterend', boton);
+      });
+    }
+
+    prepararVideos();
+
+    var observer = new MutationObserver(function () {
+      prepararVideos();
+
+      /* Por si otro código vuelve a modificar la lista general */
+      if (galleryList) {
+        galleryList.classList.add('rx-gallery-categories-hidden');
+      }
+    });
+
+    observer.observe(mediaList, {
+      childList: true,
+      subtree: true
+    });
+
+    if (galleryList) {
+      observer.observe(galleryList, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarCorreccion, {
+      once: true
+    });
+  } else {
+    iniciarCorreccion();
+  }
+})();
+</script>
+
 
 </body>
 </html>
