@@ -1222,16 +1222,24 @@ body{
         }
 
 
+        
         if(!roxDeferredInstallPrompt){
 
+          const instructions = roxGetInstallInstructions();
+
           roxSetStatus(
-            'La instalación directa no está disponible ahora. Abre el menú de tu navegador y selecciona “Instalar aplicación” o “Añadir a pantalla de inicio”.',
+            'La instalación directa no está disponible ahora. ' + instructions,
             'warning'
           );
 
           if(typeof toast === 'function'){
-            toast('Usa “Añadir a pantalla de inicio”.');
+            toast(instructions);
           }
+
+          return;
+
+        }
+
 
           return;
 
@@ -1269,10 +1277,13 @@ body{
             error
           );
 
+          
           roxSetStatus(
-            'No fue posible iniciar la instalación. Puedes usar “Añadir a pantalla de inicio”.',
+            'No fue posible iniciar la instalación. ' +
+            roxGetInstallInstructions(),
             'warning'
           );
+
 
         }
 
