@@ -71769,7 +71769,8 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-     <script>  
+     
+<script>
 (function(){
   'use strict';
   if (window.__RX_COLLAB_FUNNEL_V1__) return;
@@ -71791,6 +71792,18 @@ document.addEventListener('DOMContentLoaded',function(){
     try { return v ? new Date(v).toLocaleString('es-AR') : '—'; }
     catch(e) { return '—'; }
   };
+
+  const rate = (numerator, denominator) =>
+    Number(denominator) > 0
+      ? (
+          Number(numerator || 0) /
+          Number(denominator) *
+          100
+        ).toLocaleString('es-AR', {
+          minimumFractionDigits:1,
+          maximumFractionDigits:1
+        }) + '%'
+      : '—';
 
   window.rxCollabFunnelRefresh = async function(){
     const root = document.getElementById('rxCollabAdmin');
@@ -71832,11 +71845,13 @@ document.addEventListener('DOMContentLoaded',function(){
 
       const stats = [
         ['Clics de referencia', totals.clicks],
-        ['Visitantes únicos', totals.visitors],
+        ['Visitantes únicos*', totals.visitors],
         ['Consultas atribuidas', totals.inquiries],
         ['Ventas registradas', totals.sales],
         ['Importe vendido', money(totals.gross)],
-        ['Comisiones generadas', money(totals.commission)]
+        ['Comisiones generadas', money(totals.commission)],
+        ['Consultas / visitantes*', rate(totals.inquiries, totals.visitors)],
+        ['Ventas / visitantes*', rate(totals.sales, totals.visitors)]
       ].map(s =>
         '<div class="stat"><b>' + esc(s[1]) +
         '</b><span>' + esc(s[0]) + '</span></div>'
@@ -71853,7 +71868,9 @@ document.addEventListener('DOMContentLoaded',function(){
         '<td>' + esc(money(r.gross_sales)) + '</td>' +
         '<td>' + esc(money(r.commission_total)) + '</td>' +
         '<td>' + esc(money(r.commission_pending)) + '</td>' +
-        '<td>' + esc(money(r.commission_paid)) + '</td></tr>'
+        '<td>' + esc(money(r.commission_paid)) + '</td>' +
+        '<td>' + esc(rate(r.inquiries, r.unique_visitors)) + '</td>' +
+        '<td>' + esc(rate(r.sales_count, r.unique_visitors)) + '</td></tr>'
       ).join('');
 
       const inquiryRows = inquiries.slice(0,100).map(r =>
@@ -71866,7 +71883,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
       panel.innerHTML =
         '<h3>📈 Rendimiento de colaboradores</h3>' +
-        '<p class="small">Los clics y las consultas no equivalen a ventas. Las ventas y comisiones dependen de los registros existentes en la base de datos.</p>' +
+        '<p class="small">Los clics y las consultas no equivalen a ventas. Las tasas muestran la relación entre los registros atribuidos y los visitantes únicos informados por el sistema. No representan necesariamente personas únicas convertidas. Los datos dependen de los registros existentes.</p>' +
         '<div class="stats">' + stats + '</div>' +
         '<div class="toolbar"><button class="btn btn-primary btn-small" type="button" onclick="rxCollabFunnelRefresh()">Actualizar rendimiento</button></div>' +
         '<h4>Resultados por colaborador</h4>' +
@@ -71874,9 +71891,11 @@ document.addEventListener('DOMContentLoaded',function(){
         '<th>Colaborador</th><th>Código</th><th>Clics</th><th>Visitantes</th>' +
         '<th>Sesiones</th><th>Consultas</th><th>Ventas</th><th>Importe vendido</th>' +
         '<th>Comisión total</th><th>Pendiente</th><th>Pagada</th>' +
+        '<th>Consultas / visitantes</th><th>Ventas / visitantes</th>' +
         '</tr></thead><tbody>' +
-        (collaboratorRows || '<tr><td colspan="11">Todavía no hay datos para mostrar.</td></tr>') +
+        (collaboratorRows || '<tr><td colspan="13">Todavía no hay datos para mostrar.</td></tr>') +
         '</tbody></table></div>' +
+        '<p class="small">* Los totales de visitantes se suman por colaborador; una misma persona podría aparecer asociada a más de uno. Por eso, las tasas generales son orientativas.</p>' +
         '<h4>Consultas recientes atribuidas</h4>' +
         '<div class="rx-collab-admin-table"><table><thead><tr>' +
         '<th>Fecha</th><th>Colaborador</th><th>Código</th><th>Consulta</th>' +
@@ -71970,6 +71989,7 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 })();
 </script>
+
 <!-- RoXThal · Reparación del arranque de analítica -->
 <script>
 (function () {
