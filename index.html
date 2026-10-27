@@ -78712,6 +78712,253 @@ if(document.readyState==='loading'){
 })();
 </script>
 
+<style id="roxthal-gallery-images-v1-style">
+  /* Cabecera: texto a la izquierda, foto a la derecha */
+  #gallery .rx-gallery-heading-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+  }
+
+  #gallery .rx-gallery-heading-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #gallery .rx-gallery-heading-photo {
+    display: block;
+    flex: 0 0 92px;
+    width: 92px;
+    height: 92px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(201,164,92,.65);
+    background: #111;
+  }
+
+  /* Foto pequeña junto al título de cada tarjeta */
+  #mediaCategories .rx-gallery-card-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #mediaCategories .rx-gallery-card-title h3 {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    margin: 8px 0;
+  }
+
+  #mediaCategories .rx-gallery-card-thumb {
+    display: block;
+    flex: 0 0 68px;
+    width: 68px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(201,164,92,.55);
+    background: #111;
+  }
+
+  @media (max-width: 480px) {
+    #gallery .rx-gallery-heading-layout {
+      gap: 10px;
+    }
+
+    #gallery .rx-gallery-heading-photo {
+      flex-basis: 76px;
+      width: 76px;
+      height: 76px;
+    }
+
+    #mediaCategories .rx-gallery-card-thumb {
+      flex-basis: 60px;
+      width: 60px;
+      height: 60px;
+    }
+
+    #mediaCategories .rx-gallery-card-title {
+      gap: 8px;
+    }
+  }
+</style>
+
+<script id="roxthal-gallery-images-v1-script">
+(function () {
+  'use strict';
+
+  if (window.__RX_GALLERY_IMAGES_V1__) return;
+  window.__RX_GALLERY_IMAGES_V1__ = true;
+
+  var fallbackImage =
+    'https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png';
+
+  var categorySlots = {
+    'gallery-art': 'gallery_cat_art',
+    'gallery-tattoo': 'gallery_cat_tattoo',
+    'talleres': 'gallery_cat_talleres',
+    'obras': 'gallery_cat_obras',
+    'tatuajes': 'gallery_cat_tatuajes',
+    'dibujo-pintura': 'gallery_cat_dibujo',
+    'eventos': 'gallery_cat_eventos',
+    'alumnos': 'gallery_cat_alumnos',
+    'otros': 'gallery_cat_otros'
+  };
+
+  var imagesBySlot = {};
+
+  function applyHeaderImage() {
+    var head = document.querySelector('#gallery .section-head');
+    if (!head) return;
+
+    var layout = head.querySelector('.rx-gallery-heading-layout');
+
+    if (!layout) {
+      var label = head.querySelector('.label');
+      var title = head.querySelector('h2.section-title');
+      var desc = head.querySelector('.section-desc');
+
+      if (!title || !desc) return;
+
+      layout = document.createElement('div');
+      layout.className = 'rx-gallery-heading-layout';
+
+      var copy = document.createElement('div');
+      copy.className = 'rx-gallery-heading-copy';
+
+      if (label) copy.appendChild(label);
+      copy.appendChild(title);
+      copy.appendChild(desc);
+
+      var photo = document.createElement('img');
+      photo.className = 'rx-gallery-heading-photo';
+      photo.alt = 'Galería y Multimedia de RoXThal';
+      photo.loading = 'lazy';
+      photo.src = fallbackImage;
+
+      layout.appendChild(copy);
+      layout.appendChild(photo);
+      head.appendChild(layout);
+    }
+
+    var img = layout.querySelector('.rx-gallery-heading-photo');
+    var record = imagesBySlot.gallery_header;
+
+    if (img && record && record.url) {
+      img.src = record.url;
+    }
+  }
+
+  function decorateCategoryCards() {
+    var categories = document.getElementById('mediaCategories');
+    if (!categories) return;
+
+    categories.querySelectorAll('[data-media-category]').forEach(function (card) {
+      var key = card.dataset.mediaCategory;
+      var slot = categorySlots[key];
+      if (!slot) return;
+
+      var title = card.querySelector('h3');
+      if (!title) return;
+
+      var row = card.querySelector('.rx-gallery-card-title');
+
+      if (!row) {
+        row = document.createElement('div');
+        row.className = 'rx-gallery-card-title';
+
+        var emoji = title.previousElementSibling;
+
+        if (
+          emoji &&
+          emoji.tagName === 'DIV' &&
+          emoji.style.fontSize
+        ) {
+          emoji.style.display = 'none';
+        }
+
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+
+        var photo = document.createElement('img');
+        photo.className = 'rx-gallery-card-thumb';
+        photo.alt = '';
+        photo.loading = 'lazy';
+        photo.src = fallbackImage;
+
+        row.appendChild(photo);
+      }
+
+      var img = row.querySelector('.rx-gallery-card-thumb');
+      var record = imagesBySlot[slot];
+
+      if (img && record && record.url && img.src !== record.url) {
+        img.src = record.url;
+      }
+    });
+  }
+
+  async function loadGalleryImages() {
+    if (!window.db || typeof window.db.from !== 'function') return;
+
+    var result = await window.db
+      .from('site_assets')
+      .select('slot,url')
+      .like('slot', 'gallery_%');
+
+    if (result.error) {
+      console.warn(
+        '[RoXThal Galería] No se pudieron cargar las fotos de cabecera y tarjetas.',
+        result.error
+      );
+      return;
+    }
+
+    imagesBySlot = {};
+
+    (result.data || []).forEach(function (item) {
+      imagesBySlot[item.slot] = item;
+    });
+
+    applyHeaderImage();
+    decorateCategoryCards();
+  }
+
+  function iniciar() {
+    applyHeaderImage();
+    decorateCategoryCards();
+    loadGalleryImages();
+
+    var categories = document.getElementById('mediaCategories');
+
+    if (categories) {
+      var observer = new MutationObserver(function () {
+        decorateCategoryCards();
+      });
+
+      observer.observe(categories, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  } else {
+    iniciar();
+  }
+})();
+</script>
+
+   
+
 
 </body>
 </html>
