@@ -63501,6 +63501,8 @@ if(quick){
 
         '</div>';
 
+   
+
       html +=
         '<div class="rx-collab-stat-grid">' +
 
@@ -63523,6 +63525,20 @@ if(quick){
               rxMoney(totalCommission) +
             '</b>' +
             '<span>Comisión generada</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              rxMoney(pending) +
+            '</b>' +
+            '<span>Comisión pendiente</span>' +
+          '</div>' +
+
+          '<div class="rx-collab-stat">' +
+            '<b>' +
+              rxMoney(approved) +
+            '</b>' +
+            '<span>Aprobada, pendiente de pago</span>' +
           '</div>' +
 
           '<div class="rx-collab-stat">' +
