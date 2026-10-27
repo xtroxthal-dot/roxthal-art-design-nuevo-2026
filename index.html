@@ -78958,6 +78958,351 @@ if(document.readyState==='loading'){
 </script>
 
    
+<!-- ROXTHAL M04 — FOTOS Y TARJETAS PREMIUM DE ESCUELA -->
+<style>
+#adminCourses #rxCourseImagePanel{
+  margin:16px 0;padding:16px;border:1px solid #b99545;
+  border-radius:16px;background:linear-gradient(145deg,#171717,#080808);
+}
+#rxCourseImagePanel label{display:block;color:#f2d58a;font-weight:700;margin-bottom:9px}
+#rxCourseImagePreview{
+  display:none;width:100%;max-height:230px;object-fit:cover;
+  border-radius:12px;margin:12px 0;border:1px solid #b99545;
+}
+#coursesList .rx-school-item{
+  overflow:hidden;border:1px solid rgba(218,180,85,.65);
+  border-radius:18px;background:linear-gradient(145deg,#191919,#080808);
+  box-shadow:0 8px 25px #0005;margin-bottom:18px;
+}
+#coursesList .rx-school-cover{
+  display:block;width:100%;aspect-ratio:16/9;object-fit:cover;
+  background:#151515;border-bottom:2px solid #b99545;
+}
+#coursesList .rx-school-title{
+  width:100%;min-height:68px;padding:18px;
+  color:#f3d68c;background:linear-gradient(110deg,#171717,#292216);
+  font-size:clamp(17px,4vw,22px);font-weight:800;
+  text-align:left;border:0;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;
+}
+#coursesList .rx-school-title span:first-child{overflow-wrap:anywhere}
+#coursesList .rx-school-body{padding:18px}
+#coursesList .rx-school-description{
+  color:#eee;font-size:15px;line-height:1.65;margin-bottom:15px;
+}
+#coursesList .rx-school-details{
+  padding:14px;border:1px solid #5c4925;border-radius:12px;
+  background:#101010;line-height:1.8;
+}
+#coursesList .rx-school-whatsapp,
+#coursesList .rx-school-inquiry{
+  width:100%;margin-top:12px;min-height:46px;
+}
+#coursesList .rx-school-item:not(.open) .rx-school-body{display:none}
+#coursesList .rx-school-item.open .rx-school-body{display:block}
+@media(min-width:650px){
+  #coursesList .rx-school-item{max-width:850px;margin-left:auto;margin-right:auto}
+  #coursesList .rx-school-cover{aspect-ratio:2.2/1}
+}
+</style>
+
+<script id="roxthal-m04-course-photos-v1">
+(function(){
+  'use strict';
+
+  if(window.__RX_M04_COURSE_PHOTOS_V1__) return;
+  window.__RX_M04_COURSE_PHOTOS_V1__ = true;
+
+  const $ = id => document.getElementById(id);
+  const form = $('adminCourses');
+  const fileInput = document.createElement('input');
+  const preview = document.createElement('img');
+  const removeLabel = document.createElement('label');
+  const removeCheck = document.createElement('input');
+  const panel = document.createElement('div');
+
+  if(!form || !$('saveCourse') || !$('coursesList')) return;
+
+  let currentImageUrl = '';
+  let currentStoragePath = '';
+  let courseRows = [];
+  let renderQueued = false;
+
+  panel.id = 'rxCourseImagePanel';
+  panel.innerHTML =
+    '<label for="rxCourseImageFile">📸 Fotografía del curso</label>' +
+    '<p style="color:#ddd;font-size:13px;margin:0 0 12px">' +
+    'Seleccioná una imagen de la galería de tu celular. ' +
+    'La fotografía quedará guardada con este curso.</p>';
+
+  fileInput.type = 'file';
+  fileInput.id = 'rxCourseImageFile';
+  fileInput.accept = 'image/*';
+  fileInput.setAttribute('aria-label','Elegir fotografía del curso');
+  fileInput.style.cssText =
+    'display:block;width:100%;max-width:100%;color:#fff';
+
+  preview.id = 'rxCourseImagePreview';
+  preview.alt = 'Vista previa de la fotografía del curso';
+
+  removeCheck.type = 'checkbox';
+  removeCheck.id = 'rxCourseImageRemove';
+  removeLabel.htmlFor = removeCheck.id;
+  removeLabel.style.cssText =
+    'display:flex;align-items:center;gap:9px;margin-top:12px;' +
+    'font-size:14px;color:#f0d28a';
+  removeLabel.append(removeCheck,document.createTextNode(
+    ' Quitar la fotografía actual al guardar'
+  ));
+
+  panel.append(fileInput,preview,removeLabel);
+  $('saveCourse').parentNode.insertBefore(panel,$('saveCourse'));
+
+  function resetPhoto(){
+    currentImageUrl = '';
+    currentStoragePath = '';
+    fileInput.value = '';
+    preview.removeAttribute('src');
+    preview.style.display = 'none';
+    removeCheck.checked = false;
+  }
+
+  fileInput.addEventListener('change',function(){
+    const file = fileInput.files && fileInput.files[0];
+    if(!file){
+      preview.style.display = currentImageUrl ? 'block' : 'none';
+      if(currentImageUrl) preview.src = currentImageUrl;
+      return;
+    }
+    if(!file.type || !file.type.startsWith('image/')){
+      fileInput.value = '';
+      if(typeof toast === 'function') toast('Seleccioná un archivo de imagen.');
+      return;
+    }
+    if(file.size > 15 * 1024 * 1024){
+      fileInput.value = '';
+      if(typeof toast === 'function') toast('La imagen supera los 15 MB.');
+      return;
+    }
+    removeCheck.checked = false;
+    const reader = new FileReader();
+    reader.onload = function(){
+      preview.src = reader.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeCheck.addEventListener('change',function(){
+    if(removeCheck.checked){
+      fileInput.value = '';
+      preview.removeAttribute('src');
+      preview.style.display = 'none';
+    } else if(currentImageUrl){
+      preview.src = currentImageUrl;
+      preview.style.display = 'block';
+    }
+  });
+
+  // La función original sigue rellenando todos los campos existentes.
+  if(typeof window.fillCourse === 'function'){
+    const originalFillCourse = window.fillCourse;
+    window.fillCourse = function(course){
+      originalFillCourse.apply(this,arguments);
+      currentImageUrl = course.image_url || '';
+      currentStoragePath = course.image_storage_path || '';
+      fileInput.value = '';
+      removeCheck.checked = false;
+      if(currentImageUrl){
+        preview.src = currentImageUrl;
+        preview.style.display = 'block';
+      }else{
+        preview.removeAttribute('src');
+        preview.style.display = 'none';
+      }
+    };
+  }
+
+  // Guardado compatible con los campos que ya utiliza Escuela.
+  $('saveCourse').onclick = async function(){
+    if(!await requireAdmin()) return;
+
+    const id = $('courseId').value;
+    const name = $('courseName').value.trim();
+    if(!name){
+      toast('El nombre del curso es obligatorio.');
+      return;
+    }
+
+    const button = $('saveCourse');
+    if(button.dataset.rxSaving === '1') return;
+    button.dataset.rxSaving = '1';
+    button.disabled = true;
+
+    let uploadedPath = null;
+    let oldPath = currentStoragePath;
+
+    try{
+      let imageUrl = currentImageUrl || null;
+      let storagePath = currentStoragePath || null;
+
+      if(id){
+        const old = await db.from('courses')
+          .select('image_url,image_storage_path')
+          .eq('id',id).single();
+
+        if(old.error) throw new Error(old.error.message);
+        oldPath = old.data.image_storage_path || null;
+        imageUrl = old.data.image_url || imageUrl;
+        storagePath = old.data.image_storage_path || storagePath;
+      }
+
+      const file = fileInput.files && fileInput.files[0];
+
+      if(file){
+        const blob = await optimizeImage(file);
+        const path = 'courses/' +
+          (window.crypto && crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now() + '-' + Math.random().toString(36).slice(2)) +
+          '.jpg';
+
+        const upload = await db.storage.from('images').upload(
+          path,blob,{contentType:'image/jpeg',upsert:false}
+        );
+        if(upload.error) throw new Error(
+          'No se pudo subir la fotografía: ' + upload.error.message
+        );
+
+        uploadedPath = path;
+        const pub = db.storage.from('images').getPublicUrl(path);
+        imageUrl = pub.data.publicUrl;
+        storagePath = path;
+      }else if(removeCheck.checked){
+        imageUrl = null;
+        storagePath = null;
+      }
+
+      const payload = {
+        name:name,
+        description:$('courseDescription').value.trim() || null,
+        price:Number($('coursePrice').value || 0),
+        duration:$('courseDuration').value.trim() || null,
+        schedule:$('courseSchedule').value.trim() || null,
+        modality:$('courseModality').value.trim() || null,
+        materials_included:$('courseMaterials').checked,
+        active:$('courseActive').checked,
+        updated_at:new Date().toISOString(),
+        image_url:imageUrl,
+        image_storage_path:storagePath
+      };
+
+      const result = id
+        ? await db.from('courses').update(payload).eq('id',id)
+        : await db.from('courses').insert(payload);
+
+      if(result.error) throw new Error(result.error.message);
+
+      // El archivo antiguo se elimina solo después de guardar correctamente.
+      if(oldPath && oldPath !== storagePath){
+        const removed = await db.storage.from('images').remove([oldPath]);
+        if(removed.error){
+          console.warn('[RoXThal Escuela] No se pudo limpiar la imagen anterior:',removed.error.message);
+        }
+      }
+
+      ['courseId','courseName','courseDescription','coursePrice',
+       'courseDuration','courseSchedule','courseModality']
+        .forEach(field => $(field).value = '');
+
+      $('courseMaterials').checked = false;
+      $('courseActive').checked = true;
+      resetPhoto();
+
+      await loadAdminCourses();
+      await loadCourses();
+      toast('Curso guardado correctamente.');
+    }catch(error){
+      // Si falla el registro, se intenta retirar el archivo recién subido.
+      if(uploadedPath){
+        const cleanup = await db.storage.from('images').remove([uploadedPath]);
+        if(cleanup.error) console.warn(
+          '[RoXThal Escuela] No se pudo limpiar la subida fallida:',
+          cleanup.error.message
+        );
+      }
+      toast(error.message || 'No se pudo guardar el curso.');
+    }finally{
+      button.disabled = false;
+      delete button.dataset.rxSaving;
+    }
+  };
+
+  // El botón Limpiar también limpia la selección y la vista previa.
+  $('cancelCourse').addEventListener('click',resetPhoto);
+
+  function decorateCards(){
+    renderQueued = false;
+    const box = $('coursesList');
+    if(!box || !courseRows.length) return;
+
+    box.querySelectorAll('.rx-school-item').forEach(card => {
+      const title = card.querySelector('.rx-school-title span');
+      if(!title) return;
+
+      const row = courseRows.find(c =>
+        (c.name || '').trim().toLocaleLowerCase() ===
+        title.textContent.trim().toLocaleLowerCase()
+      );
+      if(!row || !row.image_url) return;
+
+      let img = card.querySelector('.rx-school-cover');
+      if(!img){
+        img = document.createElement('img');
+        img.className = 'rx-school-cover';
+        img.loading = 'lazy';
+        img.alt = 'Fotografía del curso ' + row.name;
+        card.insertBefore(img,card.firstChild);
+      }
+      if(img.src !== row.image_url) img.src = row.image_url;
+    });
+  }
+
+  function queueDecorate(){
+    if(renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(decorateCards);
+  }
+
+  const box = $('coursesList');
+  new MutationObserver(queueDecorate).observe(box,{
+    childList:true,subtree:true
+  });
+
+  // Recupera las URL guardadas y vuelve a aplicarlas tras cada carga.
+  const originalLoadCourses = window.loadCourses;
+  if(typeof originalLoadCourses === 'function'){
+    window.loadCourses = async function(){
+      const result = await originalLoadCourses.apply(this,arguments);
+      const rows = await db.from('courses')
+        .select('name,image_url').eq('active',true)
+        .order('created_at',{ascending:false});
+      if(!rows.error) courseRows = rows.data || [];
+      queueDecorate();
+      return result;
+    };
+  }
+
+  db.from('courses').select('name,image_url')
+    .eq('active',true).order('created_at',{ascending:false})
+    .then(result => {
+      if(!result.error) courseRows = result.data || [];
+      queueDecorate();
+    });
+})();
+</script>
+<!-- FIN ROXTHAL M04 -->
+
 
 
 </body>
