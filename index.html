@@ -64106,14 +64106,14 @@ if(quick){
                   ) +
 
                   (
-                    status === 'active' ?
-                    '<button class="btn btn-small btn-danger" onclick="rxAdminSetCollaboratorStatus(' +
-                      JSON.stringify(c.id) +
-                      ',\'suspended\')">' +
-                      'Suspender' +
-                    '</button>' :
-                    ''
-                  ) +
+  status === 'active' ?
+  '<button type="button" class="btn btn-small btn-danger rx-collab-suspend" data-collab-id="' +
+    rxEscape(String(c.id)) +
+  '">' +
+    'Suspender' +
+  '</button>' :
+  ''
+) +
 
                 '</div>' +
               '</td>' +
@@ -64520,6 +64520,37 @@ document.addEventListener('click', async function(e){
     await window.rxAdminSetCollaboratorStatus(id,'active');
   }finally{
     btn.disabled = false;
+  }
+}, true);
+           /* ADMIN — SUSPENDER COLABORADOR */
+document.addEventListener('click', async function(e){
+  const btn = e.target.closest('.rx-collab-suspend');
+  if(!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const id = btn.dataset.collabId;
+  if(!id) {
+    console.error('[RoXThal] Falta el ID del colaborador.');
+    return;
+  }
+
+  if(btn.disabled) return;
+
+  btn.disabled = true;
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Procesando…';
+
+  try {
+    await window.rxAdminSetCollaboratorStatus(id, 'suspended');
+  } catch(error) {
+    console.error('[RoXThal] Error al suspender:', error);
+    alert('No se pudo suspender el colaborador: ' +
+      (error.message || 'Error desconocido'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = textoOriginal;
   }
 }, true);
   /* ==========================================================
