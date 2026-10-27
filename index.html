@@ -44818,13 +44818,19 @@ function installEntry(){
     return false;
 
 
-  if(
-    document.getElementById(
-      'rxStudentCardEntry'
-    )
-  ){
+  
+  const existingEntry = document.getElementById('rxStudentCardEntry');
+
+  if (existingEntry) {
+    const existingButton = existingEntry.querySelector('#rxStudentCardOpen');
+
+    if (existingButton) {
+      existingButton.onclick = openStudentCard;
+    }
+
     return true;
   }
+
 
 
   const entry=
