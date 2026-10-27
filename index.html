@@ -43017,7 +43017,7 @@ style.textContent=`
 #rxStudentCardOverlay{
   position:fixed;
   inset:0;
-  z-index:2147483646;
+    z-index:2147483647 !important;
   display:none;
   align-items:center;
   justify-content:center;
@@ -55158,6 +55158,9 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     }
 
   }
+       if(closeId === "rxConsentClose" && closeButton){
+      closeButton.remove();
+    }
 
   /* ==========================================================
      PREPARA LOS TRES PANELES
