@@ -78302,6 +78302,270 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <!-- FIN ROXTHAL: AGRUPAR ACCESOS DE PORTADA — V1 -->
 
+   
+<style id="roxthal-gallery-fullview-v1">
+#mediaCategories .media-category {
+  display:block;
+  width:100%;
+  min-height:150px;
+  text-align:left;
+  color:var(--text);
+  cursor:pointer;
+  transition:transform .18s,border-color .18s;
+}
+#mediaCategories .media-category:hover,
+#mediaCategories .media-category:focus-visible {
+  border-color:var(--yellow);
+  transform:translateY(-2px);
+}
+#mediaCategories .media-category h3 {
+  margin:8px 0;
+  font-size:21px;
+}
+#mediaList .media-img {
+  cursor:zoom-in;
+}
+#rx-media-fullview {
+  position:fixed;
+  inset:0;
+  z-index:999990;
+  background:rgba(0,0,0,.97);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:58px 10px 16px;
+  box-sizing:border-box;
+}
+#rx-media-fullview.open {
+  display:flex;
+}
+#rx-media-fullview video {
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  background:#000;
+}
+#rx-media-fullview .rx-media-close {
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+}
+@media(max-width:700px) {
+  #mediaCategories .media-category {
+    min-height:135px;
+    padding:18px;
+  }
+  #rx-media-fullview {
+    padding:58px 0 0;
+  }
+  #rx-media-fullview video {
+    width:100%;
+    max-height:calc(100dvh - 58px);
+  }
+}
+</style>
+
+<script id="roxthal-gallery-fullview-v1">
+(function(){
+'use strict';
+
+if(window.__RX_GALLERY_FULLVIEW_V1__) return;
+window.__RX_GALLERY_FULLVIEW_V1__=true;
+
+function safe(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+    return {
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c];
+  });
+}
+
+function iniciar(){
+  var cats=document.getElementById('mediaCategories');
+  var content=document.getElementById('mediaContent');
+  var list=document.getElementById('mediaList');
+  var title=document.getElementById('mediaCategoryTitle');
+
+  if(!cats||!content||!list) return;
+
+  /* Quitar la barra antigua, incluido «Todo». */
+  var toolbar=document.querySelector(
+    '#gallery .toolbar'
+  );
+  if(toolbar) toolbar.remove();
+
+  /* Añadir Arte y Tatuajes como tarjetas. */
+  [
+    {
+      key:'gallery-art',
+      emoji:'🎨',
+      name:'Arte',
+      desc:'Obras y trabajos artísticos de RoXThal.',
+      type:'art'
+    },
+    {
+      key:'gallery-tattoo',
+      emoji:'🖋️',
+      name:'Tatuajes',
+      desc:'Portfolio de tatuajes y trabajos realizados.',
+      type:'tattoo'
+    }
+  ].forEach(function(c){
+    if(cats.querySelector(
+      '[data-media-category="'+c.key+'"]'
+    )) return;
+
+    var b=document.createElement('button');
+    b.type='button';
+    b.className='card media-category';
+    b.dataset.mediaCategory=c.key;
+    b.innerHTML=
+      '<div style="font-size:42px">'+c.emoji+'</div>'+
+      '<h3>'+c.name+'</h3>'+
+      '<p class="muted">'+c.desc+'</p>';
+
+    cats.insertBefore(b,cats.firstChild);
+  });
+
+  /* Visor de vídeo. */
+  var viewer=document.createElement('div');
+  viewer.id='rx-media-fullview';
+  viewer.innerHTML=
+    '<button type="button" class="btn rx-media-close">'+
+    '✕ Cerrar</button>'+
+    '<video controls playsinline preload="metadata"></video>';
+
+  document.body.appendChild(viewer);
+
+  var player=viewer.querySelector('video');
+
+  function closeVideo(){
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+    viewer.classList.remove('open');
+  }
+
+  viewer.querySelector('.rx-media-close')
+    .addEventListener('click',closeVideo);
+
+  viewer.addEventListener('click',function(e){
+    if(e.target===viewer) closeVideo();
+  });
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&viewer.classList.contains('open')){
+      closeVideo();
+    }
+  });
+
+  /*
+   * Captura las tarjetas de Arte y Tatuajes antes
+   * del controlador multimedia anterior.
+   */
+  document.addEventListener('click',async function(e){
+    var b=e.target.closest('[data-media-category]');
+    if(!b) return;
+
+    var key=b.dataset.mediaCategory;
+    if(key!=='gallery-art'&&key!=='gallery-tattoo') return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    cats.classList.add('hidden');
+    content.classList.remove('hidden');
+
+    if(title){
+      title.textContent=key==='gallery-art'?'Arte':'Tatuajes';
+    }
+
+    list.innerHTML=
+      '<div class="empty">Cargando trabajos...</div>';
+
+    var q=window.db.from('images')
+      .select('*')
+      .eq('visible',true)
+      .order('created_at',{ascending:false});
+
+    q=q.eq('type',key==='gallery-art'?'art':'tattoo');
+
+    var result=await q;
+
+    if(result.error){
+      list.innerHTML=
+        '<div class="empty">No se pudo cargar este apartado.</div>';
+      return;
+    }
+
+    var data=result.data||[];
+
+    if(!data.length){
+      list.innerHTML=
+        '<div class="empty">Todavía no hay trabajos publicados en este apartado.</div>';
+      return;
+    }
+
+    list.innerHTML=data.map(function(x){
+      return '<article class="card">'+
+        '<img class="media-img" loading="lazy" '+
+        'src="'+safe(x.url)+'" '+
+        'alt="'+safe(x.title||'Trabajo de RoXThal')+'" '+
+        'data-lightbox="'+safe(x.url)+'">'+
+        '<h3 style="margin-top:12px">'+
+        safe(x.title||'Trabajo de RoXThal')+'</h3>'+
+        (x.description?
+          '<p class="muted">'+safe(x.description)+'</p>':'')+
+        '</article>';
+    }).join('');
+  },true);
+
+  /* Asegurar que las fotos multimedia abran el visor de imágenes. */
+  function prepareImages(){
+    list.querySelectorAll('img.media-img').forEach(function(im){
+      if(!im.dataset.lightbox){
+        im.dataset.lightbox=im.currentSrc||im.src;
+      }
+    });
+  }
+
+  var observer=new MutationObserver(prepareImages);
+  observer.observe(list,{childList:true,subtree:true});
+  prepareImages();
+
+  /* Al tocar un vídeo, abrirlo en el visor ampliado. */
+  list.addEventListener('click',function(e){
+    var vid=e.target.closest('video.media-img');
+    if(!vid) return;
+
+    var src=vid.currentSrc||vid.src;
+    if(!src) return;
+
+    e.preventDefault();
+    player.src=src;
+    viewer.classList.add('open');
+    player.play().catch(function(){});
+  });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',iniciar,{once:true});
+}else{
+  iniciar();
+}
+})();
+</script>
+
+
 
 </body>
 </html>
