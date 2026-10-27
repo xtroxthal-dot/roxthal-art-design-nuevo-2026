@@ -63267,40 +63267,64 @@ if(quick){
           );
         }
 
+        
         const profile =
           Array.isArray(data) ?
           data[0] :
           data;
 
-        if(
-          profile.ref_code &&
-          String(profile.ref_code).toUpperCase() !== code
-        ){
-
+        if(!profile){
           throw new Error(
-            'El código no coincide con el token.'
+            'No se encontró el colaborador.'
           );
         }
 
-        if(
-          profile.status &&
-          profile.status !== 'active'
-        ){
+        // Obtener el registro del colaborador.
+        const collaborator =
+          profile.collaborator || profile;
 
+        // Validar el código oficial devuelto por Supabase.
+        const officialCode = String(
+          collaborator.code ||
+          collaborator.ref_code ||
+          collaborator.collaborator_code ||
+          ''
+        ).trim().toUpperCase();
+
+        if(!officialCode){
           throw new Error(
-            'La cuenta todavía no está activa.'
+            'No se pudo verificar el código oficial del colaborador.'
           );
         }
 
+        if(officialCode !== code){
+          throw new Error(
+            'El código no coincide con el token. Verificá tus datos de acceso.'
+          );
+        }
+
+        // Validar el estado real de la cuenta.
+        const accountStatus = String(
+          collaborator.status || ''
+        ).trim().toLowerCase();
+
+        if(accountStatus !== 'active'){
+          throw new Error(
+            'La cuenta no está activa. Contactá con el administrador.'
+          );
+        }
+
+        // Guardar únicamente los datos validados.
         localStorage.setItem(
           LS_CODE,
-          code
+          officialCode
         );
 
         localStorage.setItem(
           LS_TOKEN,
           token
         );
+
 
         rxStatus(
           'Acceso correcto.',
