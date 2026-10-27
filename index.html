@@ -1139,6 +1139,34 @@ body{
 
 
   /* =======================================================
+     INSTRUCCIONES SEGÚN EL DISPOSITIVO
+     ======================================================= */
+
+  function roxGetInstallInstructions(){
+
+    const ua = navigator.userAgent || '';
+
+    const isIOS =
+      /iPad|iPhone|iPod/i.test(ua) ||
+      (
+        navigator.platform === 'MacIntel' &&
+        navigator.maxTouchPoints > 1
+      );
+
+    const isAndroid = /Android/i.test(ua);
+
+    if(isIOS){
+      return '📱 Para instalar RoXThal en iPhone o iPad: abre esta página en Safari, pulsa Compartir y selecciona “Añadir a pantalla de inicio”.';
+    }
+
+    if(isAndroid){
+      return '📱 Para instalar RoXThal en Android: abre esta página en Chrome, pulsa el menú ⋮ y selecciona “Instalar aplicación” o “Añadir a pantalla de inicio”. Si estás dentro de otra aplicación, abre primero el enlace en Chrome.';
+    }
+
+    return '💻 Para instalar RoXThal, busca en el menú de tu navegador la opción “Instalar aplicación” o “Añadir a pantalla de inicio”, si está disponible.';
+  }
+
+  /* =======================================================
      DETECTAR INSTALADOR PWA
      ======================================================= */
 
@@ -1471,14 +1499,18 @@ body{
         }
 
 
+        
+        const instructions = roxGetInstallInstructions();
+
         roxSetStatus(
-          'Abre el menú de tu navegador y selecciona “Añadir a pantalla de inicio” o “Instalar aplicación”.',
+          instructions,
           'ready'
         );
 
         if(typeof toast === 'function'){
-          toast('Busca “Añadir a pantalla de inicio”.');
+          toast(instructions);
         }
+
 
       }
     );
@@ -1522,8 +1554,10 @@ body{
 
   }else{
 
+    
+
     roxSetStatus(
-      'Puedes instalar RoXThal o añadirla a la pantalla de inicio.'
+      roxGetInstallInstructions()
     );
 
   }
