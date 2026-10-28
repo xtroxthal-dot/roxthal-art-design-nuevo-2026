@@ -43965,10 +43965,7 @@ function renderCard(card, allowDownload = false){
         🖨️ Guardar / imprimir
       </button>
 
-      <button
-        type="button"
-        id="rxStudentClose">
-              ${allowDownload ? `
+            ${allowDownload ? `
         <button
           type="button"
           class="primary"
@@ -43976,6 +43973,10 @@ function renderCard(card, allowDownload = false){
           📥 Descargar carné JPG
         </button>
       ` : ''}
+
+      <button
+        type="button"
+        id="rxStudentClose">
         Cerrar
       </button>
 
