@@ -43180,6 +43180,7 @@ style.textContent=`
   pointer-events:none;
 }
 
+
 .rx-sc-top{
   position:relative;
   z-index:2;
@@ -43189,6 +43190,22 @@ style.textContent=`
   gap:12px;
   margin-bottom:23px;
 }
+
+.rx-sc-brand-wrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.rx-sc-logo{
+  width:44px;
+  height:44px;
+  object-fit:contain;
+  flex:0 0 auto;
+  filter:drop-shadow(0 0 7px rgba(215,173,85,.25));
+}
+
 
 .rx-sc-brand{
   color:#d7ad55;
@@ -43616,20 +43633,45 @@ async function downloadStudentCardJpg(card) {
     ctx.fillText('✦', 1660, 390);
     ctx.fillText('✦', 1450, 400);
 
-    // Cabecera de la escuela.
+    
+    // Cabecera de la escuela con el logo oficial.
+    const logo = new Image();
+
+    try {
+      await new Promise((resolve, reject) => {
+        logo.onload = resolve;
+        logo.onerror = () => reject(
+          new Error('No se pudo cargar el logo de RoXThal.')
+        );
+        logo.src = './icon-512.png';
+
+        if (logo.complete && logo.naturalWidth > 0) {
+          resolve();
+        }
+      });
+
+      ctx.drawImage(logo, 105, 72, 92, 92);
+    } catch (error) {
+      console.warn(
+        '[RoXThal JPG] No se pudo cargar el logo:',
+        error
+      );
+    }
+
     ctx.fillStyle = gold;
     ctx.font = 'bold 57px Arial, sans-serif';
-    ctx.fillText('ROXTHAL ART DESIGN', 105, 145);
+    ctx.fillText('ROXTHAL ART DESIGN', 225, 145);
 
     ctx.fillStyle = muted;
     ctx.font = '24px Arial, sans-serif';
-    ctx.fillText('ATELIER  ·  ESCUELA  ·  TATTOO', 110, 190);
+    ctx.fillText('ATELIER  ·  ESCUELA  ·  TATTOO', 230, 190);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = gold;
     ctx.font = 'bold 22px Arial, sans-serif';
     ctx.fillText('CARNÉ DE ESTUDIANTE', W - 105, 145);
     ctx.textAlign = 'left';
+
 
     ctx.strokeStyle = 'rgba(215,173,85,0.65)';
     ctx.lineWidth = 2;
