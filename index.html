@@ -44718,9 +44718,21 @@ async function showAdmin(){
    MENÚ PRINCIPAL
    ============================================================ */
 
+
 async function openStudentCard(){
 
+  // Cerrar Consentimiento antes de abrir el Carné.
+  const consentApp = document.getElementById('rxConsentApp');
+
+  if (consentApp) {
+    consentApp.classList.remove('rx-open');
+    consentApp.setAttribute('aria-hidden', 'true');
+  }
+
+  document.body.style.overflow = '';
+
   const DB=getDB();
+
 
   if(!DB){
 
