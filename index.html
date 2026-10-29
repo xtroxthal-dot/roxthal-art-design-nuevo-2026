@@ -646,6 +646,7 @@ body{
       </p>
     </div>
 
+    
     <div class="card" style="min-height:260px;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px">
       <img
         src="https://raw.githubusercontent.com/xtroxthal-dot/roxthal-art-design/main/icon-512.png"
@@ -653,6 +654,25 @@ body{
         style="display:block;width:min(100%,280px);height:auto;max-height:280px;object-fit:contain;margin:0 auto"
       >
     </div>
+
+    <div id="rxStudentCardEntry">
+      <div class="rx-sc-kicker">
+        ROXTHAL ART DESIGN · FORMACIÓN
+      </div>
+
+      <div class="rx-sc-title">
+        🎓 Carné de Estudiante
+      </div>
+
+      <div class="rx-sc-text">
+        Identificación oficial del estudiante de RoXThal Art Design.
+      </div>
+
+      <button type="button" id="rxStudentCardOpen">
+        🎓 Acceder al Carné
+      </button>
+    </div>
+
 
    
   </div>
@@ -45182,95 +45202,17 @@ async function openStudentCard(){
    INSERTAR DIRECTAMENTE EN EL CONSENTIMIENTO REAL
    ============================================================ */
 
+
 function installEntry(){
+  const entry = document.getElementById('rxStudentCardEntry');
 
-  const screen=
-    document.getElementById(
-      'rxConsentScreenNuevo'
-    );
+  if (!entry) return false;
 
-  if(!screen)
-    return false;
+  const button = entry.querySelector('#rxStudentCardOpen');
 
+  if (!button) return false;
 
-  
-  const existingEntry = document.getElementById('rxStudentCardEntry');
-
-  if (existingEntry) {
-    const existingButton = existingEntry.querySelector('#rxStudentCardOpen');
-
-    if (existingButton) {
-      existingButton.onclick = openStudentCard;
-    }
-
-    return true;
-  }
-
-
-
-  const entry=
-    document.createElement('div');
-
-  entry.id=
-    'rxStudentCardEntry';
-
-  entry.innerHTML=`
-
-    <div class="rx-sc-kicker">
-      ROXTHAL ART DESIGN · FORMACIÓN
-    </div>
-
-    <div class="rx-sc-title">
-      🎓 Carné de Estudiante
-    </div>
-
-    <div class="rx-sc-text">
-      Identificación oficial del estudiante
-      de RoXThal Art Design.
-    </div>
-
-    <button
-      type="button"
-      id="rxStudentCardOpen">
-      🎓 Acceder al Carné
-    </button>
-
-  `;
-
-
-  /*
-   * El elemento se coloca exactamente dentro
-   * de la pantalla NUEVO del Consentimiento,
-   * antes del primer bloque de datos.
-   */
-
-  const firstCard=
-    screen.querySelector(
-      '.rx-consent-card'
-    );
-
-
-  if(firstCard){
-
-    screen.insertBefore(
-      entry,
-      firstCard
-    );
-
-  }else{
-
-    screen.appendChild(
-      entry
-    );
-
-  }
-
-
-  document.getElementById(
-    'rxStudentCardOpen'
-  ).onclick=
-    openStudentCard;
-
+  button.onclick = openStudentCard;
 
   return true;
 }
