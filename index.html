@@ -80693,6 +80693,536 @@ if(document.readyState==='loading'){
 </script>
 <!-- FIN ROXTHAL ART DESIGN · QUIZ DEL ARTE PREMIUM -->
 
+     <script>
+/* ============================================================
+   ROXTHAL PRIVÉ — CLUB DE SOCIOS MENSUAL
+   Bloque autónomo: agregar justo antes de </body>.
+   Usa tablas propias en Supabase.
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__ROXTHAL_CLUB_MEMBERSHIP_V1__) return;
+  window.__ROXTHAL_CLUB_MEMBERSHIP_V1__ = true;
+
+  const db = window.db;
+  if (!db) {
+    console.error('RoXThal Privé: no se encontró window.db.');
+    return;
+  }
+
+  const escClub = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[c]));
+  const moneyClub = value => '$' + Number(value || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 });
+  const dateClub = value => value ? new Date(value + 'T12:00:00').toLocaleDateString('es-AR') : '—';
+  const todayClub = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  let clubSettings = null;
+
+  function installClubView() {
+    if (!document.getElementById('club')) {
+      const section = document.createElement('section');
+      section.id = 'club';
+      section.className = 'view hidden';
+      section.innerHTML = `
+        <div class="container">
+          <div class="section-head">
+            <div class="label">Membresía exclusiva</div>
+            <h2 class="section-title">RoXThal Privé</h2>
+            <p class="section-desc">Un club mensual para quienes viven el arte. Beneficios exclusivos en cursos, tatuajes y cuadros.</p>
+          </div>
+          <div class="card" style="border-color:#806a28;background:radial-gradient(circle at 90% 0%,rgba(242,196,0,.16),transparent 42%),linear-gradient(145deg,#17140c,#101010)">
+            <div style="font-size:12px;letter-spacing:3px;color:#f2c400;font-weight:900">ROXTHAL · PRIVÉ</div>
+            <h3 style="font-size:28px;margin:8px 0">Tu arte, con privilegios.</h3>
+            <p class="muted">La membresía se activa únicamente cuando el administrador verifica la transferencia. Es mensual y los descuentos solo se aplican durante la vigencia activa.</p>
+            <div id="rxClubPublicOffer" class="grid2" style="margin-top:18px"><div class="empty">Cargando cuota y beneficios…</div></div>
+          </div>
+          <div class="grid2" style="margin-top:16px;align-items:start">
+            <div class="card">
+              <h3>Solicitar membresía</h3>
+              <p class="small" style="margin:8px 0 16px">Completá tus datos y la referencia de transferencia. La solicitud quedará pendiente hasta que RoXThal compruebe el pago.</p>
+              <div id="rxClubTransferInstructions" class="status">Cargando instrucciones de pago…</div>
+              <form id="rxClubApplicationForm">
+                <div class="field"><label for="rxClubName">Nombre y apellido *</label><input id="rxClubName" maxlength="120" required autocomplete="name"></div>
+                <div class="field"><label for="rxClubPhone">WhatsApp / teléfono *</label><input id="rxClubPhone" maxlength="35" required autocomplete="tel" inputmode="tel"></div>
+                <div class="field"><label for="rxClubEmail">Email (opcional)</label><input id="rxClubEmail" type="email" maxlength="180" autocomplete="email"></div>
+                <div class="field"><label for="rxClubTransferRef">Referencia o dato de la transferencia</label><input id="rxClubTransferRef" maxlength="180" placeholder="Fecha, titular o referencia bancaria"></div>
+                <div class="field"><label for="rxClubNote">Mensaje (opcional)</label><textarea id="rxClubNote" maxlength="1000" placeholder="Consulta o información adicional"></textarea></div>
+                <button id="rxClubSubmit" class="btn btn-primary" type="submit" style="width:100%">Enviar solicitud</button>
+                <div id="rxClubApplicationStatus" class="status hidden" style="margin-top:12px" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+            <div class="card">
+              <h3>Consultar mi carnet digital</h3>
+              <p class="small" style="margin:8px 0 16px">Si ya sos socio, ingresá el número de socio y el teléfono registrado para comprobar tu vigencia y tus beneficios.</p>
+              <form id="rxClubLookupForm">
+                <div class="field"><label for="rxClubMemberNumber">Número de socio</label><input id="rxClubMemberNumber" maxlength="20" required placeholder="RX-XXXXXXXX" autocomplete="off"></div>
+                <div class="field"><label for="rxClubLookupPhone">Teléfono registrado</label><input id="rxClubLookupPhone" maxlength="35" required inputmode="tel" autocomplete="tel"></div>
+                <button class="btn" type="submit" style="width:100%">Consultar carnet</button>
+              </form>
+              <div id="rxClubCarnetResult" style="margin-top:14px"></div>
+            </div>
+          </div>
+          <p class="small" style="margin-top:16px">La solicitud no garantiza la aceptación. Los descuentos se aplican según los porcentajes vigentes publicados por RoXThal y no son acumulables con otras promociones salvo autorización expresa.</p>
+        </div>`;
+      const main = document.querySelector('main');
+      if (main) main.appendChild(section);
+      else document.body.appendChild(section);
+    }
+
+    if (Array.isArray(window.publicViews) && !window.publicViews.includes('club')) {
+      window.publicViews.push('club');
+    }
+    try {
+      if (typeof publicViews !== 'undefined' && !publicViews.includes('club')) {
+        publicViews.push('club');
+      }
+    } catch (_) {}
+
+    const grid = document.getElementById('moduleGrid');
+    if (grid && !grid.querySelector('[data-go="club"]')) {
+      const card = document.createElement('article');
+      card.className = 'module rx-club-module-card';
+      card.dataset.go = 'club';
+      card.style.cssText = 'background:radial-gradient(ellipse at 75% 10%,rgba(242,196,0,.22),transparent 50%),linear-gradient(135deg,#211b0b,#090909 70%);border-color:#796322;min-height:245px';
+      card.innerHTML = `<div style="position:absolute;inset:16px 18px auto auto;color:#f2c400;font-size:11px;letter-spacing:3px;font-weight:900">MEMBRESÍA</div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#f2c400;pointer-events:none"><div style="font-size:54px;line-height:1">✦</div><div style="font-size:clamp(25px,4vw,38px);font-weight:950;letter-spacing:5px;margin-top:8px">PRIVÉ</div><div style="font-size:11px;letter-spacing:2px;color:#e8dfbd;margin-top:7px">EL CLUB ROXTHAL</div></div><div class="module-content"><h3>RoXThal Privé</h3><p>Socios mensuales · descuentos exclusivos en cursos, tatuajes y cuadros.</p><button class="btn btn-primary btn-small" type="button">Descubrir el club</button></div>`;
+      grid.appendChild(card);
+    }
+
+    if (grid && !grid.__rxClubObserver) {
+      grid.__rxClubObserver = true;
+      new MutationObserver(() => {
+        if (!grid.querySelector('[data-go="club"]')) {
+          const card = document.createElement('article');
+          card.className = 'module rx-club-module-card';
+          card.dataset.go = 'club';
+          card.style.cssText = 'background:radial-gradient(ellipse at 75% 10%,rgba(242,196,0,.22),transparent 50%),linear-gradient(135deg,#211b0b,#090909 70%);border-color:#796322;min-height:245px';
+          card.innerHTML = `<div style="position:absolute;inset:16px 18px auto auto;color:#f2c400;font-size:11px;letter-spacing:3px;font-weight:900">MEMBRESÍA</div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#f2c400;pointer-events:none"><div style="font-size:54px;line-height:1">✦</div><div style="font-size:clamp(25px,4vw,38px);font-weight:950;letter-spacing:5px;margin-top:8px">PRIVÉ</div><div style="font-size:11px;letter-spacing:2px;color:#e8dfbd;margin-top:7px">EL CLUB ROXTHAL</div></div><div class="module-content"><h3>RoXThal Privé</h3><p>Socios mensuales · descuentos exclusivos en cursos, tatuajes y cuadros.</p><button class="btn btn-primary btn-small" type="button">Descubrir el club</button></div>`;
+          grid.appendChild(card);
+        }
+      }).observe(grid, { childList: true });
+    }
+  }
+
+  function installAdminTab() {
+    const tabs = document.getElementById('adminTabs');
+    const panelRoot = document.getElementById('adminPanel');
+    if (!tabs || !panelRoot) return;
+
+    if (!tabs.querySelector('[data-admin-tab="clubMembers"]')) {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.dataset.adminTab = 'clubMembers';
+      tab.textContent = 'RoXThal Privé';
+      tabs.insertBefore(tab, document.getElementById('adminLogout') || null);
+    }
+
+    if (!document.getElementById('adminClubMembers')) {
+      const panel = document.createElement('div');
+      panel.id = 'adminClubMembers';
+      panel.className = 'admin-tab-panel hidden';
+      panel.innerHTML = `
+        <div class="grid2" style="align-items:start">
+          <div class="card">
+            <h3>Configuración del club</h3>
+            <p class="small" style="margin:8px 0 16px">Estos valores se aplican a nuevas confirmaciones de pago. El administrador verifica las transferencias fuera de la app.</p>
+            <div class="field"><label for="rxClubAdminFee">Cuota mensual (ARS)</label><input id="rxClubAdminFee" type="number" min="1" step="0.01" value="0"></div>
+            <div class="field"><label for="rxClubAdminCourseDiscount">Descuento en cursos (%)</label><input id="rxClubAdminCourseDiscount" type="number" min="0" max="100" step="0.5" value="10"></div>
+            <div class="field"><label for="rxClubAdminTattooDiscount">Descuento en tatuajes (%)</label><input id="rxClubAdminTattooDiscount" type="number" min="0" max="100" step="0.5" value="10"></div>
+            <div class="field"><label for="rxClubAdminArtDiscount">Descuento en cuadros (%)</label><input id="rxClubAdminArtDiscount" type="number" min="0" max="100" step="0.5" value="10"></div>
+            <div class="field"><label for="rxClubAdminAlias">Alias de transferencia</label><input id="rxClubAdminAlias" maxlength="100" value="edukari1"></div>
+            <div class="field"><label for="rxClubAdminInstructions">Instrucciones de pago</label><textarea id="rxClubAdminInstructions" maxlength="1200"></textarea></div>
+            <button id="rxClubSaveSettings" class="btn btn-primary" type="button">Guardar configuración</button>
+            <div id="rxClubAdminSettingsStatus" class="status hidden" style="margin-top:12px" role="status"></div>
+          </div>
+          <div class="card">
+            <h3>Solicitudes y socios</h3>
+            <p class="small" style="margin:8px 0 16px">Confirmar pago activa o renueva un mes desde hoy o desde el vencimiento vigente. Rechazar no elimina el registro.</p>
+            <div class="actions" style="margin-top:0;margin-bottom:12px"><button id="rxClubRefreshMembers" class="btn" type="button">Actualizar lista</button></div>
+            <div id="rxClubAdminMemberList" class="admin-list"><div class="empty">Cargando socios…</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Historial de cuotas confirmadas</h3>
+          <div id="rxClubAdminPayments" class="admin-list" style="margin-top:12px"><div class="empty">Cargando pagos…</div></div>
+        </div>`;
+      panelRoot.appendChild(panel);
+    }
+  }
+
+  async function loadClubSettings() {
+    const { data, error } = await db
+      .from('roxthal_club_settings')
+      .select('*')
+      .eq('id', true)
+      .single();
+    if (error) throw error;
+
+    clubSettings = data;
+    const offer = document.getElementById('rxClubPublicOffer');
+    const instructions = document.getElementById('rxClubTransferInstructions');
+
+    if (offer) {
+      offer.innerHTML = `
+        <div class="card">
+          <div class="small">CUOTA MENSUAL</div>
+          <div style="font-size:28px;font-weight:950;color:#f2c400;margin-top:5px">${Number(data.monthly_fee) > 0 ? moneyClub(data.monthly_fee) : 'A configurar'}</div>
+          <div class="small">${Number(data.monthly_fee) > 0 ? 'ARS por mes' : 'Cuota pendiente de definir por RoXThal'}</div>
+        </div>
+        <div class="card">
+          <div class="small">BENEFICIOS PARA SOCIOS ACTIVOS</div>
+          <div class="row"><span>Cursos</span><b>${Number(data.discount_courses)}% OFF</b></div>
+          <div class="row"><span>Tatuajes</span><b>${Number(data.discount_tattoos)}% OFF</b></div>
+          <div class="row"><span>Cuadros</span><b>${Number(data.discount_artworks)}% OFF</b></div>
+        </div>`;
+    }
+
+    if (instructions) {
+      instructions.innerHTML = `<b>Transferencia mensual</b><br>Alias: <strong style="color:#f2c400">${escClub(data.transfer_alias || 'Consultar')}</strong><br><span class="small">${escClub(data.payment_instructions || '')}</span>`;
+    }
+
+    const fee = document.getElementById('rxClubAdminFee');
+    if (fee) fee.value = data.monthly_fee;
+    const c = document.getElementById('rxClubAdminCourseDiscount');
+    if (c) c.value = data.discount_courses;
+    const t = document.getElementById('rxClubAdminTattooDiscount');
+    if (t) t.value = data.discount_tattoos;
+    const a = document.getElementById('rxClubAdminArtDiscount');
+    if (a) a.value = data.discount_artworks;
+    const alias = document.getElementById('rxClubAdminAlias');
+    if (alias) alias.value = data.transfer_alias || 'edukari1';
+    const inst = document.getElementById('rxClubAdminInstructions');
+    if (inst) inst.value = data.payment_instructions || '';
+    return data;
+  }
+
+  function setClubStatus(el, message, ok) {
+    if (!el) return;
+    el.textContent = message;
+    el.className = 'status ' + (ok ? 'ok' : 'err');
+    el.classList.remove('hidden');
+  }
+
+  async function submitClubApplication(event) {
+    event.preventDefault();
+    const button = document.getElementById('rxClubSubmit');
+    const status = document.getElementById('rxClubApplicationStatus');
+    const full_name = document.getElementById('rxClubName').value.trim();
+    const phone = document.getElementById('rxClubPhone').value.trim();
+    const email = document.getElementById('rxClubEmail').value.trim();
+    const transfer_reference = document.getElementById('rxClubTransferRef').value.trim();
+    const application_note = document.getElementById('rxClubNote').value.trim();
+
+    if (!full_name || !phone) {
+      return setClubStatus(status, 'Completá nombre y teléfono.', false);
+    }
+    if (!clubSettings || Number(clubSettings.monthly_fee) <= 0) {
+      return setClubStatus(status, 'El club todavía está configurando su cuota mensual. Consultá con RoXThal antes de transferir.', false);
+    }
+
+    button.disabled = true;
+    button.textContent = 'Enviando…';
+    try {
+      const { error } = await db.from('roxthal_club_members').insert({
+        full_name,
+        phone,
+        email: email || null,
+        transfer_reference: transfer_reference || null,
+        application_note: application_note || null
+      });
+      if (error) throw error;
+
+      document.getElementById('rxClubApplicationForm').reset();
+      setClubStatus(status, 'Solicitud registrada. Queda pendiente de verificación manual del pago; los beneficios todavía no están activos.', true);
+    } catch (error) {
+      setClubStatus(status, 'No se pudo registrar la solicitud. Revisá la conexión e intentá nuevamente. ' + (error?.message || ''), false);
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Enviar solicitud';
+    }
+  }
+
+  async function lookupClubMember(event) {
+    event.preventDefault();
+    const box = document.getElementById('rxClubCarnetResult');
+    box.innerHTML = '<div class="status">Consultando carnet…</div>';
+
+    try {
+      const memberNumber = document.getElementById('rxClubMemberNumber').value.trim();
+      const phone = document.getElementById('rxClubLookupPhone').value.trim();
+      const { data, error } = await db.rpc('roxthal_club_member_lookup', {
+        p_member_number: memberNumber,
+        p_phone: phone
+      });
+      if (error) throw error;
+
+      const m = Array.isArray(data) ? data[0] : data;
+      if (!m) {
+        box.innerHTML = '<div class="status err">No encontramos un carnet con esos datos. Revisá el número y el teléfono registrado.</div>';
+        return;
+      }
+
+      const active = !!m.is_active;
+      box.innerHTML = `<div class="card" style="border-color:${active ? '#806a28' : '#6d1b1f'};background:linear-gradient(145deg,#17140c,#101010)">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:start">
+          <div>
+            <div class="small" style="letter-spacing:2px;color:#f2c400">ROXTHAL PRIVÉ</div>
+            <h3 style="margin:8px 0">${escClub(m.full_name)}</h3>
+            <div class="small">Socio ${escClub(m.member_number)}</div>
+          </div>
+          <span class="tag" style="white-space:nowrap;color:${active ? '#8de2ae' : '#ff8b8f'}">${active ? 'ACTIVO' : m.status === 'pending' ? 'PENDIENTE' : m.status === 'rejected' ? 'RECHAZADO' : 'VENCIDO / INACTIVO'}</span>
+        </div>
+        <div class="row" style="margin-top:14px"><span>Vigencia hasta</span><b>${dateClub(m.current_period_end)}</b></div>
+        ${active ? `<div class="row"><span>Descuento en cursos</span><b>${Number(m.discount_courses)}%</b></div><div class="row"><span>Descuento en tatuajes</span><b>${Number(m.discount_tattoos)}%</b></div><div class="row"><span>Descuento en cuadros</span><b>${Number(m.discount_artworks)}%</b></div><p class="small" style="margin-top:10px">Mostrá este carnet al administrador antes de abonar para validar el descuento.</p>` : '<p class="small" style="margin-top:10px">Los descuentos no están disponibles hasta que la membresía esté activa y vigente.</p>'}
+      </div>`;
+    } catch (error) {
+      box.innerHTML = '<div class="status err">No se pudo consultar el carnet. ' + escClub(error?.message || '') + '</div>';
+    }
+  }
+
+  async function saveClubSettings() {
+    if (!await window.RoXThalAdmin?.require?.()) return;
+
+    const status = document.getElementById('rxClubAdminSettingsStatus');
+    const fee = Number(document.getElementById('rxClubAdminFee').value);
+    const courses = Number(document.getElementById('rxClubAdminCourseDiscount').value);
+    const tattoos = Number(document.getElementById('rxClubAdminTattooDiscount').value);
+    const artworks = Number(document.getElementById('rxClubAdminArtDiscount').value);
+    const alias = document.getElementById('rxClubAdminAlias').value.trim();
+    const instructions = document.getElementById('rxClubAdminInstructions').value.trim();
+
+    if (!Number.isFinite(fee) || fee < 1) {
+      return setClubStatus(status, 'La cuota mensual debe ser mayor que cero.', false);
+    }
+    if ([courses, tattoos, artworks].some(n => !Number.isFinite(n) || n < 0 || n > 100)) {
+      return setClubStatus(status, 'Cada descuento debe estar entre 0 y 100%.', false);
+    }
+
+    try {
+      const { error } = await db.from('roxthal_club_settings').update({
+        monthly_fee: fee,
+        discount_courses: courses,
+        discount_tattoos: tattoos,
+        discount_artworks: artworks,
+        transfer_alias: alias || 'edukari1',
+        payment_instructions: instructions,
+        updated_at: new Date().toISOString()
+      }).eq('id', true);
+      if (error) throw error;
+
+      await loadClubSettings();
+      setClubStatus(status, 'Configuración guardada.', true);
+    } catch (error) {
+      setClubStatus(status, 'No se pudo guardar la configuración: ' + (error?.message || ''), false);
+    }
+  }
+
+  async function loadClubAdminMembers() {
+    if (!await window.RoXThalAdmin?.require?.()) return;
+
+    const box = document.getElementById('rxClubAdminMemberList');
+    box.innerHTML = '<div class="status">Cargando socios…</div>';
+
+    try {
+      const { data, error } = await db.from('roxthal_club_members')
+        .select('*')
+        .order('applied_at', { ascending: false });
+      if (error) throw error;
+
+      if (!data?.length) {
+        box.innerHTML = '<div class="empty">Todavía no hay solicitudes de membresía.</div>';
+      } else {
+        box.innerHTML = data.map(m => {
+          const expired = m.status === 'active' && m.current_period_end && m.current_period_end < todayClub();
+          const label = expired ? 'VENCIDO' : ({pending:'PENDIENTE',active:'ACTIVO',rejected:'RECHAZADO',expired:'VENCIDO'}[m.status] || m.status);
+
+          return `<article class="card" style="padding:14px">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:start">
+              <div>
+                <h4>${escClub(m.full_name)}</h4>
+                <p class="small">${escClub(m.phone)} · ${escClub(m.email || 'Sin email')}</p>
+                <p class="small">Socio: <b>${escClub(m.member_number)}</b></p>
+              </div>
+              <span class="tag">${label}</span>
+            </div>
+            <div class="row"><span>Solicitó</span><span>${dateClub((m.applied_at || '').slice(0,10))}</span></div>
+            <div class="row"><span>Referencia transferencia</span><span style="text-align:right;max-width:60%;overflow-wrap:anywhere">${escClub(m.transfer_reference || 'No indicada')}</span></div>
+            <div class="row"><span>Vigencia</span><span>${dateClub(m.current_period_start)} – ${dateClub(m.current_period_end)}</span></div>
+            ${m.application_note ? `<p class="small" style="margin-top:8px">Mensaje: ${escClub(m.application_note)}</p>` : ''}
+            <div class="field" style="margin-top:12px">
+              <label for="rxClubAmount_${m.id}">Importe de la transferencia verificada (ARS)</label>
+              <input id="rxClubAmount_${m.id}" type="number" min="1" step="0.01" value="${Number(clubSettings?.monthly_fee || 0)}">
+            </div>
+            <div class="field">
+              <label for="rxClubRef_${m.id}">Referencia confirmada (opcional)</label>
+              <input id="rxClubRef_${m.id}" maxlength="180" value="${escClub(m.transfer_reference || '')}">
+            </div>
+            <div class="field">
+              <label for="rxClubAdminNote_${m.id}">Nota administrativa (opcional)</label>
+              <input id="rxClubAdminNote_${m.id}" maxlength="500" value="${escClub(m.admin_notes || '')}">
+            </div>
+            <div class="actions" style="margin-top:8px">
+              <button class="btn btn-primary btn-small" type="button" data-rx-club-confirm="${m.id}">${m.status === 'pending' ? 'Confirmar pago y aceptar' : 'Confirmar pago / renovar'}</button>
+              ${m.status === 'pending' ? `<button class="btn btn-danger btn-small" type="button" data-rx-club-reject="${m.id}">Rechazar solicitud</button>` : ''}
+              <button class="btn btn-small" type="button" data-rx-club-copy="${escClub(m.member_number)}">Copiar número</button>
+            </div>
+          </article>`;
+        }).join('');
+      }
+    } catch (error) {
+      box.innerHTML = '<div class="status err">No se pudo cargar la lista: ' + escClub(error?.message || '') + '</div>';
+    }
+  }
+
+  async function loadClubAdminPayments() {
+    if (!await window.RoXThalAdmin?.require?.()) return;
+
+    const box = document.getElementById('rxClubAdminPayments');
+    try {
+      const { data, error } = await db.from('roxthal_club_payments')
+        .select('id,member_id,amount,transfer_reference,period_start,period_end,status,verified_at,roxthal_club_members(member_number,full_name)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+
+      box.innerHTML = data?.length
+        ? data.map(p => `<div class="admin-item" style="grid-template-columns:1fr auto">
+            <div>
+              <h4>${escClub(p.roxthal_club_members?.full_name || 'Socio')}</h4>
+              <p class="small">${escClub(p.roxthal_club_members?.member_number || '')} · ${dateClub(p.period_start)} – ${dateClub(p.period_end)}</p>
+              <p class="small">${escClub(p.transfer_reference || 'Sin referencia')}</p>
+            </div>
+            <div style="text-align:right"><b>${moneyClub(p.amount)}</b><p class="small">${escClub(p.status)}</p></div>
+          </div>`).join('')
+        : '<div class="empty">Todavía no hay cuotas confirmadas.</div>';
+    } catch (error) {
+      box.innerHTML = '<div class="status err">No se pudo cargar el historial: ' + escClub(error?.message || '') + '</div>';
+    }
+  }
+
+  async function confirmClubPayment(memberId) {
+    if (!await window.RoXThalAdmin?.require?.()) return;
+
+    const amount = Number(document.getElementById('rxClubAmount_' + memberId)?.value);
+    const reference = document.getElementById('rxClubRef_' + memberId)?.value.trim() || null;
+    const notes = document.getElementById('rxClubAdminNote_' + memberId)?.value.trim() || null;
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return alert('Ingresá el importe efectivamente verificado de la transferencia.');
+    }
+    if (!confirm('Confirmar que la transferencia fue verificada y activar o renovar la membresía por un mes?')) return;
+
+    try {
+      const { data, error } = await db.rpc('roxthal_club_confirm_payment', {
+        p_member_id: memberId,
+        p_amount: amount,
+        p_transfer_reference: reference,
+        p_admin_notes: notes
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error('El servidor no confirmó la operación.');
+
+      if (typeof toast === 'function') {
+        toast('Pago confirmado. Membresía vigente hasta ' + dateClub(data.period_end) + '.');
+      }
+      await Promise.all([loadClubAdminMembers(), loadClubAdminPayments()]);
+    } catch (error) {
+      alert('No se pudo confirmar el pago: ' + (error?.message || 'Error desconocido'));
+    }
+  }
+
+  async function rejectClubMember(memberId) {
+    if (!await window.RoXThalAdmin?.require?.()) return;
+    if (!confirm('¿Rechazar esta solicitud? El registro se conservará en el historial.')) return;
+
+    try {
+      const { error } = await db.from('roxthal_club_members')
+        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .eq('id', memberId)
+        .eq('status', 'pending');
+      if (error) throw error;
+
+      if (typeof toast === 'function') toast('Solicitud rechazada.');
+      await loadClubAdminMembers();
+    } catch (error) {
+      alert('No se pudo rechazar la solicitud: ' + (error?.message || 'Error desconocido'));
+    }
+  }
+
+  function bindClubEvents() {
+    document.getElementById('rxClubApplicationForm')?.addEventListener('submit', submitClubApplication);
+    document.getElementById('rxClubLookupForm')?.addEventListener('submit', lookupClubMember);
+    document.getElementById('rxClubSaveSettings')?.addEventListener('click', saveClubSettings);
+
+    document.getElementById('rxClubRefreshMembers')?.addEventListener('click', async () => {
+      await loadClubSettings().catch(() => {});
+      await Promise.all([loadClubAdminMembers(), loadClubAdminPayments()]);
+    });
+
+    document.addEventListener('click', async event => {
+      const confirmButton = event.target.closest('[data-rx-club-confirm]');
+      if (confirmButton) {
+        confirmButton.disabled = true;
+        try {
+          await confirmClubPayment(confirmButton.dataset.rxClubConfirm);
+        } finally {
+          confirmButton.disabled = false;
+        }
+        return;
+      }
+
+      const rejectButton = event.target.closest('[data-rx-club-reject]');
+      if (rejectButton) {
+        rejectButton.disabled = true;
+        try {
+          await rejectClubMember(rejectButton.dataset.rxClubReject);
+        } finally {
+          rejectButton.disabled = false;
+        }
+        return;
+      }
+
+      const copyButton = event.target.closest('[data-rx-club-copy]');
+      if (copyButton) {
+        try {
+          await navigator.clipboard.writeText(copyButton.dataset.rxClubCopy);
+          if (typeof toast === 'function') toast('Número de socio copiado.');
+        } catch (_) {
+          window.prompt('Copiá el número de socio:', copyButton.dataset.rxClubCopy);
+        }
+      }
+
+      const tab = event.target.closest('[data-admin-tab="clubMembers"]');
+      if (tab) {
+        if (!await window.RoXThalAdmin?.require?.()) return;
+        await loadClubSettings().catch(error => console.warn('RoXThal Privé settings:', error));
+        await Promise.all([loadClubAdminMembers(), loadClubAdminPayments()]);
+      }
+    });
+  }
+
+  function start() {
+    installClubView();
+    installAdminTab();
+    bindClubEvents();
+
+    loadClubSettings().catch(error => {
+      console.warn('RoXThal Privé: no se pudo cargar la configuración pública.', error);
+      const offer = document.getElementById('rxClubPublicOffer');
+      if (offer) offer.innerHTML = '<div class="status err">No se pudo cargar la cuota. Volvé a intentarlo más tarde.</div>';
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>                                                                          
+
 
 </body>
 </html>
