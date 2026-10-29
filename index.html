@@ -57336,7 +57336,18 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
      Volvemos directamente a la pestaña Atelier.
   ========================================================== */
 
-  function openSchoolAtelier(){
+    function openSchoolAtelier(){
+
+    const launcher =
+      el('rsaLauncher');
+
+    if(launcher){
+
+      launcher.click();
+
+      return;
+
+    }
 
     const atelierTab =
       document.querySelector(
@@ -57346,23 +57357,6 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     if(atelierTab){
 
       atelierTab.click();
-
-      return;
-
-    }
-
-
-    /*
-     * Si por algún motivo la pestaña no existe,
-     * usamos el launcher original.
-     */
-
-    const launcher =
-      el('rsaLauncher');
-
-    if(launcher){
-
-      launcher.click();
 
     }
 
@@ -57564,15 +57558,18 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
 
   function buildHub(){
 
+    
     const atelierPage =
-      el('rsaPageAtelier');
+      el('schoolAtelier');
 
-    if(!atelierPage){
+    const studentCard =
+      el('rxStudentCardEntry');
+
+    if(!atelierPage || !studentCard){
 
       return false;
 
     }
-
 
     let hub =
       el(HUB_ID);
@@ -57724,13 +57721,12 @@ body.view-open #miRoxthalIndependentOverlay #miRoxthalIndependentHeader *{
     );
 
 
-    /*
-     * Lo colocamos AL FINAL de Atelier.
-     * No toca las pestañas originales ni las
-     * secciones internas existentes.
+        /*
+     * Colocar los accesos inmediatamente debajo
+     * del carné de estudiante.
      */
 
-    atelierPage.appendChild(hub);
+    studentCard.insertAdjacentElement('afterend', hub);
 
 
     return true;
