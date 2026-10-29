@@ -81221,7 +81221,307 @@ if(document.readyState==='loading'){
     start();
   }
 })();
-</script>                                                                          
+</script>     
+   
+
+<!-- ROXTHAL · CENTRO DE CRECIMIENTO · AMPLIACIÓN INDEPENDIENTE -->
+<style id="rx-growth-center-style">
+#adminGrowthCenter .rxgc-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;margin:16px 0;
+}
+#adminGrowthCenter .rxgc-card{
+  background:rgba(20,20,20,.92);
+  border:1px solid rgba(220,190,100,.35);
+  border-radius:14px;padding:16px;
+  min-width:0;
+}
+#adminGrowthCenter .rxgc-card strong{
+  display:block;font-size:1.65rem;
+  color:#e5c66d;margin-top:8px;
+  overflow-wrap:anywhere;
+}
+#adminGrowthCenter .rxgc-card span{
+  color:#ccc;font-size:.88rem;
+}
+#adminGrowthCenter .rxgc-note{
+  color:#aaa;font-size:.85rem;line-height:1.5;
+}
+#adminGrowthCenter .rxgc-list{
+  display:grid;gap:9px;margin-top:12px;
+}
+#adminGrowthCenter .rxgc-item{
+  padding:12px;border-radius:10px;
+  background:rgba(255,255,255,.045);
+  border-left:3px solid #d9bb65;
+}
+#adminGrowthCenter .rxgc-error{color:#ff9999}
+</style>
+
+<script id="rx-growth-center-script">
+(function(){
+  'use strict';
+
+  if(window.__rxGrowthCenterV1) return;
+  window.__rxGrowthCenterV1=true;
+
+  const $=id=>document.getElementById(id);
+
+  function money(value){
+    return '$'+Number(value||0).toLocaleString('es-AR',{
+      maximumFractionDigits:2
+    });
+  }
+
+  function dateValue(value){
+    if(!value) return null;
+    const d=new Date(value);
+    return Number.isNaN(d.getTime())?null:d;
+  }
+
+  function card(label,value,note){
+    return `
+      <article class="rxgc-card">
+        <span>${label}</span>
+        <strong>${value}</strong>
+        <div class="rxgc-note">${note||''}</div>
+      </article>`;
+  }
+
+  function build(){
+    const tabs=$('adminTabs');
+    const host=$('adminPanel');
+
+    if(!tabs||!host) return false;
+
+    if(!tabs.querySelector('[data-admin-tab="growthCenter"]')){
+      const button=document.createElement('button');
+      button.type='button';
+      button.dataset.adminTab='growthCenter';
+      button.textContent='📈 Crecimiento';
+      const logout=$('adminLogout');
+      if(logout&&logout.parentElement===tabs){
+        tabs.insertBefore(button,logout);
+      }else{
+        tabs.appendChild(button);
+      }
+    }
+
+    if(!$('adminGrowthCenter')){
+      const panel=document.createElement('section');
+      panel.id='adminGrowthCenter';
+      panel.className='admin-tab-panel hidden';
+      panel.innerHTML=`
+        <div class="card">
+          <h3>📈 Centro de Crecimiento RoXThal</h3>
+          <p class="rxgc-note">
+            Indicadores comerciales calculados a partir de los registros
+            existentes. Este panel no modifica datos.
+          </p>
+          <button type="button" class="btn btn-primary"
+            id="rxgcRefresh">Actualizar indicadores</button>
+          <p id="rxgcStatus" class="rxgc-note"
+            role="status">Esperando actualización.</p>
+        </div>
+        <div id="rxgcMetrics" class="rxgc-grid"></div>
+        <div class="card">
+          <h3>📌 Seguimientos vencidos</h3>
+          <div id="rxgcFollowups" class="rxgc-list">
+            Todavía no se han cargado los datos.
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>📊 Cómo interpretar los indicadores</h3>
+          <p class="rxgc-note">
+            Las ventas del CRM corresponden a consultas marcadas como
+            ganadas. Los pagos corresponden a registros con estado
+            «pagado». Son indicadores separados y no deben sumarse
+            automáticamente.
+          </p>
+          <p class="rxgc-note">
+            Los resultados de consultas y pagos están limitados a los
+            registros recuperados por esta pantalla. No representan
+            necesariamente el histórico completo.
+          </p>
+        </div>`;
+      host.appendChild(panel);
+    }
+
+    $('rxgcRefresh').addEventListener('click',load);
+    return true;
+  }
+
+  async function load(){
+    const status=$('rxgcStatus');
+    const metrics=$('rxgcMetrics');
+    const followups=$('rxgcFollowups');
+
+    if(!status||!metrics||!followups) return;
+
+    status.textContent='Comprobando permisos y consultando datos…';
+    metrics.innerHTML='';
+    followups.textContent='Cargando…';
+
+    try{
+      const admin=window.RoXThalAdmin;
+      if(!admin||!await admin.require()){
+        throw new Error('Se requiere una sesión administrativa.');
+      }
+
+      const database=typeof DB==='function'?DB():null;
+      if(!database) throw new Error('Supabase no está disponible.');
+
+      const results=await Promise.all([
+        database.from('roxthal_sales_leads')
+          .select('customer_name,status,sale_amount,next_follow_up,created_at')
+          .order('created_at',{ascending:false}).limit(500),
+
+        database.from('payments')
+          .select('amount,status,payment_date')
+          .order('payment_date',{ascending:false}).limit(500),
+
+        database.from('bookings')
+          .select('id,status')
+          .limit(500),
+
+        database.from('students')
+          .select('id',{count:'exact',head:true})
+      ]);
+
+      const labels=[
+        'Consultas comerciales',
+        'Pagos',
+        'Reservas',
+        'Alumnos'
+      ];
+
+      const errors=results
+        .map((r,i)=>r.error?labels[i]+': '+r.error.message:null)
+        .filter(Boolean);
+
+      const leads=results[0].data||[];
+      const payments=results[1].data||[];
+      const bookings=results[2].data||[];
+      const studentCount=results[3].count;
+
+      const now=new Date();
+      const last30=new Date(now);
+      last30.setDate(now.getDate()-30);
+
+      const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+      const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+
+      const recent=leads.filter(x=>{
+        const d=dateValue(x.created_at);
+        return d&&d>=last30&&d<=now;
+      });
+
+      const won=leads.filter(x=>x.status==='ganado');
+      const conversion=leads.length
+        ?(won.length/leads.length*100).toFixed(1)+'%'
+        :'—';
+
+      const leadRevenue=won.reduce((sum,x)=>
+        sum+Math.max(0,Number(x.sale_amount)||0),0);
+
+      const paid=payments.filter(x=>x.status==='pagado');
+
+      const paidRevenue=paid.reduce((sum,x)=>
+        sum+Math.max(0,Number(x.amount)||0),0);
+
+      const monthPaid=paid.filter(x=>{
+        const d=dateValue(x.payment_date);
+        return d&&d>=monthStart&&d<=now;
+      }).reduce((sum,x)=>sum+Math.max(0,Number(x.amount)||0),0);
+
+      const overdue=leads.filter(x=>{
+        if(!x.next_follow_up) return false;
+        const d=dateValue(x.next_follow_up);
+        return d&&d<today&&
+          !['ganado','perdido'].includes(x.status);
+      });
+
+      const pendingBookings=bookings.filter(x=>
+        x.status==='pending'
+      ).length;
+
+      metrics.innerHTML=[
+        card('Consultas registradas',leads.length,
+          'Hasta 500 registros recuperados'),
+        card('Consultas últimos 30 días',recent.length,
+          'Según fecha de creación'),
+        card('Ventas concretadas',won.length,
+          'Consultas marcadas como ganadas'),
+        card('Conversión comercial',conversion,
+          'Ventas ganadas / consultas recuperadas'),
+        card('Ventas declaradas en CRM',money(leadRevenue),
+          'Importes de consultas ganadas'),
+        card('Pagos registrados',money(paidRevenue),
+          'Solo pagos con estado pagado'),
+        card('Pagos del mes',money(monthPaid),
+          'Según fecha de pago'),
+        card('Seguimientos vencidos',overdue.length,
+          'Consultas abiertas con fecha pasada'),
+        card('Reservas pendientes',pendingBookings,
+          'Entre las reservas recuperadas'),
+        card('Alumnos registrados',
+          studentCount==null?'No disponible':studentCount,
+          'Conteo total informado por Supabase')
+      ].join('');
+
+      if(overdue.length){
+        followups.innerHTML=overdue.slice(0,15).map(x=>`
+          <div class="rxgc-item">
+            <strong>${typeof esc==='function'
+              ?esc(x.customer_name||'Consulta sin nombre')
+              :'Consulta'}</strong>
+            <div class="rxgc-note">
+              Seguimiento: ${x.next_follow_up}
+              · Estado: ${x.status||'sin estado'}
+            </div>
+          </div>`).join('');
+      }else{
+        followups.textContent=
+          'No hay seguimientos vencidos entre las consultas recuperadas.';
+      }
+
+      status.textContent=errors.length
+        ?'Algunos indicadores no pudieron consultarse: '+errors.join(' | ')
+        :'Actualizado correctamente. Datos consultados en modo lectura.';
+
+      if(errors.length) status.className='rxgc-error';
+
+    }catch(error){
+      status.textContent='No se pudo actualizar: '+error.message;
+      status.className='rxgc-error';
+      followups.textContent='No se pudieron cargar los seguimientos.';
+    }
+  }
+
+  function init(){
+    if(!build()){
+      let tries=0;
+      const retry=setInterval(()=>{
+        tries++;
+        if(build()||tries>=20) clearInterval(retry);
+      },500);
+    }
+  }
+
+  document.addEventListener('click',function(event){
+    const tab=event.target.closest('[data-admin-tab="growthCenter"]');
+    if(tab) load();
+  });
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init,{once:true});
+  }else{
+    init();
+  }
+})();
+</script>
+<!-- FIN ROXTHAL · CENTRO DE CRECIMIENTO -->
 
 
 </body>
