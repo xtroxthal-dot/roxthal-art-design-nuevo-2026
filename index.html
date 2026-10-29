@@ -81275,10 +81275,15 @@ if(document.readyState==='loading'){
   }
 
   function dateValue(value){
-    if(!value) return null;
-    const d=new Date(value);
-    return Number.isNaN(d.getTime())?null:d;
-  }
+  if(!value) return null;
+
+  const text=String(value);
+  const d=/^\d{4}-\d{2}-\d{2}$/.test(text)
+    ?new Date(text+'T00:00:00')
+    :new Date(text);
+
+  return Number.isNaN(d.getTime())?null:d;
+}
 
   function card(label,value,note){
     return `
@@ -81369,7 +81374,7 @@ if(document.readyState==='loading'){
         throw new Error('Se requiere una sesión administrativa.');
       }
 
-      const database=typeof DB==='function'?DB():null;
+      const database=window.db||null;
       if(!database) throw new Error('Supabase no está disponible.');
 
       const results=await Promise.all([
