@@ -79947,6 +79947,752 @@ if(document.readyState==='loading'){
 <!-- FIN FONDO GLOBAL MULTICOLOR -->
 
 
+<!-- =========================================================
+     ROXTHAL ART DESIGN · QUIZ DEL ARTE PREMIUM
+     BLOQUE INDEPENDIENTE
+     Pegar una sola vez antes del </body> FINAL.
+     No reemplaza el Quiz del Arte existente.
+     ========================================================= -->
+
+<style id="rxap-premium-style">
+#rxap-premium-card {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  padding:20px;
+  border:1px solid rgba(255,210,100,.55);
+  border-radius:18px;
+  color:#fff;
+  background:
+    radial-gradient(ellipse at 90% 10%,rgba(255,0,130,.32),transparent 40%),
+    radial-gradient(ellipse at 10% 100%,rgba(0,220,200,.25),transparent 45%),
+    linear-gradient(135deg,#171126,#08090e 75%);
+  box-shadow:0 10px 30px #0005;
+  text-align:left;
+}
+#rxap-premium-card * { box-sizing:border-box; }
+#rxap-premium-card .rxap-card-kicker {
+  color:#ffd36c;font-size:.72rem;font-weight:900;letter-spacing:2px;
+}
+#rxap-premium-card .rxap-card-title {
+  display:block;margin:8px 0;font-size:1.25rem;font-weight:950;
+}
+#rxap-premium-card .rxap-card-copy {opacity:.82;font-size:.88rem;line-height:1.5}
+#rxap-premium-card .rxap-card-cta {
+  display:inline-block;margin-top:13px;padding:9px 13px;border-radius:999px;
+  background:linear-gradient(90deg,#ffd36c,#f5a623);color:#171126;font-weight:900;
+}
+#rxap-premium-root {
+  --rxap-gold:#ffd36c;--rxap-ink:#090a10;--rxap-panel:#151522;
+  --rxap-muted:#bdbbc9;
+  position:fixed;inset:0;z-index:2147483000;
+  overflow:auto;overscroll-behavior:contain;
+  color:#fff;background:
+    radial-gradient(ellipse at 8% 0%,#492057 0,transparent 35%),
+    radial-gradient(ellipse at 95% 25%,#064d4b 0,transparent 33%),
+    linear-gradient(145deg,#090a10,#11101b 65%,#08090d);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+#rxap-premium-root[hidden] {display:none!important}
+#rxap-premium-root button,
+#rxap-premium-root select {font:inherit}
+#rxap-premium-root button {cursor:pointer}
+#rxap-premium-root .rxap-shell {max-width:1050px;margin:auto;padding:18px 15px 44px}
+#rxap-premium-root .rxap-top {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-bottom:1px solid #ffffff20;padding:7px 0 15px;margin-bottom:22px;
+}
+#rxap-premium-root .rxap-brand {font-weight:950;letter-spacing:1.4px;font-size:.8rem;color:var(--rxap-gold)}
+#rxap-premium-root .rxap-btn {
+  border:1px solid #ffffff30;border-radius:12px;padding:11px 14px;
+  color:#fff;background:#ffffff0c;font-weight:800;
+}
+#rxap-premium-root .rxap-btn:focus-visible,
+#rxap-premium-root select:focus-visible {
+  outline:3px solid var(--rxap-gold);outline-offset:3px;
+}
+#rxap-premium-root .rxap-primary {
+  background:linear-gradient(100deg,#ffe49a,#f3ad32);
+  color:#17111c;border:0;font-weight:950;
+}
+#rxap-premium-root .rxap-hero {
+  border:1px solid #ffffff20;border-radius:24px;padding:clamp(20px,5vw,42px);
+  background:linear-gradient(120deg,#ffffff0b,#ffffff03);
+  box-shadow:0 18px 60px #0004;
+}
+#rxap-premium-root .rxap-eyebrow {
+  color:var(--rxap-gold);font-size:.72rem;font-weight:950;letter-spacing:2.5px;
+}
+#rxap-premium-root h1 {font-size:clamp(2rem,7vw,4.1rem);line-height:1.02;margin:12px 0}
+#rxap-premium-root h1 span {
+  background:linear-gradient(90deg,#ffe49a,#f1a5ff,#66f1dc);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+#rxap-premium-root .rxap-lead {color:#e0dce9;line-height:1.65;max-width:700px}
+#rxap-premium-root .rxap-stats {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0;
+}
+#rxap-premium-root .rxap-stat {
+  border:1px solid #ffffff18;border-radius:15px;padding:13px;background:#ffffff08;
+}
+#rxap-premium-root .rxap-stat strong {display:block;font-size:1.45rem;color:var(--rxap-gold)}
+#rxap-premium-root .rxap-stat span {font-size:.75rem;color:var(--rxap-muted)}
+#rxap-premium-root .rxap-section-title {font-size:1.2rem;font-weight:950;margin:24px 0 12px}
+#rxap-premium-root .rxap-cats {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+}
+#rxap-premium-root .rxap-cat {
+  text-align:left;color:#fff;border:1px solid #ffffff24;border-radius:15px;
+  padding:14px;background:#11111be8;min-width:0;
+}
+#rxap-premium-root .rxap-cat[aria-pressed="true"] {
+  border-color:var(--rxap-gold);box-shadow:inset 0 0 0 1px var(--rxap-gold);
+  background:#342a24;
+}
+#rxap-premium-root .rxap-cat strong {display:block;margin-bottom:5px;font-size:.9rem}
+#rxap-premium-root .rxap-cat small {color:var(--rxap-muted);line-height:1.4}
+#rxap-premium-root .rxap-config {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0;
+}
+#rxap-premium-root .rxap-field label {
+  display:block;font-size:.8rem;color:var(--rxap-muted);margin-bottom:7px;
+}
+#rxap-premium-root select {
+  width:100%;min-width:0;padding:12px;border-radius:12px;
+  color:#fff;background:#1b1a28;border:1px solid #ffffff30;
+}
+#rxap-premium-root select option {background:#171522;color:#fff}
+#rxap-premium-root .rxap-actions {display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+#rxap-premium-root .rxap-progress {
+  height:7px;border-radius:999px;background:#ffffff18;overflow:hidden;margin:18px 0;
+}
+#rxap-premium-root .rxap-progress span {
+  display:block;height:100%;width:0;background:linear-gradient(90deg,#f1a5ff,#ffd36c,#66f1dc);
+  transition:width .2s ease;
+}
+#rxap-premium-root .rxap-question {
+  font-size:clamp(1.2rem,4vw,2rem);font-weight:900;line-height:1.3;margin:20px 0;
+}
+#rxap-premium-root .rxap-meta {
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;
+  color:var(--rxap-muted);font-size:.83rem;
+}
+#rxap-premium-root .rxap-options {display:grid;gap:10px}
+#rxap-premium-root .rxap-option {
+  width:100%;text-align:left;border:1px solid #ffffff25;border-radius:14px;
+  padding:15px;color:#fff;background:#ffffff08;line-height:1.45;
+}
+#rxap-premium-root .rxap-option[aria-pressed="true"] {
+  border-color:var(--rxap-gold);background:#5b45231f;
+}
+#rxap-premium-root .rxap-option.rxap-correct {border-color:#4fe1ad;background:#104b393d}
+#rxap-premium-root .rxap-option.rxap-incorrect {border-color:#ff8b9a;background:#59202a55}
+#rxap-premium-root .rxap-feedback {
+  border:1px solid #ffffff20;border-radius:15px;padding:15px;margin-top:15px;
+  line-height:1.6;background:#ffffff08;
+}
+#rxap-premium-root .rxap-feedback strong {color:var(--rxap-gold)}
+#rxap-premium-root .rxap-result-score {font-size:clamp(2.7rem,10vw,5rem);font-weight:1000;color:var(--rxap-gold)}
+#rxap-premium-root .rxap-review-item {
+  border-top:1px solid #ffffff20;padding:13px 0;line-height:1.55;
+}
+#rxap-premium-root .rxap-muted {color:var(--rxap-muted)}
+#rxap-premium-root .rxap-note {font-size:.8rem;color:var(--rxap-muted);line-height:1.6;margin-top:18px}
+@media(max-width:620px) {
+  #rxap-premium-root .rxap-config {grid-template-columns:1fr}
+  #rxap-premium-root .rxap-cats {grid-template-columns:1fr}
+  #rxap-premium-root .rxap-stats {gap:7px}
+  #rxap-premium-root .rxap-stat {padding:10px}
+  #rxap-premium-root .rxap-stat strong {font-size:1.2rem}
+  #rxap-premium-root .rxap-shell {padding:12px 11px 30px}
+  #rxap-premium-root .rxap-top {align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce) {
+  #rxap-premium-root * {scroll-behavior:auto!important;transition:none!important}
+}
+</style>
+
+<div id="rxap-premium-root" hidden aria-label="Quiz del Arte Premium">
+  <div class="rxap-shell">
+    <header class="rxap-top">
+      <div>
+        <div class="rxap-brand">ROXTHAL ART DESIGN</div>
+        <div style="font-weight:900;margin-top:4px">QUIZ DEL ARTE <span style="color:#ffd36c">PREMIUM</span></div>
+      </div>
+      <button type="button" class="rxap-btn" id="rxapExit">✕ Salir</button>
+    </header>
+
+    <main id="rxapScreenHome">
+      <section class="rxap-hero">
+        <div class="rxap-eyebrow">APRENDER · ENTRENAR · SUPERARSE</div>
+        <h1>El arte se aprende.<br><span>El conocimiento se demuestra.</span></h1>
+        <p class="rxap-lead">Poné a prueba tus conocimientos en dibujo, pintura, historia del arte, tatuaje, fileteado porteño, diseño y educación artística. Elegí tu recorrido y avanzá a tu ritmo.</p>
+        <div class="rxap-stats">
+          <div class="rxap-stat"><strong id="rxapStatPlayed">0</strong><span>Partidas finalizadas</span></div>
+          <div class="rxap-stat"><strong id="rxapStatAccuracy">0%</strong><span>Respuestas correctas</span></div>
+          <div class="rxap-stat"><strong id="rxapStatBest">0%</strong><span>Mejor resultado</span></div>
+        </div>
+      </section>
+
+      <div class="rxap-section-title">1. Elegí una disciplina</div>
+      <div id="rxapCategories" class="rxap-cats"></div>
+
+      <div class="rxap-section-title">2. Configurá tu desafío</div>
+      <div class="rxap-config">
+        <div class="rxap-field"><label for="rxapMode">Modo de juego</label>
+          <select id="rxapMode">
+            <option value="learn">Aprendizaje · explicación al responder</option>
+            <option value="exam">Examen · resultados al finalizar</option>
+            <option value="timed">Contra reloj · 20 segundos por pregunta</option>
+            <option value="practice">Práctica · sin presión</option>
+          </select>
+        </div>
+        <div class="rxap-field"><label for="rxapLevel">Dificultad</label>
+          <select id="rxapLevel">
+            <option value="all">Todas las dificultades</option>
+            <option value="1">Nivel 1 · Fundamentos</option>
+            <option value="2">Nivel 2 · Intermedio</option>
+            <option value="3">Nivel 3 · Avanzado</option>
+          </select>
+        </div>
+        <div class="rxap-field"><label for="rxapCount">Cantidad de preguntas</label>
+          <select id="rxapCount">
+            <option value="10">10 preguntas</option>
+            <option value="20">20 preguntas</option>
+            <option value="30">30 preguntas</option>
+            <option value="50">50 preguntas</option>
+            <option value="300">Recorrido completo · hasta 300</option>
+          </select>
+        </div>
+      </div>
+      <div class="rxap-actions">
+        <button type="button" class="rxap-btn rxap-primary" id="rxapStart">🎨 Comenzar desafío</button>
+        <button type="button" class="rxap-btn" id="rxapShowProgress">Ver mi progreso</button>
+      </div>
+      <p class="rxap-note">El progreso se guarda en este dispositivo y navegador. No se envían resultados a un servidor ni se crea una clasificación pública.</p>
+    </main>
+
+    <section id="rxapScreenQuiz" hidden>
+      <div class="rxap-meta"><span id="rxapQuestionCount">Pregunta 1</span><span id="rxapTimer" hidden>⏱ 20 s</span></div>
+      <div class="rxap-progress"><span id="rxapProgressBar"></span></div>
+      <div class="rxap-meta"><span id="rxapCategoryLabel">Disciplina</span><span id="rxapDifficultyLabel">Nivel</span></div>
+      <div id="rxapQuestion" class="rxap-question"></div>
+      <div id="rxapOptions" class="rxap-options"></div>
+      <div id="rxapFeedback" class="rxap-feedback" hidden aria-live="polite"></div>
+      <div class="rxap-actions">
+        <button type="button" class="rxap-btn rxap-primary" id="rxapNext" disabled>Continuar →</button>
+        <button type="button" class="rxap-btn" id="rxapQuit">Terminar sesión</button>
+      </div>
+    </section>
+
+    <section id="rxapScreenResult" hidden>
+      <div class="rxap-hero">
+        <div class="rxap-eyebrow">DESAFÍO COMPLETADO</div>
+        <h2 style="font-size:clamp(1.7rem,5vw,2.7rem);margin:12px 0">Tu resultado</h2>
+        <div id="rxapResultScore" class="rxap-result-score">0%</div>
+        <p id="rxapResultText" class="rxap-lead"></p>
+        <div class="rxap-stats">
+          <div class="rxap-stat"><strong id="rxapCorrect">0</strong><span>Correctas</span></div>
+          <div class="rxap-stat"><strong id="rxapWrong">0</strong><span>Incorrectas</span></div>
+          <div class="rxap-stat"><strong id="rxapElapsed">0:00</strong><span>Tiempo utilizado</span></div>
+        </div>
+        <div class="rxap-actions">
+          <button type="button" class="rxap-btn rxap-primary" id="rxapAgain">🔄 Volver a jugar</button>
+          <button type="button" class="rxap-btn" id="rxapHome">Volver al inicio del módulo</button>
+          <button type="button" class="rxap-btn" id="rxapReviewToggle">Ver revisión de respuestas</button>
+        </div>
+      </div>
+      <div id="rxapReview" hidden>
+        <div class="rxap-section-title">Revisión y explicaciones</div>
+        <div id="rxapReviewList"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Evitar inicializar dos veces si el bloque se pega por error dos veces. */
+  if(window.__rxapPremiumInitialized) return;
+  window.__rxapPremiumInitialized = true;
+
+  const $ = id => document.getElementById(id);
+  const root = $("rxap-premium-root");
+  if(!root) return;
+
+  const STORAGE_KEY = "roxthal_rxap_premium_v1";
+  const categories = [
+    {id:"drawing",icon:"✏️",name:"Dibujo y fundamentos visuales"},
+    {id:"painting",icon:"🎨",name:"Pintura y color"},
+    {id:"history",icon:"🏛️",name:"Historia del arte y movimientos"},
+    {id:"tattoo",icon:"🖋️",name:"Tatuaje profesional y cultura tattoo"},
+    {id:"fileteado",icon:"🌹",name:"Fileteado porteño y artes decorativas"},
+    {id:"design",icon:"🧩",name:"Diseño, graffiti y cultura visual"},
+    {id:"kids",icon:"🧸",name:"Educación artística y creatividad infantil"},
+    {id:"materials",icon:"🖌️",name:"Técnicas mixtas, materiales y conservación"}
+  ];
+
+  /*
+   * Cada registro: categoría, término, definición, dificultad.
+   * Se generan cinco formulaciones por concepto: 60 x 5 = 300 retos.
+   */
+  const facts = [
+    ["drawing","Perspectiva lineal","Sistema para representar profundidad mediante líneas que convergen hacia uno o varios puntos de fuga.",1],
+    ["drawing","Punto de fuga","Punto aparente en el que convergen las líneas paralelas de una escena en perspectiva.",1],
+    ["drawing","Claroscuro","Uso de valores claros y oscuros para representar volumen, iluminación y profundidad.",1],
+    ["drawing","Proporción","Relación de tamaño entre las partes de un objeto o entre varios elementos de una composición.",1],
+    ["drawing","Encuadre","Selección de los límites y del área que entran en la imagen representada.",1],
+    ["drawing","Sombreado","Aplicación gradual o contrastada de valores para sugerir luz, volumen y textura.",1],
+    ["drawing","Composición","Organización de elementos visuales dentro de una obra.",1],
+    ["drawing","Espacio negativo","Área vacía que rodea o separa las formas principales de una composición.",2],
+
+    ["painting","Colores primarios","Colores base de un modelo cromático que se combinan para obtener otros colores.",1],
+    ["painting","Colores complementarios","Pares de colores opuestos en un círculo cromático determinado.",1],
+    ["painting","Matiz","Cualidad que permite distinguir una familia de color de otra, como rojo, azul o verde.",1],
+    ["painting","Saturación","Grado de intensidad o pureza cromática percibida de un color.",2],
+    ["painting","Valor tonal","Grado de claridad u oscuridad de un color o una zona de la imagen.",1],
+    ["painting","Acuarela","Técnica pictórica que utiliza pigmentos diluidos en agua y suele aprovechar la transparencia.",1],
+    ["painting","Impasto","Aplicación de pintura en una capa espesa que deja relieve visible.",2],
+    ["painting","Veladura","Capa fina y translúcida aplicada sobre una capa seca para modificar su apariencia cromática.",3],
+
+    ["history","Renacimiento","Período artístico europeo asociado al humanismo y al renovado interés por la Antigüedad clásica.",1],
+    ["history","Barroco","Estilo caracterizado frecuentemente por el dramatismo, el movimiento y los contrastes intensos.",1],
+    ["history","Impresionismo","Movimiento que exploró la percepción de la luz y los efectos cambiantes del color.",1],
+    ["history","Cubismo","Movimiento que representa formas desde múltiples puntos de vista y las descompone geométricamente.",2],
+    ["history","Surrealismo","Movimiento que exploró el sueño, el inconsciente y asociaciones inesperadas de imágenes.",1],
+    ["history","Expresionismo","Tendencia que privilegia la expresión subjetiva mediante formas, colores o gestos intensificados.",2],
+    ["history","Arte abstracto","Práctica artística que no depende de representar objetos reconocibles del mundo visible.",1],
+    ["history","Perspectiva atmosférica","Recurso que sugiere distancia mediante cambios de contraste, nitidez y color.",2],
+
+    ["tattoo","Máquina de bobinas","Tipo de máquina de tatuaje que utiliza bobinas electromagnéticas para accionar el mecanismo.",1],
+    ["tattoo","Máquina rotativa","Máquina que utiliza un motor rotatorio para impulsar el movimiento de la aguja o cartucho.",1],
+    ["tattoo","Línea de tatuaje","Trazo que define contornos, detalles o estructuras dentro de un diseño tatuable.",1],
+    ["tattoo","Sombreado en tatuaje","Técnica para generar transiciones tonales o áreas de sombra en un tatuaje.",1],
+    ["tattoo","Esténcil","Transferencia temporal del diseño a la piel para orientar la colocación del tatuaje.",1],
+    ["tattoo","Asepsia","Conjunto de medidas destinadas a evitar la contaminación por microorganismos.",2],
+    ["tattoo","Antisepsia","Uso de agentes apropiados sobre tejidos vivos para reducir microorganismos, según el protocolo indicado.",2],
+    ["tattoo","Material de un solo uso","Elemento diseñado para utilizarse una vez y desecharse según las normas aplicables.",1],
+    ["tattoo","Barreras de protección","Cubiertas o elementos que ayudan a impedir la contaminación de superficies y equipos.",2],
+    ["tattoo","Consentimiento informado","Proceso de explicar procedimiento, riesgos y cuidados para que la persona decida con conocimiento.",2],
+
+    ["fileteado","Fileteado porteño","Arte decorativo de Buenos Aires que combina ornamentación, letras, colores y motivos estilizados.",1],
+    ["fileteado","Voluta","Motivo ornamental curvo que se enrolla o gira sobre sí mismo.",1],
+    ["fileteado","Simetría ornamental","Organización en la que elementos decorativos se corresponden respecto de un eje o disposición.",2],
+    ["fileteado","Letras fileteadas","Letras ornamentales que integran contornos, sombras y adornos característicos de esta tradición.",1],
+    ["fileteado","Contraste cromático","Diferencia perceptible entre colores que ayuda a distinguir elementos visuales.",1],
+    ["fileteado","Motivo vegetal estilizado","Representación decorativa de hojas, flores o tallos simplificados y ornamentados.",1],
+
+    ["design","Jerarquía visual","Organización de elementos para indicar qué información debe percibirse primero.",1],
+    ["design","Contraste","Diferencia visual entre elementos que ayuda a separarlos o enfatizar una parte.",1],
+    ["design","Tipografía","Diseño y disposición de letras y caracteres dentro de un sistema de escritura.",1],
+    ["design","Legibilidad","Facilidad con la que se distinguen letras, palabras o símbolos.",1],
+    ["design","Composición asimétrica","Organización sin simetría exacta que puede mantener equilibrio visual mediante pesos diferentes.",2],
+    ["design","Graffiti","Forma de expresión visual asociada a inscripciones, letras e imágenes realizadas en espacios públicos o soportes diversos.",1],
+
+    ["kids","Exploración de materiales","Experiencia que permite conocer las propiedades de materiales mediante observación y manipulación segura.",1],
+    ["kids","Proceso creativo","Secuencia abierta de exploración, generación de ideas, pruebas, decisiones y revisión.",1],
+    ["kids","Motricidad fina","Control de movimientos pequeños, especialmente de manos y dedos, que ayuda en tareas gráficas.",1],
+    ["kids","Aprendizaje por experimentación","Aprendizaje que surge al probar, observar resultados y ajustar decisiones.",1],
+    ["kids","Expresión artística infantil","Uso de recursos visuales para comunicar ideas, experiencias o imaginación sin exigir una única respuesta correcta.",1],
+    ["kids","Consigna abierta","Propuesta que admite múltiples soluciones y permite decisiones propias del participante.",2],
+
+    ["materials","Pigmento","Material colorante que aporta color a una pintura, tinta u otro medio.",1],
+    ["materials","Aglutinante","Componente que une partículas de pigmento y ayuda a formar una película o capa pictórica.",2],
+    ["materials","Soporte","Superficie sobre la que se realiza una obra, como papel, tela, madera o muro.",1],
+    ["materials","Fijativo","Producto utilizado en determinadas técnicas para ayudar a reducir el desprendimiento de partículas.",2],
+    ["materials","Collage","Técnica que construye una imagen mediante la combinación y adhesión de materiales diversos.",1],
+    ["materials","Conservación preventiva","Medidas para reducir riesgos de deterioro antes de que sea necesario intervenir directamente la obra.",3],
+    ["materials","pH","Medida relacionada con la acidez o alcalinidad de una solución, relevante para ciertos materiales artísticos.",3],
+    ["materials","Secado y curado","Procesos distintos: el secado implica pérdida de líquido o formación de película; el curado supone cambios adicionales del material.",3]
+  ];
+
+  const promptStyles = [
+    d => "¿Qué concepto corresponde a esta descripción? " + d.definition,
+    d => "Identificá el término artístico que mejor encaja: " + d.definition,
+    d => "En el lenguaje del arte, ¿cómo se llama lo siguiente? " + d.definition,
+    d => "Elegí el concepto definido por esta idea: " + d.definition,
+    d => "¿Cuál es el término más adecuado para esta descripción? " + d.definition
+  ];
+
+  const state = {
+    category:"all", questions:[], index:0, answers:[], mode:"learn",
+    level:"all", count:10, startedAt:0, questionStartedAt:0,
+    timerId:null, remaining:20, locked:false, lastResult:null
+  };
+
+  function shuffle(arr){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function esc(value){
+    return String(value).replace(/[&<>"']/g,ch=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[ch]);
+  }
+
+  function loadStats(){
+    try {
+      const v=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+      return {
+        played:Number(v.played)||0,
+        correct:Number(v.correct)||0,
+        total:Number(v.total)||0,
+        best:Number(v.best)||0,
+        history:Array.isArray(v.history)?v.history.slice(-30):[]
+      };
+    } catch(e) {
+      return {played:0,correct:0,total:0,best:0,history:[]};
+    }
+  }
+
+  function saveStats(stats){
+    try { localStorage.setItem(STORAGE_KEY,JSON.stringify(stats)); }
+    catch(e) { /* El juego sigue funcionando aunque el almacenamiento esté bloqueado. */ }
+  }
+
+  function renderStats(){
+    const s=loadStats();
+    $("rxapStatPlayed").textContent=s.played;
+    $("rxapStatAccuracy").textContent=(s.total?Math.round(s.correct/s.total*100):0)+"%";
+    $("rxapStatBest").textContent=s.best+"%";
+  }
+
+  function renderCategories(){
+    const host=$("rxapCategories");
+    host.innerHTML="";
+    const all=document.createElement("button");
+    all.type="button";all.className="rxap-cat";
+    all.setAttribute("aria-pressed",String(state.category==="all"));
+    all.innerHTML="<strong>🌈 Todas las disciplinas</strong><small>Un recorrido combinado por el arte</small>";
+    all.addEventListener("click",()=>{
+      state.category="all";renderCategories();
+    });
+    host.appendChild(all);
+
+    categories.forEach(c=>{
+      const b=document.createElement("button");
+      b.type="button";b.className="rxap-cat";
+      b.setAttribute("aria-pressed",String(state.category===c.id));
+      b.innerHTML="<strong>"+c.icon+" "+esc(c.name)+"</strong><small>"+facts.filter(f=>f[0]===c.id).length+" conceptos base</small>";
+      b.addEventListener("click",()=>{
+        state.category=c.id;renderCategories();
+      });
+      host.appendChild(b);
+    });
+  }
+
+  function buildBank(){
+    const expanded=[];
+    facts.forEach((f,idx)=>{
+      const [category,term,definition,level]=f;
+      for(let variant=0;variant<5;variant++){
+        expanded.push({
+          id:category+"-"+idx+"-"+variant,
+          category,term,definition,level,
+          prompt:promptStyles[variant]({term,definition}),
+          variant
+        });
+      }
+    });
+    return expanded;
+  }
+
+  const bank=buildBank();
+
+  function startGame(){
+    clearTimer();
+    state.mode=$("rxapMode").value;
+    state.level=$("rxapLevel").value;
+    state.count=Number($("rxapCount").value)||10;
+
+    let pool=bank.filter(q=>
+      (state.category==="all"||q.category===state.category) &&
+      (state.level==="all"||q.level===Number(state.level))
+    );
+
+    if(!pool.length){
+      alert("No hay preguntas disponibles con esa combinación. Elegí otra dificultad o disciplina.");
+      return;
+    }
+
+    pool=shuffle(pool);
+    const count=Math.min(state.count,pool.length);
+    state.questions=pool.slice(0,count);
+    state.index=0;state.answers=[];state.startedAt=Date.now();
+    state.locked=false;state.lastResult=null;
+
+    $("rxapScreenHome").hidden=true;
+    $("rxapScreenResult").hidden=true;
+    $("rxapScreenQuiz").hidden=false;
+    $("rxapReview").hidden=true;
+    renderQuestion();
+    root.scrollTop=0;
+  }
+
+  function categoryName(id){
+    const c=categories.find(x=>x.id===id);
+    return c?c.name:"Arte";
+  }
+
+  function clearTimer(){
+    if(state.timerId){clearInterval(state.timerId);state.timerId=null;}
+  }
+
+  function renderQuestion(){
+    clearTimer();
+    const q=state.questions[state.index];
+    if(!q){finishGame();return;}
+    state.locked=false;
+    state.questionStartedAt=Date.now();
+    state.remaining=20;
+
+    $("rxapQuestionCount").textContent="Pregunta "+(state.index+1)+" de "+state.questions.length;
+    $("rxapProgressBar").style.width=(state.index/state.questions.length*100)+"%";
+    $("rxapCategoryLabel").textContent=categoryName(q.category);
+    $("rxapDifficultyLabel").textContent="Nivel "+q.level;
+    $("rxapQuestion").textContent=q.prompt;
+    $("rxapFeedback").hidden=true;
+    $("rxapFeedback").textContent="";
+    $("rxapNext").disabled=true;
+    $("rxapOptions").innerHTML="";
+
+    const distractors=shuffle(bank.filter(x=>x.id!==q.id && x.term!==q.term)
+      .map(x=>x.term).filter((v,i,a)=>a.indexOf(v)===i)).slice(0,3);
+    const options=shuffle([q.term,...distractors]);
+    q.options=options;
+
+    options.forEach(option=>{
+      const b=document.createElement("button");
+      b.type="button";b.className="rxap-option";
+      b.textContent=option;b.setAttribute("aria-pressed","false");
+      b.addEventListener("click",()=>chooseAnswer(option,b));
+      $("rxapOptions").appendChild(b);
+    });
+
+    const timed=state.mode==="timed";
+    $("rxapTimer").hidden=!timed;
+    if(timed){
+      updateTimer();
+      state.timerId=setInterval(()=>{
+        state.remaining--;
+        updateTimer();
+        if(state.remaining<=0){
+          clearTimer();
+          if(!state.locked) chooseAnswer(null,null,true);
+        }
+      },1000);
+    }
+  }
+
+  function updateTimer(){
+    $("rxapTimer").textContent="⏱ "+Math.max(0,state.remaining)+" s";
+  }
+
+  function chooseAnswer(option,button,timeout){
+    if(state.locked)return;
+    state.locked=true;
+    clearTimer();
+    const q=state.questions[state.index];
+    const correct=option===q.term;
+    const elapsed=Math.max(0,Math.round((Date.now()-state.questionStartedAt)/1000));
+    state.answers.push({
+      id:q.id,term:q.term,definition:q.definition,category:q.category,
+      level:q.level,chosen:option,correct,elapsed
+    });
+
+    Array.from($("rxapOptions").children).forEach(b=>{
+      b.disabled=true;
+      if(b.textContent===q.term)b.classList.add("rxap-correct");
+      if(button && b===button && !correct)b.classList.add("rxap-incorrect");
+      b.setAttribute("aria-pressed",String(button===b));
+    });
+
+    const feedback=$("rxapFeedback");
+    if(state.mode==="learn"||state.mode==="practice"||timeout){
+      feedback.hidden=false;
+      feedback.innerHTML=(timeout?"<strong>⏱ Tiempo agotado.</strong> ":
+        correct?"<strong>✓ Correcto.</strong> ":"<strong>✦ A repasar.</strong> ")
+        +"La respuesta correcta es <strong>"+esc(q.term)+"</strong>."
+        +"<br><span class=\"rxap-muted\">"+esc(q.definition)+"</span>";
+    }
+    $("rxapNext").disabled=false;
+    $("rxapNext").textContent=state.index===state.questions.length-1?"Ver resultado →":"Continuar →";
+  }
+
+  function nextQuestion(){
+    if(!state.locked)return;
+    if(state.index<state.questions.length-1){
+      state.index++;renderQuestion();root.scrollTop=0;
+    } else finishGame();
+  }
+
+  function formatTime(seconds){
+    const s=Math.max(0,Math.floor(seconds));
+    return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+  }
+
+  function finishGame(){
+    clearTimer();
+    $("rxapScreenQuiz").hidden=true;
+    $("rxapScreenResult").hidden=false;
+    const total=state.answers.length;
+    const correct=state.answers.filter(a=>a.correct).length;
+    const pct=total?Math.round(correct/total*100):0;
+    const elapsed=Math.round((Date.now()-state.startedAt)/1000);
+
+    $("rxapResultScore").textContent=pct+"%";
+    $("rxapResultText").textContent=
+      pct>=90?"¡Excelente dominio! Seguí ampliando tus conocimientos artísticos.":
+      pct>=70?"Buen resultado. Revisá los errores para consolidar lo aprendido.":
+      pct>=50?"Vas construyendo una base. Repasar las explicaciones te ayudará a avanzar.":
+      "Cada intento suma experiencia. Repasá las respuestas y volvé a intentarlo.";
+    $("rxapCorrect").textContent=correct;
+    $("rxapWrong").textContent=total-correct;
+    $("rxapElapsed").textContent=formatTime(elapsed);
+
+    const stats=loadStats();
+    stats.played++;
+    stats.correct+=correct;
+    stats.total+=total;
+    stats.best=Math.max(stats.best,pct);
+    stats.history.push({date:new Date().toISOString(),category:state.category,mode:state.mode,score:pct,total,correct,elapsed});
+    saveStats(stats);renderStats();
+
+    state.lastResult={pct,correct,total,elapsed};
+    renderReview();
+    root.scrollTop=0;
+  }
+
+  function renderReview(){
+    const host=$("rxapReviewList");
+    host.innerHTML="";
+    state.answers.forEach((a,i)=>{
+      const div=document.createElement("div");
+      div.className="rxap-review-item";
+      div.innerHTML="<strong>"+(i+1)+". "+esc(a.term)+"</strong> — "
+        +(a.correct?"<span style=\"color:#4fe1ad\">Correcta</span>":"<span style=\"color:#ff9aa8\">Para repasar</span>")
+        +"<div class=\"rxap-muted\">"+esc(a.definition)+"</div>"
+        +(a.chosen===null?"<div>Tu respuesta: sin responder (tiempo agotado)</div>":
+          !a.correct?"<div>Tu respuesta: "+esc(a.chosen)+"</div>":"");
+      host.appendChild(div);
+    });
+  }
+
+  function showHome(){
+    clearTimer();
+    root.hidden=true;
+    $("rxapScreenHome").hidden=false;
+    $("rxapScreenQuiz").hidden=true;
+    $("rxapScreenResult").hidden=true;
+    $("rxapReview").hidden=true;
+    renderStats();
+  }
+
+  function openModule(){
+    renderStats();
+    root.hidden=false;
+    $("rxapScreenHome").hidden=false;
+    $("rxapScreenQuiz").hidden=true;
+    $("rxapScreenResult").hidden=true;
+    root.scrollTop=0;
+  }
+
+  function installCard(){
+    const grid=$("moduleGrid");
+    if(!grid)return false;
+    if($("rxap-premium-card"))return true;
+
+    const card=document.createElement("button");
+    card.type="button";
+    card.id="rxap-premium-card";
+    card.setAttribute("aria-label","Abrir Quiz del Arte Premium");
+    card.innerHTML=
+      '<span class="rxap-card-kicker">NUEVA EXPERIENCIA · ROXTHAL</span>'+
+      '<span class="rxap-card-title">🏆 QUIZ DEL ARTE PREMIUM</span>'+
+      '<span class="rxap-card-copy">Dibujo · Pintura · Historia · Tattoo · Fileteado · Diseño · Creatividad · Materiales</span>'+
+      '<span class="rxap-card-cta">Entrar al desafío →</span>';
+    card.addEventListener("click",openModule);
+    grid.appendChild(card);
+    return true;
+  }
+
+  $("rxapExit").addEventListener("click",showHome);
+  $("rxapHome").addEventListener("click",()=>{
+    $("rxapScreenHome").hidden=false;
+    $("rxapScreenResult").hidden=true;
+    $("rxapScreenQuiz").hidden=true;
+    $("rxapReview").hidden=true;
+    renderStats();root.scrollTop=0;
+  });
+  $("rxapStart").addEventListener("click",startGame);
+  $("rxapNext").addEventListener("click",nextQuestion);
+  $("rxapAgain").addEventListener("click",startGame);
+  $("rxapQuit").addEventListener("click",()=>{
+    if(confirm("¿Terminar esta sesión? Las respuestas parciales no se guardarán en las estadísticas.")){
+      clearTimer();
+      $("rxapScreenQuiz").hidden=true;
+      $("rxapScreenHome").hidden=false;
+      renderStats();root.scrollTop=0;
+    }
+  });
+  $("rxapShowProgress").addEventListener("click",()=>{
+    const s=loadStats();
+    const lines=s.history.slice().reverse().slice(0,10).map((h,i)=>
+      (i+1)+". "+h.score+"% · "+h.correct+"/"+h.total+" respuestas · "+formatTime(h.elapsed)
+    );
+    alert("TU PROGRESO ROXTHAL\n\nPartidas: "+s.played+
+      "\nAciertos: "+s.correct+"/"+s.total+
+      "\nMejor resultado: "+s.best+"%"+
+      (lines.length?"\n\nÚltimas partidas:\n"+lines.join("\n"):"\n\nTodavía no hay partidas finalizadas."));
+  });
+  $("rxapReviewToggle").addEventListener("click",()=>{
+    $("rxapReview").hidden=!$("rxapReview").hidden;
+    $("rxapReviewToggle").textContent=$("rxapReview").hidden?
+      "Ver revisión de respuestas":"Ocultar revisión";
+  });
+
+  renderCategories();
+  renderStats();
+
+  /*
+   * Integración resistente a renderModuleGrid():
+   * observa únicamente el DOM para encontrar moduleGrid y su contenido.
+   * No modifica funciones existentes ni utiliza data-go.
+   */
+  let gridObserver=null;
+  function watchGrid(){
+    const grid=$("moduleGrid");
+    if(!grid)return false;
+    installCard();
+    if(gridObserver)gridObserver.disconnect();
+    gridObserver=new MutationObserver(()=>{
+      if(!$("rxap-premium-card"))installCard();
+    });
+    gridObserver.observe(grid,{childList:true});
+    return true;
+  }
+
+  if(!watchGrid()){
+    const documentObserver=new MutationObserver(()=>{
+      if(watchGrid())documentObserver.disconnect();
+    });
+    documentObserver.observe(document.documentElement,{childList:true,subtree:true});
+  }
+})();
+</script>
+<!-- FIN ROXTHAL ART DESIGN · QUIZ DEL ARTE PREMIUM -->
+
 
 </body>
 </html>
