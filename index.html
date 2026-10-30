@@ -82946,12 +82946,6 @@ var grid=$('moduleGrid');if(grid)new MutationObserver(install).observe(grid,{chi
 </script>
 <!-- FIN ROXTHAL · REGALÁ ARTE -->
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-   
-<!-- =========================================================
- ROXTHAL VIDEO STUDIO
- MÓDULO PRIVADO DE ADMINISTRACIÓN
- INSTALAR ANTES DE </body>
- ========================================================= -->
 <script id="ROXTHAL-VIDEO-STUDIO">
 (function () {
 'use strict';
@@ -83395,608 +83389,896 @@ function addFile(file) {
  }
 }
 
-$('roxVSFiles').addEventListener('change',function() {
- const files=Array.from(this.files||[]);
- files.forEach(addFile);
- this.value='';
- status(files.length+' archivo(s) seleccionados.','ok');
-});
+  function updateTimeline(){
+    const box=document.getElementById('roxVSTimeline');
+    if(!box)return;
 
-$('roxVSAudio').addEventListener('change',function() {
- if(audioURL) URL.revokeObjectURL(audioURL);
- audioURL='';
- music=null;
+    box.innerHTML='';
 
- const file=this.files && this.files[0];
- if(!file) return;
+    if(!items.length){
+      box.innerHTML='<p style="opacity:.7;text-align:center;padding:15px">Todavía no hay imágenes ni vídeos cargados.</p>';
+      return;
+    }
 
- audioURL=URL.createObjectURL(file);
- music=new Audio(audioURL);
- music.loop=true;
- music.preload='auto';
+    items.forEach((item,index)=>{
+      const card=document.createElement('div');
+      card.style.cssText='display:flex;align-items:center;gap:10px;padding:9px;margin:7px 0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px';
 
- status('Música seleccionada: '+file.name,'ok');
-});
+      const thumb=document.createElement('div');
+      thumb.style.cssText='width:64px;height:64px;flex-shrink:0;border-radius:7px;overflow:hidden;background:#222;display:flex;align-items:center;justify-content:center';
 
-/* LISTA Y ORDEN */
+      if(item.type==='image'&&item.image){
+        const im=document.createElement('img');
+        im.src=item.image.src;
+        im.style.cssText='width:100%;height:100%;object-fit:cover';
+        thumb.appendChild(im);
+      }else{
+        thumb.textContent='🎬';
+        thumb.style.fontSize='25px';
+      }
 
-function renderList() {
- const box=$('roxVSTimeline');
- box.replaceChildren();
+      const info=document.createElement('div');
+      info.style.cssText='flex:1;min-width:0';
 
- if(!items.length) {
-  box.textContent='Todavía no hay archivos seleccionados.';
-  draw(null,0);
-  return;
- }
+      const name=document.createElement('div');
+      name.textContent=(index+1)+'. '+item.name;
+      name.style.cssText='font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
 
- items.forEach((item,i)=>{
-  const row=document.createElement('div');
-  row.className='vs-item';
+      const detail=document.createElement('small');
+      detail.textContent=item.type==='video'
+        ?'Vídeo · '+(Number(item.duration)||0).toFixed(1)+' s'
+        :'Imagen · '+(Number(item.duration)||0).toFixed(1)+' s';
+      detail.style.opacity='.7';
 
-  const icon=document.createElement('div');
-  icon.className='vs-item-icon';
-  icon.textContent=item.type==='image'?'📷':'🎥';
+      info.append(name,detail);
 
-  const info=document.createElement('div');
-  const name=document.createElement('strong');
-  name.textContent=(i+1)+'. '+item.name;
-  const details=document.createElement('div');
-  details.className='vs-muted';
-  details.textContent=item.type==='image'?
-   'Fotografía':'Vídeo';
+      const actions=document.createElement('div');
+      actions.style.cssText='display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end';
 
-  info.append(name,details);
+      function action(label,title,callback){
+        const b=document.createElement('button');
+        b.type='button';
+        b.textContent=label;
+        b.title=title;
+        b.style.cssText='padding:6px 9px;border:1px solid #777;border-radius:7px;background:#292929;color:white;cursor:pointer';
+        b.addEventListener('click',callback);
+        actions.appendChild(b);
+      }
 
-  if(item.type==='video') {
-   const start=document.createElement('input');
-   start.type='number';
-   start.min='0';
-   start.step='0.1';
-   start.max=String(Math.max(0,item.video.duration||0));
-   start.value=String(item.start);
-   start.title='Segundo de inicio';
-   start.style.marginTop='6px';
+      action('↑','Mover hacia arriba',()=>{
+        if(index===0)return;
+        [items[index-1],items[index]]=[items[index],items[index-1]];
+        updateTimeline();
+        draw();
+      });
 
-   const duration=document.createElement('input');
-   duration.type='number';
-   duration.min='0.5';
-   duration.step='0.1';
-   duration.max='120';
-   duration.value=String(item.duration);
-   duration.title='Duración del fragmento';
-   duration.style.marginTop='6px';
+      action('↓','Mover hacia abajo',()=>{
+        if(index>=items.length-1)return;
+        [items[index+1],items[index]]=[items[index],items[index+1]];
+        updateTimeline();
+        draw();
+      });
 
-   const labels=document.createElement('div');
-   labels.className='vs-muted';
-   labels.textContent='Inicio (segundos) / duración (segundos)';
-   info.append(labels,start,duration);
+      action('✂','Editar duración',()=>{
+        const current=Number(item.duration)||3;
+        const value=prompt('Duración en segundos (mínimo 1, máximo 30):',String(current));
+        if(value===null)return;
+        const seconds=Number(value);
+        if(!Number.isFinite(seconds)||seconds<1||seconds>30){
+          alert('Introduce una duración válida entre 1 y 30 segundos.');
+          return;
+        }
+        item.duration=seconds;
+        updateTimeline();
+        draw();
+      });
 
-   start.addEventListener('change',()=>{
-    item.start=Math.max(0,Math.min(
-     Number(item.video.duration)||0,Number(start.value)||0));
-    renderList();
-   });
+      action('✕','Eliminar elemento',()=>{
+        if(!confirm('¿Eliminar este elemento del vídeo?'))return;
+        release(item);
+        items.splice(index,1);
+        updateTimeline();
+        draw();
+        status('Elemento eliminado.');
+      });
 
-   duration.addEventListener('change',()=>{
-    const remaining=Math.max(.5,
-     (Number(item.video.duration)||1)-item.start);
-    item.duration=Math.max(.5,Math.min(
-     remaining,Number(duration.value)||1));
-    renderList();
-   });
-  } else {
-   const duration=document.createElement('input');
-   duration.type='number';
-   duration.min='1';
-   duration.max='15';
-   duration.step='1';
-   duration.value=String(item.duration);
-   duration.title='Duración de fotografía';
-   duration.style.marginTop='6px';
-
-   duration.addEventListener('change',()=>{
-    item.duration=Math.max(1,Math.min(
-     15,Number(duration.value)||3));
-    renderList();
-   });
-
-   info.append(duration);
+      card.append(thumb,info,actions);
+      box.appendChild(card);
+    });
   }
 
-  const actions=document.createElement('div');
-  actions.className='vs-item-actions';
+  function getSettings(){
+    const format=document.getElementById('roxVSFormat')?.value||'9:16';
+    const template=document.getElementById('roxVSTemplate')?.value||'classic';
+    const title=document.getElementById('roxVSTitle')?.value||'';
+    const subtitle=document.getElementById('roxVSSubtitle')?.value||'';
+    const price=document.getElementById('roxVSPrice')?.value||'';
+    const brand=document.getElementById('roxVSBrand')?.checked!==false;
 
-  [
-   ['↑',()=>move(i,-1),i===0],
-   ['↓',()=>move(i,1),i===items.length-1],
-   ['×',()=>remove(i),false]
-  ].forEach(([label,fn,disabled])=>{
-   const b=document.createElement('button');
-   b.type='button';
-   b.className='btn btn-small';
-   b.textContent=label;
-   b.disabled=disabled;
-   b.onclick=fn;
-   actions.appendChild(b);
+    return {format,template,title,subtitle,price,brand};
+  }
+
+  function totalDuration(){
+    return items.reduce((sum,item)=>{
+      return sum+(Math.max(1,Number(item.duration)||3));
+    },0);
+  }
+
+  function stopPreview(){
+    previewToken++;
+    if(previewTimer){
+      clearTimeout(previewTimer);
+      previewTimer=null;
+    }
+    if(previewVideo){
+      try{
+        previewVideo.pause();
+        previewVideo.removeAttribute('src');
+        previewVideo.load();
+      }catch(e){}
+      previewVideo=null;
+    }
+    status('Vista previa detenida.');
+  }
+
+  let previewTimer=null;
+  let previewVideo=null;
+
+  async function playPreview(){
+    if(!items.length){
+      status('Primero añade fotografías o vídeos.');
+      return;
+    }
+
+    stopPreview();
+    const token=previewToken;
+    const canvas=document.getElementById('roxVSCanvas');
+    if(!canvas)return;
+
+    const ctx=canvas.getContext('2d');
+    let index=0;
+
+    status('Reproduciendo vista previa…');
+
+    async function next(){
+      if(token!==previewToken)return;
+
+      if(index>=items.length){
+        status('Vista previa finalizada.');
+        return;
+      }
+
+      const item=items[index];
+      const seconds=Math.max(1,Number(item.duration)||3);
+      const started=performance.now();
+
+      if(item.type==='image'){
+        if(item.image)draw(item,ctx);
+        previewTimer=setTimeout(()=>{
+          if(token!==previewToken)return;
+          index++;
+          next();
+        },seconds*1000);
+        return;
+      }
+
+      if(item.type==='video'&&item.url){
+        const video=document.createElement('video');
+        previewVideo=video;
+        video.src=item.url;
+        video.muted=false;
+        video.playsInline=true;
+        video.preload='auto';
+
+        await new Promise(resolve=>{
+          let finished=false;
+          const done=()=>{
+            if(finished)return;
+            finished=true;
+            resolve();
+          };
+          video.addEventListener('loadeddata',done,{once:true});
+          video.addEventListener('error',done,{once:true});
+          setTimeout(done,5000);
+        });
+
+        if(token!==previewToken)return;
+
+        try{
+          await video.play();
+        }catch(e){
+          status('El navegador bloqueó el audio o la reproducción. Pulsa Vista previa otra vez.');
+        }
+
+        function renderVideo(){
+          if(token!==previewToken)return;
+
+          if(video.readyState>=2){
+            try{
+              draw({type:'video',video},ctx);
+            }catch(e){}
+          }
+
+          if(performance.now()-started>=seconds*1000||video.ended){
+            try{video.pause();}catch(e){}
+            previewVideo=null;
+            index++;
+            next();
+            return;
+          }
+
+          previewTimer=requestAnimationFrame(renderVideo);
+        }
+
+        renderVideo();
+        return;
+      }
+
+      index++;
+      next();
+    }
+
+    await next();
+  }
+
+  function draw(item,context){
+    const canvas=document.getElementById('roxVSCanvas');
+    const ctx=context||canvas?.getContext('2d');
+    if(!canvas||!ctx)return;
+
+    const settings=getSettings();
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='#111';
+    ctx.fillRect(0,0,w,h);
+
+    if(item?.type==='image'&&item.image){
+      cover(ctx,item.image,w,h);
+    }else if(item?.type==='video'&&item.video){
+      try{cover(ctx,item.video,w,h);}catch(e){}
+    }
+
+    overlay(ctx,w,h,settings);
+  }
+
+  function setCanvasFormat(){
+    const canvas=document.getElementById('roxVSCanvas');
+    if(!canvas)return;
+
+    const format=document.getElementById('roxVSFormat')?.value||'9:16';
+
+    if(format==='1:1'){
+      canvas.width=1080;
+      canvas.height=1080;
+    }else if(format==='16:9'){
+      canvas.width=1920;
+      canvas.height=1080;
+    }else{
+      canvas.width=1080;
+      canvas.height=1920;
+    }
+
+    if(items.length)draw(items[0]);
+    else{
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#171717';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#d4af37';
+      ctx.font='bold 42px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('RoXThal Art Design',canvas.width/2,canvas.height/2);
+    }
+  }
+
+  function loadMusic(file){
+    if(!file)return;
+
+    if(!file.type.startsWith('audio/')){
+      status('El archivo seleccionado no es un audio válido.');
+      return;
+    }
+
+    try{
+      if(music){
+        music.pause();
+        music.removeAttribute('src');
+        music.load();
+      }
+
+      if(musicSource){
+        try{musicSource.disconnect();}catch(e){}
+        musicSource=null;
+      }
+
+      if(musicGain){
+        try{musicGain.disconnect();}catch(e){}
+        musicGain=null;
+      }
+
+      if(audioURL){
+        URL.revokeObjectURL(audioURL);
+        audioURL=null;
+      }
+
+      audioURL=URL.createObjectURL(file);
+      music=new Audio();
+      music.src=audioURL;
+      music.loop=true;
+      music.preload='auto';
+      music.volume=1;
+
+      status('Música cargada correctamente.');
+    }catch(error){
+      console.error('RoXThal Video Studio music:',error);
+      status('No se pudo cargar la música seleccionada.');
+    }
+  }
+
+  function updateMusicVolume(){
+    const slider=document.getElementById('roxVSVolume');
+    const value=slider?Number(slider.value):50;
+    if(musicGain){
+      musicGain.gain.value=Math.max(0,Math.min(1,value/100));
+    }else if(music){
+      music.volume=Math.max(0,Math.min(1,value/100));
+    }
+  }
+
+  document.getElementById('roxVSFiles')?.addEventListener('change',event=>{
+    const files=Array.from(event.target.files||[]);
+    files.forEach(addFile);
+    event.target.value='';
+    updateTimeline();
+    if(items.length)draw(items[0]);
+    status(files.length+' archivo(s) procesado(s).');
   });
 
-  row.append(icon,info,actions);
-  box.appendChild(row);
- });
-
- const total=items.reduce((a,x)=>a+x.duration,0);
- $('roxVSPreviewInfo').textContent=
-  items.length+' archivos · '+total.toFixed(1)+' segundos';
-
- draw(items[0],0);
-}
-
-function move(i,direction) {
- const next=i+direction;
- if(next<0||next>=items.length)return;
- [items[i],items[next]]=[items[next],items[i]];
- renderList();
-}
-
-function remove(i) {
- release(items[i]);
- items.splice(i,1);
- renderList();
-}
-
-$('roxVSPhotoSeconds').addEventListener('change',()=>{
- const n=Math.max(1,Math.min(15,
-  Number($('roxVSPhotoSeconds').value)||3));
- items.forEach(x=>{
-  if(x.type==='image')x.duration=n;
- });
- renderList();
-});
-
-/* PLANTILLAS */
-
-$('roxVSTemplate').addEventListener('change',function() {
- const templates={
-  custom:['ROXTHAL ART DESIGN','Arte que deja marca.',''],
-  tattoo:['TATUAJES ROXTHAL','Diseños personalizados','Consultas por WhatsApp'],
-  courses:['APRENDE ARTE','Cursos y talleres','Inscripciones abiertas'],
-  kids:['ROXTHAL KIDS ART','Crear, jugar y aprender','Consultanos'],
-  sale:['PROMOCIÓN ESPECIAL','Una oportunidad para crear','Escribinos'],
-  gallery:['ARTE ROXTHAL','Obras y creaciones originales','Conocé nuestro atelier']
- };
- const t=templates[this.value]||templates.custom;
- $('roxVSTitle').value=t[0];
- $('roxVSSubtitle').value=t[1];
- $('roxVSPrice').value=t[2];
- draw(items[0],0);
-});
-
-['roxVSTitle','roxVSSubtitle','roxVSPrice','roxVSBrand']
-.forEach(id=>{
- $(id).addEventListener('input',()=>draw(items[0],0));
-});
-
-$('roxVSFormat').addEventListener('change',()=>{
- canvasSize();
- draw(items[0],0);
-});
-
-/* PREVISUALIZACIÓN */
-
-function stopPreview() {
- previewToken++;
- items.forEach(x=>{
-  if(x.video)x.video.pause();
- });
-}
-
-$('roxVSStop').onclick=stopPreview;
-
-$('roxVSPreview').onclick=async function() {
- if(!await checkAdmin()) {
-  status('Sesión administrativa no válida.','error');
-  return;
- }
- if(!items.length) {
-  status('Primero selecciona archivos.','error');
-  return;
- }
-
- stopPreview();
- const token=previewToken;
-
- for(const item of items) {
-  if(token!==previewToken)return;
-
-  if(item.type==='image') {
-   const start=Date.now();
-   while(token===previewToken &&
-    Date.now()-start<item.duration*1000) {
-    draw(item,(Date.now()-start)/(item.duration*1000));
-    await wait(40);
-   }
-  } else {
-   const v=item.video;
-   v.pause();
-   v.currentTime=item.start;
-   await new Promise(resolve=>{
-    if(v.readyState>=2)resolve();
-    else v.addEventListener('seeked',resolve,{once:true});
-   });
-
-   try { await v.play(); }
-   catch(e) {
-    status('No se pudo reproducir uno de los vídeos.','error');
-    return;
-   }
-
-   const start=Date.now();
-   while(token===previewToken &&
-    !v.ended &&
-    Date.now()-start<item.duration*1000) {
-    draw(item,0);
-    await wait(33);
-   }
-   v.pause();
-  }
- }
-
- if(token===previewToken) {
-  draw(items[items.length-1],0);
-  status('Previsualización finalizada.','ok');
- }
-};
-
-/* AUDIO */
-
-async function prepareAudio(stream) {
- const AC=window.AudioContext||window.webkitAudioContext;
- if(!AC)return false;
-
- if(!audioContext) {
-  audioContext=new AC();
-  audioDestination=audioContext.createMediaStreamDestination();
- }
-
- await audioContext.resume();
-
- items.forEach(item=>{
-  if(item.type!=='video'||item.audioNode)return;
-  try {
-   item.audioNode=audioContext.createMediaElementSource(item.video);
-   item.gain=audioContext.createGain();
-   item.gain.gain.value=.8;
-   item.audioNode.connect(item.gain);
-   item.gain.connect(audioDestination);
-  } catch(e) {}
- });
-
- if(music&&!musicSource) {
-  try {
-   musicSource=audioContext.createMediaElementSource(music);
-   musicGain=audioContext.createGain();
-   musicSource.connect(musicGain);
-   musicGain.connect(audioDestination);
-  } catch(e) {}
- }
-
- if(musicGain) {
-  musicGain.gain.value=Number($('roxVSVolume').value);
- }
-
- audioDestination.stream.getAudioTracks().forEach(track=>{
-  if(!stream.getAudioTracks().length)stream.addTrack(track);
- });
-
- return true;
-}
-
-/* EXPORTACIÓN */
-
-function supportedMime() {
- if(!window.MediaRecorder)return null;
- if(typeof MediaRecorder.isTypeSupported!=='function')return '';
-
- const types=[
-  'video/mp4;codecs=avc1.42E01E',
-  'video/mp4',
-  'video/webm;codecs=vp9,opus',
-  'video/webm;codecs=vp8,opus',
-  'video/webm'
- ];
-
- return types.find(type=>{
-  try{return MediaRecorder.isTypeSupported(type);}
-  catch(e){return false;}
- })||'';
-}
-
-async function renderClip(item,index,total) {
- const transition=$('roxVSTransition').value;
- const duration=item.duration;
- const start=Date.now();
- const fade=transition==='fade'?.35:0;
-
- if(item.type==='video') {
-  const v=item.video;
-  v.pause();
-  v.currentTime=item.start;
-
-  await new Promise(resolve=>{
-   if(v.readyState>=2)resolve();
-   else v.addEventListener('seeked',resolve,{once:true});
+  document.getElementById('roxVSAudio')?.addEventListener('change',event=>{
+    loadMusic(event.target.files?.[0]);
+    event.target.value='';
   });
 
-  await v.play();
- }
+  document.getElementById('roxVSVolume')?.addEventListener('input',updateMusicVolume);
 
- while(Date.now()-start<duration*1000) {
-  const elapsed=(Date.now()-start)/1000;
-  const progress=Math.min(1,elapsed/duration);
-
-  draw(item,progress);
-
-  if(fade>0) {
-   const alpha=Math.min(
-    1,
-    elapsed/fade,
-    (duration-elapsed)/fade
-   );
-   ctx.fillStyle='rgba(0,0,0,'+
-    (1-Math.max(0,alpha))+')';
-   ctx.fillRect(0,0,canvas.width,canvas.height);
-  }
-
-  await wait(33);
- }
-
- if(item.type==='video')item.video.pause();
-
- if(index===total-1)draw(item,1);
-}
-
-/* GENERAR */
-
-$('roxVSExport').onclick=async function() {
- if(!await checkAdmin()) {
-  status('Acceso administrativo denegado.','error');
-  return;
- }
- if(exporting)return;
- if(!items.length) {
-  status('Añade fotografías o vídeos.','error');
-  return;
- }
-
- if(!canvas.captureStream||!window.MediaRecorder) {
-  status('Este navegador no permite exportar vídeo. Utiliza Chrome actualizado.','error');
-  return;
- }
-
- stopPreview();
- exporting=true;
- $('roxVSExport').disabled=true;
- $('roxVSDownload').disabled=true;
- $('roxVSShare').disabled=true;
-
- let stream=null;
- let recorder=null;
- const chunks=[];
-
- try {
-  canvasSize();
-  draw(items[0],0);
-
-  stream=canvas.captureStream(30);
-
-  const audioOK=await prepareAudio(stream);
-
-  if(music) {
-   if(!audioOK) {
-    status('El navegador no admite mezclar audio. Se exportará sin música.','');
-   } else {
-    music.currentTime=0;
-    await music.play().catch(()=>{});
-   }
-  }
-
-  const mime=supportedMime();
-  if(mime===null)throw new Error('MediaRecorder no disponible.');
-
-  recorder=new MediaRecorder(
-   stream,
-   mime?{mimeType:mime,videoBitsPerSecond:3500000}:
-   {videoBitsPerSecond:3500000}
-  );
-
-  const finished=new Promise((resolve,reject)=>{
-   recorder.ondataavailable=e=>{
-    if(e.data&&e.data.size)chunks.push(e.data);
-   };
-   recorder.onstop=resolve;
-   recorder.onerror=e=>reject(e.error||new Error('Error de grabación'));
+  document.getElementById('roxVSFormat')?.addEventListener('change',()=>{
+    setCanvasFormat();
   });
 
-  recorder.start(1000);
+  ['roxVSTitle','roxVSSubtitle','roxVSPrice','roxVSBrand','roxVSTemplate'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input',()=>{
+      if(items.length)draw(items[0]);
+      else setCanvasFormat();
+    });
+    document.getElementById(id)?.addEventListener('change',()=>{
+      if(items.length)draw(items[0]);
+      else setCanvasFormat();
+    });
+  });
 
-  const total=items.length;
+  document.getElementById('roxVSPreview')?.addEventListener('click',playPreview);
+  document.getElementById('roxVSStop')?.addEventListener('click',stopPreview);
 
-  for(let i=0;i<total;i++) {
-   if(!await checkAdmin())throw new Error('La sesión administrativa expiró.');
+  updateTimeline();
+  setCanvasFormat();
+     function ensureAudioContext(){
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass)throw new Error('Este navegador no admite AudioContext.');
 
-   status(
-    'Generando escena '+(i+1)+' de '+total+
-    ' · '+Math.round((i/total)*100)+'%',
-    ''
-   );
+    if(!audioContext){
+      audioContext=new AudioContextClass();
+    }
 
-   await renderClip(items[i],i,total);
+    if(!audioDestination){
+      audioDestination=audioContext.createMediaStreamDestination();
+    }
+
+    return audioContext;
   }
 
-  recorder.stop();
-  await finished;
+  async function prepareAudio(){
+    const context=ensureAudioContext();
 
-  if(music) {
-   music.pause();
-   music.currentTime=0;
+    if(context.state==='suspended'){
+      await context.resume();
+    }
+
+    if(music){
+      if(musicSource){
+        try{musicSource.disconnect();}catch(e){}
+        musicSource=null;
+      }
+
+      musicSource=context.createMediaElementSource(music);
+      musicGain=context.createGain();
+      musicGain.gain.value=(Number(document.getElementById('roxVSVolume')?.value)||50)/100;
+
+      musicSource.connect(musicGain);
+      musicGain.connect(audioDestination);
+      musicGain.connect(context.destination);
+    }
+
+    return audioDestination;
   }
 
-  stream.getTracks().forEach(t=>t.stop());
+  function waitForVideo(video){
+    return new Promise(resolve=>{
+      if(video.readyState>=2){
+        resolve(true);
+        return;
+      }
 
-  const type=recorder.mimeType||mime||'video/webm';
-  resultBlob=new Blob(chunks,{type});
+      let finished=false;
+      const done=value=>{
+        if(finished)return;
+        finished=true;
+        video.removeEventListener('loadeddata',onReady);
+        video.removeEventListener('error',onError);
+        clearTimeout(timer);
+        resolve(value);
+      };
 
-  if(!resultBlob.size)throw new Error('El archivo generado está vacío.');
+      const onReady=()=>done(true);
+      const onError=()=>done(false);
+      const timer=setTimeout(()=>done(false),12000);
 
-  if(resultURL)URL.revokeObjectURL(resultURL);
-  resultURL=URL.createObjectURL(resultBlob);
-
-  const player=$('roxVSResult');
-  player.src=resultURL;
-  player.style.display='block';
-  player.load();
-
-  $('roxVSDownload').disabled=false;
-  $('roxVSShare').disabled=false;
-
-  const ext=type.includes('mp4')?'MP4':'WebM';
-
-  status(
-   '¡Vídeo generado! Formato '+ext+
-   ' · '+(resultBlob.size/1024/1024).toFixed(2)+
-   ' MB. Ya puedes reproducirlo y compartirlo.',
-   'ok'
-  );
-
- } catch(e) {
-  if(recorder&&recorder.state!=='inactive') {
-   try{recorder.stop();}catch(err){}
+      video.addEventListener('loadeddata',onReady,{once:true});
+      video.addEventListener('error',onError,{once:true});
+      video.load();
+    });
   }
-  if(music)music.pause();
-  if(stream)stream.getTracks().forEach(t=>t.stop());
 
-  status('Error al generar el vídeo: '+e.message,'error');
+  function waitForSeek(video,time){
+    return new Promise(resolve=>{
+      if(!Number.isFinite(time)||Math.abs(video.currentTime-time)<0.05){
+        resolve(true);
+        return;
+      }
 
- } finally {
-  exporting=false;
-  $('roxVSExport').disabled=false;
- }
-};
+      let finished=false;
+      const done=value=>{
+        if(finished)return;
+        finished=true;
+        video.removeEventListener('seeked',onSeeked);
+        clearTimeout(timer);
+        resolve(value);
+      };
 
-/* DESCARGAR */
+      const onSeeked=()=>done(true);
+      const timer=setTimeout(()=>done(false),5000);
 
-$('roxVSDownload').onclick=function() {
- if(!resultBlob||!resultURL)return;
+      video.addEventListener('seeked',onSeeked,{once:true});
 
- const ext=resultBlob.type.includes('mp4')?'mp4':'webm';
- const a=document.createElement('a');
- a.href=resultURL;
- a.download='RoXThal-Promocion.'+ext;
- document.body.appendChild(a);
- a.click();
- a.remove();
-};
-
-/* COMPARTIR */
-
-$('roxVSShare').onclick=async function() {
- if(!resultBlob)return;
-
- const ext=resultBlob.type.includes('mp4')?'mp4':'webm';
- const file=new File(
-  [resultBlob],
-  'RoXThal-Promocion.'+ext,
-  {type:resultBlob.type}
- );
-
- try {
-  if(navigator.share&&
-   navigator.canShare&&
-   navigator.canShare({files:[file]})) {
-   await navigator.share({
-    files:[file],
-    title:'RoXThal Art Design',
-    text:'Arte que deja marca.'
-   });
-  } else {
-   $('roxVSDownload').click();
-   status(
-    'El navegador no permite compartir el archivo directamente. Descárgalo y adjúntalo a tu publicación.',
-    'ok'
-   );
+      try{
+        video.currentTime=time;
+      }catch(error){
+        done(false);
+      }
+    });
   }
- } catch(e) {
-  if(e.name!=='AbortError')status(e.message,'error');
- }
-};
 
-/* LIMPIAR */
+  function recorderType(){
+    if(!window.MediaRecorder)return '';
 
-$('roxVSClear').onclick=function() {
- if(exporting)return;
+    const types=[
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm'
+    ];
 
- stopPreview();
+    return types.find(type=>MediaRecorder.isTypeSupported(type))||'';
+  }
 
- items.forEach(release);
- items.length=0;
+  function extensionFor(type){
+    return type&&type.includes('mp4')?'mp4':'webm';
+  }
 
- resultBlob=null;
+  async function exportVideo(){
+    if(exporting)return;
 
- if(resultURL)URL.revokeObjectURL(resultURL);
- resultURL='';
+    if(!items.length){
+      status('Añade fotografías o vídeos antes de exportar.');
+      return;
+    }
 
- $('roxVSResult').pause();
- $('roxVSResult').removeAttribute('src');
- $('roxVSResult').style.display='none';
+    if(!HTMLCanvasElement.prototype.captureStream||!window.MediaRecorder){
+      status('Este navegador no admite la exportación de vídeo. Prueba con Chrome actualizado.');
+      return;
+    }
 
- $('roxVSDownload').disabled=true;
- $('roxVSShare').disabled=true;
+    const canvas=document.getElementById('roxVSCanvas');
+    if(!canvas)return;
 
- $('roxVSFiles').value='';
- $('roxVSAudio').value='';
+    exporting=true;
+    const exportButton=document.getElementById('roxVSExport');
+    if(exportButton)exportButton.disabled=true;
 
- if(audioURL)URL.revokeObjectURL(audioURL);
- audioURL='';
- music=null;
+    stopPreview();
 
- renderList();
- status('Proyecto limpiado. Tus archivos originales siguen intactos.','ok');
-};
+    let stream=null;
+    let recorder=null;
+    let videoTracks=[];
 
-/* CONTROL DE ACCESO Y CIERRE */
+    try{
+      status('Preparando exportación…');
 
-document.addEventListener('click',async function(e) {
- if(!e.target.closest('[data-admin-tab="videoStudio"]'))return;
+      setCanvasFormat();
 
- if(!await checkAdmin()) {
-  panel.classList.add('hidden');
-  status('Inicia sesión como administrador.','error');
-  return;
- }
+      const canvasStream=canvas.captureStream(30);
+      stream=new MediaStream();
+      videoTracks=canvasStream.getVideoTracks();
 
- canvasSize();
- draw(items[0],0);
-});
+      videoTracks.forEach(track=>stream.addTrack(track));
 
-window.addEventListener('beforeunload',function() {
- stopPreview();
- items.forEach(release);
- if(resultURL)URL.revokeObjectURL(resultURL);
- if(audioURL)URL.revokeObjectURL(audioURL);
- if(audioContext)audioContext.close();
-});
+      const audioTrackStream=await prepareAudio();
+      audioTrackStream.getAudioTracks().forEach(track=>{
+        stream.addTrack(track);
+      });
 
-canvasSize();
-draw(null,0);
+      const mimeType=recorderType();
+      const options=mimeType?{mimeType}:undefined;
 
-console.info('RoXThal Video Studio instalado.');
+      recorder=new MediaRecorder(stream,options);
+
+      const chunks=[];
+      const completed=new Promise((resolve,reject)=>{
+        recorder.ondataavailable=event=>{
+          if(event.data&&event.data.size)chunks.push(event.data);
+        };
+
+        recorder.onerror=event=>{
+          reject(event.error||new Error('Error durante la grabación.'));
+        };
+
+        recorder.onstop=()=>{
+          if(!chunks.length){
+            reject(new Error('La grabación no generó datos.'));
+            return;
+          }
+
+          resolve(new Blob(chunks,{type:recorder.mimeType||mimeType||'video/webm'}));
+        };
+      });
+
+      recorder.start(1000);
+
+      if(music){
+        try{
+          music.currentTime=0;
+          music.volume=1;
+          await music.play();
+        }catch(error){
+          console.warn('No se pudo iniciar la música:',error);
+        }
+      }
+
+      const settings=getSettings();
+      const transition=document.getElementById('roxVSTransition')?.value||'fade';
+      const ctx=canvas.getContext('2d');
+
+      for(let index=0;index<items.length;index++){
+        const item=items[index];
+        const duration=Math.max(1,Number(item.duration)||3);
+        const started=performance.now();
+
+        status('Exportando elemento '+(index+1)+' de '+items.length+'…');
+
+        if(item.type==='image'){
+          while(performance.now()-started<duration*1000){
+            draw(item,ctx);
+
+            if(transition==='fade'){
+              const elapsed=(performance.now()-started)/1000;
+              const fade=Math.min(1,elapsed/0.35,(duration-elapsed)/0.35);
+              ctx.save();
+              ctx.fillStyle='rgba(0,0,0,'+Math.max(0,1-fade)+')';
+              ctx.fillRect(0,0,canvas.width,canvas.height);
+              ctx.restore();
+            }
+
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+          }
+        }else if(item.type==='video'){
+          const video=document.createElement('video');
+          video.src=item.url;
+          video.preload='auto';
+          video.playsInline=true;
+          video.muted=true;
+
+          const loaded=await waitForVideo(video);
+          if(!loaded){
+            video.removeAttribute('src');
+            video.load();
+            throw new Error('No se pudo leer el vídeo: '+item.name);
+          }
+
+          const context=ensureAudioContext();
+
+          if(!item.audioNode){
+            try{
+              item.audioNode=context.createMediaElementSource(video);
+              item.audioNode.connect(context.destination);
+            }catch(error){
+              console.warn('Audio del vídeo no disponible:',error);
+            }
+          }
+
+          video.muted=true;
+          video.currentTime=0;
+
+          try{
+            await video.play();
+          }catch(error){
+            console.warn('No se pudo reproducir un vídeo durante la exportación:',error);
+          }
+
+          while(performance.now()-started<duration*1000){
+            if(video.readyState>=2){
+              draw({type:'video',video},ctx);
+            }
+
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+          }
+
+          try{video.pause();}catch(e){}
+          video.removeAttribute('src');
+          video.load();
+        }
+
+        if(transition==='fade'&&index<items.length-1){
+          const fadeStart=performance.now();
+          while(performance.now()-fadeStart<350){
+            const alpha=1-(performance.now()-fadeStart)/350;
+            ctx.save();
+            ctx.fillStyle='rgba(0,0,0,'+Math.max(0,alpha)+')';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.restore();
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+          }
+        }
+      }
+
+      if(music){
+        try{music.pause();}catch(e){}
+      }
+
+      status('Finalizando archivo…');
+
+      if(recorder.state!=='inactive'){
+        recorder.stop();
+      }
+
+      resultBlob=await completed;
+
+      if(resultURL){
+        URL.revokeObjectURL(resultURL);
+      }
+
+      resultURL=URL.createObjectURL(resultBlob);
+
+      const extension=extensionFor(resultBlob.type);
+      const filename='RoXThal-Video-Promocional.'+extension;
+
+      const result=document.getElementById('roxVSResult');
+      if(result){
+        result.innerHTML='';
+        const link=document.createElement('a');
+        link.href=resultURL;
+        link.download=filename;
+        link.textContent='🎬 Vídeo generado · '+filename;
+        link.style.cssText='display:inline-block;padding:12px 16px;border-radius:9px;background:#c9a227;color:#111;font-weight:800;text-decoration:none';
+        result.appendChild(link);
+      }
+
+      const downloadButton=document.getElementById('roxVSDownload');
+      const shareButton=document.getElementById('roxVSShare');
+      if(downloadButton)downloadButton.disabled=false;
+      if(shareButton)shareButton.disabled=false;
+
+      status('¡Vídeo generado correctamente! Ya puedes descargarlo.');
+    }catch(error){
+      console.error('RoXThal Video Studio export:',error);
+      status('No se pudo exportar: '+(error?.message||'error desconocido'));
+    }finally{
+      if(music){
+        try{music.pause();}catch(e){}
+      }
+
+      if(stream){
+        stream.getVideoTracks().forEach(track=>{
+          try{track.stop();}catch(e){}
+        });
+      }
+
+      exporting=false;
+      if(exportButton)exportButton.disabled=false;
+    }
+  }
+
+  document.getElementById('roxVSExport')?.addEventListener('click',exportVideo);
+
+  document.getElementById('roxVSDownload')?.addEventListener('click',()=>{
+    if(!resultBlob||!resultURL){
+      status('Primero genera el vídeo.');
+      return;
+    }
+
+    const extension=extensionFor(resultBlob.type);
+    const link=document.createElement('a');
+    link.href=resultURL;
+    link.download='RoXThal-Video-Promocional.'+extension;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+
+  document.getElementById('roxVSShare')?.addEventListener('click',async()=>{
+    if(!resultBlob){
+      status('Primero genera el vídeo.');
+      return;
+    }
+
+    const extension=extensionFor(resultBlob.type);
+    const file=new File(
+      [resultBlob],
+      'RoXThal-Video-Promocional.'+extension,
+      {type:resultBlob.type}
+    );
+
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({
+          title:'RoXThal Art Design',
+          text:'Vídeo promocional de RoXThal Art Design',
+          files:[file]
+        });
+      }else{
+        status('Tu navegador no permite compartir el vídeo directamente. Descárgalo y compártelo desde tu galería.');
+      }
+    }catch(error){
+      if(error?.name!=='AbortError'){
+        status('No se pudo compartir el vídeo. Puedes descargarlo.');
+      }
+    }
+  });
+     // Reutiliza las conexiones de audio en exportaciones sucesivas.
+  prepareAudio=async function(){
+    const context=ensureAudioContext();
+
+    if(context.state==='suspended'){
+      await context.resume();
+    }
+
+    if(music&&!musicSource){
+      musicSource=context.createMediaElementSource(music);
+      musicGain=context.createGain();
+      musicGain.gain.value=(Number(document.getElementById('roxVSVolume')?.value)||50)/100;
+
+      musicSource.connect(musicGain);
+      musicGain.connect(audioDestination);
+      musicGain.connect(context.destination);
+    }
+
+    return audioDestination;
+  };
+
+  // Detención completa de la vista previa.
+  stopPreview=function(){
+    previewToken++;
+
+    if(previewTimer){
+      clearTimeout(previewTimer);
+      cancelAnimationFrame(previewTimer);
+      previewTimer=null;
+    }
+
+    if(previewVideo){
+      try{
+        previewVideo.pause();
+        previewVideo.removeAttribute('src');
+        previewVideo.load();
+      }catch(e){}
+      previewVideo=null;
+    }
+
+    status('Vista previa detenida.');
+  };
+
+  function clearStudio(){
+    if(exporting){
+      status('Espera a que termine la exportación antes de limpiar.');
+      return;
+    }
+
+    if(!confirm('¿Quieres eliminar todos los archivos y reiniciar el estudio?'))return;
+
+    stopPreview();
+
+    items.forEach(release);
+    items=[];
+
+    if(music){
+      try{
+        music.pause();
+        music.removeAttribute('src');
+        music.load();
+      }catch(e){}
+      music=null;
+    }
+
+    if(musicSource){
+      try{musicSource.disconnect();}catch(e){}
+      musicSource=null;
+    }
+
+    if(musicGain){
+      try{musicGain.disconnect();}catch(e){}
+      musicGain=null;
+    }
+
+    if(audioURL){
+      URL.revokeObjectURL(audioURL);
+      audioURL=null;
+    }
+
+    if(resultURL){
+      URL.revokeObjectURL(resultURL);
+      resultURL=null;
+    }
+
+    resultBlob=null;
+
+    const files=document.getElementById('roxVSFiles');
+    const audio=document.getElementById('roxVSAudio');
+    const result=document.getElementById('roxVSResult');
+
+    if(files)files.value='';
+    if(audio)audio.value='';
+    if(result)result.innerHTML='';
+
+    const downloadButton=document.getElementById('roxVSDownload');
+    const shareButton=document.getElementById('roxVSShare');
+
+    if(downloadButton)downloadButton.disabled=true;
+    if(shareButton)shareButton.disabled=true;
+
+    updateTimeline();
+    setCanvasFormat();
+    status('Estudio reiniciado. Puedes comenzar un nuevo vídeo.');
+  }
+
+  document.getElementById('roxVSClear')?.addEventListener('click',clearStudio);
+
+  // Evita que el módulo deje reproducciones activas al abandonar el panel.
+  window.addEventListener('beforeunload',()=>{
+    try{
+      stopPreview();
+
+      if(music)music.pause();
+
+      if(audioURL)URL.revokeObjectURL(audioURL);
+      if(resultURL)URL.revokeObjectURL(resultURL);
+
+      items.forEach(release);
+    }catch(e){}
+  });
+
+  // Estado inicial de los controles.
+  const initialDownload=document.getElementById('roxVSDownload');
+  const initialShare=document.getElementById('roxVSShare');
+
+  if(initialDownload)initialDownload.disabled=true;
+  if(initialShare)initialShare.disabled=true;
+
+  updateTimeline();
+  setCanvasFormat();
+  status('RoXThal Video Studio preparado.');
 
 })();
 </script>
 <!-- FIN ROXTHAL VIDEO STUDIO -->
-
-
    
 </body>
 </html>
