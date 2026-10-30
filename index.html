@@ -82642,8 +82642,57 @@ function install(){
  var grid=$('moduleGrid');if(grid&&!grid.querySelector('[data-go="giftCards"]')){var c=document.createElement('article');c.className='module rxgift-module';c.dataset.go='giftCards';c.innerHTML='<div class="module-content"><div class="module-num">NUEVA EXPERIENCIA</div><h3>Regalá Arte</h3><p>Tarjetas regalo de cursos y experiencias artísticas.</p><button class="btn btn-primary btn-small" type="button">Crear un regalo</button></div>';grid.appendChild(c)}
  installAdmin();
 }
-function toggle(){var amount=$('rxGiftKind').value==='amount';$('rxGiftExperienceWrap').hidden=amount;$('rxGiftAmountWrap').hidden=!amount}
-async function catalog(){try{var r=await call({action:'catalog'});$('rxGiftExperience').innerHTML=(r.items||[]).map(function(x){return '<option value="'+x.type+':'+x.id+'">'+esc(x.name)+' · '+ars(x.price)+'</option>'}).join('')||'<option value="">Sin experiencias publicadas</option>'}catch(e){$('rxGiftExperience').innerHTML='<option value="">No se pudo cargar el catálogo</option>';console.error(e)}}
+function toggle(){
+  var amount=$('rxGiftKind').value==='amount';
+  var select=$('rxGiftExperience');
+  var button=$('rxGiftPay');
+
+  $('rxGiftExperienceWrap').hidden=amount;
+  $('rxGiftAmountWrap').hidden=!amount;
+
+  if(button){
+    button.disabled=!amount&&!(
+      select&&select.value&&select.value.indexOf(':')>0
+    );
+  }
+}
+
+async function catalog(){
+  var select=$('rxGiftExperience');
+
+  try{
+    var r=await call({action:'catalog'});
+
+    var items=Array.isArray(r.items)
+      ?r.items.filter(function(x){
+          return x&&
+            x.id!=null&&
+            x.type&&
+            x.name&&
+            Number(x.price)>0;
+        })
+      :[];
+
+    select.innerHTML=items.map(function(x){
+      return '<option value="'+
+        esc(String(x.type)+':'+String(x.id))+
+        '">'+
+        esc(x.name)+' · '+ars(x.price)+
+        '</option>';
+    }).join('')||
+      '<option value="">Sin experiencias publicadas</option>';
+
+    toggle();
+
+  }catch(e){
+
+    select.innerHTML=
+      '<option value="">No se pudo cargar el catálogo</option>';
+
+    toggle();
+    console.error('RoXThal Regalá Arte — catálogo:',e);
+  }
+}
 function voucher(g){var text='🎁 RoXThal · Regalá Arte\nPara: '+g.recipient_name+'\nValor: '+ars(g.amount)+'\nCódigo: '+g.code+(g.experience_name?'\nExperiencia: '+g.experience_name:'')+(g.dedication?'\n'+g.dedication:'');
 $('rxGiftResult').innerHTML='<div id="rxGiftPrintArea" class="rxgift-voucher"><div style="letter-spacing:3px;color:#f5d78d">ROXTHAL ART DESIGN</div><div style="font-size:55px">🎁</div><h2>REGALÁ ARTE</h2><p>Un regalo especial para</p><h2 style="color:white">'+esc(g.recipient_name)+'</h2>'+(g.experience_name?'<p>'+esc(g.experience_name)+'</p>':'')+'<div class="value">'+ars(g.amount)+'</div>'+(g.dedication?'<p><i>“'+esc(g.dedication)+'”</i></p>':'')+'<div class="code">'+esc(g.code)+'</div><p>Saldo disponible: <b>'+ars(g.remaining_balance)+'</b></p><small>Presentá el código en RoXThal Art Design para validar el regalo.</small></div><div style="text-align:center"><button class="btn btn-primary" id="rxGiftShare">Compartir por WhatsApp</button> <button class="btn" id="rxGiftPrint">Imprimir / guardar PDF</button></div>';
 $('rxGiftShare').onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank')};$('rxGiftPrint').onclick=function(){window.print()}}
@@ -82651,7 +82700,101 @@ async function status(ref){var box=$('rxGiftResult');box.innerHTML='<div class="
 function installAdmin(){var tabs=$('adminTabs'),root=$('adminPanel');if(!tabs||!root)return;if(!tabs.querySelector('[data-admin-tab="giftCards"]')){var t=document.createElement('button');t.type='button';t.dataset.adminTab='giftCards';t.textContent='🎁 Regalá Arte';tabs.insertBefore(t,$('adminLogout')||null)}if(!$('adminGiftCards')){var p=document.createElement('div');p.id='adminGiftCards';p.className='admin-tab-panel hidden';p.innerHTML='<div class="card"><h3>Administración · Regalá Arte</h3><button class="btn btn-primary" id="rxGiftRefresh" type="button">Actualizar tarjetas</button><div id="rxGiftAdminList" class="admin-list"></div></div>';root.appendChild(p);$('rxGiftRefresh').onclick=adminList}}
 async function adminList(){var box=$('rxGiftAdminList');if(!box)return;box.textContent='Cargando tarjetas…';try{if(!window.RoXThalAdmin||!await window.RoXThalAdmin.require())throw new Error('Acceso exclusivo del administrador.');var r=await call({action:'admin_list'});box.innerHTML=(r.gifts||[]).map(function(g){return '<div class="rxgift-admin-item"><b>'+esc(g.recipient_name)+'</b> · '+esc(g.status)+'<p>'+esc(g.experience_name||'Tarjeta por importe')+' · '+ars(g.amount)+' · Saldo '+ars(g.remaining_balance)+'</p><p>Compró: '+esc(g.buyer_name)+' · '+esc(g.buyer_whatsapp)+'</p><p>Código: <b>'+esc(g.code||'Pendiente')+'</b></p>'+(g.status==='issued'?'<input type="number" min="0.01" max="'+Number(g.remaining_balance)+'" step="0.01" value="'+Number(g.remaining_balance)+'" data-gift-amount="'+esc(g.id)+'" '+(g.gift_kind==='experience'?'readonly':'')+'><button class="btn btn-primary" data-gift-redeem="'+esc(g.code)+'" data-gift-id="'+esc(g.id)+'">Registrar canje</button>':'')+'</div>'}).join('')||'Todavía no hay tarjetas.'}catch(e){box.textContent=e.message}}
 document.addEventListener('click',async function(e){if(e.target.closest('[data-admin-tab="giftCards"]')){setTimeout(adminList,0);return}var b=e.target.closest('[data-gift-redeem]');if(!b)return;var id=b.dataset.giftId,amount=Number(document.querySelector('[data-gift-amount="'+CSS.escape(id)+'"]').value);if(!amount||!confirm('¿Registrar el canje por '+ars(amount)+'?'))return;b.disabled=true;try{await call({action:'admin_redeem',code:b.dataset.giftRedeem,amount:amount});if(window.toast)toast('Canje registrado.');await adminList()}catch(err){if(window.toast)toast(err.message);else alert(err.message);b.disabled=false}});
-async function init(){install();$('rxGiftKind').onchange=toggle;$('rxGiftForm').onsubmit=async function(e){e.preventDefault();var b=$('rxGiftPay'),m=$('rxGiftMessage');b.disabled=true;m.hidden=false;m.textContent='Preparando pago…';try{var kind=$('rxGiftKind').value,p={action:'create',gift_kind:kind,buyer_name:$('rxGiftBuyer').value,buyer_whatsapp:$('rxGiftPhone').value,buyer_email:$('rxGiftEmail').value,recipient_name:$('rxGiftTo').value,dedication:$('rxGiftDedication').value};if(kind==='amount')p.amount=$('rxGiftAmount').value;else{var x=$('rxGiftExperience').value.split(':');p.experience_type=x[0];p.experience_id=x[1]}var r=await call(p);window.location.href=r.init_point}catch(err){m.textContent=err.message;b.disabled=false}};toggle();await catalog();var q=new URLSearchParams(location.search),ref=q.get('ref');if(ref&&q.get('roxthal_gift')){showView('giftCards');await status(ref)}}
+async function init(){
+
+  install();
+
+  $('rxGiftKind').onchange=toggle;
+
+  $('rxGiftForm').onsubmit=async function(e){
+
+    e.preventDefault();
+
+    var b=$('rxGiftPay');
+    var m=$('rxGiftMessage');
+    var kind=$('rxGiftKind').value;
+
+    if(b.disabled&&kind!=='amount')return;
+
+    b.disabled=true;
+    m.hidden=false;
+    m.textContent='Preparando pago…';
+
+    try{
+
+      var p={
+        action:'create',
+        gift_kind:kind,
+        buyer_name:$('rxGiftBuyer').value,
+        buyer_whatsapp:$('rxGiftPhone').value,
+        buyer_email:$('rxGiftEmail').value,
+        recipient_name:$('rxGiftTo').value,
+        dedication:$('rxGiftDedication').value
+      };
+
+      if(kind==='amount'){
+
+        var amount=Number($('rxGiftAmount').value);
+
+        if(
+          !Number.isFinite(amount)||
+          amount<1000||
+          amount>5000000||
+          amount%1000!==0
+        ){
+          throw new Error(
+            'Ingresá un importe entre $1.000 y $5.000.000, en múltiplos de $1.000.'
+          );
+        }
+
+        p.amount=amount;
+
+      }else{
+
+        var selected=$('rxGiftExperience').value;
+
+        if(!selected||selected.indexOf(':')<1){
+          throw new Error(
+            'No hay experiencias disponibles para regalar. Elegí «Importe a elección» o intentá más tarde.'
+          );
+        }
+
+        var x=selected.split(':');
+
+        p.experience_type=x.shift();
+        p.experience_id=x.join(':');
+      }
+
+      var r=await call(p);
+
+      if(!r.init_point){
+        throw new Error(
+          'Mercado Pago no devolvió el enlace de pago.'
+        );
+      }
+
+      window.location.href=r.init_point;
+
+    }catch(err){
+
+      m.textContent=err.message;
+      b.disabled=false;
+      toggle();
+    }
+  };
+
+  toggle();
+
+  await catalog();
+
+  var q=new URLSearchParams(location.search);
+  var ref=q.get('ref');
+
+  if(ref&&q.get('roxthal_gift')){
+    showView('giftCards');
+    await status(ref);
+  }
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 var grid=$('moduleGrid');if(grid)new MutationObserver(install).observe(grid,{childList:true});
 })();
