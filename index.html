@@ -83065,8 +83065,32 @@ var grid=$('moduleGrid');if(grid)new MutationObserver(install).observe(grid,{chi
   function addFile(file){if(items.length>=MAX_FILES){status('Límite de '+MAX_FILES+' archivos.','error');return;}if(!file.type.startsWith('image/')&&!file.type.startsWith('video/'))return;if(file.size>MAX_FILE_SIZE){status('Archivo demasiado grande (máximo 250 MB): '+file.name,'error');return;}const url=URL.createObjectURL(file),type=file.type.startsWith('image/')?'image':'video',item={file,url,name:file.name,type,duration:3,image:null,video:null};if(type==='image'){const img=new Image();img.onload=()=>{item.image=img;updateTimeline();if(items[0]===item)draw(item,img);};img.onerror=()=>{const i=items.indexOf(item);if(i>=0)items.splice(i,1);release(item);status('No se pudo leer la imagen: '+file.name,'error');updateTimeline();};img.src=url;item.image=img;item.duration=clamp(Number($('roxVSPhotoSeconds').value)||3,1,30);items.push(item);}else{const v=document.createElement('video');v.preload='metadata';v.playsInline=true;v.src=url;item.video=v;v.onloadedmetadata=()=>{if(Number.isFinite(v.duration)&&v.duration>0)item.duration=clamp(v.duration,1,30);updateTimeline();};v.onerror=()=>status('No se pudo leer el vídeo: '+file.name,'error');items.push(item);}updateTimeline();}
   function stopPreview(silent){previewToken++;if(previewFrame)cancelAnimationFrame(previewFrame);if(previewTimer)clearTimeout(previewTimer);previewFrame=previewTimer=0;if(previewVideo){try{previewVideo.pause();previewVideo.removeAttribute('src');previewVideo.load();}catch(e){}previewVideo=null;}if(!silent)status('Vista previa detenida.');}
   async function playPreview(){if(!items.length){status('Primero selecciona fotografías o vídeos.','error');return;}stopPreview(true);const token=previewToken;let index=0;status('Reproduciendo vista previa…');const next=async()=>{if(token!==previewToken)return;if(index>=items.length){status('Vista previa finalizada.');return;}const item=items[index],duration=item.duration*1000,start=performance.now();if(item.type==='image'){const frame=()=>{if(token!==previewToken)return;const p=clamp((performance.now()-start)/duration,0,1);draw(item,item.image,p);if(p>=1){index++;next();}else previewFrame=requestAnimationFrame(frame);};frame();return;}const v=document.createElement('video');previewVideo=v;v.src=item.url;v.preload='auto';v.playsInline=true;v.muted=true;try{await new Promise((resolve,reject)=>{v.onloadeddata=resolve;v.onerror=()=>reject(new Error('No se pudo cargar '+item.name));v.load();});await v.play();}catch(e){if(token===previewToken)status('No se pudo reproducir '+item.name+'.');return;}const frame=()=>{if(token!==previewToken)return;if(v.readyState>=2)draw(item,v,0);if(performance.now()-start>=duration||v.ended){v.pause();previewVideo=null;index++;next();}else previewFrame=requestAnimationFrame(frame);};frame();};await next();}
-  function ensureAudio(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Este navegador no admite mezcla de audio.');if(!audioContext)audioContext=new AC();if(!audioDestination)audioDestination=audioContext.createMediaStreamDestination();return audioContext;}
+  function ensureAudio(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+
+  if(!AC){
+    throw new Error('Este navegador no admite mezcla de audio.');
+  }
+
+  if(!audioContext){
+    audioContext = new AC();
+  }
+
+  if(!audioDestination){
+    audioDestination = audioContext.createMediaStreamDestination();
+  }
+
+  return audioContext;
+}
+
 async function prepareMusic(){
+  const hasVideo = items.some(item => item.type === 'video');
+  const needsAudio = !!music || hasVideo;
+
+  if(!needsAudio){
+    return null;
+  }
+
   const ac = ensureAudio();
 
   if(ac.state === 'suspended'){
@@ -83089,17 +83113,379 @@ async function prepareMusic(){
 
   return audioDestination.stream;
 }
-  function recorderType(){if(!window.MediaRecorder)return '';return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';}
-  function extensionFor(type){return type&&type.includes('mp4')?'mp4':'webm';}
-  const raf=()=>new Promise(resolve=>requestAnimationFrame(resolve));
-  async function exportVideo(){if(exporting)return;if(!items.length){status('Añade fotografías o vídeos antes de exportar.','error');return;}if(!canvas.captureStream||!window.MediaRecorder){status('Este navegador no permite exportar vídeo. Prueba con Chrome actualizado.','error');return;}const user=await admin.require().catch(()=>null);if(!user){status('Sesión administrativa no válida. Vuelve a iniciar sesión.','error');return;}exporting=true;const btn=$('roxVSExport');btn.disabled=true;stopPreview(true);let stream=null,recorder=null,completed=null,clipVideo=null;try{canvasSize();const cs=canvas.captureStream(30);stream=new MediaStream(cs.getVideoTracks());const audioStream=await prepareMusic();audioStream.getAudioTracks().forEach(t=>stream.addTrack(t));const mime=recorderType();recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const chunks=[];completed=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};recorder.onerror=e=>reject(e.error||new Error('Error de grabación.'));recorder.onstop=()=>chunks.length?resolve(new Blob(chunks,{type:recorder.mimeType||mime||'video/webm'})):reject(new Error('La grabación quedó vacía.'));});recorder.start(1000);if(music){music.currentTime=0;music.loop=true;music.volume=1;try{await music.play();}catch(e){console.warn('No se pudo iniciar la música:',e);}}
-    const transition=$('roxVSTransition').value;
-    for(let i=0;i<items.length;i++){const item=items[i],duration=item.duration*1000,start=performance.now();status('Generando vídeo · fragmento '+(i+1)+' de '+items.length+'…');if(item.type==='image'){while(performance.now()-start<duration){const p=clamp((performance.now()-start)/duration,0,1);draw(item,item.image,p);if(transition==='fade'&&i>0&&performance.now()-start<350){ctx.save();ctx.fillStyle=`rgba(0,0,0,${1-(performance.now()-start)/350})`;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.restore();}await raf();}}else{clipVideo=document.createElement('video');clipVideo.src=item.url;clipVideo.preload='auto';clipVideo.playsInline=true;clipVideo.muted=false;clipVideo.volume=1;await new Promise((resolve,reject)=>{clipVideo.onloadeddata=resolve;clipVideo.onerror=()=>reject(new Error('No se pudo abrir el vídeo '+item.name));clipVideo.load();});const ac=ensureAudio();if(ac.state==='suspended')await ac.resume();const source=ac.createMediaElementSource(clipVideo),gain=ac.createGain();gain.gain.value=.9;source.connect(gain);gain.connect(audioDestination);gain.connect(ac.destination);try{await clipVideo.play();}catch(e){throw new Error('El navegador no permitió reproducir el audio de '+item.name);}while(performance.now()-start<duration&&!clipVideo.ended){if(clipVideo.readyState>=2)draw(item,clipVideo,0);await raf();}try{clipVideo.pause();source.disconnect();gain.disconnect();clipVideo.removeAttribute('src');clipVideo.load();}catch(e){}clipVideo=null;}
-      if(transition==='fade'&&i<items.length-1){const t=performance.now();while(performance.now()-t<320){const a=1-(performance.now()-t)/320;ctx.save();ctx.fillStyle=`rgba(0,0,0,${clamp(a,0,1)})`;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.restore();await raf();}}
+
+function recorderType(){
+  if(!window.MediaRecorder) return '';
+
+  return [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm',
+    'video/mp4'
+  ].find(type => MediaRecorder.isTypeSupported(type)) || '';
+}
+
+function extensionFor(type){
+  return type && type.includes('mp4') ? 'mp4' : 'webm';
+}
+
+const raf = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+async function exportVideo(){
+
+  if(exporting) return;
+
+  if(!items.length){
+    status('Añade fotografías o vídeos antes de exportar.', 'error');
+    return;
+  }
+
+  if(!canvas.captureStream || !window.MediaRecorder){
+    status('Este navegador no permite exportar vídeo. Prueba con Chrome actualizado.', 'error');
+    return;
+  }
+
+  const user = await admin.require().catch(() => null);
+
+  if(!user){
+    status('Sesión administrativa no válida. Vuelve a iniciar sesión.', 'error');
+    return;
+  }
+
+  exporting = true;
+
+  const btn = $('roxVSExport');
+  btn.disabled = true;
+
+  stopPreview(true);
+
+  let captureStream = null;
+  let stream = null;
+  let recorder = null;
+  let completed = null;
+  let clipVideo = null;
+  let clipSource = null;
+  let clipGain = null;
+
+  try{
+
+    canvasSize();
+
+    captureStream = canvas.captureStream(30);
+
+    stream = new MediaStream(
+      captureStream.getVideoTracks()
+    );
+
+    const audioStream = await prepareMusic();
+
+    if(audioStream){
+      audioStream.getAudioTracks().forEach(track => {
+        if(track.readyState === 'live'){
+          stream.addTrack(track);
+        }
+      });
     }
-    if(music)music.pause();status('Finalizando el archivo…');if(recorder.state!=='inactive')recorder.stop();resultBlob=await completed;if(resultURL)URL.revokeObjectURL(resultURL);resultURL=URL.createObjectURL(resultBlob);const result=$('roxVSResult');result.src=resultURL;result.style.display='block';result.load();$('roxVSDownload').disabled=false;$('roxVSShare').disabled=false;status('¡Vídeo generado! Revisa la vista previa y descarga el archivo.','ok');
-   }catch(error){console.error('RoXThal Video Studio:',error);if(recorder&&recorder.state!=='inactive'){try{recorder.stop();}catch(e){}}status('No se pudo generar el vídeo: '+(error?.message||'error desconocido'),'error');}
-   finally{if(music)music.pause();if(clipVideo){try{clipVideo.pause();clipVideo.removeAttribute('src');clipVideo.load();}catch(e){}}if(stream)stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});exporting=false;btn.disabled=false;}}
+
+    const mime = recorderType();
+
+    recorder = new MediaRecorder(
+      stream,
+      mime ? {mimeType:mime} : undefined
+    );
+
+    const chunks = [];
+
+    completed = new Promise((resolve, reject) => {
+
+      recorder.ondataavailable = event => {
+        if(event.data && event.data.size){
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onerror = event => {
+        reject(event.error || new Error('Error de grabación.'));
+      };
+
+      recorder.onstop = () => {
+
+        if(chunks.length){
+          resolve(new Blob(chunks, {
+            type: recorder.mimeType || mime || 'video/webm'
+          }));
+        }else{
+          reject(new Error('La grabación quedó vacía.'));
+        }
+      };
+    });
+
+    recorder.start(1000);
+
+    if(music){
+
+      music.currentTime = 0;
+      music.loop = true;
+      music.volume = 1;
+
+      try{
+        await music.play();
+      }catch(error){
+        console.warn('No se pudo iniciar la música:', error);
+      }
+    }
+
+    const transition = $('roxVSTransition').value;
+
+    for(let i = 0; i < items.length; i++){
+
+      const item = items[i];
+      const duration = item.duration * 1000;
+
+      status(
+        'Generando vídeo · fragmento ' +
+        (i + 1) + ' de ' + items.length + '…'
+      );
+
+      let start = performance.now();
+
+      if(item.type === 'image'){
+
+        while(performance.now() - start < duration){
+
+          const elapsed = performance.now() - start;
+          const progress = clamp(elapsed / duration, 0, 1);
+
+          draw(item, item.image, progress);
+
+          if(
+            transition === 'fade' &&
+            i > 0 &&
+            elapsed < 350
+          ){
+            ctx.save();
+
+            ctx.fillStyle =
+              `rgba(0,0,0,${1 - elapsed / 350})`;
+
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.restore();
+          }
+
+          await raf();
+        }
+
+      }else{
+
+        clipVideo = document.createElement('video');
+
+        clipVideo.src = item.url;
+        clipVideo.preload = 'auto';
+        clipVideo.playsInline = true;
+        clipVideo.muted = false;
+        clipVideo.volume = 1;
+
+        await new Promise((resolve, reject) => {
+
+          clipVideo.onloadeddata = resolve;
+
+          clipVideo.onerror = () => {
+            reject(new Error(
+              'No se pudo abrir el vídeo ' + item.name
+            ));
+          };
+
+          clipVideo.load();
+        });
+
+        const ac = ensureAudio();
+
+        if(ac.state === 'suspended'){
+          await ac.resume();
+        }
+
+        clipSource = ac.createMediaElementSource(clipVideo);
+        clipGain = ac.createGain();
+
+        clipGain.gain.value = 0.9;
+
+        clipSource.connect(clipGain);
+        clipGain.connect(audioDestination);
+        clipGain.connect(ac.destination);
+
+        try{
+          await clipVideo.play();
+        }catch(error){
+          throw new Error(
+            'El navegador no permitió reproducir el audio de ' +
+            item.name
+          );
+        }
+
+        start = performance.now();
+
+        while(
+          performance.now() - start < duration &&
+          !clipVideo.ended
+        ){
+
+          const elapsed = performance.now() - start;
+
+          const progress = transition === 'zoom'
+            ? clamp(elapsed / 550, 0, 1)
+            : 0;
+
+          if(clipVideo.readyState >= 2){
+            draw(item, clipVideo, progress);
+          }
+
+          await raf();
+        }
+
+        try{
+
+          clipVideo.pause();
+
+          if(clipSource){
+            clipSource.disconnect();
+            clipSource = null;
+          }
+
+          if(clipGain){
+            clipGain.disconnect();
+            clipGain = null;
+          }
+
+          clipVideo.removeAttribute('src');
+          clipVideo.load();
+
+        }catch(error){
+          console.warn('Limpieza de vídeo:', error);
+        }
+
+        clipVideo = null;
+      }
+
+      if(
+        transition === 'fade' &&
+        i < items.length - 1
+      ){
+
+        const fadeStart = performance.now();
+
+        while(performance.now() - fadeStart < 320){
+
+          const alpha = clamp(
+            1 - (performance.now() - fadeStart) / 320,
+            0,
+            1
+          );
+
+          ctx.save();
+
+          ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.restore();
+
+          await raf();
+        }
+      }
+    }
+
+    if(music){
+      music.pause();
+    }
+
+    status('Finalizando el archivo…');
+
+    if(recorder.state !== 'inactive'){
+      recorder.stop();
+    }
+
+    resultBlob = await completed;
+
+    if(resultURL){
+      URL.revokeObjectURL(resultURL);
+    }
+
+    resultURL = URL.createObjectURL(resultBlob);
+
+    const result = $('roxVSResult');
+
+    result.src = resultURL;
+    result.style.display = 'block';
+    result.load();
+
+    $('roxVSDownload').disabled = false;
+    $('roxVSShare').disabled = false;
+
+    status(
+      '¡Vídeo generado! Revisa la vista previa y descarga el archivo.',
+      'ok'
+    );
+
+  }catch(error){
+
+    console.error('RoXThal Video Studio:', error);
+
+    if(recorder && recorder.state !== 'inactive'){
+      try{
+        recorder.stop();
+      }catch(e){}
+    }
+
+    status(
+      'No se pudo generar el vídeo: ' +
+      (error?.message || 'error desconocido'),
+      'error'
+    );
+
+  }finally{
+
+    if(music){
+      music.pause();
+    }
+
+    if(clipVideo){
+      try{
+        clipVideo.pause();
+        clipVideo.removeAttribute('src');
+        clipVideo.load();
+      }catch(e){}
+    }
+
+    if(clipSource){
+      try{
+        clipSource.disconnect();
+      }catch(e){}
+    }
+
+    if(clipGain){
+      try{
+        clipGain.disconnect();
+      }catch(e){}
+    }
+
+    /*
+     * Detener solamente la captura de vídeo.
+     * La pista de audio compartida se conserva
+     * para las siguientes exportaciones.
+     */
+
+    if(captureStream){
+      captureStream.getTracks().forEach(track => {
+        try{
+          track.stop();
+        }catch(e){}
+      });
+    }
+
+    exporting = false;
+    btn.disabled = false;
+  }
+}
   function loadMusic(file){if(!file)return;if(!file.type.startsWith('audio/')){status('Selecciona un archivo de audio válido.','error');return;}if(music){try{music.pause();music.removeAttribute('src');music.load();}catch(e){}}if(musicSource){try{musicSource.disconnect();}catch(e){}musicSource=null;}if(musicGain){try{musicGain.disconnect();}catch(e){}musicGain=null;}if(musicURL)URL.revokeObjectURL(musicURL);musicURL=URL.createObjectURL(file);music=new Audio();music.src=musicURL;music.loop=true;music.preload='auto';music.volume=1;status('Música cargada. Se mezclará con el audio original de los vídeos.','ok');}
   function resetEffects(){const defaults={roxVSEffect:'none',roxVSBrightness:100,roxVSContrast:100,roxVSSaturation:100,roxVSHue:0,roxVSBlur:0,roxVSIntensity:60};Object.entries(defaults).forEach(([id,v])=>$(id).value=v);['roxVSVignette','roxVSGrain','roxVSScanlines','roxVSGlow','roxVSLightLeak','roxVSFrame'].forEach(id=>$(id).checked=false);updateEffectLabels();refreshPreview();}
   function updateEffectLabels(){const map={roxVSBrightness:['roxVSBrLabel','%'],roxVSContrast:['roxVSCtLabel','%'],roxVSSaturation:['roxVSSatLabel','%'],roxVSHue:['roxVSHueLabel','°'],roxVSBlur:['roxVSBlurLabel',' px'],roxVSIntensity:['roxVSIntensityLabel','%']};Object.entries(map).forEach(([id,[label,suffix]])=>$(label).textContent=$(id).value+suffix);$('roxVSVolumeLabel').textContent=$('roxVSVolume').value+'%';}
