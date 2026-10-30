@@ -83066,7 +83066,29 @@ var grid=$('moduleGrid');if(grid)new MutationObserver(install).observe(grid,{chi
   function stopPreview(silent){previewToken++;if(previewFrame)cancelAnimationFrame(previewFrame);if(previewTimer)clearTimeout(previewTimer);previewFrame=previewTimer=0;if(previewVideo){try{previewVideo.pause();previewVideo.removeAttribute('src');previewVideo.load();}catch(e){}previewVideo=null;}if(!silent)status('Vista previa detenida.');}
   async function playPreview(){if(!items.length){status('Primero selecciona fotografías o vídeos.','error');return;}stopPreview(true);const token=previewToken;let index=0;status('Reproduciendo vista previa…');const next=async()=>{if(token!==previewToken)return;if(index>=items.length){status('Vista previa finalizada.');return;}const item=items[index],duration=item.duration*1000,start=performance.now();if(item.type==='image'){const frame=()=>{if(token!==previewToken)return;const p=clamp((performance.now()-start)/duration,0,1);draw(item,item.image,p);if(p>=1){index++;next();}else previewFrame=requestAnimationFrame(frame);};frame();return;}const v=document.createElement('video');previewVideo=v;v.src=item.url;v.preload='auto';v.playsInline=true;v.muted=true;try{await new Promise((resolve,reject)=>{v.onloadeddata=resolve;v.onerror=()=>reject(new Error('No se pudo cargar '+item.name));v.load();});await v.play();}catch(e){if(token===previewToken)status('No se pudo reproducir '+item.name+'.');return;}const frame=()=>{if(token!==previewToken)return;if(v.readyState>=2)draw(item,v,0);if(performance.now()-start>=duration||v.ended){v.pause();previewVideo=null;index++;next();}else previewFrame=requestAnimationFrame(frame);};frame();};await next();}
   function ensureAudio(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Este navegador no admite mezcla de audio.');if(!audioContext)audioContext=new AC();if(!audioDestination)audioDestination=audioContext.createMediaStreamDestination();return audioContext;}
-  async function prepareMusic(){const ac=ensureAudio();if(ac.state==='suspended')await ac.resume();if(music&&!musicSource){musicSource=ac.createMediaElementSource(music);musicGain=ac.createGain();musicSource.connect(musicGain);musicGain.connect(audioDestination);musicGain.connect(ac.destination);}if(musicGain)musicGain.gain.value=Number($('roxVSVolume').value)/100;return audioDestination;}
+async function prepareMusic(){
+  const ac = ensureAudio();
+
+  if(ac.state === 'suspended'){
+    await ac.resume();
+  }
+
+  if(music && !musicSource){
+    musicSource = ac.createMediaElementSource(music);
+    musicGain = ac.createGain();
+
+    musicSource.connect(musicGain);
+    musicGain.connect(audioDestination);
+    musicGain.connect(ac.destination);
+  }
+
+  if(musicGain){
+    musicGain.gain.value =
+      Number($('roxVSVolume').value) / 100;
+  }
+
+  return audioDestination.stream;
+}
   function recorderType(){if(!window.MediaRecorder)return '';return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';}
   function extensionFor(type){return type&&type.includes('mp4')?'mp4':'webm';}
   const raf=()=>new Promise(resolve=>requestAnimationFrame(resolve));
