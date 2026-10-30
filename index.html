@@ -82313,7 +82313,8 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
 })();
 </script>
    
-<!-- ROXTHAL · REPARACIÓN ÚNICA DEL SEGUIMIENTO COMERCIAL -->
+
+<!-- ROXTHAL · SEGUIMIENTO COMERCIAL · BORRADO INDIVIDUAL -->
 <style>
   #rxComercialRepairToggle {
     display: block;
@@ -82332,13 +82333,14 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
     display: none !important;
   }
 
-  #rxComercialAdmin #rxclDeleteAllRepair {
+  #rxComercialAdmin .rxcl-delete-one {
     background: #8e2929;
     border: 1px solid #d65b5b;
     color: #fff;
+    font-weight: 700;
   }
 
-  #rxComercialAdmin #rxclDeleteAllRepair:disabled {
+  #rxComercialAdmin .rxcl-delete-one:disabled {
     opacity: .55;
     cursor: wait;
   }
@@ -82348,8 +82350,8 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
 (function () {
   'use strict';
 
-  if (window.__rxComercialRepairV2) return;
-  window.__rxComercialRepairV2 = true;
+  if (window.__rxComercialRepairV3) return;
+  window.__rxComercialRepairV3 = true;
 
   const TABLE = 'roxthal_sales_leads';
   let installed = false;
@@ -82398,18 +82400,41 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
     section.hidden = !panelOpen;
   }
 
+  function addIndividualDeleteButtons(list) {
+    if (!list) return;
+
+    list.querySelectorAll('.rxcl-lead').forEach(card => {
+      if (card.querySelector('.rxcl-delete-one')) return;
+
+      const actions = card.querySelector('.rxcl-actions');
+      if (!actions) return;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'rxcl-delete-one';
+      button.textContent = 'Borrar esta consulta';
+      button.setAttribute(
+        'aria-label',
+        'Borrar únicamente esta consulta'
+      );
+
+      actions.appendChild(button);
+    });
+  }
+
   function install(section) {
     if (installed || !section) return;
 
     const host = document.getElementById('adminPanel');
     const db = getDB();
     const actions = section.querySelector('.rxcl-actions');
+    const list = section.querySelector('#rxclList');
 
-    if (!host || !db?.auth || !actions) return;
+    if (!host || !db?.auth || !actions || !list) return;
 
     installed = true;
 
-    /* Botón para abrir y cerrar el panel */
+    /* Botón para abrir y cerrar el seguimiento */
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.id = 'rxComercialRepairToggle';
@@ -82417,21 +82442,7 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
 
     host.insertBefore(toggle, section);
 
-    /* Botón para eliminar consultas */
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.id = 'rxclDeleteAllRepair';
-    deleteButton.textContent = 'Borrar todas las consultas';
-
-    const summary = section.querySelector('#rxclSummary');
-
-    if (summary) {
-      actions.insertBefore(deleteButton, summary);
-    } else {
-      actions.appendChild(deleteButton);
-    }
-
-    /* El panel comienza siempre cerrado */
+    /* Panel cerrado inicialmente */
     panelOpen = false;
     section.hidden = true;
 
@@ -82440,7 +82451,6 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
         await verifyAdmin();
 
         panelOpen = !panelOpen;
-
         setAdminState(true, section, toggle);
 
         if (panelOpen) {
@@ -82454,101 +82464,109 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
       }
     });
 
-    /* Eliminación protegida y con confirmación */
-    deleteButton.addEventListener('click', async function () {
-      const list = section.querySelector('#rxclList');
-      const summary = section.querySelector('#rxclSummary');
+    /* Agregar un botón individual a cada consulta */
+    addIndividualDeleteButtons(list);
+
+    const observer = new MutationObserver(function () {
+      addIndividualDeleteButtons(list);
+    });
+
+    observer.observe(list, {
+      childList: true,
+      subtree: true
+    });
+
+    /* Borrado individual: nunca elimina otras consultas */
+    list.addEventListener('click', async function (event) {
+      const button = event.target.closest('.rxcl-delete-one');
+
+      if (!button || !list.contains(button)) return;
+
+      const card = button.closest('.rxcl-lead');
+      if (!card) return;
+
+      const id = card.dataset.id;
+      if (!id) {
+        window.alert('No se encontró el identificador de esta consulta.');
+        return;
+      }
+
+      const name =
+        card.querySelector('strong')?.textContent?.trim() || 'Sin nombre';
+
+      const interest =
+        card.querySelector('strong')?.nextSibling?.textContent?.trim() || '';
+
+      const confirmed = window.confirm(
+        'Vas a borrar únicamente esta consulta:\n\n' +
+        name + '\n' +
+        interest + '\n\n' +
+        'Esta acción es definitiva. Las demás consultas permanecerán intactas.\n\n' +
+        '¿Confirmás el borrado?'
+      );
+
+      if (!confirmed) return;
 
       try {
         await verifyAdmin();
 
-        deleteButton.disabled = true;
-        deleteButton.textContent = 'Verificando consultas…';
+        button.disabled = true;
+        button.textContent = 'Borrando…';
 
-        const countResult = await db
-          .from(TABLE)
-          .select('id', { count: 'exact', head: true });
-
-        if (countResult.error) throw countResult.error;
-
-        const total = countResult.count;
-
-        if (!Number.isInteger(total) || total < 0) {
-          throw new Error('No se pudo verificar la cantidad de consultas.');
-        }
-
-        if (total === 0) {
-          if (summary) summary.textContent = 'No hay consultas para borrar.';
-          if (list) list.textContent = 'No hay consultas registradas.';
-          return;
-        }
-
-        const confirmed = window.confirm(
-          'ATENCIÓN: se encontraron ' + total + ' registros.\n\n' +
-          '¿Querés eliminarlos definitivamente de la base de datos?\n\n' +
-          'Esta acción no se puede deshacer. La tabla también puede contener ' +
-          'registros de otros formularios de RoXThal.'
-        );
-
-        if (!confirmed) return;
-
-        /* Segunda validación antes de borrar */
-        await verifyAdmin();
-
-        deleteButton.textContent = 'Eliminando…';
-
-        const result = await db
+        const result = await getDB()
           .from(TABLE)
           .delete()
-          .not('id', 'is', null)
+          .eq('id', id)
           .select('id');
 
         if (result.error) throw result.error;
 
-        const deleted = Array.isArray(result.data)
-          ? result.data.length
-          : 0;
+        const deletedRows = Array.isArray(result.data)
+          ? result.data
+          : [];
 
-        if (list) {
-          list.textContent = deleted
-            ? 'Eliminación completada.'
-            : 'No se confirmó ningún registro eliminado.';
+        if (
+          deletedRows.length !== 1 ||
+          String(deletedRows[0].id) !== String(id)
+        ) {
+          throw new Error(
+            'Supabase no confirmó el borrado de esta consulta. ' +
+            'Verificá los permisos de eliminación.'
+          );
         }
+
+        card.remove();
+
+        const remaining = list.querySelectorAll('.rxcl-lead').length;
+        const summary = section.querySelector('#rxclSummary');
 
         if (summary) {
           summary.textContent =
-            deleted + ' registro(s) eliminado(s).';
+            remaining + ' consulta(s) visibles';
         }
-
-        if (deleted !== total) {
-          window.alert(
-            'La base informó ' + total +
-            ' registros, pero la operación devolvió ' + deleted +
-            ' eliminaciones. Verificá los permisos RLS de Supabase.'
-          );
-        } else {
-          window.alert(
-            'Operación completada: ' + deleted +
-            ' registro(s) eliminado(s).'
-          );
-        }
-
-      } catch (error) {
-        console.error('[RoXThal Comercial · Reparación]', error);
 
         window.alert(
-          'No se pudieron borrar las consultas.\n\n' +
+          'Consulta de ' + name + ' eliminada correctamente.'
+        );
+
+      } catch (error) {
+        console.error(
+          '[RoXThal · Borrado individual]',
+          error
+        );
+
+        window.alert(
+          'No se pudo confirmar el borrado.\n\n' +
           (error.message || 'Error de Supabase o permisos insuficientes.')
         );
 
-      } finally {
-        deleteButton.disabled = false;
-        deleteButton.textContent = 'Borrar todas las consultas';
+        button.disabled = false;
+        button.textContent = 'Borrar esta consulta';
       }
     });
 
-    /* Control de sesión: el panel permanece cerrado al entrar */
-    db.auth.onAuthStateChange(async function (_event, session) {
+    /* Control de sesión administrativa */
+    db.auth.onAuthStateChange(function (_event, session) {
       const user = session?.user;
       const isAdmin = user?.app_metadata?.role === 'admin';
 
@@ -82599,7 +82617,8 @@ loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
   }
 })();
 </script>
-<!-- FIN REPARACIÓN DEL SEGUIMIENTO COMERCIAL -->
+<!-- FIN ROXTHAL · SEGUIMIENTO COMERCIAL · BORRADO INDIVIDUAL -->
 
+   
 </body>
 </html>
