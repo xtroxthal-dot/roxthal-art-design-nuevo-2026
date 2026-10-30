@@ -83902,8 +83902,13 @@ if (!window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V1__) {
 
       await Promise.all(selected.map(vsWaitForAsset));
 
-      if (selected.length !== items.length) {
-        throw new Error('La línea de montaje cambió durante la preparación.');
+            if (
+        selected.length !== items.length ||
+        selected.some((item, index) => items[index] !== item)
+      ) {
+        throw new Error(
+          'La línea de montaje cambió durante la preparación. Vuelve a generar el vídeo.'
+        );
       }
 
       canvasSize();
@@ -84124,9 +84129,12 @@ if (!window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V1__) {
         } catch (e) {}
       }
 
-      if (completed) {
+            if (completed) {
         try {
-          await completed;
+          await Promise.race([
+            completed.catch(() => null),
+            vsRepairWait(3000)
+          ]);
         } catch (e) {}
       }
 
@@ -84252,226 +84260,17 @@ if (!window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V1__) {
 /* ===== FIN DE LA REPARACIÓN INTEGRAL ===== */
   
 /* =========================================================
-   ROXTHAL VIDEO STUDIO · CORRECCIÓN FINAL V2
-   Exportación segura · Fundido real entre clips · Compartir
-   Añadir antes del })(); FINAL DEL MÓDULO
+   ROXTHAL VIDEO STUDIO · V2 CONSOLIDADA
+   Se conserva el MediaRecorder nativo del navegador.
+   Se conserva navigator.canShare sin modificaciones.
+   Las transiciones y efectos siguen gestionados por V1.
    ========================================================= */
 
-if (!window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V2__) {
-  window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V2__ = true;
+/* No instalar Proxy sobre MediaRecorder.
+   No forzar navigator.canShare.
+   No sobrescribir el motor draw de V1. */
 
-  /* 1. PROTEGER LA GRABACIÓN SI MEDIARECORDER FALLA */
-
-  try {
-    const NativeMediaRecorder = window.MediaRecorder;
-
-    if (
-      NativeMediaRecorder &&
-      !NativeMediaRecorder.__roxthalSafeStart
-    ) {
-      const SafeMediaRecorder = new Proxy(
-        NativeMediaRecorder,
-        {
-          construct(Target, args) {
-            const recorder = Reflect.construct(
-              Target,
-              args,
-              Target
-            );
-
-            const nativeStart = recorder.start.bind(recorder);
-
-            recorder.start = function (...startArgs) {
-              try {
-                return nativeStart(...startArgs);
-              } catch (error) {
-                try {
-                  recorder.dispatchEvent(
-                    new Event('error')
-                  );
-                } catch (dispatchError) {}
-
-                throw error;
-              }
-            };
-
-            return recorder;
-          }
-        }
-      );
-
-      Object.defineProperty(
-        SafeMediaRecorder,
-        '__roxthalSafeStart',
-        { value: true }
-      );
-
-      window.MediaRecorder = SafeMediaRecorder;
-    }
-  } catch (error) {
-    console.warn(
-      'RoXThal: protección MediaRecorder no instalada.',
-      error
-    );
-  }
-
-
-  /* 2. FUNDIDO REAL ENTRE DOS FOTOGRAMAS DE CLIPS */
-
-  try {
-    const originalDraw = draw;
-
-    const transitionCanvas =
-      document.createElement('canvas');
-
-    const transitionContext =
-      transitionCanvas.getContext('2d');
-
-    let previousItem = null;
-    let hasPreviousFrame = false;
-
-    draw = function (item, source, progress) {
-
-      if (!item || !source) {
-        return originalDraw(item, source, progress);
-      }
-
-      const changed = previousItem !== item;
-
-      if (changed) {
-
-        hasPreviousFrame = !!previousItem;
-
-        if (hasPreviousFrame) {
-          transitionCanvas.width = canvas.width;
-          transitionCanvas.height = canvas.height;
-
-          transitionContext.clearRect(
-            0,
-            0,
-            transitionCanvas.width,
-            transitionCanvas.height
-          );
-
-          transitionContext.drawImage(
-            canvas,
-            0,
-            0,
-            transitionCanvas.width,
-            transitionCanvas.height
-          );
-        }
-
-        previousItem = item;
-      }
-
-      originalDraw(item, source, progress);
-
-      if (!hasPreviousFrame) return;
-
-      const duration = Math.max(
-        0.1,
-        Number(item.duration) || 3
-      );
-
-      const transitionDuration = 0.65;
-
-      const elapsed = Math.max(
-        0,
-        Math.min(
-          1,
-          Number(progress || 0) *
-          duration /
-          transitionDuration
-        )
-      );
-
-      if (elapsed >= 1) {
-        hasPreviousFrame = false;
-        return;
-      }
-
-      ctx.save();
-
-      ctx.globalAlpha = 1 - elapsed;
-
-      ctx.drawImage(
-        transitionCanvas,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      ctx.restore();
-    };
-
-  } catch (error) {
-    console.error(
-      'RoXThal: error instalando fundido entre clips.',
-      error
-    );
-  }
-
-
-  /* 3. MEJORAR EL INTENTO DE COMPARTIR */
-
-  try {
-    if (
-      navigator.share &&
-      navigator.canShare &&
-      !navigator.__roxthalShareAttempt
-    ) {
-      const nativeCanShare =
-        navigator.canShare.bind(navigator);
-
-      navigator.canShare = function (data) {
-
-        try {
-          const supported = nativeCanShare(data);
-
-          if (
-            data &&
-            data.files &&
-            data.files.length &&
-            supported === false
-          ) {
-            /* Permite intentar el menú nativo.
-               Si el navegador rechaza el vídeo,
-               el módulo conserva su descarga alternativa. */
-            return true;
-          }
-
-          return supported;
-
-        } catch (error) {
-          return !!(
-            data &&
-            data.files &&
-            data.files.length
-          );
-        }
-      };
-
-      Object.defineProperty(
-        navigator,
-        '__roxthalShareAttempt',
-        { value: true }
-      );
-    }
-  } catch (error) {
-    console.warn(
-      'RoXThal: no se pudo adaptar compartir.',
-      error
-    );
-  }
-
-  console.info(
-    'RoXThal Video Studio: corrección V2 instalada.'
-  );
-}
-
-/* ===== FIN CORRECCIÓN V2 ===== */
+/* ===== FIN V2 CONSOLIDADA ===== */
 
 })();
 </script>
