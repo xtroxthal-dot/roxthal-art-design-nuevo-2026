@@ -84446,7 +84446,213 @@ exportVideo = async function () {
 
 })();
 </script>
-<!-- FIN ROXTHAL VIDEO STUDIO -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+<!-- FIN ROXTHAL VIDEO STUDIO -->   
+
+   
+<!-- =====================================================
+ ROXTHAL MUSIC DOWNLOADER · MÓDULO INDEPENDIENTE
+ Busca música en Pixabay y permite descargarla al teléfono.
+ No modifica Video Studio ni utiliza Supabase.
+===================================================== -->
+<script id="ROXTHAL-MUSIC-DOWNLOADER">
+(function(){
+ 'use strict';
+
+ if(window.__ROXTHAL_MUSIC_DOWNLOADER_V1__) return;
+ window.__ROXTHAL_MUSIC_DOWNLOADER_V1__=true;
+
+ const $=id=>document.getElementById(id);
+ const admin=window.RoXThalAdmin;
+ const tabs=$('adminTabs');
+ const root=$('adminPanel');
+
+ if(!admin || typeof admin.require!=='function' || !tabs || !root){
+   console.error('RoXThal Music Downloader: no se encontró el administrador.');
+   return;
+ }
+
+ if($('adminMusicDownloader')) return;
+
+ const tab=document.createElement('button');
+ tab.type='button';
+ tab.dataset.adminTab='musicDownloader';
+ tab.textContent='🎵 Music Downloader';
+ tabs.insertBefore(tab,$('adminLogout')||null);
+
+ const panel=document.createElement('section');
+ panel.id='adminMusicDownloader';
+ panel.className='admin-tab-panel hidden';
+
+ panel.innerHTML=`
+ <style>
+ #adminMusicDownloader{color:inherit}
+ #adminMusicDownloader .md-card{
+   background:#111;border:1px solid #a88732;
+   border-radius:14px;padding:18px;margin-bottom:15px
+ }
+ #adminMusicDownloader .md-title{color:#e5bd48}
+ #adminMusicDownloader .md-input{
+   width:100%;box-sizing:border-box;padding:13px;
+   border-radius:9px;background:#080808;color:white;
+   border:1px solid #777;font-size:16px;margin:8px 0 12px
+ }
+ #adminMusicDownloader .md-button{
+   display:inline-block;padding:12px 16px;
+   border:0;border-radius:8px;background:#b18b25;
+   color:#111;font-weight:800;cursor:pointer;
+   margin:5px 5px 5px 0;min-height:43px
+ }
+ #adminMusicDownloader .md-status{
+   background:#202020;border:1px solid #555;
+   border-radius:9px;padding:12px;margin-top:12px;
+   line-height:1.6;overflow-wrap:anywhere
+ }
+ #adminMusicDownloader .md-help{
+   color:#bbb;font-size:13px;line-height:1.65
+ }
+ #adminMusicDownloader .md-link{
+   display:inline-block;color:#f2cf65;
+   text-decoration:underline;margin-top:12px;
+   overflow-wrap:anywhere
+ }
+ </style>
+
+ <div class="md-card">
+   <h2 class="md-title">🎵 RoXThal Music Downloader</h2>
+   <p>Buscador de música para tus creaciones audiovisuales.</p>
+   <p class="md-help">
+     Escribe el título de una canción, el nombre de un artista,
+     un autor o el estilo musical. Se abrirá la búsqueda oficial
+     de música de Pixabay.
+   </p>
+
+   <label for="roxMusicSearch"><strong>🔎 ¿Qué música estás buscando?</strong></label>
+   <input
+     id="roxMusicSearch"
+     class="md-input"
+     type="search"
+     maxlength="150"
+     placeholder="Ej.: música épica, piano, rock instrumental..."
+     autocomplete="off"
+   >
+
+   <button type="button" id="roxMusicSearchBtn" class="md-button">
+     🔍 Buscar música
+   </button>
+
+   <div id="roxMusicStatus" class="md-status" aria-live="polite">
+     Escribe tu búsqueda para comenzar.
+   </div>
+
+   <div id="roxMusicLink"></div>
+ </div>
+
+ <div class="md-card">
+   <h3 class="md-title">📥 Cómo guardar tu música</h3>
+   <ol class="md-help">
+     <li>Busca el título, autor o estilo musical.</li>
+     <li>En Pixabay, escucha las pistas disponibles.</li>
+     <li>Selecciona la pista que quieras.</li>
+     <li>Utiliza la opción de descarga de Pixabay.</li>
+     <li>Guarda el archivo MP3 en tu teléfono.</li>
+     <li>Cuando quieras utilizarlo, abre Video Studio y selecciónalo desde las descargas.</li>
+   </ol>
+   <p class="md-help">
+     Los archivos se descargan desde Pixabay directamente al dispositivo.
+     Este módulo no guarda canciones en la aplicación ni en Supabase.
+   </p>
+ </div>
+ `;
+
+ root.appendChild(panel);
+
+ const status=$('roxMusicStatus');
+ const linkBox=$('roxMusicLink');
+ const input=$('roxMusicSearch');
+ const button=$('roxMusicSearchBtn');
+
+ function makeSearchUrl(value){
+   const normalized=value
+     .normalize('NFD')
+     .replace(/[\u0300-\u036f]/g,'')
+     .toLowerCase()
+     .trim()
+     .replace(/[^a-z0-9]+/g,'-')
+     .replace(/^-+|-+$/g,'');
+
+   return 'https://pixabay.com/music/search/'+
+     encodeURIComponent(normalized)+'/';
+ }
+
+ button.addEventListener('click',async function(){
+   const query=input.value.trim();
+
+   if(!query){
+     status.textContent='Escribe un título, artista o estilo musical.';
+     input.focus();
+     return;
+   }
+
+   const url=makeSearchUrl(query);
+
+   if(!url.includes('/search/')){
+     status.textContent='No se pudo preparar la búsqueda.';
+     return;
+   }
+
+   // Abrir la ventana durante el clic del usuario para evitar
+   // que el navegador bloquee la ventana emergente.
+   const popup=window.open('about:blank','_blank');
+
+   linkBox.innerHTML='';
+   status.textContent='Comprobando autorización del administrador…';
+   button.disabled=true;
+
+   try{
+     const user=await admin.require();
+
+     if(!user){
+       if(popup) popup.close();
+       status.textContent='Acceso no autorizado.';
+       return;
+     }
+
+     if(popup && !popup.closed){
+       popup.location.href=url;
+       status.textContent='Búsqueda abierta en Pixabay. Escucha y descarga la pista que elijas.';
+     }else{
+       status.textContent='El navegador bloqueó la ventana emergente. Utiliza este enlace para abrir la búsqueda:';
+
+       const a=document.createElement('a');
+       a.className='md-link';
+       a.href=url;
+       a.target='_blank';
+       a.rel='noopener noreferrer';
+       a.textContent='🎵 Abrir búsqueda de música en Pixabay';
+       linkBox.appendChild(a);
+     }
+
+   }catch(error){
+     if(popup && !popup.closed) popup.close();
+     status.textContent='No se pudo comprobar el acceso. Vuelve a intentarlo.';
+     console.error('RoXThal Music Downloader:',error);
+   }finally{
+     button.disabled=false;
+   }
+ });
+
+ input.addEventListener('keydown',function(e){
+   if(e.key==='Enter'){
+     e.preventDefault();
+     button.click();
+   }
+ });
+
+ console.info('RoXThal Music Downloader instalado correctamente.');
+})();
+</script>
+<!-- FIN ROXTHAL MUSIC DOWNLOADER -->
+
    
 </body>
 </html>
