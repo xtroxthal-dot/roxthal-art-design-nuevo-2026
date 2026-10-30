@@ -81928,28 +81928,107 @@ function fillEditor(c){
  $('rxadsEditor').classList.remove('rxads-hidden');
 }
 function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines=4){
- const words=String(text||'').split(/\s+/);
- let line='',lines=0;
+ const words=String(text||'').trim().split(/\s+/).filter(Boolean);
+ const lines=[];
+ let line='';
+
  for(const word of words){
   const test=line?line+' '+word:word;
   if(ctx.measureText(test).width>maxWidth&&line){
-   ctx.fillText(line,x,y);
-   y+=lineHeight;lines++;line=word;
-   if(lines>=maxLines)return y;
-  }else line=test;
+   lines.push(line);
+   line=word;
+  }else{
+   line=test;
+  }
  }
- if(line&&lines<maxLines){ctx.fillText(line,x,y);y+=lineHeight}
- return y;
+ if(line)lines.push(line);
+
+ const visible=lines.slice(0,maxLines);
+ if(lines.length>maxLines&&visible.length){
+  let last=visible[visible.length-1];
+  while(last.length&&ctx.measureText(last+'…').width>maxWidth){
+   last=last.slice(0,-1);
+  }
+  visible[visible.length-1]=last+'…';
+ }
+
+ visible.forEach((item,index)=>{
+  ctx.fillText(item,x,y+index*lineHeight);
+ });
+
+ return y+visible.length*lineHeight;
 }
-   function rxadsCleanImagePrompt(prompt){
-  return [
-    String(prompt || ''),
-    'IMPORTANTE: generar exclusivamente una fotografía o ilustración artística de fondo.',
-    'NO incluir ningún texto, letras, palabras, números, precios, importes, carteles, títulos, subtítulos, logotipos, marcas de agua ni llamadas a la acción.',
-    'NO escribir tipografías ni elementos publicitarios.',
-    'Dejar espacio visual limpio para incorporar posteriormente los textos mediante composición externa.'
-  ].join('\n\n');
+
+function rxadsCleanImagePrompt(prompt){
+ return [
+  String(prompt||''),
+  'IMPORTANTE: generar exclusivamente una fotografía o ilustración artística de fondo.',
+  'NO incluir ningún texto, letras, palabras, números, precios, importes, carteles, títulos, subtítulos, logotipos, marcas de agua ni llamadas a la acción.',
+  'NO escribir tipografías ni elementos publicitarios.',
+  'Dejar espacio visual limpio para incorporar posteriormente los textos mediante composición externa.'
+ ].join('\n\n');
 }
+
+function drawFitText(ctx,text,x,y,maxWidth,maxHeight,baseSize,minSize,weight,color,lineFactor,maxLines){
+ const content=String(text||'').trim();
+ if(!content)return y;
+
+ let size=baseSize;
+ let lines=[];
+
+ while(size>=minSize){
+  ctx.font=`${weight} ${Math.round(size)}px Arial`;
+  lines=[];
+  let line='';
+
+  for(const word of content.split(/\s+/)){
+   const test=line?line+' '+word:word;
+   if(ctx.measureText(test).width>maxWidth&&line){
+    lines.push(line);
+    line=word;
+   }else{
+    line=test;
+   }
+  }
+  if(line)lines.push(line);
+
+  if(lines.length<=maxLines&&lines.length*size*lineFactor<=maxHeight)break;
+  size-=2;
+ }
+
+ ctx.font=`${weight} ${Math.round(Math.max(size,minSize))}px Arial`;
+ lines=[];
+ let line='';
+
+ for(const word of content.split(/\s+/)){
+  const test=line?line+' '+word:word;
+  if(ctx.measureText(test).width>maxWidth&&line){
+   lines.push(line);
+   line=word;
+  }else{
+   line=test;
+  }
+ }
+ if(line)lines.push(line);
+
+ if(lines.length>maxLines){
+  lines=lines.slice(0,maxLines);
+  let last=lines[lines.length-1];
+  while(last.length&&ctx.measureText(last+'…').width>maxWidth){
+   last=last.slice(0,-1);
+  }
+  lines[lines.length-1]=last+'…';
+ }
+
+ ctx.fillStyle=color;
+ const lineHeight=Math.round(Math.max(size,minSize)*lineFactor);
+ lines.forEach((item,index)=>{
+  ctx.fillText(item,x,y+index*lineHeight);
+ });
+
+ return y+lines.length*lineHeight;
+}
+
 async function composePoster(blob,ratio){
  const ratios={
   '1:1':[1080,1080],
@@ -81959,55 +82038,112 @@ async function composePoster(blob,ratio){
   '3:2':[1620,1080],
   '2:3':[1080,1620]
  };
+
  const [w,h]=ratios[ratio]||ratios['4:5'];
  const url=URL.createObjectURL(blob);
+
  try{
   const img=await new Promise((resolve,reject)=>{
-   const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url;
+   const i=new Image();
+   i.onload=()=>resolve(i);
+   i.onerror=reject;
+   i.src=url;
   });
-  const c=document.createElement('canvas');c.width=w;c.height=h;
+
+  const c=document.createElement('canvas');
+  c.width=w;
+  c.height=h;
+
   const ctx=c.getContext('2d');
+  if(!ctx)throw new Error('No se pudo crear el cartel.');
+
   const scale=Math.max(w/img.width,h/img.height);
-  const iw=img.width*scale,ih=img.height*scale;
+  const iw=img.width*scale;
+  const ih=img.height*scale;
+
   ctx.drawImage(img,(w-iw)/2,(h-ih)/2,iw,ih);
+
   const grad=ctx.createLinearGradient(0,0,0,h);
   grad.addColorStop(0,'rgba(0,0,0,.42)');
   grad.addColorStop(.34,'rgba(0,0,0,.04)');
-  grad.addColorStop(.58,'rgba(0,0,0,.20)');
-  grad.addColorStop(1,'rgba(0,0,0,.94)');
-  ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  grad.addColorStop(.58,'rgba(0,0,0,.35)');
+  grad.addColorStop(1,'rgba(0,0,0,.96)');
+
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,w,h);
 
   const pad=w*.075;
+  const maxWidth=w-pad*2;
+
   ctx.textAlign='left';
+  ctx.textBaseline='alphabetic';
+
   ctx.fillStyle='#e6c36e';
   ctx.font=`bold ${Math.round(w*.035)}px Arial`;
   ctx.fillText('ROXTHAL ART DESIGN',pad,h*.09);
+
   ctx.fillStyle='#e5c36d';
   ctx.fillRect(pad,h*.115,w*.22,5);
 
   const cdata=getCampaignFromEditor();
-  let y=h*.69;
-  ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=15;
-  ctx.fillStyle='#fff';
-  ctx.font=`bold ${Math.round(w*.073)}px Arial`;
-  y=wrapText(ctx,cdata.headline,pad,y,w-pad*2,Math.round(w*.085),3);
+
+  const footerCTA=h*.925;
+  const footerSlogan=h*.965;
+  const contentTop=h*.59;
+  const contentBottom=h*.875;
+  const contentHeight=contentBottom-contentTop;
+
+  let y=contentTop;
+
+  ctx.shadowColor='rgba(0,0,0,.8)';
+  ctx.shadowBlur=12;
+
+  y=drawFitText(
+   ctx,cdata.headline,
+   pad,y,maxWidth,contentHeight*.52,
+   w*.068,w*.038,'bold','#ffffff',1.08,3
+  );
+
+  y+=Math.round(h*.012);
   ctx.shadowBlur=0;
-  ctx.fillStyle='#f0d28b';
-  ctx.font=`${Math.round(w*.033)}px Arial`;
-  y=wrapText(ctx,cdata.subheadline,pad,y+12,w-pad*2,Math.round(w*.045),2);
+
+  y=drawFitText(
+   ctx,cdata.subheadline,
+   pad,y,maxWidth,contentHeight*.29,
+   w*.032,w*.022,'normal','#f0d28b',1.18,2
+  );
+
   if(state.price){
-   ctx.fillStyle='#e7c46d';
-   ctx.font=`bold ${Math.round(w*.047)}px Arial`;
-   ctx.fillText(state.price,pad,Math.min(h*.88,y+35));
+   y+=Math.round(h*.018);
+   drawFitText(
+    ctx,state.price,
+    pad,y,maxWidth,contentBottom-y,
+    w*.045,w*.027,'bold','#e7c46d',1.12,1
+   );
   }
-  ctx.fillStyle='#fff';
-  ctx.font=`bold ${Math.round(w*.029)}px Arial`;
-  ctx.fillText(cdata.call_to_action||'CONSULTANOS',pad,h*.93);
+
+  ctx.shadowBlur=0;
+
+  drawFitText(
+   ctx,cdata.call_to_action||'CONSULTANOS',
+   pad,footerCTA,maxWidth,h*.035,
+   w*.029,w*.018,'bold','#ffffff',1,1
+  );
+
   ctx.fillStyle='#d8c18b';
   ctx.font=`${Math.round(w*.019)}px Arial`;
-  ctx.fillText('ARTE QUE DEJA MARCA.',pad,h*.965);
-  return await new Promise(resolve=>c.toBlob(resolve,'image/jpeg',.92));
- }finally{URL.revokeObjectURL(url)}
+  ctx.fillText('ARTE QUE DEJA MARCA.',pad,footerSlogan);
+
+  return await new Promise((resolve,reject)=>{
+   c.toBlob(blob=>{
+    if(blob)resolve(blob);
+    else reject(new Error('No se pudo exportar el cartel.'));
+   },'image/jpeg',.92);
+  });
+
+ }finally{
+  URL.revokeObjectURL(url);
+ }
 }
 function showPreview(blob){
  if(state.finalUrl)URL.revokeObjectURL(state.finalUrl);
@@ -82099,7 +82235,7 @@ async function createCampaign(){
   }else{
    const data=await invokeAI({
     action:'image',
-    prompt:$('rxadsImagePrompt').value,
+    prompt:rxadsCleanImagePrompt($('rxadsImagePrompt').value),
     aspect_ratio:$('rxadsRatio').value
    });
    background=base64Blob(data.image_data,data.mime_type);
@@ -82145,7 +82281,7 @@ async function regenerateImage(){
   status('Generando una nueva imagen publicitaria...');
   const data=await invokeAI({
    action:'image',
-   prompt:$('rxadsImagePrompt').value,
+prompt:rxadsCleanImagePrompt($('rxadsImagePrompt').value),
    image_data_url:dataUrlPhoto||undefined,
    aspect_ratio:$('rxadsRatio').value
   });
