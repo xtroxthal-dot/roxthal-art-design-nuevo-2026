@@ -83858,321 +83858,493 @@ if (!window.__ROXTHAL_VIDEO_STUDIO_REPAIR_V1__) {
     await next();
   };
 
-  /* 5. Exportación completa corregida */
+  /* 5. EXPORTACIÓN COMPLETA · CAPTURA CONTROLADA */
 
-  exportVideo = async function () {
-    if (exporting) return;
+exportVideo = async function () {
+  if (exporting) return;
 
-    if (!items.length) {
-      status('Añade fotografías o vídeos antes de exportar.', 'error');
-      return;
+  if (!items.length) {
+    status('Añade fotografías o vídeos antes de exportar.', 'error');
+    return;
+  }
+
+  if (!canvas.captureStream || !window.MediaRecorder) {
+    status('Este navegador no permite exportar. Prueba Chrome actualizado.', 'error');
+    return;
+  }
+
+  const user = await admin.require().catch(() => null);
+
+  if (!user) {
+    status('Sesión administrativa no válida.', 'error');
+    return;
+  }
+
+  exporting = true;
+
+  const btn = $('roxVSExport');
+  btn.disabled = true;
+
+  stopPreview(true);
+
+  let captureStream = null;
+  let stream = null;
+  let recorder = null;
+  let completed = null;
+  let clipVideo = null;
+  let clipSource = null;
+  let clipGain = null;
+  let videoTrack = null;
+  let manualFrameCapture = false;
+
+  try {
+    const selected = items.slice();
+
+    status('Preparando ' + selected.length + ' archivos…');
+
+    /* Verificar la carga real de todos los archivos */
+    await Promise.all(selected.map(vsWaitForAsset));
+
+    /* Comprobar que no cambió la línea de montaje */
+    if (
+      selected.length !== items.length ||
+      selected.some((item, index) => items[index] !== item)
+    ) {
+      throw new Error(
+        'La línea de montaje cambió durante la preparación. Vuelve a generar el vídeo.'
+      );
     }
 
-    if (!canvas.captureStream || !window.MediaRecorder) {
-      status('Este navegador no permite exportar. Prueba Chrome actualizado.', 'error');
-      return;
+    canvasSize();
+
+    /* Preparar el lienzo antes de comenzar */
+    if (selected[0].type === 'image') {
+      draw(selected[0], selected[0].image, 0);
+    } else {
+      draw(null, null);
     }
 
-    const user = await admin.require().catch(() => null);
+    const audioStream = await prepareMusic();
 
-    if (!user) {
-      status('Sesión administrativa no válida.', 'error');
-      return;
-    }
-
-    exporting = true;
-
-    const btn = $('roxVSExport');
-    btn.disabled = true;
-
-    stopPreview(true);
-
-    let captureStream = null;
-    let stream = null;
-    let recorder = null;
-    let completed = null;
-    let clipVideo = null;
-    let clipSource = null;
-    let clipGain = null;
-
+    /*
+      CAPTURA DE VÍDEO:
+      Intentar captura manual a demanda.
+      Si no está disponible, utilizar 30 FPS automáticos.
+    */
     try {
-      const selected = items.slice();
+      const manualStream = canvas.captureStream(0);
+      const manualTrack = manualStream.getVideoTracks()[0];
 
-      status('Preparando ' + selected.length + ' archivos…');
-
-      await Promise.all(selected.map(vsWaitForAsset));
-
-            if (
-        selected.length !== items.length ||
-        selected.some((item, index) => items[index] !== item)
+      if (
+        manualTrack &&
+        typeof manualTrack.requestFrame === 'function'
       ) {
-        throw new Error(
-          'La línea de montaje cambió durante la preparación. Vuelve a generar el vídeo.'
-        );
-      }
-
-      canvasSize();
-
-      const audioStream = await prepareMusic();
-
-      captureStream = canvas.captureStream(30);
-
-      stream = new MediaStream(
-        captureStream.getVideoTracks()
-      );
-
-      if (audioStream) {
-        audioStream.getAudioTracks().forEach(track => {
-          if (track.readyState === 'live') {
-            stream.addTrack(track);
-          }
-        });
-      }
-
-      const mime = recorderType();
-
-      recorder = new MediaRecorder(
-        stream,
-        mime ? { mimeType: mime } : undefined
-      );
-
-      const chunks = [];
-
-      completed = new Promise((resolve, reject) => {
-        recorder.ondataavailable = event => {
-          if (event.data && event.data.size) {
-            chunks.push(event.data);
-          }
-        };
-
-        recorder.onerror = event => {
-          reject(event.error || new Error('Error de grabación.'));
-        };
-
-        recorder.onstop = () => {
-          if (chunks.length) {
-            resolve(new Blob(chunks, {
-              type: recorder.mimeType || mime || 'video/webm'
-            }));
-          } else {
-            reject(new Error('La grabación quedó vacía.'));
-          }
-        };
-      });
-
-      recorder.start(1000);
-
-      if (music) {
-        music.currentTime = 0;
-        music.loop = true;
-        music.volume = 1;
-
-        try {
-          await music.play();
-        } catch (error) {
-          console.warn('No se pudo iniciar la música:', error);
-        }
-      }
-
-      for (let i = 0; i < selected.length; i++) {
-        const item = selected[i];
-        const duration = item.duration * 1000;
-
-        status(
-          'Generando fragmento ' + (i + 1) +
-          ' de ' + selected.length + ' · ' + item.name
-        );
-
-        if (item.type === 'image') {
-          const start = performance.now();
-
-          while (performance.now() - start < duration) {
-            const p = vsRepairClamp(
-              (performance.now() - start) / duration, 0, 1
-            );
-
-            draw(item, item.image, p);
-            await vsRepairRAF();
-          }
-        } else {
-          clipVideo = document.createElement('video');
-          clipVideo.src = item.url;
-          clipVideo.preload = 'auto';
-          clipVideo.playsInline = true;
-          clipVideo.muted = false;
-          clipVideo.volume = 1;
-
-          await new Promise((resolve, reject) => {
-            let timer;
-
-            const cleanup = () => {
-              clearTimeout(timer);
-              clipVideo.removeEventListener('loadeddata', loaded);
-              clipVideo.removeEventListener('error', failed);
-            };
-
-            const loaded = () => {
-              cleanup();
-              resolve();
-            };
-
-            const failed = () => {
-              cleanup();
-              reject(new Error('No se pudo abrir el vídeo ' + item.name));
-            };
-
-            clipVideo.addEventListener('loadeddata', loaded);
-            clipVideo.addEventListener('error', failed);
-
-            timer = setTimeout(() => {
-              cleanup();
-              reject(new Error('Tiempo agotado: ' + item.name));
-            }, 30000);
-
-            clipVideo.load();
-          });
-
-          const ac = ensureAudio();
-
-          if (ac.state === 'suspended') {
-            await ac.resume();
-          }
-
-          clipSource = ac.createMediaElementSource(clipVideo);
-          clipGain = ac.createGain();
-          clipGain.gain.value = 0.9;
-
-          clipSource.connect(clipGain);
-          clipGain.connect(audioDestination);
-          clipGain.connect(ac.destination);
-
+        captureStream = manualStream;
+        videoTrack = manualTrack;
+        manualFrameCapture = true;
+      } else {
+        manualStream.getTracks().forEach(track => {
           try {
-            await clipVideo.play();
-          } catch (error) {
-            throw new Error('No se pudo reproducir ' + item.name);
-          }
-
-          const start = performance.now();
-
-          while (
-            performance.now() - start < duration &&
-            !clipVideo.ended
-          ) {
-            const p = vsRepairClamp(
-              (performance.now() - start) / duration, 0, 1
-            );
-
-            if (clipVideo.readyState >= 2) {
-              draw(item, clipVideo, p);
-            }
-
-            await vsRepairRAF();
-          }
-
-          clipVideo.pause();
-
-          if (clipSource) {
-            clipSource.disconnect();
-            clipSource = null;
-          }
-
-          if (clipGain) {
-            clipGain.disconnect();
-            clipGain = null;
-          }
-
-          clipVideo.removeAttribute('src');
-          clipVideo.load();
-          clipVideo = null;
-        }
-      }
-
-      if (music) music.pause();
-
-      status('Finalizando el vídeo…');
-
-      if (recorder.state !== 'inactive') {
-        recorder.stop();
-      }
-
-      resultBlob = await completed;
-
-      if (!resultBlob || !resultBlob.size) {
-        throw new Error('El vídeo generado está vacío.');
-      }
-
-      if (resultURL) URL.revokeObjectURL(resultURL);
-
-      resultURL = URL.createObjectURL(resultBlob);
-
-      const result = $('roxVSResult');
-      result.src = resultURL;
-      result.style.display = 'block';
-      result.load();
-
-      $('roxVSDownload').disabled = false;
-      $('roxVSShare').disabled = false;
-
-      status(
-        '¡Vídeo generado correctamente! ' +
-        selected.length + ' de ' + selected.length +
-        ' archivos procesados.',
-        'ok'
-      );
-
-    } catch (error) {
-      console.error('RoXThal Video Studio:', error);
-
-      if (recorder && recorder.state !== 'inactive') {
-        try {
-          recorder.stop();
-        } catch (e) {}
-      }
-
-            if (completed) {
-        try {
-          await Promise.race([
-            completed.catch(() => null),
-            vsRepairWait(3000)
-          ]);
-        } catch (e) {}
-      }
-
-      status(
-        'No se pudo generar el vídeo: ' +
-        (error.message || 'Error desconocido'),
-        'error'
-      );
-
-    } finally {
-      if (music) music.pause();
-
-      if (clipVideo) {
-        try {
-          clipVideo.pause();
-          clipVideo.removeAttribute('src');
-          clipVideo.load();
-        } catch (e) {}
-      }
-
-      if (clipSource) {
-        try { clipSource.disconnect(); } catch (e) {}
-      }
-
-      if (clipGain) {
-        try { clipGain.disconnect(); } catch (e) {}
-      }
-
-      if (captureStream) {
-        captureStream.getTracks().forEach(track => {
-          try { track.stop(); } catch (e) {}
+            track.stop();
+          } catch (e) {}
         });
       }
-
-      exporting = false;
-      btn.disabled = false;
+    } catch (error) {
+      console.warn(
+        'Captura manual no disponible. Se utilizará captura automática.',
+        error
+      );
     }
-  };
+
+    if (!captureStream) {
+      captureStream = canvas.captureStream(30);
+    }
+
+    /*
+      CONTROL DE FOTOGRAMAS:
+      Máximo 30 solicitudes por segundo en modo manual.
+    */
+    let lastManualFrameAt = -Infinity;
+
+    const captureFrame = async () => {
+      if (!manualFrameCapture) return;
+
+      if (
+        !videoTrack ||
+        videoTrack.readyState !== 'live'
+      ) {
+        throw new Error('La pista de vídeo dejó de estar disponible.');
+      }
+
+      const interval = 1000 / 30;
+      const elapsed = performance.now() - lastManualFrameAt;
+      const remaining = interval - elapsed;
+
+      if (remaining > 0) {
+        await vsRepairWait(remaining);
+      }
+
+      if (
+        !videoTrack ||
+        videoTrack.readyState !== 'live'
+      ) {
+        throw new Error('Se interrumpió la captura del vídeo.');
+      }
+
+      try {
+        videoTrack.requestFrame();
+        lastManualFrameAt = performance.now();
+      } catch (error) {
+        throw new Error(
+          'El navegador no pudo registrar un fotograma.'
+        );
+      }
+    };
+
+    stream = new MediaStream(
+      captureStream.getVideoTracks()
+    );
+
+    if (audioStream) {
+      audioStream.getAudioTracks().forEach(track => {
+        if (track.readyState === 'live') {
+          stream.addTrack(track);
+        }
+      });
+    }
+
+    const mime = recorderType();
+
+    recorder = new MediaRecorder(
+      stream,
+      mime ? { mimeType: mime } : undefined
+    );
+
+    const chunks = [];
+
+    completed = new Promise((resolve, reject) => {
+      recorder.ondataavailable = event => {
+        if (event.data && event.data.size) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onerror = event => {
+        reject(
+          event.error || new Error('Error de grabación.')
+        );
+      };
+
+      recorder.onstop = () => {
+        if (chunks.length) {
+          resolve(
+            new Blob(chunks, {
+              type: recorder.mimeType || mime || 'video/webm'
+            })
+          );
+        } else {
+          reject(new Error('La grabación quedó vacía.'));
+        }
+      };
+    });
+
+    recorder.start(1000);
+
+    /* Registrar la imagen inicial */
+    await captureFrame();
+    await vsRepairRAF();
+
+    if (music) {
+      music.currentTime = 0;
+      music.loop = true;
+      music.volume = 1;
+
+      try {
+        await music.play();
+      } catch (error) {
+        console.warn('No se pudo iniciar la música:', error);
+      }
+    }
+
+    /*
+      PROCESAMIENTO DE TODOS LOS FRAGMENTOS
+      Se conserva el orden de la línea de montaje.
+    */
+    for (let i = 0; i < selected.length; i++) {
+      const item = selected[i];
+
+      const duration =
+        Math.max(1, Number(item.duration) || 3) * 1000;
+
+      status(
+        'Generando fragmento ' + (i + 1) +
+        ' de ' + selected.length + ' · ' + item.name
+      );
+
+      /* ===================================
+         FOTOGRAFÍAS
+         =================================== */
+
+      if (item.type === 'image') {
+
+        /* Capturar expresamente el comienzo */
+        draw(item, item.image, 0);
+
+        await captureFrame();
+        await vsRepairRAF();
+
+        const start = performance.now();
+
+        while (performance.now() - start < duration) {
+          const elapsed = performance.now() - start;
+
+          const progress = vsRepairClamp(
+            elapsed / duration,
+            0,
+            1
+          );
+
+          draw(item, item.image, progress);
+
+          await captureFrame();
+          await vsRepairRAF();
+        }
+
+        /* Registrar el último estado de la fotografía */
+        draw(item, item.image, 1);
+
+        await captureFrame();
+        await vsRepairRAF();
+        await vsRepairWait(80);
+
+      } else {
+
+        /* ===================================
+           VÍDEOS
+           =================================== */
+
+        clipVideo = document.createElement('video');
+
+        clipVideo.src = item.url;
+        clipVideo.preload = 'auto';
+        clipVideo.playsInline = true;
+        clipVideo.muted = false;
+        clipVideo.volume = 1;
+
+        await new Promise((resolve, reject) => {
+          let timer;
+
+          const cleanup = () => {
+            clearTimeout(timer);
+            clipVideo.removeEventListener('loadeddata', loaded);
+            clipVideo.removeEventListener('error', failed);
+          };
+
+          const loaded = () => {
+            cleanup();
+            resolve();
+          };
+
+          const failed = () => {
+            cleanup();
+            reject(
+              new Error('No se pudo abrir el vídeo ' + item.name)
+            );
+          };
+
+          clipVideo.addEventListener('loadeddata', loaded);
+          clipVideo.addEventListener('error', failed);
+
+          timer = setTimeout(() => {
+            cleanup();
+            reject(
+              new Error('Tiempo agotado: ' + item.name)
+            );
+          }, 30000);
+
+          clipVideo.load();
+        });
+
+        const ac = ensureAudio();
+
+        if (ac.state === 'suspended') {
+          await ac.resume();
+        }
+
+        clipSource = ac.createMediaElementSource(clipVideo);
+        clipGain = ac.createGain();
+
+        clipGain.gain.value = 0.9;
+
+        clipSource.connect(clipGain);
+        clipGain.connect(audioDestination);
+        clipGain.connect(ac.destination);
+
+        try {
+          await clipVideo.play();
+        } catch (error) {
+          throw new Error(
+            'No se pudo reproducir ' + item.name
+          );
+        }
+
+        const start = performance.now();
+
+        while (
+          performance.now() - start < duration &&
+          !clipVideo.ended
+        ) {
+          const elapsed = performance.now() - start;
+
+          const progress = vsRepairClamp(
+            elapsed / duration,
+            0,
+            1
+          );
+
+          if (clipVideo.readyState >= 2) {
+            draw(item, clipVideo, progress);
+            await captureFrame();
+          }
+
+          await vsRepairRAF();
+        }
+
+        /* Registrar el último fotograma disponible */
+        if (clipVideo.readyState >= 2) {
+          draw(item, clipVideo, 1);
+
+          await captureFrame();
+          await vsRepairRAF();
+          await vsRepairWait(80);
+        }
+
+        clipVideo.pause();
+
+        if (clipSource) {
+          clipSource.disconnect();
+          clipSource = null;
+        }
+
+        if (clipGain) {
+          clipGain.disconnect();
+          clipGain = null;
+        }
+
+        clipVideo.removeAttribute('src');
+        clipVideo.load();
+        clipVideo = null;
+      }
+    }
+
+    /* ===================================
+       FINALIZACIÓN DE LA GRABACIÓN
+       =================================== */
+
+    if (music) {
+      music.pause();
+    }
+
+    status('Finalizando el vídeo…');
+
+    await captureFrame();
+    await vsRepairRAF();
+    await vsRepairWait(250);
+
+    if (recorder.state !== 'inactive') {
+      recorder.stop();
+    }
+
+    resultBlob = await completed;
+
+    if (!resultBlob || !resultBlob.size) {
+      throw new Error('El vídeo generado está vacío.');
+    }
+
+    if (resultURL) {
+      URL.revokeObjectURL(resultURL);
+    }
+
+    resultURL = URL.createObjectURL(resultBlob);
+
+    const result = $('roxVSResult');
+
+    result.src = resultURL;
+    result.style.display = 'block';
+    result.load();
+
+    $('roxVSDownload').disabled = false;
+    $('roxVSShare').disabled = false;
+
+    status(
+      '¡Vídeo generado! Se recorrieron los ' +
+      selected.length + ' archivos de la línea de montaje.',
+      'ok'
+    );
+
+  } catch (error) {
+
+    console.error('RoXThal Video Studio:', error);
+
+    if (recorder && recorder.state !== 'inactive') {
+      try {
+        recorder.stop();
+      } catch (e) {}
+    }
+
+    if (completed) {
+      try {
+        await Promise.race([
+          completed.catch(() => null),
+          vsRepairWait(3000)
+        ]);
+      } catch (e) {}
+    }
+
+    status(
+      'No se pudo generar el vídeo: ' +
+      (error.message || 'Error desconocido'),
+      'error'
+    );
+
+  } finally {
+
+    if (music) {
+      music.pause();
+    }
+
+    if (clipVideo) {
+      try {
+        clipVideo.pause();
+        clipVideo.removeAttribute('src');
+        clipVideo.load();
+      } catch (e) {}
+    }
+
+    if (clipSource) {
+      try {
+        clipSource.disconnect();
+      } catch (e) {}
+    }
+
+    if (clipGain) {
+      try {
+        clipGain.disconnect();
+      } catch (e) {}
+    }
+
+    if (captureStream) {
+      captureStream.getTracks().forEach(track => {
+        try {
+          track.stop();
+        } catch (e) {}
+      });
+    }
+
+    exporting = false;
+    btn.disabled = false;
+  }
+};
 
   /* 6. Compartir con alternativa automática */
 
