@@ -81844,10 +81844,56 @@ function base64Blob(data,mime){
  return new Blob([arr],{type:mime||'image/png'});
 }
 async function invokeAI(body){
- const {data,error}=await db.functions.invoke('roxthal-ad-studio',{body});
- if(error)throw new Error(error.message||'Error de conexión con la inteligencia artificial.');
- if(data?.error)throw new Error(data.error);
- return data;
+  const {data,error}=await db.functions.invoke(
+    'roxthal-ad-studio',
+    {body}
+  );
+
+  if(error){
+    let detail='';
+    const ctx=error.context;
+
+    try{
+      if(ctx instanceof Response){
+        const raw=await ctx.clone().text();
+        try{
+          const parsed=JSON.parse(raw);
+          detail=parsed.error||
+                 parsed.message||
+                 parsed.msg||
+                 raw;
+        }catch(_){
+          detail=raw;
+        }
+      }else if(ctx){
+        detail=typeof ctx==='string'
+          ?ctx
+          :JSON.stringify(ctx);
+      }
+    }catch(_){}
+
+    const status=ctx?.status
+      ?' HTTP '+ctx.status
+      :'';
+
+    throw new Error(
+      'AD STUDIO'+status+': '+
+      (detail||error.message||
+       'No se pudo conectar con la inteligencia artificial.')
+    );
+  }
+
+  if(data?.error){
+    throw new Error('AD STUDIO: '+data.error);
+  }
+
+  if(!data){
+    throw new Error(
+      'AD STUDIO: La inteligencia artificial no devolvió datos.'
+    );
+  }
+
+  return data;
 }
 function getCampaignFromEditor(){
  const c=state.campaign||{};
