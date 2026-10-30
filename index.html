@@ -82312,7 +82312,294 @@ $('rxadsPhoto').addEventListener('change',()=>{
 loadProducts().catch(e=>console.warn('AD STUDIO: productos',e));
 })();
 </script>
+   
+<!-- ROXTHAL · REPARACIÓN ÚNICA DEL SEGUIMIENTO COMERCIAL -->
+<style>
+  #rxComercialRepairToggle {
+    display: block;
+    width: 100%;
+    margin: 14px 0;
+    padding: 12px 16px;
+    border: 1px solid #c7a34c;
+    border-radius: 9px;
+    background: #c7a34c;
+    color: #17120a;
+    font-weight: 800;
+    cursor: pointer;
+  }
 
+  #rxComercialRepairToggle[hidden] {
+    display: none !important;
+  }
+
+  #rxComercialAdmin #rxclDeleteAllRepair {
+    background: #8e2929;
+    border: 1px solid #d65b5b;
+    color: #fff;
+  }
+
+  #rxComercialAdmin #rxclDeleteAllRepair:disabled {
+    opacity: .55;
+    cursor: wait;
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  if (window.__rxComercialRepairV2) return;
+  window.__rxComercialRepairV2 = true;
+
+  const TABLE = 'roxthal_sales_leads';
+  let installed = false;
+  let panelOpen = false;
+
+  function getDB() {
+    return window.db;
+  }
+
+  async function verifyAdmin() {
+    const admin = window.RoXThalAdmin;
+
+    if (!admin || typeof admin.require !== 'function') {
+      throw new Error('No está disponible la seguridad del administrador.');
+    }
+
+    const user = await admin.require();
+
+    if (!user || user.app_metadata?.role !== 'admin') {
+      throw new Error('Acceso denegado. Se requiere una sesión de administrador.');
+    }
+
+    return user;
+  }
+
+  function setAdminState(isAdmin, section, toggle) {
+    if (!isAdmin) {
+      panelOpen = false;
+      section.hidden = true;
+      toggle.hidden = true;
+
+      const list = section.querySelector('#rxclList');
+      const summary = section.querySelector('#rxclSummary');
+
+      if (list) list.replaceChildren();
+      if (summary) summary.textContent = '';
+
+      return;
+    }
+
+    toggle.hidden = false;
+    toggle.textContent = panelOpen
+      ? 'Ocultar seguimiento comercial'
+      : 'Abrir seguimiento comercial';
+
+    section.hidden = !panelOpen;
+  }
+
+  function install(section) {
+    if (installed || !section) return;
+
+    const host = document.getElementById('adminPanel');
+    const db = getDB();
+    const actions = section.querySelector('.rxcl-actions');
+
+    if (!host || !db?.auth || !actions) return;
+
+    installed = true;
+
+    /* Botón para abrir y cerrar el panel */
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.id = 'rxComercialRepairToggle';
+    toggle.textContent = 'Abrir seguimiento comercial';
+
+    host.insertBefore(toggle, section);
+
+    /* Botón para eliminar consultas */
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.id = 'rxclDeleteAllRepair';
+    deleteButton.textContent = 'Borrar todas las consultas';
+
+    const summary = section.querySelector('#rxclSummary');
+
+    if (summary) {
+      actions.insertBefore(deleteButton, summary);
+    } else {
+      actions.appendChild(deleteButton);
+    }
+
+    /* El panel comienza siempre cerrado */
+    panelOpen = false;
+    section.hidden = true;
+
+    toggle.addEventListener('click', async function () {
+      try {
+        await verifyAdmin();
+
+        panelOpen = !panelOpen;
+
+        setAdminState(true, section, toggle);
+
+        if (panelOpen) {
+          const refresh = section.querySelector('#rxclRefresh');
+          if (refresh) refresh.click();
+        }
+      } catch (error) {
+        panelOpen = false;
+        setAdminState(false, section, toggle);
+        window.alert(error.message || 'No se pudo validar el administrador.');
+      }
+    });
+
+    /* Eliminación protegida y con confirmación */
+    deleteButton.addEventListener('click', async function () {
+      const list = section.querySelector('#rxclList');
+      const summary = section.querySelector('#rxclSummary');
+
+      try {
+        await verifyAdmin();
+
+        deleteButton.disabled = true;
+        deleteButton.textContent = 'Verificando consultas…';
+
+        const countResult = await db
+          .from(TABLE)
+          .select('id', { count: 'exact', head: true });
+
+        if (countResult.error) throw countResult.error;
+
+        const total = countResult.count;
+
+        if (!Number.isInteger(total) || total < 0) {
+          throw new Error('No se pudo verificar la cantidad de consultas.');
+        }
+
+        if (total === 0) {
+          if (summary) summary.textContent = 'No hay consultas para borrar.';
+          if (list) list.textContent = 'No hay consultas registradas.';
+          return;
+        }
+
+        const confirmed = window.confirm(
+          'ATENCIÓN: se encontraron ' + total + ' registros.\n\n' +
+          '¿Querés eliminarlos definitivamente de la base de datos?\n\n' +
+          'Esta acción no se puede deshacer. La tabla también puede contener ' +
+          'registros de otros formularios de RoXThal.'
+        );
+
+        if (!confirmed) return;
+
+        /* Segunda validación antes de borrar */
+        await verifyAdmin();
+
+        deleteButton.textContent = 'Eliminando…';
+
+        const result = await db
+          .from(TABLE)
+          .delete()
+          .not('id', 'is', null)
+          .select('id');
+
+        if (result.error) throw result.error;
+
+        const deleted = Array.isArray(result.data)
+          ? result.data.length
+          : 0;
+
+        if (list) {
+          list.textContent = deleted
+            ? 'Eliminación completada.'
+            : 'No se confirmó ningún registro eliminado.';
+        }
+
+        if (summary) {
+          summary.textContent =
+            deleted + ' registro(s) eliminado(s).';
+        }
+
+        if (deleted !== total) {
+          window.alert(
+            'La base informó ' + total +
+            ' registros, pero la operación devolvió ' + deleted +
+            ' eliminaciones. Verificá los permisos RLS de Supabase.'
+          );
+        } else {
+          window.alert(
+            'Operación completada: ' + deleted +
+            ' registro(s) eliminado(s).'
+          );
+        }
+
+      } catch (error) {
+        console.error('[RoXThal Comercial · Reparación]', error);
+
+        window.alert(
+          'No se pudieron borrar las consultas.\n\n' +
+          (error.message || 'Error de Supabase o permisos insuficientes.')
+        );
+
+      } finally {
+        deleteButton.disabled = false;
+        deleteButton.textContent = 'Borrar todas las consultas';
+      }
+    });
+
+    /* Control de sesión: el panel permanece cerrado al entrar */
+    db.auth.onAuthStateChange(async function (_event, session) {
+      const user = session?.user;
+      const isAdmin = user?.app_metadata?.role === 'admin';
+
+      setAdminState(isAdmin, section, toggle);
+    });
+
+    db.auth.getSession()
+      .then(function (result) {
+        const user = result.data?.session?.user;
+        const isAdmin =
+          !result.error &&
+          user?.app_metadata?.role === 'admin';
+
+        setAdminState(isAdmin, section, toggle);
+      })
+      .catch(function () {
+        setAdminState(false, section, toggle);
+      });
+  }
+
+  function start() {
+    const existing = document.getElementById('rxComercialAdmin');
+
+    if (existing) {
+      install(existing);
+      return;
+    }
+
+    const observer = new MutationObserver(function () {
+      const section = document.getElementById('rxComercialAdmin');
+
+      if (section) {
+        observer.disconnect();
+        install(section);
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+<!-- FIN REPARACIÓN DEL SEGUIMIENTO COMERCIAL -->
 
 </body>
 </html>
