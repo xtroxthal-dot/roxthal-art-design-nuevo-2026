@@ -81941,6 +81941,15 @@ function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines=4){
  if(line&&lines<maxLines){ctx.fillText(line,x,y);y+=lineHeight}
  return y;
 }
+   function rxadsCleanImagePrompt(prompt){
+  return [
+    String(prompt || ''),
+    'IMPORTANTE: generar exclusivamente una fotografía o ilustración artística de fondo.',
+    'NO incluir ningún texto, letras, palabras, números, precios, importes, carteles, títulos, subtítulos, logotipos, marcas de agua ni llamadas a la acción.',
+    'NO escribir tipografías ni elementos publicitarios.',
+    'Dejar espacio visual limpio para incorporar posteriormente los textos mediante composición externa.'
+  ].join('\n\n');
+}
 async function composePoster(blob,ratio){
  const ratios={
   '1:1':[1080,1080],
@@ -82077,7 +82086,7 @@ async function createCampaign(){
     try{
      const data=await invokeAI({
       action:'image',
-      prompt:$('rxadsImagePrompt').value,
+      prompt:rxadsCleanImagePrompt($('rxadsImagePrompt').value),
       image_data_url:await dataURL(optimized),
       aspect_ratio:$('rxadsRatio').value
      });
